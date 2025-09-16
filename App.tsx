@@ -17,7 +17,7 @@ import { getDayKey } from './utils/dateUtils';
 
 const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.ReactNode }> = ({ to, icon, children }) => {
   const location = useLocation();
-  const isActive = location.pathname === to || (to === '/workouts' && (location.pathname.startsWith('/workout-plans') || location.pathname.startsWith('/exercises')));
+  const isActive = (to === '/' && location.pathname === '/') || (to !== '/' && location.pathname.startsWith(to));
   
   const activeClass = "bg-primary-light text-primary";
   const inactiveClass = "text-on-surface-secondary hover:bg-border hover:text-on-surface";
