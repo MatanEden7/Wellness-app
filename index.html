@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FitTracker - Your Complete Wellness Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary': '#FE7342',
+              'primary-light': '#FFF1EC',
+              'background': '#F7F8FA',
+              'surface': '#FFFFFF',
+              'on-surface': '#2D3748',
+              'on-surface-secondary': '#718096',
+              'border': '#EDF2F7',
+              'danger': '#EF4444',
+              'protein': '#3B82F6',
+              'carbs': '#10B981',
+              'fats': '#F59E0B',
+              'calories': '#FE7342',
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.19.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-background text-on-surface">
+    <div id="root"></div>
+  </body>
+</html>
