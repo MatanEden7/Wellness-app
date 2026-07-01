@@ -1,0 +1,6 @@
+
+# FVM Version Cache
+.fvm/
+# Flutter build/cache
+.dart_tool/
+build/
