@@ -1,7 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/template_origin.dart';
 import '../../../services/language_service.dart';
+import 'exercise_tags.dart';
 
 part 'models.freezed.dart';
 part 'models.g.dart';
@@ -20,6 +22,13 @@ class Exercise with _$Exercise {
     String? primaryMuscleHe,
     required String unit, // kg/lb
     String? notes,
+    // What this exercise needs. Empty means "unspecified", treated as
+    // bodyweight-compatible so an untagged user-added exercise stays
+    // visible rather than silently disappearing. See ProfileFit.
+    @Default(<Equipment>{}) Set<Equipment> equipment,
+    // Body parts this exercise is unsafe for. Empty means no known
+    // contraindication.
+    @Default(<BodyPart>{}) Set<BodyPart> contraindicatedFor,
   }) = _Exercise;
 
   factory Exercise.create({
@@ -65,6 +74,8 @@ class WorkoutTemplate with _$WorkoutTemplate {
     String? nameHe,
     String? notes,
     String? notesHe,
+    // See MealTemplate.origin -- same contract, same safe default.
+    @Default(TemplateOrigin.user) TemplateOrigin origin,
     @Default([]) List<TemplateExercise> exercises,
   }) = _WorkoutTemplate;
 

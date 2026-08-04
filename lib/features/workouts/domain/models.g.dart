@@ -15,6 +15,14 @@ _$ExerciseImpl _$$ExerciseImplFromJson(Map<String, dynamic> json) =>
       primaryMuscleHe: json['primaryMuscleHe'] as String?,
       unit: json['unit'] as String,
       notes: json['notes'] as String?,
+      equipment: (json['equipment'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$EquipmentEnumMap, e))
+              .toSet() ??
+          const <Equipment>{},
+      contraindicatedFor: (json['contraindicatedFor'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$BodyPartEnumMap, e))
+              .toSet() ??
+          const <BodyPart>{},
     );
 
 Map<String, dynamic> _$$ExerciseImplToJson(_$ExerciseImpl instance) =>
@@ -26,7 +34,33 @@ Map<String, dynamic> _$$ExerciseImplToJson(_$ExerciseImpl instance) =>
       'primaryMuscleHe': instance.primaryMuscleHe,
       'unit': instance.unit,
       'notes': instance.notes,
+      'equipment':
+          instance.equipment.map((e) => _$EquipmentEnumMap[e]!).toList(),
+      'contraindicatedFor': instance.contraindicatedFor
+          .map((e) => _$BodyPartEnumMap[e]!)
+          .toList(),
     };
+
+const _$EquipmentEnumMap = {
+  Equipment.bodyweight: 'bodyweight',
+  Equipment.dumbbells: 'dumbbells',
+  Equipment.barbellRack: 'barbellRack',
+  Equipment.machines: 'machines',
+  Equipment.bands: 'bands',
+  Equipment.kettlebells: 'kettlebells',
+  Equipment.cable: 'cable',
+  Equipment.pullupBar: 'pullupBar',
+};
+
+const _$BodyPartEnumMap = {
+  BodyPart.shoulder: 'shoulder',
+  BodyPart.back: 'back',
+  BodyPart.knee: 'knee',
+  BodyPart.ankle: 'ankle',
+  BodyPart.elbow: 'elbow',
+  BodyPart.hip: 'hip',
+  BodyPart.neck: 'neck',
+};
 
 _$WorkoutTemplateImpl _$$WorkoutTemplateImplFromJson(
         Map<String, dynamic> json) =>
@@ -36,6 +70,8 @@ _$WorkoutTemplateImpl _$$WorkoutTemplateImplFromJson(
       nameHe: json['nameHe'] as String?,
       notes: json['notes'] as String?,
       notesHe: json['notesHe'] as String?,
+      origin: $enumDecodeNullable(_$TemplateOriginEnumMap, json['origin']) ??
+          TemplateOrigin.user,
       exercises: (json['exercises'] as List<dynamic>?)
               ?.map((e) => TemplateExercise.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -50,8 +86,15 @@ Map<String, dynamic> _$$WorkoutTemplateImplToJson(
       'nameHe': instance.nameHe,
       'notes': instance.notes,
       'notesHe': instance.notesHe,
+      'origin': _$TemplateOriginEnumMap[instance.origin]!,
       'exercises': instance.exercises,
     };
+
+const _$TemplateOriginEnumMap = {
+  TemplateOrigin.builtin: 'builtin',
+  TemplateOrigin.generated: 'generated',
+  TemplateOrigin.user: 'user',
+};
 
 _$TemplateExerciseImpl _$$TemplateExerciseImplFromJson(
         Map<String, dynamic> json) =>

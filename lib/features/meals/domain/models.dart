@@ -1,8 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/template_origin.dart';
 import '../../../services/language_service.dart';
 import 'food_nutrition_math.dart';
+import 'food_tags.dart';
 
 part 'models.freezed.dart';
 part 'models.g.dart';
@@ -24,6 +26,12 @@ class FoodItem with _$FoodItem {
     required double carbsPerUnit,
     required double fatPerUnit,
     @Default(false) bool isStarter,
+    // What this food contains -- allergens and animal origin. Drives diet /
+    // exclusion filtering via ProfileFit. Empty means "untagged", which is
+    // treated as "fits everything" rather than "fits nothing": a user's own
+    // food shouldn't vanish from their catalog just because they haven't
+    // labelled it yet. See ProfileFit.foodFits.
+    @Default(<FoodTag>{}) Set<FoodTag> tags,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _FoodItem;
@@ -193,6 +201,11 @@ class MealTemplate with _$MealTemplate {
     String? descriptionHe,
     required DateTime createdAt,
     required DateTime updatedAt,
+    // Where this template came from, so regeneration can replace what it
+    // generated without touching anything the user built. Defaults to
+    // [TemplateOrigin.user] -- the one origin regeneration never touches --
+    // so an unlabelled template is never destroyed by accident.
+    @Default(TemplateOrigin.user) TemplateOrigin origin,
     @Default([]) List<MealTemplateItem> items,
   }) = _MealTemplate;
 

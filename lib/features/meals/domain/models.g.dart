@@ -18,6 +18,10 @@ _$FoodItemImpl _$$FoodItemImplFromJson(Map<String, dynamic> json) =>
       carbsPerUnit: (json['carbsPerUnit'] as num).toDouble(),
       fatPerUnit: (json['fatPerUnit'] as num).toDouble(),
       isStarter: json['isStarter'] as bool? ?? false,
+      tags: (json['tags'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$FoodTagEnumMap, e))
+              .toSet() ??
+          const <FoodTag>{},
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -34,9 +38,22 @@ Map<String, dynamic> _$$FoodItemImplToJson(_$FoodItemImpl instance) =>
       'carbsPerUnit': instance.carbsPerUnit,
       'fatPerUnit': instance.fatPerUnit,
       'isStarter': instance.isStarter,
+      'tags': instance.tags.map((e) => _$FoodTagEnumMap[e]!).toList(),
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
+
+const _$FoodTagEnumMap = {
+  FoodTag.dairy: 'dairy',
+  FoodTag.gluten: 'gluten',
+  FoodTag.nuts: 'nuts',
+  FoodTag.eggs: 'eggs',
+  FoodTag.shellfish: 'shellfish',
+  FoodTag.soy: 'soy',
+  FoodTag.meat: 'meat',
+  FoodTag.fish: 'fish',
+  FoodTag.animalProduct: 'animalProduct',
+};
 
 _$MealItemImpl _$$MealItemImplFromJson(Map<String, dynamic> json) =>
     _$MealItemImpl(
@@ -135,6 +152,8 @@ _$MealTemplateImpl _$$MealTemplateImplFromJson(Map<String, dynamic> json) =>
       descriptionHe: json['descriptionHe'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      origin: $enumDecodeNullable(_$TemplateOriginEnumMap, json['origin']) ??
+          TemplateOrigin.user,
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => MealTemplateItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -150,5 +169,12 @@ Map<String, dynamic> _$$MealTemplateImplToJson(_$MealTemplateImpl instance) =>
       'descriptionHe': instance.descriptionHe,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
+      'origin': _$TemplateOriginEnumMap[instance.origin]!,
       'items': instance.items,
     };
+
+const _$TemplateOriginEnumMap = {
+  TemplateOrigin.builtin: 'builtin',
+  TemplateOrigin.generated: 'generated',
+  TemplateOrigin.user: 'user',
+};

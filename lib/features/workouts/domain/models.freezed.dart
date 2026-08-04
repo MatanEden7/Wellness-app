@@ -28,7 +28,14 @@ mixin _$Exercise {
   String? get primaryMuscle => throw _privateConstructorUsedError;
   String? get primaryMuscleHe => throw _privateConstructorUsedError;
   String get unit => throw _privateConstructorUsedError; // kg/lb
-  String? get notes => throw _privateConstructorUsedError;
+  String? get notes =>
+      throw _privateConstructorUsedError; // What this exercise needs. Empty means "unspecified", treated as
+// bodyweight-compatible so an untagged user-added exercise stays
+// visible rather than silently disappearing. See ProfileFit.
+  Set<Equipment> get equipment =>
+      throw _privateConstructorUsedError; // Body parts this exercise is unsafe for. Empty means no known
+// contraindication.
+  Set<BodyPart> get contraindicatedFor => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -48,7 +55,9 @@ abstract class $ExerciseCopyWith<$Res> {
       String? primaryMuscle,
       String? primaryMuscleHe,
       String unit,
-      String? notes});
+      String? notes,
+      Set<Equipment> equipment,
+      Set<BodyPart> contraindicatedFor});
 }
 
 /// @nodoc
@@ -71,6 +80,8 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
     Object? primaryMuscleHe = freezed,
     Object? unit = null,
     Object? notes = freezed,
+    Object? equipment = null,
+    Object? contraindicatedFor = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -101,6 +112,14 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
               as String?,
+      equipment: null == equipment
+          ? _value.equipment
+          : equipment // ignore: cast_nullable_to_non_nullable
+              as Set<Equipment>,
+      contraindicatedFor: null == contraindicatedFor
+          ? _value.contraindicatedFor
+          : contraindicatedFor // ignore: cast_nullable_to_non_nullable
+              as Set<BodyPart>,
     ) as $Val);
   }
 }
@@ -120,7 +139,9 @@ abstract class _$$ExerciseImplCopyWith<$Res>
       String? primaryMuscle,
       String? primaryMuscleHe,
       String unit,
-      String? notes});
+      String? notes,
+      Set<Equipment> equipment,
+      Set<BodyPart> contraindicatedFor});
 }
 
 /// @nodoc
@@ -141,6 +162,8 @@ class __$$ExerciseImplCopyWithImpl<$Res>
     Object? primaryMuscleHe = freezed,
     Object? unit = null,
     Object? notes = freezed,
+    Object? equipment = null,
+    Object? contraindicatedFor = null,
   }) {
     return _then(_$ExerciseImpl(
       id: null == id
@@ -171,6 +194,14 @@ class __$$ExerciseImplCopyWithImpl<$Res>
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
               as String?,
+      equipment: null == equipment
+          ? _value._equipment
+          : equipment // ignore: cast_nullable_to_non_nullable
+              as Set<Equipment>,
+      contraindicatedFor: null == contraindicatedFor
+          ? _value._contraindicatedFor
+          : contraindicatedFor // ignore: cast_nullable_to_non_nullable
+              as Set<BodyPart>,
     ));
   }
 }
@@ -185,7 +216,11 @@ class _$ExerciseImpl implements _Exercise {
       this.primaryMuscle,
       this.primaryMuscleHe,
       required this.unit,
-      this.notes});
+      this.notes,
+      final Set<Equipment> equipment = const <Equipment>{},
+      final Set<BodyPart> contraindicatedFor = const <BodyPart>{}})
+      : _equipment = equipment,
+        _contraindicatedFor = contraindicatedFor;
 
   factory _$ExerciseImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExerciseImplFromJson(json);
@@ -207,10 +242,38 @@ class _$ExerciseImpl implements _Exercise {
 // kg/lb
   @override
   final String? notes;
+// What this exercise needs. Empty means "unspecified", treated as
+// bodyweight-compatible so an untagged user-added exercise stays
+// visible rather than silently disappearing. See ProfileFit.
+  final Set<Equipment> _equipment;
+// What this exercise needs. Empty means "unspecified", treated as
+// bodyweight-compatible so an untagged user-added exercise stays
+// visible rather than silently disappearing. See ProfileFit.
+  @override
+  @JsonKey()
+  Set<Equipment> get equipment {
+    if (_equipment is EqualUnmodifiableSetView) return _equipment;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_equipment);
+  }
+
+// Body parts this exercise is unsafe for. Empty means no known
+// contraindication.
+  final Set<BodyPart> _contraindicatedFor;
+// Body parts this exercise is unsafe for. Empty means no known
+// contraindication.
+  @override
+  @JsonKey()
+  Set<BodyPart> get contraindicatedFor {
+    if (_contraindicatedFor is EqualUnmodifiableSetView)
+      return _contraindicatedFor;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_contraindicatedFor);
+  }
 
   @override
   String toString() {
-    return 'Exercise(id: $id, name: $name, nameHe: $nameHe, primaryMuscle: $primaryMuscle, primaryMuscleHe: $primaryMuscleHe, unit: $unit, notes: $notes)';
+    return 'Exercise(id: $id, name: $name, nameHe: $nameHe, primaryMuscle: $primaryMuscle, primaryMuscleHe: $primaryMuscleHe, unit: $unit, notes: $notes, equipment: $equipment, contraindicatedFor: $contraindicatedFor)';
   }
 
   @override
@@ -226,13 +289,26 @@ class _$ExerciseImpl implements _Exercise {
             (identical(other.primaryMuscleHe, primaryMuscleHe) ||
                 other.primaryMuscleHe == primaryMuscleHe) &&
             (identical(other.unit, unit) || other.unit == unit) &&
-            (identical(other.notes, notes) || other.notes == notes));
+            (identical(other.notes, notes) || other.notes == notes) &&
+            const DeepCollectionEquality()
+                .equals(other._equipment, _equipment) &&
+            const DeepCollectionEquality()
+                .equals(other._contraindicatedFor, _contraindicatedFor));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, nameHe, primaryMuscle,
-      primaryMuscleHe, unit, notes);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      name,
+      nameHe,
+      primaryMuscle,
+      primaryMuscleHe,
+      unit,
+      notes,
+      const DeepCollectionEquality().hash(_equipment),
+      const DeepCollectionEquality().hash(_contraindicatedFor));
 
   @JsonKey(ignore: true)
   @override
@@ -256,7 +332,9 @@ abstract class _Exercise implements Exercise {
       final String? primaryMuscle,
       final String? primaryMuscleHe,
       required final String unit,
-      final String? notes}) = _$ExerciseImpl;
+      final String? notes,
+      final Set<Equipment> equipment,
+      final Set<BodyPart> contraindicatedFor}) = _$ExerciseImpl;
 
   factory _Exercise.fromJson(Map<String, dynamic> json) =
       _$ExerciseImpl.fromJson;
@@ -276,6 +354,13 @@ abstract class _Exercise implements Exercise {
   String get unit;
   @override // kg/lb
   String? get notes;
+  @override // What this exercise needs. Empty means "unspecified", treated as
+// bodyweight-compatible so an untagged user-added exercise stays
+// visible rather than silently disappearing. See ProfileFit.
+  Set<Equipment> get equipment;
+  @override // Body parts this exercise is unsafe for. Empty means no known
+// contraindication.
+  Set<BodyPart> get contraindicatedFor;
   @override
   @JsonKey(ignore: true)
   _$$ExerciseImplCopyWith<_$ExerciseImpl> get copyWith =>
@@ -292,7 +377,9 @@ mixin _$WorkoutTemplate {
   String get name => throw _privateConstructorUsedError;
   String? get nameHe => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
-  String? get notesHe => throw _privateConstructorUsedError;
+  String? get notesHe =>
+      throw _privateConstructorUsedError; // See MealTemplate.origin -- same contract, same safe default.
+  TemplateOrigin get origin => throw _privateConstructorUsedError;
   List<TemplateExercise> get exercises => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -313,6 +400,7 @@ abstract class $WorkoutTemplateCopyWith<$Res> {
       String? nameHe,
       String? notes,
       String? notesHe,
+      TemplateOrigin origin,
       List<TemplateExercise> exercises});
 }
 
@@ -334,6 +422,7 @@ class _$WorkoutTemplateCopyWithImpl<$Res, $Val extends WorkoutTemplate>
     Object? nameHe = freezed,
     Object? notes = freezed,
     Object? notesHe = freezed,
+    Object? origin = null,
     Object? exercises = null,
   }) {
     return _then(_value.copyWith(
@@ -357,6 +446,10 @@ class _$WorkoutTemplateCopyWithImpl<$Res, $Val extends WorkoutTemplate>
           ? _value.notesHe
           : notesHe // ignore: cast_nullable_to_non_nullable
               as String?,
+      origin: null == origin
+          ? _value.origin
+          : origin // ignore: cast_nullable_to_non_nullable
+              as TemplateOrigin,
       exercises: null == exercises
           ? _value.exercises
           : exercises // ignore: cast_nullable_to_non_nullable
@@ -379,6 +472,7 @@ abstract class _$$WorkoutTemplateImplCopyWith<$Res>
       String? nameHe,
       String? notes,
       String? notesHe,
+      TemplateOrigin origin,
       List<TemplateExercise> exercises});
 }
 
@@ -398,6 +492,7 @@ class __$$WorkoutTemplateImplCopyWithImpl<$Res>
     Object? nameHe = freezed,
     Object? notes = freezed,
     Object? notesHe = freezed,
+    Object? origin = null,
     Object? exercises = null,
   }) {
     return _then(_$WorkoutTemplateImpl(
@@ -421,6 +516,10 @@ class __$$WorkoutTemplateImplCopyWithImpl<$Res>
           ? _value.notesHe
           : notesHe // ignore: cast_nullable_to_non_nullable
               as String?,
+      origin: null == origin
+          ? _value.origin
+          : origin // ignore: cast_nullable_to_non_nullable
+              as TemplateOrigin,
       exercises: null == exercises
           ? _value._exercises
           : exercises // ignore: cast_nullable_to_non_nullable
@@ -438,6 +537,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
       this.nameHe,
       this.notes,
       this.notesHe,
+      this.origin = TemplateOrigin.user,
       final List<TemplateExercise> exercises = const []})
       : _exercises = exercises;
 
@@ -454,6 +554,10 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
   final String? notes;
   @override
   final String? notesHe;
+// See MealTemplate.origin -- same contract, same safe default.
+  @override
+  @JsonKey()
+  final TemplateOrigin origin;
   final List<TemplateExercise> _exercises;
   @override
   @JsonKey()
@@ -465,7 +569,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
 
   @override
   String toString() {
-    return 'WorkoutTemplate(id: $id, name: $name, nameHe: $nameHe, notes: $notes, notesHe: $notesHe, exercises: $exercises)';
+    return 'WorkoutTemplate(id: $id, name: $name, nameHe: $nameHe, notes: $notes, notesHe: $notesHe, origin: $origin, exercises: $exercises)';
   }
 
   @override
@@ -478,6 +582,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
             (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.notesHe, notesHe) || other.notesHe == notesHe) &&
+            (identical(other.origin, origin) || other.origin == origin) &&
             const DeepCollectionEquality()
                 .equals(other._exercises, _exercises));
   }
@@ -485,7 +590,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, name, nameHe, notes, notesHe,
-      const DeepCollectionEquality().hash(_exercises));
+      origin, const DeepCollectionEquality().hash(_exercises));
 
   @JsonKey(ignore: true)
   @override
@@ -509,6 +614,7 @@ abstract class _WorkoutTemplate implements WorkoutTemplate {
       final String? nameHe,
       final String? notes,
       final String? notesHe,
+      final TemplateOrigin origin,
       final List<TemplateExercise> exercises}) = _$WorkoutTemplateImpl;
 
   factory _WorkoutTemplate.fromJson(Map<String, dynamic> json) =
@@ -524,6 +630,8 @@ abstract class _WorkoutTemplate implements WorkoutTemplate {
   String? get notes;
   @override
   String? get notesHe;
+  @override // See MealTemplate.origin -- same contract, same safe default.
+  TemplateOrigin get origin;
   @override
   List<TemplateExercise> get exercises;
   @override

@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/date_utils.dart';
+import '../../core/template_origin.dart';
+import '../../features/meals/domain/food_tags.dart';
+import '../../features/workouts/domain/exercise_tags.dart';
 
 // Provider for the database
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -1358,6 +1361,9 @@ class FoodItemData {
   final double carbsPerUnit;
   final double fatPerUnit;
   final bool isStarter;
+  /// What this food contains -- allergens and animal origin. Drives the
+  /// diet/exclusion filtering in `ProfileFit`. Empty means untagged.
+  final Set<FoodTag> tags;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -1372,6 +1378,7 @@ class FoodItemData {
     required this.carbsPerUnit,
     required this.fatPerUnit,
     required this.isStarter,
+    this.tags = const <FoodTag>{},
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1387,6 +1394,7 @@ class FoodItemData {
     'carbsPerUnit': carbsPerUnit,
     'fatPerUnit': fatPerUnit,
     'isStarter': isStarter,
+    'tags': FoodTagCodec.encode(tags),
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -1402,6 +1410,8 @@ class FoodItemData {
     carbsPerUnit: (json['carbsPerUnit'] as num).toDouble(),
     fatPerUnit: (json['fatPerUnit'] as num).toDouble(),
     isStarter: json['isStarter'] as bool,
+    // Absent on rows written before tags existed -> decodes to empty.
+    tags: FoodTagCodec.decode(json['tags']),
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
@@ -1535,6 +1545,8 @@ class MealTemplateData {
   final String? nameHe;
   final String? description;
   final String? descriptionHe;
+  /// See [WorkoutTemplateData.origin].
+  final TemplateOrigin origin;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -1544,6 +1556,7 @@ class MealTemplateData {
     this.nameHe,
     this.description,
     this.descriptionHe,
+    this.origin = TemplateOrigin.user,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1554,6 +1567,7 @@ class MealTemplateData {
     'nameHe': nameHe,
     'description': description,
     'descriptionHe': descriptionHe,
+    'origin': origin.key,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -1564,6 +1578,9 @@ class MealTemplateData {
     nameHe: json['nameHe'] as String?,
     description: json['description'] as String?,
     descriptionHe: json['descriptionHe'] as String?,
+    // Absent on rows predating this field -> TemplateOrigin.user, which
+    // regeneration never replaces.
+    origin: TemplateOrigin.fromKey(json['origin']),
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
@@ -1605,6 +1622,10 @@ class ExerciseData {
   final String? primaryMuscleHe;
   final String unit;
   final String? notes;
+  /// Equipment this exercise requires, and body parts it is unsafe for.
+  /// Both drive `ProfileFit`; empty means unspecified.
+  final Set<Equipment> equipment;
+  final Set<BodyPart> contraindicatedFor;
 
   ExerciseData({
     required this.id,
@@ -1614,6 +1635,8 @@ class ExerciseData {
     this.primaryMuscleHe,
     required this.unit,
     this.notes,
+    this.equipment = const <Equipment>{},
+    this.contraindicatedFor = const <BodyPart>{},
   });
 
   Map<String, dynamic> toJson() => {
@@ -1624,6 +1647,8 @@ class ExerciseData {
     'primaryMuscleHe': primaryMuscleHe,
     'unit': unit,
     'notes': notes,
+    'equipment': EquipmentCodec.encode(equipment),
+    'contraindicatedFor': BodyPartCodec.encode(contraindicatedFor),
   };
 
   factory ExerciseData.fromJson(Map<String, dynamic> json) => ExerciseData(
@@ -1634,6 +1659,9 @@ class ExerciseData {
     primaryMuscleHe: json['primaryMuscleHe'] as String?,
     unit: json['unit'] as String,
     notes: json['notes'] as String?,
+    // Absent on rows written before these fields existed -> empty.
+    equipment: EquipmentCodec.decode(json['equipment']),
+    contraindicatedFor: BodyPartCodec.decode(json['contraindicatedFor']),
   );
 }
 
@@ -1643,6 +1671,9 @@ class WorkoutTemplateData {
   final String? nameHe;
   final String? notes;
   final String? notesHe;
+  /// Whether this template was seeded, generated from the profile, or built
+  /// by the user -- regeneration only ever replaces [TemplateOrigin.generated].
+  final TemplateOrigin origin;
 
   WorkoutTemplateData({
     required this.id,
@@ -1650,6 +1681,7 @@ class WorkoutTemplateData {
     this.nameHe,
     this.notes,
     this.notesHe,
+    this.origin = TemplateOrigin.user,
   });
 
   Map<String, dynamic> toJson() => {
@@ -1658,6 +1690,7 @@ class WorkoutTemplateData {
     'nameHe': nameHe,
     'notes': notes,
     'notesHe': notesHe,
+    'origin': origin.key,
   };
 
   factory WorkoutTemplateData.fromJson(Map<String, dynamic> json) => WorkoutTemplateData(
@@ -1666,6 +1699,8 @@ class WorkoutTemplateData {
     nameHe: json['nameHe'] as String?,
     notes: json['notes'] as String?,
     notesHe: json['notesHe'] as String?,
+    // See MealTemplateData.fromJson.
+    origin: TemplateOrigin.fromKey(json['origin']),
   );
 }
 

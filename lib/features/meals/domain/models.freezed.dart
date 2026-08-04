@@ -31,7 +31,13 @@ mixin _$FoodItem {
   double get proteinPerUnit => throw _privateConstructorUsedError;
   double get carbsPerUnit => throw _privateConstructorUsedError;
   double get fatPerUnit => throw _privateConstructorUsedError;
-  bool get isStarter => throw _privateConstructorUsedError;
+  bool get isStarter =>
+      throw _privateConstructorUsedError; // What this food contains -- allergens and animal origin. Drives diet /
+// exclusion filtering via ProfileFit. Empty means "untagged", which is
+// treated as "fits everything" rather than "fits nothing": a user's own
+// food shouldn't vanish from their catalog just because they haven't
+// labelled it yet. See ProfileFit.foodFits.
+  Set<FoodTag> get tags => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -57,6 +63,7 @@ abstract class $FoodItemCopyWith<$Res> {
       double carbsPerUnit,
       double fatPerUnit,
       bool isStarter,
+      Set<FoodTag> tags,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -84,6 +91,7 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
     Object? carbsPerUnit = null,
     Object? fatPerUnit = null,
     Object? isStarter = null,
+    Object? tags = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -128,6 +136,10 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
           ? _value.isStarter
           : isStarter // ignore: cast_nullable_to_non_nullable
               as bool,
+      tags: null == tags
+          ? _value.tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as Set<FoodTag>,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -159,6 +171,7 @@ abstract class _$$FoodItemImplCopyWith<$Res>
       double carbsPerUnit,
       double fatPerUnit,
       bool isStarter,
+      Set<FoodTag> tags,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -184,6 +197,7 @@ class __$$FoodItemImplCopyWithImpl<$Res>
     Object? carbsPerUnit = null,
     Object? fatPerUnit = null,
     Object? isStarter = null,
+    Object? tags = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -228,6 +242,10 @@ class __$$FoodItemImplCopyWithImpl<$Res>
           ? _value.isStarter
           : isStarter // ignore: cast_nullable_to_non_nullable
               as bool,
+      tags: null == tags
+          ? _value._tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as Set<FoodTag>,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -254,8 +272,10 @@ class _$FoodItemImpl implements _FoodItem {
       required this.carbsPerUnit,
       required this.fatPerUnit,
       this.isStarter = false,
+      final Set<FoodTag> tags = const <FoodTag>{},
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt})
+      : _tags = tags;
 
   factory _$FoodItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$FoodItemImplFromJson(json);
@@ -283,6 +303,25 @@ class _$FoodItemImpl implements _FoodItem {
   @override
   @JsonKey()
   final bool isStarter;
+// What this food contains -- allergens and animal origin. Drives diet /
+// exclusion filtering via ProfileFit. Empty means "untagged", which is
+// treated as "fits everything" rather than "fits nothing": a user's own
+// food shouldn't vanish from their catalog just because they haven't
+// labelled it yet. See ProfileFit.foodFits.
+  final Set<FoodTag> _tags;
+// What this food contains -- allergens and animal origin. Drives diet /
+// exclusion filtering via ProfileFit. Empty means "untagged", which is
+// treated as "fits everything" rather than "fits nothing": a user's own
+// food shouldn't vanish from their catalog just because they haven't
+// labelled it yet. See ProfileFit.foodFits.
+  @override
+  @JsonKey()
+  Set<FoodTag> get tags {
+    if (_tags is EqualUnmodifiableSetView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_tags);
+  }
+
   @override
   final DateTime createdAt;
   @override
@@ -290,7 +329,7 @@ class _$FoodItemImpl implements _FoodItem {
 
   @override
   String toString() {
-    return 'FoodItem(id: $id, name: $name, nameHe: $nameHe, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'FoodItem(id: $id, name: $name, nameHe: $nameHe, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -313,6 +352,7 @@ class _$FoodItemImpl implements _FoodItem {
                 other.fatPerUnit == fatPerUnit) &&
             (identical(other.isStarter, isStarter) ||
                 other.isStarter == isStarter) &&
+            const DeepCollectionEquality().equals(other._tags, _tags) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -333,6 +373,7 @@ class _$FoodItemImpl implements _FoodItem {
       carbsPerUnit,
       fatPerUnit,
       isStarter,
+      const DeepCollectionEquality().hash(_tags),
       createdAt,
       updatedAt);
 
@@ -362,6 +403,7 @@ abstract class _FoodItem implements FoodItem {
       required final double carbsPerUnit,
       required final double fatPerUnit,
       final bool isStarter,
+      final Set<FoodTag> tags,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$FoodItemImpl;
 
@@ -389,6 +431,12 @@ abstract class _FoodItem implements FoodItem {
   double get fatPerUnit;
   @override
   bool get isStarter;
+  @override // What this food contains -- allergens and animal origin. Drives diet /
+// exclusion filtering via ProfileFit. Empty means "untagged", which is
+// treated as "fits everything" rather than "fits nothing": a user's own
+// food shouldn't vanish from their catalog just because they haven't
+// labelled it yet. See ProfileFit.foodFits.
+  Set<FoodTag> get tags;
   @override
   DateTime get createdAt;
   @override
@@ -1391,7 +1439,12 @@ mixin _$MealTemplate {
   String? get description => throw _privateConstructorUsedError;
   String? get descriptionHe => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt =>
+      throw _privateConstructorUsedError; // Where this template came from, so regeneration can replace what it
+// generated without touching anything the user built. Defaults to
+// [TemplateOrigin.user] -- the one origin regeneration never touches --
+// so an unlabelled template is never destroyed by accident.
+  TemplateOrigin get origin => throw _privateConstructorUsedError;
   List<MealTemplateItem> get items => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1414,6 +1467,7 @@ abstract class $MealTemplateCopyWith<$Res> {
       String? descriptionHe,
       DateTime createdAt,
       DateTime updatedAt,
+      TemplateOrigin origin,
       List<MealTemplateItem> items});
 }
 
@@ -1437,6 +1491,7 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
     Object? descriptionHe = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? origin = null,
     Object? items = null,
   }) {
     return _then(_value.copyWith(
@@ -1468,6 +1523,10 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      origin: null == origin
+          ? _value.origin
+          : origin // ignore: cast_nullable_to_non_nullable
+              as TemplateOrigin,
       items: null == items
           ? _value.items
           : items // ignore: cast_nullable_to_non_nullable
@@ -1492,6 +1551,7 @@ abstract class _$$MealTemplateImplCopyWith<$Res>
       String? descriptionHe,
       DateTime createdAt,
       DateTime updatedAt,
+      TemplateOrigin origin,
       List<MealTemplateItem> items});
 }
 
@@ -1513,6 +1573,7 @@ class __$$MealTemplateImplCopyWithImpl<$Res>
     Object? descriptionHe = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? origin = null,
     Object? items = null,
   }) {
     return _then(_$MealTemplateImpl(
@@ -1544,6 +1605,10 @@ class __$$MealTemplateImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      origin: null == origin
+          ? _value.origin
+          : origin // ignore: cast_nullable_to_non_nullable
+              as TemplateOrigin,
       items: null == items
           ? _value._items
           : items // ignore: cast_nullable_to_non_nullable
@@ -1563,6 +1628,7 @@ class _$MealTemplateImpl implements _MealTemplate {
       this.descriptionHe,
       required this.createdAt,
       required this.updatedAt,
+      this.origin = TemplateOrigin.user,
       final List<MealTemplateItem> items = const []})
       : _items = items;
 
@@ -1583,6 +1649,13 @@ class _$MealTemplateImpl implements _MealTemplate {
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
+// Where this template came from, so regeneration can replace what it
+// generated without touching anything the user built. Defaults to
+// [TemplateOrigin.user] -- the one origin regeneration never touches --
+// so an unlabelled template is never destroyed by accident.
+  @override
+  @JsonKey()
+  final TemplateOrigin origin;
   final List<MealTemplateItem> _items;
   @override
   @JsonKey()
@@ -1594,7 +1667,7 @@ class _$MealTemplateImpl implements _MealTemplate {
 
   @override
   String toString() {
-    return 'MealTemplate(id: $id, name: $name, nameHe: $nameHe, description: $description, descriptionHe: $descriptionHe, createdAt: $createdAt, updatedAt: $updatedAt, items: $items)';
+    return 'MealTemplate(id: $id, name: $name, nameHe: $nameHe, description: $description, descriptionHe: $descriptionHe, createdAt: $createdAt, updatedAt: $updatedAt, origin: $origin, items: $items)';
   }
 
   @override
@@ -1613,6 +1686,7 @@ class _$MealTemplateImpl implements _MealTemplate {
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
+            (identical(other.origin, origin) || other.origin == origin) &&
             const DeepCollectionEquality().equals(other._items, _items));
   }
 
@@ -1627,6 +1701,7 @@ class _$MealTemplateImpl implements _MealTemplate {
       descriptionHe,
       createdAt,
       updatedAt,
+      origin,
       const DeepCollectionEquality().hash(_items));
 
   @JsonKey(ignore: true)
@@ -1652,6 +1727,7 @@ abstract class _MealTemplate implements MealTemplate {
       final String? descriptionHe,
       required final DateTime createdAt,
       required final DateTime updatedAt,
+      final TemplateOrigin origin,
       final List<MealTemplateItem> items}) = _$MealTemplateImpl;
 
   factory _MealTemplate.fromJson(Map<String, dynamic> json) =
@@ -1671,6 +1747,11 @@ abstract class _MealTemplate implements MealTemplate {
   DateTime get createdAt;
   @override
   DateTime get updatedAt;
+  @override // Where this template came from, so regeneration can replace what it
+// generated without touching anything the user built. Defaults to
+// [TemplateOrigin.user] -- the one origin regeneration never touches --
+// so an unlabelled template is never destroyed by accident.
+  TemplateOrigin get origin;
   @override
   List<MealTemplateItem> get items;
   @override
