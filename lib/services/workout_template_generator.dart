@@ -1,411 +1,210 @@
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
+
+import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
+import '../features/workouts/domain/models.dart';
+import 'profile_fit.dart';
 import 'user_profile_service.dart';
 
+/// Builds workout templates for a profile by **selecting from the seeded
+/// exercise library**, not by inventing exercises.
+///
+/// The previous version minted its own `ExerciseData` rows with the
+/// equipment baked into their names ('Barbell Bench Press', 'Dumbbell Bench
+/// Press', 'Push-ups') and inserted them alongside the 16 already in the
+/// library. That produced near-duplicate entries after onboarding, and left
+/// the library itself unfilterable, because "needs a barbell" only existed
+/// inside a string. Equipment and injury contraindications are now real
+/// fields on [Exercise] and every choice goes through [ProfileFit], so the
+/// generator and the browsing UI agree by construction.
 class WorkoutTemplateGenerator {
+  WorkoutTemplateGenerator(this._database, this._profile);
+
   final AppDatabase _database;
   final UserProfile _profile;
   final _uuid = const Uuid();
 
-  WorkoutTemplateGenerator(this._database, this._profile);
+  /// Muscle groups a session should cover, matched against
+  /// `Exercise.primaryMuscle`.
+  static const _push = ['Chest', 'Shoulders', 'Triceps'];
+  static const _pull = ['Back', 'Biceps'];
+  static const _legs = ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves'];
+  static const _core = ['Core'];
 
-  Future<void> generateTemplates() async {
-    debugPrint('[WORKOUT-GEN] 🏋️ Generating workout templates for ${_profile.trainingDaysPerWeek} days/week');
-    
-    // Generate exercises based on equipment
-    await _generateExercises();
-    
-    // Generate templates based on training split
-    final split = _getWorkoutSplit();
-    if (split == 'full_body_3d') {
-      await _generateFullBody3Day();
-    } else if (split == 'ppl_5d') {
-      await _generatePPL5Day();
-    }
-    
-    // Generate mobility pack
-    await _generateMobilityPack();
-    
-    // Generate rehab addons if user has injuries
-    await _generateRehabAddons();
-    
-    debugPrint('[WORKOUT-GEN] ✅ Workout templates generated successfully');
-  }
-
-  String _getWorkoutSplit() {
-    if (_profile.trainingDaysPerWeek >= 5) {
-      return 'ppl_5d';
-    } else {
-      return 'full_body_3d';
-    }
-  }
-
-  Future<void> _generateExercises() async {
-    // Check if exercises already exist
-    final existing = await _database.getAllExercises();
-    if (existing.length > 2) {
-      debugPrint('[WORKOUT-GEN] Exercises already exist, skipping generation');
-      return;
+  Future<List<WorkoutTemplateData>> generateTemplates() async {
+    final available = await _availableExercises();
+    if (available.isEmpty) {
+      // Unreachable with the seeded catalog -- the coverage test proves a
+      // full-body program survives every equipment/injury combination -- but
+      // a user who deleted their whole library shouldn't crash onboarding.
+      debugPrint('[WORKOUT-GEN] No exercises fit this profile; skipping');
+      return const [];
     }
 
-    final exercises = <ExerciseData>[];
-    final hasDumbbells = _profile.equipment.contains('dumbbells');
-    final hasBarbell = _profile.equipment.contains('barbell_rack');
-    final hasMachines = _profile.equipment.contains('machines');
-    final hasCable = _profile.equipment.contains('cable');
-    final hasBands = _profile.equipment.contains('bands');
-    final hasPullupBar = _profile.equipment.contains('pullup_bar');
+    final plan = _splitForTrainingDays(_profile.trainingDaysPerWeek);
+    debugPrint('[WORKOUT-GEN] ${_profile.trainingDaysPerWeek} days/week -> '
+        '${plan.length} template(s), ${available.length} exercises available');
 
-    // Chest exercises
-    exercises.add(_createExercise('Push-ups', 'Chest', 'Bodyweight chest exercise'));
-    if (hasDumbbells) {
-      exercises.add(_createExercise('Dumbbell Bench Press', 'Chest', 'Use dumbbells on bench'));
-      exercises.add(_createExercise('Incline DB Press', 'Chest', 'Upper chest focus'));
-    }
-    if (hasBarbell) {
-      exercises.add(_createExercise('Barbell Bench Press', 'Chest', 'Heavy compound press'));
-    }
-    if (hasCable) {
-      exercises.add(_createExercise('Cable Fly', 'Chest', 'Chest isolation'));
-    }
+    final created = <WorkoutTemplateData>[];
+    for (final day in plan) {
+      final picks = _pick(available, day.muscles, day.exercisesPerSession);
+      if (picks.isEmpty) continue;
 
-    // Back exercises
-    if (hasPullupBar || hasBands) {
-      exercises.add(_createExercise('Pull-ups', 'Back', 'Vertical pull'));
-    }
-    if (hasBarbell) {
-      exercises.add(_createExercise('Barbell Row', 'Back', 'Horizontal pull'));
-    }
-    if (hasDumbbells) {
-      exercises.add(_createExercise('One-Arm DB Row', 'Back', 'Unilateral back work'));
-      exercises.add(_createExercise('Dumbbell Row', 'Back', 'Bilateral rowing'));
-    }
-    if (hasCable || hasMachines) {
-      exercises.add(_createExercise('Lat Pulldown', 'Back', 'Machine vertical pull'));
-      exercises.add(_createExercise('Seated Cable Row', 'Back', 'Machine horizontal pull'));
-    }
-
-    // Legs exercises
-    exercises.add(_createExercise('Bodyweight Squats', 'Quadriceps', 'No equipment needed'));
-    exercises.add(_createExercise('Lunges', 'Quadriceps', 'Bodyweight or weighted'));
-    if (hasBarbell) {
-      exercises.add(_createExercise('Barbell Squat', 'Quadriceps', 'Heavy compound'));
-      exercises.add(_createExercise('Romanian Deadlift', 'Hamstrings', 'Hip hinge pattern'));
-      exercises.add(_createExercise('Deadlift', 'Back', 'Full body compound'));
-    }
-    if (hasDumbbells) {
-      exercises.add(_createExercise('Goblet Squat', 'Quadriceps', 'DB front squat'));
-      exercises.add(_createExercise('Bulgarian Split Squat', 'Quadriceps', 'Single leg'));
-      exercises.add(_createExercise('DB Romanian Deadlift', 'Hamstrings', 'Hip hinge'));
-    }
-    if (hasMachines) {
-      exercises.add(_createExercise('Leg Press', 'Quadriceps', 'Machine squat'));
-      exercises.add(_createExercise('Leg Curl', 'Hamstrings', 'Hamstring isolation'));
-    }
-
-    // Shoulder exercises
-    if (hasDumbbells) {
-      exercises.add(_createExercise('Dumbbell Shoulder Press', 'Shoulders', 'Overhead press'));
-      exercises.add(_createExercise('Lateral Raise', 'Shoulders', 'Side delt isolation'));
-    }
-    if (hasBarbell) {
-      exercises.add(_createExercise('Overhead Press', 'Shoulders', 'Barbell OHP'));
-    }
-    if (hasCable || hasBands) {
-      exercises.add(_createExercise('Face Pull', 'Shoulders', 'Rear delt and upper back'));
-    }
-
-    // Arms exercises
-    if (hasDumbbells) {
-      exercises.add(_createExercise('Dumbbell Curl', 'Biceps', 'Bicep isolation'));
-      exercises.add(_createExercise('Hammer Curl', 'Biceps', 'Brachialis focus'));
-      exercises.add(_createExercise('Triceps Kickback', 'Triceps', 'Tricep isolation'));
-    }
-    if (hasCable || hasMachines) {
-      exercises.add(_createExercise('Cable Pushdown', 'Triceps', 'Tricep extension'));
-      exercises.add(_createExercise('Cable Curl', 'Biceps', 'Constant tension curls'));
-    }
-
-    // Core exercises
-    exercises.add(_createExercise('Plank', 'Core', 'Core stabilization'));
-    exercises.add(_createExercise('Side Plank', 'Core', 'Obliques'));
-    exercises.add(_createExercise('Dead Bug', 'Core', 'Anti-extension'));
-    exercises.add(_createExercise('Bird Dog', 'Core', 'Coordination and stability'));
-    if (hasPullupBar) {
-      exercises.add(_createExercise('Hanging Knee Raise', 'Core', 'Lower abs'));
-    }
-
-    // Insert exercises
-    for (final exercise in exercises) {
-      await _database.insertExercise(exercise);
-    }
-
-    debugPrint('[WORKOUT-GEN] ✅ Generated ${exercises.length} exercises');
-  }
-
-  ExerciseData _createExercise(String name, String muscle, String notes) {
-    return ExerciseData(
-      id: _uuid.v4(),
-      name: name,
-      primaryMuscle: muscle,
-      unit: 'reps',
-      notes: notes,
-    );
-  }
-
-  Future<void> _generateFullBody3Day() async {
-    final exercises = await _database.getAllExercises();
-    
-    // Create 3 full body templates
-    final templates = [
-      'Full Body A',
-      'Full Body B',
-      'Full Body C',
-    ];
-
-    for (final templateName in templates) {
-      final templateId = _uuid.v4();
-      await _database.insertWorkoutTemplate(
-        WorkoutTemplateData(
-          id: templateId,
-          name: templateName,
-          notes: 'Generated by setup wizard',
-        ),
+      final template = WorkoutTemplateData(
+        id: _uuid.v4(),
+        name: day.name,
+        notes: day.notes,
+        // Marked generated so a later profile change can replace it without
+        // touching anything the user built. See ProfileFit.isReplaceable.
+        origin: TemplateOrigin.generated,
       );
+      await _database.insertWorkoutTemplate(template);
 
-      // Add exercises to template
-      final selectedExercises = _selectExercisesForFullBody(exercises, templateName);
-      for (var i = 0; i < selectedExercises.length; i++) {
-        await _database.insertTemplateExercise(
-          TemplateExerciseData(
-            id: _uuid.v4(),
-            templateId: templateId,
-            exerciseId: selectedExercises[i].id,
-            orderIndex: i,
-            defaultSets: 3,
-            defaultReps: 10,
-            defaultWeight: null,
-          ),
-        );
-      }
-    }
-
-    debugPrint('[WORKOUT-GEN] ✅ Generated 3-day full body split');
-  }
-
-  List<ExerciseData> _selectExercisesForFullBody(List<ExerciseData> allExercises, String day) {
-    final selected = <ExerciseData>[];
-
-    // Each day hits major muscle groups
-    // Day A: Push focus
-    selected.addAll(_findExercises(allExercises, ['Chest'], 2));
-    selected.addAll(_findExercises(allExercises, ['Quadriceps'], 1));
-    selected.addAll(_findExercises(allExercises, ['Shoulders'], 1));
-    selected.addAll(_findExercises(allExercises, ['Triceps'], 1));
-    selected.addAll(_findExercises(allExercises, ['Core'], 1));
-
-    return selected.take(6).toList();
-  }
-
-  List<ExerciseData> _findExercises(List<ExerciseData> allExercises, List<String> muscles, int count) {
-    final found = <ExerciseData>[];
-    for (final muscle in muscles) {
-      found.addAll(
-        allExercises.where((e) => e.primaryMuscle == muscle).take(count),
-      );
-    }
-    return found;
-  }
-
-  Future<void> _generatePPL5Day() async {
-    final exercises = await _database.getAllExercises();
-    
-    // Create PPL templates
-    final templates = [
-      ('Push A', ['Chest', 'Shoulders', 'Triceps']),
-      ('Pull A', ['Back', 'Biceps']),
-      ('Legs A', ['Quadriceps', 'Hamstrings']),
-      ('Push B', ['Chest', 'Shoulders', 'Triceps']),
-      ('Pull B', ['Back', 'Biceps']),
-    ];
-
-    for (var i = 0; i < templates.length; i++) {
-      final (name, muscles) = templates[i];
-      final templateId = _uuid.v4();
-      
-      await _database.insertWorkoutTemplate(
-        WorkoutTemplateData(
-          id: templateId,
-          name: name,
-          notes: 'Generated by setup wizard - PPL split',
-        ),
-      );
-
-      // Add exercises targeting specified muscles
-      final selectedExercises = <ExerciseData>[];
-      for (final muscle in muscles) {
-        selectedExercises.addAll(
-          exercises.where((e) => e.primaryMuscle == muscle).take(2),
-        );
-      }
-      // Add core
-      selectedExercises.addAll(_findExercises(exercises, ['Core'], 1));
-
-      for (var j = 0; j < selectedExercises.length; j++) {
-        await _database.insertTemplateExercise(
-          TemplateExerciseData(
-            id: _uuid.v4(),
-            templateId: templateId,
-            exerciseId: selectedExercises[j].id,
-            orderIndex: j,
-            defaultSets: 3,
-            defaultReps: 10,
-            defaultWeight: null,
-          ),
-        );
-      }
-    }
-
-    debugPrint('[WORKOUT-GEN] ✅ Generated 5-day PPL split');
-  }
-
-  Future<void> _generateMobilityPack() async {
-    // Daily 10-minute mobility pack
-    final mobilityId = _uuid.v4();
-    
-    await _database.insertWorkoutTemplate(
-      WorkoutTemplateData(
-        id: mobilityId,
-        name: 'Daily 10min Mobility',
-        notes: 'Daily mobility routine (hips/thoracic/ankle/shoulder) - 3 rounds',
-      ),
-    );
-
-    // Mobility exercises
-    final mobilityDrills = [
-      ('90/90 Hip Switch', '10 reps', 'Hips'),
-      ('Couch Stretch', '45s/side', 'Hips'),
-      ('Thoracic Open Book', '10 reps', 'Back'),
-      ('Ankle Dorsiflexion Lunge', '10 reps', 'Legs'),
-      ('Band Shoulder Dislocates', '12 reps', 'Shoulders'),
-    ];
-
-    for (var i = 0; i < mobilityDrills.length; i++) {
-      final (name, reps, muscle) = mobilityDrills[i];
-      
-      // Create exercise if it doesn't exist
-      final exerciseId = _uuid.v4();
-      await _database.insertExercise(
-        ExerciseData(
-          id: exerciseId,
-          name: name,
-          primaryMuscle: muscle,
-          unit: 'reps',
-          notes: 'Mobility drill - perform slowly with control',
-        ),
-      );
-
-      await _database.insertTemplateExercise(
-        TemplateExerciseData(
+      for (var i = 0; i < picks.length; i++) {
+        await _database.insertTemplateExercise(TemplateExerciseData(
           id: _uuid.v4(),
-          templateId: mobilityId,
-          exerciseId: exerciseId,
+          templateId: template.id,
+          exerciseId: picks[i].id,
           orderIndex: i,
-          defaultSets: 3,
-          defaultReps: 10,
-          defaultWeight: null,
-        ),
-      );
+          defaultSets: day.sets,
+          defaultReps: day.reps,
+        ));
+      }
+      created.add(template);
     }
 
-    debugPrint('[WORKOUT-GEN] ✅ Generated mobility pack');
+    debugPrint('[WORKOUT-GEN] Generated ${created.length} workout templates');
+    return created;
   }
 
-  Future<void> _generateRehabAddons() async {
-    if (_profile.injuries.isEmpty || _profile.injuries.contains('none')) {
-      debugPrint('[WORKOUT-GEN] No injuries reported, skipping rehab generation');
-      return;
-    }
+  /// Library entries this user can actually perform -- owns the equipment
+  /// for, and not contraindicated by any of their injuries.
+  Future<List<ExerciseData>> _availableExercises() async {
+    final all = await _database.getAllExercises();
+    return all.where((data) {
+      final exercise = Exercise(
+        id: data.id,
+        name: data.name,
+        unit: data.unit,
+        primaryMuscle: data.primaryMuscle,
+        equipment: data.equipment,
+        contraindicatedFor: data.contraindicatedFor,
+      );
+      return ProfileFit.exerciseFits(exercise, _profile);
+    }).toList();
+  }
 
-    final rehabSpecs = {
-      'shoulder': [
-        ('External Rotation (band)', 'Shoulders', 'Light band, 15 reps'),
-        ('YTWs (light DB)', 'Shoulders', 'Very light weight, 12 reps'),
-        ('Face Pull (light)', 'Shoulders', 'Focus on rear delts, 15 reps'),
-      ],
-      'back': [
-        ('Bird Dog', 'Core', 'Slow and controlled, 12 reps/side'),
-        ('McGill Curl-Up', 'Core', 'Partial sit-up, 10-15 reps'),
-        ('Hip Hinge with PVC', 'Back', 'Practice hip hinge pattern, 12 reps'),
-      ],
-      'knee': [
-        ('Step-up (low box)', 'Quadriceps', 'Low box, control descent, 10 reps'),
-        ('Spanish Squat (band)', 'Quadriceps', 'Band around knees, 12 reps'),
-        ('Hamstring Curl (band)', 'Hamstrings', 'Light band, 12 reps'),
-      ],
-      'ankle': [
-        ('Ankle Circles', 'Calves', '10 each direction'),
-        ('Calf Raises', 'Calves', 'Slow tempo, 15 reps'),
-        ('Dorsiflexion Stretch', 'Calves', 'Wall stretch, 30s'),
-      ],
-      'elbow': [
-        ('Wrist Curls', 'Forearms', 'Light weight, 15 reps'),
-        ('Reverse Wrist Curls', 'Forearms', 'Light weight, 15 reps'),
-        ('Forearm Stretch', 'Forearms', 'Static stretch, 30s'),
-      ],
-      'hip': [
-        ('Hip Flexor Stretch', 'Hips', '45s/side'),
-        ('Glute Bridge', 'Glutes', 'Bodyweight, 15 reps'),
-        ('90/90 Hip Stretch', 'Hips', '30s/side'),
-      ],
+  /// Picks up to [count] exercises spread across [muscles], taking one per
+  /// group before doubling up on any of them -- otherwise a session becomes
+  /// four chest movements simply because chest has the most options.
+  List<ExerciseData> _pick(
+    List<ExerciseData> available,
+    List<String> muscles,
+    int count,
+  ) {
+    final byMuscle = {
+      for (final muscle in muscles)
+        muscle: available.where((e) => e.primaryMuscle == muscle).toList(),
     };
 
-    for (final injury in _profile.injuries) {
-      if (injury == 'none' || !rehabSpecs.containsKey(injury)) continue;
-
-      final rehabId = _uuid.v4();
-      final injuryName = injury[0].toUpperCase() + injury.substring(1);
-      
-      await _database.insertWorkoutTemplate(
-        WorkoutTemplateData(
-          id: rehabId,
-          name: 'Rehab: $injuryName',
-          notes: 'Injury rehab protocol for $injury - perform 2-3x/week',
-        ),
-      );
-
-      final drills = rehabSpecs[injury]!;
-      for (var i = 0; i < drills.length; i++) {
-        final (name, muscle, notes) = drills[i];
-        
-        // Create exercise
-        final exerciseId = _uuid.v4();
-        await _database.insertExercise(
-          ExerciseData(
-            id: exerciseId,
-            name: name,
-            primaryMuscle: muscle,
-            unit: 'reps',
-            notes: notes,
-          ),
-        );
-
-        await _database.insertTemplateExercise(
-          TemplateExerciseData(
-            id: _uuid.v4(),
-            templateId: rehabId,
-            exerciseId: exerciseId,
-            orderIndex: i,
-            defaultSets: 3,
-            defaultReps: 12,
-            defaultWeight: null,
-          ),
-        );
+    final picked = <ExerciseData>[];
+    var round = 0;
+    while (picked.length < count) {
+      var addedThisRound = false;
+      for (final muscle in muscles) {
+        if (picked.length >= count) break;
+        final options = byMuscle[muscle] ?? const <ExerciseData>[];
+        if (round < options.length) {
+          picked.add(options[round]);
+          addedThisRound = true;
+        }
       }
-
-      debugPrint('[WORKOUT-GEN] ✅ Generated rehab template for $injury');
+      if (!addedThisRound) break; // every group exhausted
+      round++;
     }
+    return picked;
+  }
+
+  /// The split to run for a given weekly frequency.
+  ///
+  /// Deliberately conventional: full-body when training 1-3 days (each
+  /// session has to cover everything), upper/lower at 4, push/pull/legs at
+  /// 5+. `goal` is intentionally not consulted -- per the product decision
+  /// it drives calorie and macro targets only, not template selection.
+  List<_SessionPlan> _splitForTrainingDays(int days) {
+    if (days <= 3) {
+      return const [
+        _SessionPlan(
+          name: 'Full Body A',
+          notes: 'Covers every major muscle group in one session',
+          muscles: [..._push, ..._pull, ..._legs, ..._core],
+          exercisesPerSession: 6,
+        ),
+        _SessionPlan(
+          name: 'Full Body B',
+          notes: 'Same coverage, different movement selection',
+          muscles: [..._legs, ..._pull, ..._push, ..._core],
+          exercisesPerSession: 6,
+        ),
+      ];
+    }
+
+    if (days == 4) {
+      return const [
+        _SessionPlan(
+          name: 'Upper Body',
+          notes: 'Chest, back, shoulders and arms',
+          muscles: [..._push, ..._pull],
+          exercisesPerSession: 6,
+        ),
+        _SessionPlan(
+          name: 'Lower Body',
+          notes: 'Legs and core',
+          muscles: [..._legs, ..._core],
+          exercisesPerSession: 6,
+        ),
+      ];
+    }
+
+    return const [
+      _SessionPlan(
+        name: 'Push Day',
+        notes: 'Chest, shoulders and triceps',
+        muscles: _push,
+        exercisesPerSession: 5,
+      ),
+      _SessionPlan(
+        name: 'Pull Day',
+        notes: 'Back and biceps',
+        muscles: _pull,
+        exercisesPerSession: 5,
+      ),
+      _SessionPlan(
+        name: 'Leg Day',
+        notes: 'Quads, hamstrings, glutes and calves',
+        muscles: [..._legs, ..._core],
+        exercisesPerSession: 5,
+      ),
+    ];
   }
 }
 
+class _SessionPlan {
+  const _SessionPlan({
+    required this.name,
+    required this.notes,
+    required this.muscles,
+    required this.exercisesPerSession,
+  });
+
+  final String name;
+  final String notes;
+  final List<String> muscles;
+  final int exercisesPerSession;
+
+  /// Fixed for now: 3x10 is a reasonable default for every split here, and
+  /// the user can adjust per-exercise in the template editor.
+  int get sets => 3;
+  int get reps => 10;
+}

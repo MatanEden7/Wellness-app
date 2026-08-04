@@ -1,25 +1,29 @@
-@Tags(['profile'])
+@Tags(['profile', 'catalog'])
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
+import 'package:wellness_app/features/meals/data/repositories.dart';
+import 'package:wellness_app/features/meals/domain/food_tags.dart';
+import 'package:wellness_app/features/workouts/domain/exercise_tags.dart';
 import 'package:wellness_app/services/meal_template_generator.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
 import 'package:wellness_app/services/workout_template_generator.dart';
 
-/// Coverage for [WorkoutTemplateGenerator] and [MealTemplateGenerator]: the
-/// two onboarding-time generators that turn a finished profile into real
-/// workout/meal templates. Used only from onboarding_page.dart and had zero
-/// test coverage.
+/// Coverage for the two onboarding-time generators.
 ///
-/// Worth noting for anyone touching these: both generators' own
-/// exercise/food generation is a no-op in normal operation --
-/// `_generateExercises`/`_generateFoods` skip themselves once the database
-/// already has more than 2 exercises or 10 foods, and `AppDatabase`'s
-/// constructor always seeds 16 exercises and 40+ foods before either
-/// generator runs. So "generate templates" in practice only ever builds
-/// *templates* referencing the starter catalog, never new exercises/foods --
-/// these tests assert against that real behavior, not the dead branch.
+/// Both were rewritten to **select from the tagged catalog** via
+/// `ProfileFit` rather than inventing their own content. The tests here
+/// changed shape accordingly: the old ones asserted against the previous
+/// design (a fixed "mobility pack", separate "rehab addons", and food
+/// lookup by exact English name), all of which were the mechanism of the
+/// bug rather than behaviour worth preserving -- name matching in
+/// particular silently dropped items whenever a name didn't match exactly.
+///
+/// What these assert now is the property that actually matters and that the
+/// old design could not provide: **everything generated is something this
+/// specific user can eat or do.**
 UserProfile _profile({
   int trainingDaysPerWeek = 3,
   List<String> injuries = const [],
@@ -57,144 +61,244 @@ void main() {
   setUp(AppDatabase.resetForTesting);
 
   group('WorkoutTemplateGenerator', () {
-    test('skips the equipment-based exercise set once the starter catalog exists, '
-        'but the mobility pack still adds its own fixed exercises', () async {
-      final database = AppDatabase();
-      final before = (await database.getAllExercises()).length;
+    test('does not invent exercises -- every pick comes from the library', () async {
+      final db = AppDatabase();
+      final libraryBefore = (await db.getAllExercises()).map((e) => e.id).toSet();
 
-      await WorkoutTemplateGenerator(database, _profile()).generateTemplates();
+      await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
 
-      // _generateExercises itself is skipped (see class doc), but
-      // _generateMobilityPack unconditionally inserts a handful of
-      // stretch/mobility exercises the starter catalog doesn't carry.
-      expect((await database.getAllExercises()).length, greaterThan(before));
-    });
+      final libraryAfter = (await db.getAllExercises()).map((e) => e.id).toSet();
+      expect(libraryAfter, libraryBefore,
+          reason: 'the old generator inserted its own near-duplicate '
+              "exercises ('Barbell Bench Press' alongside 'Bench Press')");
 
-    test('adds a main-split template plus a mobility pack', () async {
-      final database = AppDatabase();
-      final beforeTemplates = (await database.getAllWorkoutTemplates()).length;
-
-      await WorkoutTemplateGenerator(database, _profile(trainingDaysPerWeek: 3)).generateTemplates();
-
-      final templates = await database.getAllWorkoutTemplates();
-      expect(templates.length, greaterThan(beforeTemplates));
-      expect(templates.any((t) => t.name.toLowerCase().contains('mobility')), isTrue);
-    });
-
-    test('5+ training days a week produces more split templates than 3 days', () async {
-      final db3 = AppDatabase();
-      await WorkoutTemplateGenerator(db3, _profile(trainingDaysPerWeek: 3)).generateTemplates();
-      final count3 = (await db3.getAllWorkoutTemplates()).length;
-
-      AppDatabase.resetForTesting();
-      final db5 = AppDatabase();
-      await WorkoutTemplateGenerator(db5, _profile(trainingDaysPerWeek: 5)).generateTemplates();
-      final count5 = (await db5.getAllWorkoutTemplates()).length;
-
-      expect(count5, greaterThan(count3),
-          reason: 'a 5-day push/pull/legs split has more templates than a 3-day full-body split');
-    });
-
-    test('every exercise a template references actually exists in the database', () async {
-      final database = AppDatabase();
-      await WorkoutTemplateGenerator(database, _profile(injuries: ['shoulder'])).generateTemplates();
-
-      final exerciseIds = (await database.getAllExercises()).map((e) => e.id).toSet();
-      final templateExercises = await database.getAllTemplateExercises();
-
-      expect(templateExercises, isNotEmpty);
-      for (final te in templateExercises) {
-        expect(exerciseIds, contains(te.exerciseId),
-            reason: 'template exercise ${te.exerciseId} must resolve to a real seeded exercise');
+      for (final template in await db.getAllWorkoutTemplates()) {
+        for (final te in await db.getTemplateExercisesByTemplateId(template.id)) {
+          expect(libraryBefore, contains(te.exerciseId),
+              reason: 'template references an exercise outside the library');
+        }
       }
     });
 
-    test('rehab templates are only generated when the profile reports an injury', () async {
-      final withInjury = AppDatabase();
-      await WorkoutTemplateGenerator(withInjury, _profile(injuries: ['knee'])).generateTemplates();
-      final withInjuryTemplates = await withInjury.getAllWorkoutTemplates();
-      expect(withInjuryTemplates.any((t) => t.name.toLowerCase().contains('rehab')), isTrue);
+    test('never picks an exercise the user lacks equipment for', () async {
+      final db = AppDatabase();
+      // Bodyweight only -- the case the old generator handled worst.
+      await WorkoutTemplateGenerator(db, _profile(equipment: ['none']))
+          .generateTemplates();
 
-      AppDatabase.resetForTesting();
-      final noInjury = AppDatabase();
-      await WorkoutTemplateGenerator(noInjury, _profile(injuries: const [])).generateTemplates();
-      final noInjuryTemplates = await noInjury.getAllWorkoutTemplates();
-      expect(noInjuryTemplates.any((t) => t.name.toLowerCase().contains('rehab')), isFalse);
+      final byId = {for (final e in await db.getAllExercises()) e.id: e};
+      var checked = 0;
+      for (final template in await db.getAllWorkoutTemplates()) {
+        // Built-ins are seeded before a profile exists and are filtered at
+        // display time rather than deleted -- only assert on what this
+        // generator produced.
+        if (template.origin != TemplateOrigin.generated) continue;
+        for (final te in await db.getTemplateExercisesByTemplateId(template.id)) {
+          final exercise = byId[te.exerciseId]!;
+          expect(exercise.equipment, contains(Equipment.bodyweight),
+              reason: '${exercise.name} needs equipment this user lacks');
+          checked++;
+        }
+      }
+      expect(checked, greaterThan(0), reason: 'nothing was generated to check');
     });
 
-    test('"none" in the injuries list is treated the same as no injuries', () async {
-      final database = AppDatabase();
-      await WorkoutTemplateGenerator(database, _profile(injuries: ['none'])).generateTemplates();
-      final templates = await database.getAllWorkoutTemplates();
-      expect(templates.any((t) => t.name.toLowerCase().contains('rehab')), isFalse);
+    test('never picks an exercise contraindicated by an injury', () async {
+      final db = AppDatabase();
+      await WorkoutTemplateGenerator(
+        db,
+        _profile(injuries: ['shoulder', 'neck']),
+      ).generateTemplates();
+
+      final byId = {for (final e in await db.getAllExercises()) e.id: e};
+      var checked = 0;
+      for (final template in await db.getAllWorkoutTemplates()) {
+        if (template.origin != TemplateOrigin.generated) continue;
+        for (final te in await db.getTemplateExercisesByTemplateId(template.id)) {
+          final exercise = byId[te.exerciseId]!;
+          expect(exercise.contraindicatedFor, isNot(contains(BodyPart.shoulder)),
+              reason: '${exercise.name} is unsafe for this shoulder injury');
+          expect(exercise.contraindicatedFor, isNot(contains(BodyPart.neck)),
+              reason: '${exercise.name} is unsafe for this neck injury');
+          checked++;
+        }
+      }
+      expect(checked, greaterThan(0));
+    });
+
+    test('more training days produces more distinct sessions', () async {
+      final db = AppDatabase();
+      final builtIn = (await db.getAllWorkoutTemplates()).length;
+
+      await WorkoutTemplateGenerator(db, _profile(trainingDaysPerWeek: 3))
+          .generateTemplates();
+      final afterThree = (await db.getAllWorkoutTemplates()).length - builtIn;
+
+      AppDatabase.resetForTesting();
+      final db2 = AppDatabase();
+      final builtIn2 = (await db2.getAllWorkoutTemplates()).length;
+      await WorkoutTemplateGenerator(db2, _profile(trainingDaysPerWeek: 5))
+          .generateTemplates();
+      final afterFive = (await db2.getAllWorkoutTemplates()).length - builtIn2;
+
+      expect(afterFive, greaterThan(afterThree));
+    });
+
+    test('generated templates are marked generated, so they stay replaceable',
+        () async {
+      final db = AppDatabase();
+      final created =
+          await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
+
+      expect(created, isNotEmpty);
+      for (final template in created) {
+        expect(template.origin, TemplateOrigin.generated);
+      }
     });
   });
 
   group('MealTemplateGenerator', () {
-    test('does not touch the food catalog -- the starter seed already exceeds its skip threshold', () async {
-      final database = AppDatabase();
-      final before = (await database.getAllFoods()).length;
+    test('does not invent foods -- every item comes from the catalog', () async {
+      final db = AppDatabase();
+      final catalogBefore = (await db.getAllFoods()).map((f) => f.id).toSet();
 
-      await MealTemplateGenerator(database, _profile()).generateTemplates();
+      await MealTemplateGenerator(db, _profile()).generateTemplates();
 
-      expect(await database.getAllFoods(), hasLength(before));
-    });
+      expect((await db.getAllFoods()).map((f) => f.id).toSet(), catalogBefore,
+          reason: 'the old generator inserted its own per-diet food lists');
 
-    test('generates a fixed set of diet-specific templates, independent of meal count', () async {
-      // _getTemplateSuggestions() returns a hardcoded list per diet type
-      // (3 for omnivore/herbivore, 2 for carnivore) -- mealCountPerDay only
-      // scales portion sizes via the distribution average, it does not
-      // change how many templates are created.
-      final database = AppDatabase();
-      final beforeTemplates = (await database.getAllMealTemplates()).length;
-
-      await MealTemplateGenerator(database, _profile(dietType: 'omnivore')).generateTemplates();
-
-      final newTemplateCount = (await database.getAllMealTemplates()).length - beforeTemplates;
-      expect(newTemplateCount, 3);
-    });
-
-    test('every food a template item references actually exists in the database', () async {
-      final database = AppDatabase();
-      await MealTemplateGenerator(database, _profile()).generateTemplates();
-
-      final foodIds = (await database.getAllFoods()).map((f) => f.id).toSet();
-      final templateItems = await database.getAllMealTemplateItems();
-
-      expect(templateItems, isNotEmpty);
-      for (final item in templateItems) {
-        expect(foodIds, contains(item.foodId),
-            reason: 'meal template item ${item.foodId} must resolve to a real seeded food');
+      for (final template in await db.getAllMealTemplates()) {
+        for (final item
+            in await db.getMealTemplateItemsByTemplateId(template.id)) {
+          expect(catalogBefore, contains(item.foodId));
+        }
       }
     });
 
-    test(
-      'every diet type\'s template ingredients resolve to a real seeded food -- '
-      'regression for a bug where "Rice", "Ribeye Steak", "Beef Liver", "Firm Tofu", '
-      '"Rice Noodles" and "Mixed Veg" had no exact match in the starter catalog and '
-      'were silently dropped from every new user\'s generated meal templates',
-      () async {
-        // Expected item count when every referenced food actually resolves.
-        const expectedItemCounts = {'omnivore': 12, 'carnivore': 5, 'herbivore': 12};
+    test('never includes a food the user excludes', () async {
+      final db = AppDatabase();
+      await MealTemplateGenerator(
+        db,
+        _profile(exclusions: ['dairy', 'gluten', 'nuts']),
+      ).generateTemplates();
 
-        for (final dietType in ['omnivore', 'carnivore', 'herbivore']) {
-          final database = AppDatabase();
-          final beforeTemplateIds = (await database.getAllMealTemplates()).map((t) => t.id).toSet();
-
-          await MealTemplateGenerator(database, _profile(dietType: dietType)).generateTemplates();
-
-          final newTemplateIds = (await database.getAllMealTemplates())
-              .map((t) => t.id)
-              .where((id) => !beforeTemplateIds.contains(id))
-              .toSet();
-          final newItems = (await database.getAllMealTemplateItems())
-              .where((item) => newTemplateIds.contains(item.templateId));
-
-          expect(newItems.length, expectedItemCounts[dietType]!,
-              reason: '$dietType templates should have every ingredient resolve, none dropped');
-          AppDatabase.resetForTesting();
+      final byId = {for (final f in await db.getAllFoods()) f.id: f};
+      var checked = 0;
+      for (final template in await db.getAllMealTemplates()) {
+        // Built-in templates are seeded before any profile exists and are
+        // filtered at display time, not deleted -- only assert on what this
+        // generator produced.
+        if (template.origin != TemplateOrigin.generated) continue;
+        for (final item
+            in await db.getMealTemplateItemsByTemplateId(template.id)) {
+          final food = byId[item.foodId]!;
+          expect(food.tags, isNot(contains(FoodTag.dairy)));
+          expect(food.tags, isNot(contains(FoodTag.gluten)));
+          expect(food.tags, isNot(contains(FoodTag.nuts)));
+          checked++;
         }
-      },
-    );
+      }
+      expect(checked, greaterThan(0), reason: 'nothing was generated to check');
+    });
+
+    test('a vegan gets nothing of animal origin', () async {
+      final db = AppDatabase();
+      await MealTemplateGenerator(db, _profile(dietType: 'herbivore'))
+          .generateTemplates();
+
+      final byId = {for (final f in await db.getAllFoods()) f.id: f};
+      var checked = 0;
+      for (final template in await db.getAllMealTemplates()) {
+        if (template.origin != TemplateOrigin.generated) continue;
+        for (final item
+            in await db.getMealTemplateItemsByTemplateId(template.id)) {
+          final food = byId[item.foodId]!;
+          expect(food.tags, isNot(contains(FoodTag.meat)),
+              reason: '${food.name} is meat');
+          expect(food.tags, isNot(contains(FoodTag.fish)),
+              reason: '${food.name} is fish');
+          expect(food.tags, isNot(contains(FoodTag.animalProduct)),
+              reason: '${food.name} is an animal product');
+          checked++;
+        }
+      }
+      expect(checked, greaterThan(0));
+    });
+
+    test('the hardest profile still gets fed', () async {
+      // Vegan avoiding soy, gluten and nuts -- the combination that had
+      // essentially nothing before the catalog was expanded.
+      final db = AppDatabase();
+      final created = await MealTemplateGenerator(
+        db,
+        _profile(
+          dietType: 'herbivore',
+          exclusions: ['soy', 'gluten', 'nuts', 'dairy', 'eggs', 'shellfish'],
+        ),
+      ).generateTemplates();
+
+      expect(created, isNotEmpty,
+          reason: 'this profile must still receive meal templates');
+
+      for (final template in created) {
+        final items = await db.getMealTemplateItemsByTemplateId(template.id);
+        expect(items, isNotEmpty, reason: '${template.name} is empty');
+      }
+    });
+
+    test('meal count drives how many templates are generated', () async {
+      final db = AppDatabase();
+      final two = await MealTemplateGenerator(db, _profile(mealCountPerDay: '2'))
+          .generateTemplates();
+
+      AppDatabase.resetForTesting();
+      final db2 = AppDatabase();
+      final four =
+          await MealTemplateGenerator(db2, _profile(mealCountPerDay: '4'))
+              .generateTemplates();
+
+      expect(two.length, 2);
+      expect(four.length, 4);
+    });
+
+    test('generated templates are marked generated', () async {
+      final db = AppDatabase();
+      final created =
+          await MealTemplateGenerator(db, _profile()).generateTemplates();
+
+      expect(created, isNotEmpty);
+      for (final template in created) {
+        expect(template.origin, TemplateOrigin.generated);
+      }
+    });
+
+    test('portions land in a sane range, not 2kg of rice', () async {
+      final db = AppDatabase();
+      final created =
+          await MealTemplateGenerator(db, _profile()).generateTemplates();
+
+      final byId = {for (final f in await db.getAllFoods()) f.id: f};
+      for (final template in created) {
+        for (final item
+            in await db.getMealTemplateItemsByTemplateId(template.id)) {
+          expect(item.amount, greaterThan(0));
+          expect(item.amount, lessThanOrEqualTo(4.0),
+              reason: '${byId[item.foodId]!.name} portion is implausible');
+        }
+      }
+    });
+  });
+
+  test('generators leave the food catalog usable by ProfileFit end to end', () async {
+    // Guards the seam the shared converter bug lived in: if foodItemFromData
+    // ever stops carrying tags again, generation silently stops filtering.
+    final db = AppDatabase();
+    final tagged = (await db.getAllFoods())
+        .map(foodItemFromData)
+        .where((f) => f.tags.isNotEmpty);
+
+    expect(tagged, isNotEmpty,
+        reason: 'the converter dropped tags once already -- see '
+            'tag_round_trip_test.dart');
   });
 }

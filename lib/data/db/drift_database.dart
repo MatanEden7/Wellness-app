@@ -1350,7 +1350,10 @@ class AppDatabase {
         ));
       }
       return (
-        template: WorkoutTemplateData(id: templateId, name: name, notes: notes),
+        // Seeded before any profile exists, so it is neither generated nor
+        // the user's -- see TemplateOrigin. Marking it correctly keeps it
+        // out of anything regeneration replaces.
+        template: WorkoutTemplateData(id: templateId, name: name, notes: notes, origin: TemplateOrigin.builtin),
         exercises: exercises,
       );
     }
@@ -1418,7 +1421,8 @@ class AppDatabase {
               ))
           .toList();
       return (
-        template: MealTemplateData(id: templateId, name: name, description: description, createdAt: now, updatedAt: now),
+        // See the workout equivalent above.
+        template: MealTemplateData(id: templateId, name: name, description: description, origin: TemplateOrigin.builtin, createdAt: now, updatedAt: now),
         items: items,
       );
     }
