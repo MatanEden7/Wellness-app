@@ -3104,6 +3104,12 @@ abstract class AppLocalizations {
   /// **'Hip'**
   String get onboardingInjuriesHip;
 
+  /// No description provided for @onboardingInjuriesNeck.
+  ///
+  /// In en, this message translates to:
+  /// **'Neck'**
+  String get onboardingInjuriesNeck;
+
   /// No description provided for @onboardingSummaryTitle.
   ///
   /// In en, this message translates to:

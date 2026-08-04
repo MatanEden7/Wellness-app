@@ -87,6 +87,8 @@ class ExercisesRepository {
       primaryMuscleHe: data.primaryMuscleHe,
       unit: data.unit,
       notes: data.notes,
+      equipment: data.equipment,
+      contraindicatedFor: data.contraindicatedFor,
     );
   }
 
@@ -99,6 +101,8 @@ class ExercisesRepository {
       primaryMuscleHe: model.primaryMuscleHe,
       unit: model.unit,
       notes: model.notes,
+      equipment: model.equipment,
+      contraindicatedFor: model.contraindicatedFor,
     );
   }
 }
@@ -180,6 +184,7 @@ class WorkoutTemplatesRepository {
       nameHe: data.nameHe,
       notes: data.notes,
       notesHe: data.notesHe,
+      origin: data.origin,
     );
   }
 
@@ -190,6 +195,7 @@ class WorkoutTemplatesRepository {
       nameHe: model.nameHe,
       notes: model.notes,
       notesHe: model.notesHe,
+      origin: model.origin,
     );
   }
 

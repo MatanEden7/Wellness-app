@@ -1284,6 +1284,21 @@ class _InjuriesStep extends StatelessWidget {
                   injuries.value = newSet;
                 },
               ),
+              FilterChip(
+                label: Text(l10n.onboardingInjuriesNeck),
+                selected: injuries.value.contains('neck'),
+                onSelected: (selected) {
+                  final newSet = Set<String>.from(injuries.value);
+                  newSet.remove('none');
+                  if (selected) {
+                    newSet.add('neck');
+                  } else {
+                    newSet.remove('neck');
+                  }
+                  if (newSet.isEmpty) newSet.add('none');
+                  injuries.value = newSet;
+                },
+              ),
             ],
           ),
           const SizedBox(height: 48),

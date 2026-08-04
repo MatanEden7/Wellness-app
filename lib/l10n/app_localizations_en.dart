@@ -1551,6 +1551,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingInjuriesHip => 'Hip';
 
   @override
+  String get onboardingInjuriesNeck => 'Neck';
+
+  @override
   String get onboardingSummaryTitle => 'Your personalized plan';
 
   @override

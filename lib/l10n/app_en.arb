@@ -558,6 +558,7 @@
   "onboardingInjuriesAnkle": "Ankle",
   "onboardingInjuriesElbow": "Elbow",
   "onboardingInjuriesHip": "Hip",
+  "onboardingInjuriesNeck": "Neck",
   "onboardingSummaryTitle": "Your personalized plan",
   "onboardingSummaryTarget": "Daily Target",
   "onboardingComplete": "Complete Setup",

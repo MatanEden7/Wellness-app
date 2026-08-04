@@ -65,6 +65,7 @@ FoodItem foodItemFromData(FoodItemData data) => FoodItem(
       carbsPerUnit: data.carbsPerUnit,
       fatPerUnit: data.fatPerUnit,
       isStarter: data.isStarter,
+      tags: data.tags,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     );
@@ -315,6 +316,7 @@ class MealsRepository {
       carbsPerUnit: model.carbsPerUnit,
       fatPerUnit: model.fatPerUnit,
       isStarter: model.isStarter,
+      tags: model.tags,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     );
@@ -377,6 +379,7 @@ class MealsRepository {
       nameHe: data.nameHe,
       description: data.description,
       descriptionHe: data.descriptionHe,
+      origin: data.origin,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     );
@@ -389,6 +392,7 @@ class MealsRepository {
       nameHe: model.nameHe,
       description: model.description,
       descriptionHe: model.descriptionHe,
+      origin: model.origin,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     );

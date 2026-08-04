@@ -1544,6 +1544,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onboardingInjuriesHip => 'ירך';
 
   @override
+  String get onboardingInjuriesNeck => 'צוואר';
+
+  @override
   String get onboardingSummaryTitle => 'התוכנית המותאמת שלך';
 
   @override

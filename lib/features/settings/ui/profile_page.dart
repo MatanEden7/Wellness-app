@@ -334,6 +334,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         _Option('ankle', 'Ankle'),
         _Option('elbow', 'Elbow'),
         _Option('hip', 'Hip'),
+        _Option('neck', 'Neck'),
       ],
       current: p.injuries,
       noneValue: 'none',

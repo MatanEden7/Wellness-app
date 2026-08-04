@@ -326,6 +326,15 @@ class AppDatabase {
     await _saveNow();
   }
 
+  /// The seeded catalog, for tests that need to assert on the shipped
+  /// content itself (see `catalog_coverage_test.dart`) rather than on
+  /// whatever a particular test happened to insert.
+  @visibleForTesting
+  List<FoodItemData> get debugSeededFoods => List.unmodifiable(_foods);
+
+  @visibleForTesting
+  List<ExerciseData> get debugSeededExercises => List.unmodifiable(_exercises);
+
   /// Drops all in-memory state and re-seeds. Tests only: the collections are
   /// static, so without this a test that mutates data leaks into the next one
   /// in the same file.
@@ -1095,6 +1104,7 @@ class AppDatabase {
       required double protein,
       required double carbs,
       required double fat,
+      Set<FoodTag> tags = const <FoodTag>{},
     }) {
       return FoodItemData(
         id: id,
@@ -1106,6 +1116,7 @@ class AppDatabase {
         carbsPerUnit: carbs,
         fatPerUnit: fat,
         isStarter: true,
+        tags: tags,
         createdAt: createdAt,
         updatedAt: createdAt,
       );
@@ -1113,28 +1124,28 @@ class AppDatabase {
 
     return [
       // Protein
-      food(id: '1', name: 'Chicken Breast', unit: '100g', kcal: 165, protein: 31, carbs: 0, fat: 3.6),
-      food(id: '2', name: 'Salmon', unit: '100g', kcal: 208, protein: 25, carbs: 0, fat: 12),
-      food(id: '3', name: 'Tuna', brand: 'Canned in Water', unit: '100g', kcal: 116, protein: 26, carbs: 0, fat: 0.8),
-      food(id: '4', name: 'Turkey Breast', unit: '100g', kcal: 135, protein: 30, carbs: 0, fat: 1.7),
-      food(id: '5', name: 'Eggs', unit: 'piece', kcal: 70, protein: 6, carbs: 0.6, fat: 5),
-      food(id: '6', name: 'Ground Beef', brand: '85% Lean', unit: '100g', kcal: 250, protein: 26, carbs: 0, fat: 17),
-      food(id: '7', name: 'Shrimp', unit: '100g', kcal: 99, protein: 24, carbs: 0.2, fat: 0.3),
-      food(id: '8', name: 'Tofu', unit: '100g', kcal: 76, protein: 8, carbs: 1.9, fat: 4.8),
+      food(id: '1', name: 'Chicken Breast', unit: '100g', kcal: 165, protein: 31, carbs: 0, fat: 3.6, tags: const {FoodTag.meat}),
+      food(id: '2', name: 'Salmon', unit: '100g', kcal: 208, protein: 25, carbs: 0, fat: 12, tags: const {FoodTag.fish}),
+      food(id: '3', name: 'Tuna', brand: 'Canned in Water', unit: '100g', kcal: 116, protein: 26, carbs: 0, fat: 0.8, tags: const {FoodTag.fish}),
+      food(id: '4', name: 'Turkey Breast', unit: '100g', kcal: 135, protein: 30, carbs: 0, fat: 1.7, tags: const {FoodTag.meat}),
+      food(id: '5', name: 'Eggs', unit: 'piece', kcal: 70, protein: 6, carbs: 0.6, fat: 5, tags: const {FoodTag.eggs, FoodTag.animalProduct}),
+      food(id: '6', name: 'Ground Beef', brand: '85% Lean', unit: '100g', kcal: 250, protein: 26, carbs: 0, fat: 17, tags: const {FoodTag.meat}),
+      food(id: '7', name: 'Shrimp', unit: '100g', kcal: 99, protein: 24, carbs: 0.2, fat: 0.3, tags: const {FoodTag.shellfish, FoodTag.fish}),
+      food(id: '8', name: 'Tofu', unit: '100g', kcal: 76, protein: 8, carbs: 1.9, fat: 4.8, tags: const {FoodTag.soy}),
 
       // Dairy
-      food(id: '9', name: 'Greek Yogurt', unit: '100g', kcal: 59, protein: 10, carbs: 3.6, fat: 0.4),
-      food(id: '10', name: 'Cottage Cheese', brand: 'Low Fat', unit: '100g', kcal: 72, protein: 12, carbs: 4.6, fat: 1),
-      food(id: '11', name: 'Cheddar Cheese', unit: '100g', kcal: 403, protein: 25, carbs: 1.3, fat: 33),
-      food(id: '12', name: 'Milk', brand: '2% Fat', unit: 'ml', kcal: 0.5, protein: 0.033, carbs: 0.047, fat: 0.02),
+      food(id: '9', name: 'Greek Yogurt', unit: '100g', kcal: 59, protein: 10, carbs: 3.6, fat: 0.4, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
+      food(id: '10', name: 'Cottage Cheese', brand: 'Low Fat', unit: '100g', kcal: 72, protein: 12, carbs: 4.6, fat: 1, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
+      food(id: '11', name: 'Cheddar Cheese', unit: '100g', kcal: 403, protein: 25, carbs: 1.3, fat: 33, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
+      food(id: '12', name: 'Milk', brand: '2% Fat', unit: 'ml', kcal: 0.5, protein: 0.033, carbs: 0.047, fat: 0.02, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
 
       // Grains & starches
       food(id: '13', name: 'Brown Rice', unit: '100g', kcal: 111, protein: 2.3, carbs: 23, fat: 0.9),
       food(id: '14', name: 'White Rice', unit: '100g', kcal: 130, protein: 2.7, carbs: 28, fat: 0.3),
-      food(id: '15', name: 'Oats', unit: '100g', kcal: 389, protein: 16.9, carbs: 66, fat: 6.9),
+      food(id: '15', name: 'Oats', unit: '100g', kcal: 389, protein: 16.9, carbs: 66, fat: 6.9, tags: const {FoodTag.gluten}),
       food(id: '16', name: 'Quinoa', unit: '100g', kcal: 122, protein: 4.4, carbs: 22, fat: 1.9),
-      food(id: '17', name: 'Pasta', brand: 'Whole Wheat', unit: '100g', kcal: 124, protein: 5, carbs: 25, fat: 1.1),
-      food(id: '18', name: 'Whole Wheat Bread', unit: 'slice', kcal: 80, protein: 4, carbs: 14, fat: 1),
+      food(id: '17', name: 'Pasta', brand: 'Whole Wheat', unit: '100g', kcal: 124, protein: 5, carbs: 25, fat: 1.1, tags: const {FoodTag.gluten}),
+      food(id: '18', name: 'Whole Wheat Bread', unit: 'slice', kcal: 80, protein: 4, carbs: 14, fat: 1, tags: const {FoodTag.gluten}),
       food(id: '19', name: 'Sweet Potato', unit: '100g', kcal: 86, protein: 2, carbs: 20, fat: 0.1),
 
       // Legumes
@@ -1161,12 +1172,42 @@ class AppDatabase {
       food(id: '36', name: 'Avocado', unit: '100g', kcal: 160, protein: 2, carbs: 8.5, fat: 14.7),
 
       // Fats, nuts & extras
-      food(id: '37', name: 'Almonds', unit: '100g', kcal: 579, protein: 21, carbs: 22, fat: 50),
-      food(id: '38', name: 'Walnuts', unit: '100g', kcal: 654, protein: 15, carbs: 14, fat: 65),
-      food(id: '39', name: 'Peanut Butter', unit: 'tbsp', kcal: 95, protein: 4, carbs: 4, fat: 8),
+      food(id: '37', name: 'Almonds', unit: '100g', kcal: 579, protein: 21, carbs: 22, fat: 50, tags: const {FoodTag.nuts}),
+      food(id: '38', name: 'Walnuts', unit: '100g', kcal: 654, protein: 15, carbs: 14, fat: 65, tags: const {FoodTag.nuts}),
+      food(id: '39', name: 'Peanut Butter', unit: 'tbsp', kcal: 95, protein: 4, carbs: 4, fat: 8, tags: const {FoodTag.nuts}),
       food(id: '40', name: 'Olive Oil', brand: 'Extra Virgin', unit: 'tbsp', kcal: 120, protein: 0, carbs: 0, fat: 14),
-      food(id: '41', name: 'Butter', unit: 'tbsp', kcal: 102, protein: 0.1, carbs: 0, fat: 11.5),
-      food(id: '42', name: 'Honey', unit: 'tbsp', kcal: 64, protein: 0.1, carbs: 17, fat: 0),
+      food(id: '41', name: 'Butter', unit: 'tbsp', kcal: 102, protein: 0.1, carbs: 0, fat: 11.5, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
+      food(id: '42', name: 'Honey', unit: 'tbsp', kcal: 64, protein: 0.1, carbs: 17, fat: 0, tags: const {FoodTag.animalProduct}),
+
+      // ---------------------------------------------------------------
+      // Coverage additions. Values are per-100g from USDA FoodData Central
+      // (SR Legacy / Foundation), not estimates.
+      //
+      // These exist so the harder profile combinations have something to
+      // eat -- a herbivore who also excludes soy, nuts and gluten had
+      // almost nothing in the original 42, and the catalog-coverage test
+      // enforces that this stays true as the catalog changes.
+      // ---------------------------------------------------------------
+
+      // Plant protein. Seitan is the soy-free option (but is pure gluten);
+      // the seeds are the nut-free AND soy-free options.
+      food(id: '43', name: 'Tempeh', unit: '100g', kcal: 192, protein: 20.3, carbs: 7.6, fat: 10.8, tags: const {FoodTag.soy}),
+      food(id: '44', name: 'Seitan', brand: 'Vital Wheat Gluten', unit: '100g', kcal: 370, protein: 75.2, carbs: 13.8, fat: 1.9, tags: const {FoodTag.gluten}),
+      food(id: '45', name: 'Edamame', unit: '100g', kcal: 121, protein: 11.9, carbs: 8.9, fat: 5.2, tags: const {FoodTag.soy}),
+      food(id: '46', name: 'Hemp Seeds', unit: '100g', kcal: 553, protein: 31.6, carbs: 8.7, fat: 48.8),
+      food(id: '47', name: 'Pumpkin Seeds', unit: '100g', kcal: 574, protein: 29.8, carbs: 14.7, fat: 49.0),
+      food(id: '48', name: 'Sunflower Seeds', unit: '100g', kcal: 584, protein: 20.8, carbs: 20.0, fat: 51.5),
+      food(id: '49', name: 'Chia Seeds', unit: '100g', kcal: 486, protein: 16.5, carbs: 42.1, fat: 30.7),
+
+      // Dairy alternatives, one per exclusion pattern: soy milk for those
+      // avoiding dairy only, rice milk for anyone also avoiding soy, nuts
+      // and gluten.
+      food(id: '50', name: 'Soy Milk', brand: 'Unsweetened', unit: 'ml', kcal: 0.385, protein: 0.0355, carbs: 0.0129, fat: 0.0212, tags: const {FoodTag.soy}),
+      food(id: '51', name: 'Rice Milk', brand: 'Unsweetened', unit: 'ml', kcal: 0.47, protein: 0.0028, carbs: 0.0917, fat: 0.0097),
+
+      // Gluten-free grain, so excluding gluten still leaves a grain that
+      // isn't rice.
+      food(id: '52', name: 'Buckwheat', brand: 'Cooked', unit: '100g', kcal: 92, protein: 3.4, carbs: 19.9, fat: 0.6),
     ];
   }
 
@@ -1183,38 +1224,102 @@ class AppDatabase {
       required String primaryMuscle,
       required String unit,
       required String notes,
+      Set<Equipment> equipment = const {Equipment.bodyweight},
+      Set<BodyPart> contraindicatedFor = const <BodyPart>{},
     }) {
-      return ExerciseData(id: id, name: name, primaryMuscle: primaryMuscle, unit: unit, notes: notes);
+      return ExerciseData(
+        id: id,
+        name: name,
+        primaryMuscle: primaryMuscle,
+        unit: unit,
+        notes: notes,
+        equipment: equipment,
+        contraindicatedFor: contraindicatedFor,
+      );
     }
 
     return [
       // Chest
-      ex(id: '1', name: 'Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Start in plank position, lower body to ground, push back up'),
-      ex(id: '2', name: 'Bench Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Keep your back flat and feet on the ground'),
-      ex(id: '3', name: 'Dumbbell Chest Fly', primaryMuscle: 'Chest', unit: 'kg', notes: 'Slight bend in elbows, lower until a stretch is felt across the chest'),
+      ex(id: '1', name: 'Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Start in plank position, lower body to ground, push back up', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
+      ex(id: '2', name: 'Bench Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Keep your back flat and feet on the ground', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.shoulder}),
+      ex(id: '3', name: 'Dumbbell Chest Fly', primaryMuscle: 'Chest', unit: 'kg', notes: 'Slight bend in elbows, lower until a stretch is felt across the chest', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder}),
 
       // Back
-      ex(id: '4', name: 'Pull-ups', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Full range of motion, chin over bar'),
-      ex(id: '5', name: 'Deadlift', primaryMuscle: 'Back', unit: 'kg', notes: 'Keep your back straight and core engaged'),
-      ex(id: '6', name: 'Barbell Rows', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull to your lower chest, squeeze shoulder blades'),
-      ex(id: '7', name: 'Lat Pulldown', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull the bar to your upper chest, avoid leaning back excessively'),
+      ex(id: '4', name: 'Pull-ups', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Full range of motion, chin over bar', equipment: const {Equipment.pullupBar}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
+      ex(id: '5', name: 'Deadlift', primaryMuscle: 'Back', unit: 'kg', notes: 'Keep your back straight and core engaged', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.back, BodyPart.hip, BodyPart.neck}),
+      ex(id: '6', name: 'Barbell Rows', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull to your lower chest, squeeze shoulder blades', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.back}),
+      ex(id: '7', name: 'Lat Pulldown', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull the bar to your upper chest, avoid leaning back excessively', equipment: const {Equipment.machines, Equipment.cable}, contraindicatedFor: const {BodyPart.shoulder}),
 
       // Legs
-      ex(id: '8', name: 'Squats', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Stand with feet shoulder-width apart, lower body as if sitting back into a chair'),
-      ex(id: '9', name: 'Romanian Deadlift', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hinge at the hips, keep the bar close to your legs'),
-      ex(id: '10', name: 'Walking Lunges', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Step forward, lower back knee toward the ground, alternate legs'),
-      ex(id: '11', name: 'Calf Raises', primaryMuscle: 'Calves', unit: 'bodyweight', notes: 'Rise onto your toes, pause, lower slowly'),
+      ex(id: '8', name: 'Squats', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Stand with feet shoulder-width apart, lower body as if sitting back into a chair', equipment: const {Equipment.barbellRack, Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip, BodyPart.back, BodyPart.neck}),
+      ex(id: '9', name: 'Romanian Deadlift', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hinge at the hips, keep the bar close to your legs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}),
+      ex(id: '10', name: 'Walking Lunges', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Step forward, lower back knee toward the ground, alternate legs', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee, BodyPart.ankle, BodyPart.hip}),
+      ex(id: '11', name: 'Calf Raises', primaryMuscle: 'Calves', unit: 'bodyweight', notes: 'Rise onto your toes, pause, lower slowly', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.ankle}),
 
       // Shoulders
-      ex(id: '12', name: 'Overhead Press', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Press straight up, keep core tight'),
-      ex(id: '13', name: 'Lateral Raises', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Raise dumbbells to the sides until arms are parallel to the floor'),
+      ex(id: '12', name: 'Overhead Press', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Press straight up, keep core tight', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.neck}),
+      ex(id: '13', name: 'Lateral Raises', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Raise dumbbells to the sides until arms are parallel to the floor', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder}),
 
       // Arms
-      ex(id: '14', name: 'Bicep Curls', primaryMuscle: 'Biceps', unit: 'kg', notes: 'Keep elbows pinned to your sides, curl with control'),
-      ex(id: '15', name: 'Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Lower until shoulders are below elbows'),
+      ex(id: '14', name: 'Bicep Curls', primaryMuscle: 'Biceps', unit: 'kg', notes: 'Keep elbows pinned to your sides, curl with control', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.elbow}),
+      ex(id: '15', name: 'Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Lower until shoulders are below elbows', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
 
       // Core
-      ex(id: '16', name: 'Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulders to ankles; reps field tracks seconds held'),
+      ex(id: '16', name: 'Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulders to ankles; reps field tracks seconds held', equipment: const {Equipment.bodyweight}),
+
+      // ---------------------------------------------------------------
+      // Coverage additions.
+      //
+      // The original 16 were heavily barbell/gym-biased, so a user with no
+      // equipment, or with an injury ruling out the compound lifts, was
+      // left with almost nothing per muscle group. These fill those gaps:
+      // a bodyweight or band option for every muscle group, plus
+      // joint-sparing alternatives for each injury. The catalog-coverage
+      // test enforces this stays true.
+      //
+      // Neck contraindications follow the clinical pattern of avoiding
+      // heavy axial load and overhead work: pressing at 45 degrees
+      // (landmine) and horizontal band/cable rows are the standard
+      // substitutions, which is why those are marked safe here.
+      // ---------------------------------------------------------------
+
+      // Chest -- no-equipment and band options
+      ex(id: '17', name: 'Incline Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Hands elevated on a bench or step; easier than a floor push-up', equipment: const {Equipment.bodyweight}),
+      ex(id: '18', name: 'Band Chest Press', primaryMuscle: 'Chest', unit: 'band', notes: 'Anchor the band behind you and press forward at chest height', equipment: const {Equipment.bands}),
+      ex(id: '19', name: 'Landmine Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Press at roughly 45 degrees -- avoids the neck extension a strict overhead press needs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}),
+
+      // Back -- horizontal pulling, neck- and shoulder-friendly
+      ex(id: '20', name: 'Band Row', primaryMuscle: 'Back', unit: 'band', notes: 'Anchor at waist height, pull elbows past your ribs', equipment: const {Equipment.bands}),
+      ex(id: '21', name: 'Inverted Row', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Body under a bar or sturdy table, pull chest to the bar', equipment: const {Equipment.bodyweight, Equipment.barbellRack}),
+      ex(id: '22', name: 'Seated Cable Row', primaryMuscle: 'Back', unit: 'kg', notes: 'Chest tall, pull to the navel without leaning back', equipment: const {Equipment.cable, Equipment.machines}),
+      ex(id: '23', name: 'Superman Hold', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Face down, lift chest and thighs; reps field tracks seconds held', equipment: const {Equipment.bodyweight}),
+
+      // Legs -- knee- and back-sparing options
+      ex(id: '24', name: 'Bodyweight Squat', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'No load on the spine, unlike a barbell back squat', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee}),
+      ex(id: '25', name: 'Glute Bridge', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Drive through the heels; loads the hips with the spine supported', equipment: const {Equipment.bodyweight}),
+      ex(id: '26', name: 'Step-ups', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Step onto a knee-height box, control the way down', equipment: const {Equipment.bodyweight, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.knee}),
+      ex(id: '27', name: 'Wall Sit', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Isometric hold -- quad work without knee travel; reps field tracks seconds', equipment: const {Equipment.bodyweight}),
+      ex(id: '28', name: 'Leg Press', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Back supported throughout', equipment: const {Equipment.machines}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip}),
+      ex(id: '29', name: 'Kettlebell Swing', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hip hinge, not a squat -- power comes from the glutes', equipment: const {Equipment.kettlebells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}),
+      ex(id: '30', name: 'Seated Leg Curl', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Isolates the hamstrings with no spinal load', equipment: const {Equipment.machines}),
+
+      // Shoulders -- options that avoid overhead pressing
+      ex(id: '31', name: 'Band Lateral Raise', primaryMuscle: 'Shoulders', unit: 'band', notes: 'Stand on the band, raise to shoulder height', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.shoulder}),
+      ex(id: '32', name: 'Face Pull', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Pull to the forehead with elbows high; a rear-delt and posture staple', equipment: const {Equipment.cable, Equipment.bands}),
+
+      // Arms
+      ex(id: '33', name: 'Band Bicep Curl', primaryMuscle: 'Biceps', unit: 'band', notes: 'Stand on the band, curl with elbows pinned', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.elbow}),
+      ex(id: '34', name: 'Bench Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Hands on a bench behind you, feet forward', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
+      ex(id: '35', name: 'Band Triceps Pushdown', primaryMuscle: 'Triceps', unit: 'band', notes: 'Anchor high, extend the elbows fully', equipment: const {Equipment.bands, Equipment.cable}, contraindicatedFor: const {BodyPart.elbow}),
+
+      // Core -- neck-safe (no repeated cervical flexion, unlike sit-ups)
+      ex(id: '36', name: 'Dead Bug', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Lower opposite arm and leg with the low back flat; head stays down', equipment: const {Equipment.bodyweight}),
+      ex(id: '37', name: 'Side Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulder to ankle; reps field tracks seconds', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder}),
+      ex(id: '38', name: 'Bird Dog', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Opposite arm and leg extended, spine neutral -- a common low-back rehab staple', equipment: const {Equipment.bodyweight}),
+
+      // Conditioning / low-impact
+      ex(id: '39', name: 'Brisk Walk', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact; reps field tracks minutes', equipment: const {Equipment.bodyweight}),
+      ex(id: '40', name: 'Stationary Bike', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact on the ankles and spine; reps field tracks minutes', equipment: const {Equipment.machines}),
     ];
   }
 
