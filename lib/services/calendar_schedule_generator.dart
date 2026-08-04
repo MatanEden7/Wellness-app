@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/date_utils.dart';
+import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
 import '../features/calendar/domain/models.dart';
 import 'user_profile_service.dart';
@@ -32,12 +33,15 @@ class CalendarScheduleGenerator {
   Future<List<ScheduledEvent>> _buildWorkoutEvents() async {
     final templates = await _database.getAllWorkoutTemplates();
 
-    // Mobility and rehab work is optional, not part of the main rotation.
-    final mainTemplates = templates
-        .where((t) =>
-            !t.name.toLowerCase().contains('mobility') &&
-            !t.name.toLowerCase().contains('rehab'))
-        .toList();
+    // Prefer templates generated for *this* profile: those went through
+    // ProfileFit, so every exercise in them is one the user owns equipment
+    // for and isn't injured against. Built-ins are seeded before any profile
+    // exists and may contradict it -- scheduling a barbell session for
+    // someone with no equipment is exactly the mismatch this whole pass is
+    // about. Fall back to built-ins only when nothing was generated.
+    final generated =
+        templates.where((t) => t.origin == TemplateOrigin.generated).toList();
+    final mainTemplates = generated.isNotEmpty ? generated : templates;
 
     if (mainTemplates.isEmpty) {
       debugPrint('[CALENDAR-GEN] No workout templates, skipping workout events');
@@ -79,8 +83,13 @@ class CalendarScheduleGenerator {
       final slot = times[i];
       // Pin to a generated template when there is one, so the notification's
       // "Approve" action has something to build the meal from.
-      final template =
-          mealTemplates.isEmpty ? null : mealTemplates[i % mealTemplates.length];
+      // Same preference as workouts: a generated template is guaranteed to
+      // respect the user's diet and exclusions, a built-in is not.
+      final generated = mealTemplates
+          .where((t) => t.origin == TemplateOrigin.generated)
+          .toList();
+      final pool = generated.isNotEmpty ? generated : mealTemplates;
+      final template = pool.isEmpty ? null : pool[i % pool.length];
 
       events.add(ScheduledEvent.create(
         title: template?.name ?? slot.label,

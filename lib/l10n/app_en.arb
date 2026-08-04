@@ -559,6 +559,8 @@
   "onboardingInjuriesElbow": "Elbow",
   "onboardingInjuriesHip": "Hip",
   "onboardingInjuriesNeck": "Neck",
+  "onboardingBuildScheduleTitle": "Set up my full schedule",
+  "onboardingBuildScheduleSubtitle": "Add recurring workout, meal and sleep events to your calendar, built from your answers",
   "onboardingSummaryTitle": "Your personalized plan",
   "onboardingSummaryTarget": "Daily Target",
   "onboardingComplete": "Complete Setup",

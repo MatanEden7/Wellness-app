@@ -1547,6 +1547,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onboardingInjuriesNeck => 'צוואר';
 
   @override
+  String get onboardingBuildScheduleTitle => 'בנה לי לוח זמנים מלא';
+
+  @override
+  String get onboardingBuildScheduleSubtitle =>
+      'הוסף אירועי אימון, ארוחות ושינה חוזרים ליומן, על בסיס התשובות שלך';
+
+  @override
   String get onboardingSummaryTitle => 'התוכנית המותאמת שלך';
 
   @override

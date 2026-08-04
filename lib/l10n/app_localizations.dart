@@ -3110,6 +3110,18 @@ abstract class AppLocalizations {
   /// **'Neck'**
   String get onboardingInjuriesNeck;
 
+  /// No description provided for @onboardingBuildScheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up my full schedule'**
+  String get onboardingBuildScheduleTitle;
+
+  /// No description provided for @onboardingBuildScheduleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add recurring workout, meal and sleep events to your calendar, built from your answers'**
+  String get onboardingBuildScheduleSubtitle;
+
   /// No description provided for @onboardingSummaryTitle.
   ///
   /// In en, this message translates to:

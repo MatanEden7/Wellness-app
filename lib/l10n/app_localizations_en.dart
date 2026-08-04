@@ -1554,6 +1554,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingInjuriesNeck => 'Neck';
 
   @override
+  String get onboardingBuildScheduleTitle => 'Set up my full schedule';
+
+  @override
+  String get onboardingBuildScheduleSubtitle =>
+      'Add recurring workout, meal and sleep events to your calendar, built from your answers';
+
+  @override
   String get onboardingSummaryTitle => 'Your personalized plan';
 
   @override

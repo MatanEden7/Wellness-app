@@ -521,6 +521,8 @@
   "onboardingInjuriesElbow": "מרפק",
   "onboardingInjuriesHip": "ירך",
   "onboardingInjuriesNeck": "צוואר",
+  "onboardingBuildScheduleTitle": "בנה לי לוח זמנים מלא",
+  "onboardingBuildScheduleSubtitle": "הוסף אירועי אימון, ארוחות ושינה חוזרים ליומן, על בסיס התשובות שלך",
   "onboardingSummaryTitle": "התוכנית המותאמת שלך",
   "onboardingSummaryTarget": "יעד יומי",
   "onboardingComplete": "השלם הגדרה",

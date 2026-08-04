@@ -40,6 +40,12 @@ class OnboardingPage extends HookConsumerWidget {
     final weightUnit = useState<String>('g');
     final selectedLanguage = useState<String>('en'); // Start with English by default
     final isCompleting = useState<bool>(false); // Track setup completion state
+    // Whether to also lay out a full recurring schedule (workouts, meals,
+    // sleep) from the answers above. On by default: the whole point of
+    // asking for training days and meals per day is to act on them, and an
+    // empty calendar after a 7-step setup reads as the setup not having
+    // worked. Off leaves the profile and templates but no calendar events.
+    final buildFullSchedule = useState<bool>(true);
     
     final totalSteps = 7; // Added language selection as Step 0
     
@@ -113,13 +119,22 @@ class OnboardingPage extends HookConsumerWidget {
         final mealGen = MealTemplateGenerator(database, profile);
         await mealGen.generateTemplates();
         
-        // Generate the starting calendar schedule (workouts, meals, sleep).
+        // Lay out the starting calendar schedule (workouts, meals, sleep),
+        // unless the user opted out on the summary step.
+        //
         // Routed through the notifier rather than CalendarService directly,
         // because that is the only path that also schedules the reminders.
-        final calendarGen = CalendarScheduleGenerator(database, profile);
-        await ref
-            .read(calendarStateProvider.notifier)
-            .addEvents(await calendarGen.buildSchedule());
+        // The schedule pins each event to a *generated* template where one
+        // exists, so what lands on the calendar respects the same diet,
+        // equipment and injury constraints as everything else.
+        if (buildFullSchedule.value) {
+          final calendarGen = CalendarScheduleGenerator(database, profile);
+          await ref
+              .read(calendarStateProvider.notifier)
+              .addEvents(await calendarGen.buildSchedule());
+        } else {
+          debugPrint('[ONBOARDING] Skipping schedule generation (user opted out)');
+        }
 
         debugPrint('[ONBOARDING] Setup completed successfully');
         
@@ -236,6 +251,7 @@ class OnboardingPage extends HookConsumerWidget {
                     dietType: dietType.value,
                     mealCount: mealCount.value,
                     isCompleting: isCompleting.value,
+                    buildFullSchedule: buildFullSchedule,
                     onComplete: completeSetup,
                   ),
                 ],
@@ -1329,6 +1345,7 @@ class _SummaryStep extends HookConsumerWidget {
   final String dietType;
   final String mealCount;
   final bool isCompleting;
+  final ValueNotifier<bool> buildFullSchedule;
   final VoidCallback onComplete;
 
   const _SummaryStep({
@@ -1343,6 +1360,7 @@ class _SummaryStep extends HookConsumerWidget {
     required this.dietType,
     required this.mealCount,
     required this.isCompleting,
+    required this.buildFullSchedule,
     required this.onComplete,
   });
 
@@ -1463,8 +1481,28 @@ class _SummaryStep extends HookConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 48),
-          
+          const SizedBox(height: 24),
+
+          // The one decision left on this screen: whether to act on the
+          // answers above or just save them. Presented as a switch rather
+          // than two buttons so the primary action stays a single
+          // unambiguous "Complete Setup".
+          Card(
+            child: SwitchListTile(
+              value: buildFullSchedule.value,
+              onChanged: isCompleting
+                  ? null
+                  : (value) => buildFullSchedule.value = value,
+              title: Text(AppLocalizations.of(context)!.onboardingBuildScheduleTitle),
+              subtitle: Text(
+                AppLocalizations.of(context)!.onboardingBuildScheduleSubtitle,
+              ),
+              secondary: const Icon(Icons.event_available),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
           SizedBox(
             width: double.infinity,
             child: FilledButton(
