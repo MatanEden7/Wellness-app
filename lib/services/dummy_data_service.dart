@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:math';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../core/date_utils.dart';
@@ -49,41 +50,41 @@ class DummyDataService {
   });
 
   Future<void> generateAllDummyData() async {
-    print('[DUMMY] 🎬 Starting dummy data generation...');
+    debugPrint('[DUMMY] 🎬 Starting dummy data generation...');
     
     // Step 1: Create food items first
-    print('[DUMMY] 🍎 Creating food items...');
+    debugPrint('[DUMMY] 🍎 Creating food items...');
     final foods = await _createFoodItems();
     
     // Step 2: Create meal templates
-    print('[DUMMY] 📋 Creating meal templates...');
+    debugPrint('[DUMMY] 📋 Creating meal templates...');
     await _createMealTemplates(foods);
     
     // Step 3: Create meals for past 14 days (3 meals + snacks daily)
-    print('[DUMMY] 🍽️ Creating realistic meal patterns for past 14 days...');
+    debugPrint('[DUMMY] 🍽️ Creating realistic meal patterns for past 14 days...');
     await _createMeals(foods);
     
     // Step 4: Create exercises
-    print('[DUMMY] 💪 Creating exercises...');
+    debugPrint('[DUMMY] 💪 Creating exercises...');
     final exercises = await _createExercises();
     
     // Step 5: Create workout templates
-    print('[DUMMY] 📝 Creating workout templates...');
+    debugPrint('[DUMMY] 📝 Creating workout templates...');
     final templates = await _createWorkoutTemplates(exercises);
     
     // Step 6: Create workout sessions (3 per week for 2 weeks)
-    print('[DUMMY] 🏋️ Creating workout sessions (3 per week)...');
+    debugPrint('[DUMMY] 🏋️ Creating workout sessions (3 per week)...');
     await _createWorkoutSessions(templates, exercises);
     
     // Step 7: Create sleep entries for past 14 nights
-    print('[DUMMY] 😴 Creating sleep entries for past 14 nights...');
+    debugPrint('[DUMMY] 😴 Creating sleep entries for past 14 nights...');
     await _createSleepEntries();
     
     // Step 8: Create recurring scheduled events for future
-    print('[DUMMY] 📅 Creating recurring scheduled events...');
+    debugPrint('[DUMMY] 📅 Creating recurring scheduled events...');
     await _createRecurringScheduledEvents(templates);
     
-    print('[DUMMY] ✅ Dummy data generation complete!');
+    debugPrint('[DUMMY] ✅ Dummy data generation complete!');
   }
 
   Future<List<FoodItem>> _createFoodItems() async {
@@ -701,7 +702,7 @@ class DummyDataService {
       );
       
       await calendarService.saveEvent(workoutEvent);
-      print('[DUMMY] 📅 Created recurring workout: ${template.name} on ${_getDayName(dayOfWeek)}s at 7:00 AM');
+      debugPrint('[DUMMY] 📅 Created recurring workout: ${template.name} on ${_getDayName(dayOfWeek)}s at 7:00 AM');
     }
     
     // Create recurring meal schedule: Breakfast, Lunch, Dinner daily
@@ -725,7 +726,7 @@ class DummyDataService {
       );
       
       await calendarService.saveEvent(mealEvent);
-      print('[DUMMY] 📅 Created daily meal: ${mealTime['name']} at ${mealTime['hour']}:${(mealTime['minute'] as int).toString().padLeft(2, '0')}');
+      debugPrint('[DUMMY] 📅 Created daily meal: ${mealTime['name']} at ${mealTime['hour']}:${(mealTime['minute'] as int).toString().padLeft(2, '0')}');
     }
     
     // Create sleep reminder: Daily at 22:30
@@ -741,7 +742,7 @@ class DummyDataService {
     );
     
     await calendarService.saveEvent(sleepEvent);
-    print('[DUMMY] 📅 Created daily sleep reminder at 22:30');
+    debugPrint('[DUMMY] 📅 Created daily sleep reminder at 22:30');
   }
   
   String _getDayName(int day) {
@@ -761,7 +762,7 @@ class DummyDataService {
   Future<void> generateProfileData(String profileKey, bool useHebrew) async {
     final profileService = WorkoutProfilesService();
     
-    print('[PROFILE] 🎯 Generating data for profile: $profileKey (Hebrew: $useHebrew)');
+    debugPrint('[PROFILE] 🎯 Generating data for profile: $profileKey (Hebrew: $useHebrew)');
     
     List<ExerciseData> exerciseDataList;
     List<WorkoutTemplateData> templateDataList;
@@ -806,7 +807,7 @@ class DummyDataService {
       );
       await exercisesRepository.createExercise(exercise);
       exercises.add(exercise);
-      print('[PROFILE] ✅ Created exercise: ${exercise.name}');
+      debugPrint('[PROFILE] ✅ Created exercise: ${exercise.name}');
     }
     
     // Create workout templates
@@ -833,7 +834,7 @@ class DummyDataService {
       await workoutTemplatesRepository.createTemplate(
         template.copyWith(exercises: templateExercises),
       );
-      print('[PROFILE] ✅ Created template: ${template.name}');
+      debugPrint('[PROFILE] ✅ Created template: ${template.name}');
     }
     
     // Generate sample workout sessions (last 7 days)
@@ -844,7 +845,7 @@ class DummyDataService {
     await _createMeals(foods);
     await _createSleepEntries();
     
-    print('[PROFILE] ✅ Profile data generation complete!');
+    debugPrint('[PROFILE] ✅ Profile data generation complete!');
   }
   
   Future<void> _createProfileWorkoutSessions(
@@ -892,7 +893,7 @@ class DummyDataService {
       }
       
       await workoutSessionsRepository.createSession(session.copyWith(sets: sets));
-      print('[PROFILE] ✅ Created workout session with ${sets.length} sets');
+      debugPrint('[PROFILE] ✅ Created workout session with ${sets.length} sets');
     }
   }
 }

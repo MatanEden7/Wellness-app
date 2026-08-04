@@ -6,9 +6,10 @@ import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
+import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class MealTemplatesPage extends ConsumerWidget {
   const MealTemplatesPage({super.key});
@@ -16,7 +17,8 @@ class MealTemplatesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final templatesAsync = ref.watch(mealsRepositoryProvider).watchAllMealTemplates();
+    final language = ref.watch(currentLanguageProvider);
+    final templatesAsync = ref.watch(allMealTemplatesStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +45,7 @@ class MealTemplatesPage extends ConsumerWidget {
         builder: (context, snapshot) {
           // Only log on state changes or when we have data
           if (snapshot.connectionState != ConnectionState.waiting) {
-            print('[TEMPLATES-UI] 📺 Stream update: hasData=${snapshot.hasData}, templates=${snapshot.data?.length ?? 0}');
+            debugPrint('[TEMPLATES-UI] 📺 Stream update: hasData=${snapshot.hasData}, templates=${snapshot.data?.length ?? 0}');
           }
           
           // Only show loading on initial load (no data yet)
@@ -65,7 +67,9 @@ class MealTemplatesPage extends ConsumerWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            // Extra bottom padding so the last card's buttons aren't
+            // obscured by the floating "Create" FAB.
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
             itemCount: templates.length,
             itemBuilder: (context, index) {
               final template = templates[index];
@@ -73,6 +77,7 @@ class MealTemplatesPage extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _MealTemplateCard(
                   template: template,
+                  language: language,
                   onUseNow: () => _useMealTemplate(context, ref, template),
                   onEdit: () => context.push('/meals/templates/${template.id}'),
                   onDelete: () => _deleteTemplate(context, ref, template),
@@ -176,12 +181,14 @@ class MealTemplatesPage extends ConsumerWidget {
 
 class _MealTemplateCard extends StatelessWidget {
   final MealTemplate template;
+  final AppLanguage language;
   final VoidCallback onUseNow;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _MealTemplateCard({
     required this.template,
+    required this.language,
     required this.onUseNow,
     required this.onEdit,
     required this.onDelete,
@@ -190,7 +197,7 @@ class _MealTemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +208,7 @@ class _MealTemplateCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  template.name,
+                  template.displayName(language),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
@@ -266,7 +273,7 @@ class _MealTemplateCard extends StatelessWidget {
           if (template.description != null) ...[
             const SizedBox(height: 8),
             Text(
-              template.description!,
+              template.displayDescription(language) ?? template.description!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontSize: 14,
               ),

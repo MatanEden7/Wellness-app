@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import '../../calendar/data/calendar_service.dart';
+import '../../calendar/domain/models.dart';
 import '../domain/models.dart';
 import 'repositories.dart';
 
@@ -59,34 +63,32 @@ final dailyWorkoutsProvider = StreamProvider.family<DailyWorkouts, DateTime>((re
       }
     }
     
-    // TODO: Add planned sessions logic when planning feature is implemented
-    // For now, we'll use workout templates as "planned" if no sessions exist
-    if (active.isEmpty && completed.isEmpty) {
-      final templatesRepository = ref.watch(workoutTemplatesRepositoryProvider);
-      final templates = await templatesRepository.watchAllTemplates().first;
-      
-      // Convert first 2 templates to "planned" sessions for demo
-      for (int i = 0; i < templates.length && i < 2; i++) {
-        final template = templates[i];
-        final plannedSession = WorkoutSession(
-          id: 'planned_${template.id}',
-          templateId: template.id,
-          startedAt: DateTime(
-            selectedDate.year,
-            selectedDate.month,
-            selectedDate.day,
-            9 + i, // 9 AM, 10 AM etc.
-          ),
+    // Planned workouts come from real scheduled calendar events for this day.
+    //
+    // This previously fabricated them: it took the first two workout
+    // templates and presented them as sessions at 9AM/10AM on *any* date with
+    // no logged sessions -- past days included -- so the UI showed workouts
+    // the user had never scheduled.
+    final scheduledWorkouts = await _plannedFromCalendar(ref, targetDate);
+    for (final scheduled in scheduledWorkouts) {
+      // Don't double-count something already started or finished today.
+      final alreadyLogged = [...active, ...completed].any(
+        (s) => s.session.templateId == scheduled.templateId,
+      );
+      if (alreadyLogged) continue;
+
+      planned.add(WorkoutSessionWithTemplate(
+        session: WorkoutSession(
+          id: 'planned_${scheduled.eventId}',
+          templateId: scheduled.templateId,
+          startedAt: scheduled.scheduledAt,
           endedAt: null,
-        );
-        
-        planned.add(WorkoutSessionWithTemplate(
-          session: plannedSession,
-          templateName: template.name,
-        ));
-      }
+        ),
+        templateName: scheduled.title,
+      ));
     }
-    
+    planned.sort((a, b) => a.session.startedAt.compareTo(b.session.startedAt));
+
     yield DailyWorkouts(
       planned: planned,
       active: active,
@@ -95,8 +97,55 @@ final dailyWorkoutsProvider = StreamProvider.family<DailyWorkouts, DateTime>((re
   }
 });
 
-// Provider for today's workouts (convenience)
+/// A workout the user actually scheduled, resolved from the calendar.
+class _ScheduledWorkout {
+  const _ScheduledWorkout({
+    required this.eventId,
+    required this.templateId,
+    required this.title,
+    required this.scheduledAt,
+  });
+
+  final String eventId;
+  final String? templateId;
+  final String title;
+  final DateTime scheduledAt;
+}
+
+Future<List<_ScheduledWorkout>> _plannedFromCalendar(
+  Ref ref,
+  DateTime day,
+) async {
+  try {
+    final calendarService = ref.read(calendarServiceProvider);
+    final events = await calendarService.getEventsForDate(day);
+
+    return events
+        .where((e) =>
+            e.type == EventType.workout &&
+            e.status == EventStatus.planned &&
+            // getEventsForDate also surfaces already-logged sessions as
+            // derived events; those are handled from the sessions stream.
+            !e.id.startsWith('workout_'))
+        .map((e) => _ScheduledWorkout(
+              eventId: e.id,
+              templateId: e.templateId,
+              title: e.title,
+              scheduledAt: e.scheduledAt,
+            ))
+        .toList();
+  } catch (e) {
+    debugPrint('[WORKOUTS] Could not load planned workouts: $e');
+    return const [];
+  }
+}
+
+/// Today's workouts.
+///
+/// Keyed on the date at midnight rather than `DateTime.now()`: a family key
+/// with millisecond precision made every read a distinct provider instance
+/// with its own stream subscription that was never reused.
 final todayWorkoutsProvider = Provider<AsyncValue<DailyWorkouts>>((ref) {
-  final today = DateTime.now();
-  return ref.watch(dailyWorkoutsProvider(today));
+  final now = DateTime.now();
+  return ref.watch(dailyWorkoutsProvider(DateTime(now.year, now.month, now.day)));
 });

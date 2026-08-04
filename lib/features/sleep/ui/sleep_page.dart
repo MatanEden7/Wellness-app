@@ -7,9 +7,10 @@ import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
+import '../../../services/notification_preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class SleepPage extends ConsumerWidget {
   const SleepPage({super.key});
@@ -17,7 +18,9 @@ class SleepPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final entriesAsync = ref.watch(sleepRepositoryProvider).watchRecentEntries();
+    final entriesAsync = ref.watch(recentSleepEntriesStreamProvider(30));
+    final goalHours = ref.watch(notificationPreferencesProvider).sleepGoalHours;
+    final streakAsync = ref.watch(sleepStreakProvider(goalHours));
 
     return Scaffold(
       appBar: AppBar(
@@ -47,6 +50,29 @@ class SleepPage extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
+            streakAsync.when(
+              data: (streak) => streak < 2
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.local_fire_department,
+                              color: Colors.deepOrange, size: 20),
+                          const SizedBox(width: 6),
+                          Text(
+                            l10n.sleepStreakLabel(streak),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
             // Sleep Entries
             Expanded(
               child: StreamBuilder<List<SleepEntry>>(
@@ -433,7 +459,7 @@ class _AddSleepDialog extends HookConsumerWidget {
 
             // Quality Rating
             Text(
-              'Sleep Quality',
+              AppLocalizations.of(context)!.sleepQuality,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),

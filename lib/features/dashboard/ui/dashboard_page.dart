@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -14,7 +15,7 @@ import '../../../services/dummy_data_service.dart';
 import '../../../services/user_profile_service.dart';
 import '../../../data/db/drift_database.dart';
 import '../../meals/data/repositories.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../workouts/data/repositories.dart';
 import '../../workouts/data/daily_workouts_provider.dart';
 import '../../workouts/domain/models.dart';
@@ -175,7 +176,7 @@ class _DashboardContent extends HookConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final today = AppDateUtils.dateToInt(AppDateUtils.today);
-    print('DEBUG: Dashboard requesting data for date: $today');
+    debugPrint('DEBUG: Dashboard requesting data for date: $today');
     
     // Step 3: Setup background refresh triggers
     final refreshService = ref.watch(backgroundRefreshServiceProvider);
@@ -190,7 +191,7 @@ class _DashboardContent extends HookConsumerWidget {
     }, []);
     
     // Watch data for dashboard stats
-    final dayTotalsStream = ref.watch(mealsRepositoryProvider).watchDayTotals(today);
+    final dayTotalsStream = ref.watch(dayTotalsStreamProvider(today));
     final completedWorkoutsAsync = ref.watch(workoutSessionsRepositoryProvider).getCompletedWorkoutsToday();
     final sleepHoursAsync = ref.watch(sleepRepositoryProvider).getLastNightSleepHours();
     // Removed: recentWorkoutsAsync - now using dailyWorkoutsProvider
@@ -221,7 +222,16 @@ class _DashboardContent extends HookConsumerWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Test Data button (for testing only)
+                  IconButton(
+                    icon: const Icon(Icons.person_outline, size: 24),
+                    onPressed: () => context.push(Routes.profile),
+                    tooltip: AppLocalizations.of(context)!.profile,
+                  ),
+                  // Test Data button -- debug builds only. This used to be
+                  // unconditionally visible, letting anyone running a
+                  // release build inject fabricated demo data into their
+                  // real database via DummyDataService.
+                  if (kDebugMode)
                   IconButton(
                     icon: const Icon(Icons.science, size: 24),
                     onPressed: () {
@@ -241,23 +251,21 @@ class _DashboardContent extends HookConsumerWidget {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Reset All Data'),
-                          content: const Text(
-                            'This will delete all your meals, workouts, sleep entries, and custom foods/exercises.\n\n'
-                            'Theme settings will be preserved.\n\n'
-                            'This action cannot be undone!',
+                          title: Text(AppLocalizations.of(context)!.resetAllData),
+                          content: Text(
+                            AppLocalizations.of(context)!.resetDataWarningBody,
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Cancel'),
+                              child: Text(AppLocalizations.of(context)!.cancel),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.red,
                               ),
-                              child: const Text('Reset All Data'),
+                              child: Text(AppLocalizations.of(context)!.resetAllData),
                             ),
                           ],
                         ),
@@ -285,15 +293,15 @@ class _DashboardContent extends HookConsumerWidget {
                         // Clear scheduled events from SharedPreferences
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.remove('scheduled_events');
-                        print('[RESET] ✅ Cleared all data, profile, and scheduled events');
+                        debugPrint('[RESET] ✅ Cleared all data, profile, and scheduled events');
                         
                         if (context.mounted) {
                           Navigator.of(context).pop(); // Close loading
                           
                           // Show success message
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('✅ All data has been reset! Starting fresh...'),
+                            SnackBar(
+                              content: Text(AppLocalizations.of(context)!.resetAllDataDone),
                               backgroundColor: Colors.orange,
                               duration: Duration(seconds: 2),
                             ),
@@ -412,11 +420,27 @@ class _DashboardContent extends HookConsumerWidget {
               Consumer(
                 builder: (context, ref, child) {
                   final prefs = ref.watch(preferencesServiceProvider);
-                  return _QuickActionButton(
-                    icon: Icons.bedtime,
-                    label: AppLocalizations.of(context)!.sleepTimer,
-                    color: prefs.sleepColor,
-                    onPressed: () => context.push(Routes.sleepTimer),
+                  // Previously this button always read "Sleep Timer" even
+                  // with a session already running, so stopping it required
+                  // knowing to navigate there blind. Reflect the active
+                  // state so the stop action is actually discoverable.
+                  final entriesAsync =
+                      ref.watch(recentSleepEntriesStreamProvider(1));
+                  return StreamBuilder(
+                    stream: entriesAsync,
+                    builder: (context, snapshot) {
+                      final active = snapshot.data?.firstOrNull;
+                      final isSleeping =
+                          active != null && !active.isCompleted;
+                      return _QuickActionButton(
+                        icon: isSleeping ? Icons.wb_sunny : Icons.bedtime,
+                        label: isSleeping
+                            ? AppLocalizations.of(context)!.sleepingEllipsis
+                            : AppLocalizations.of(context)!.sleepTimer,
+                        color: prefs.sleepColor,
+                        onPressed: () => context.push(Routes.sleepTimer),
+                      );
+                    },
                   );
                 },
               ),
@@ -463,9 +487,17 @@ class _DashboardContent extends HookConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  AppLocalizations.of(context)!.todaysWorkouts,
-                  style: theme.textTheme.headlineSmall,
+                // Flexible, not a bare Text: the trailing spinner + "All
+                // Workouts" button are fixed-width, so on a narrow phone (or
+                // with Dynamic Type up) the title is the only thing that can
+                // give. Without this the row overflows -- 9.1px at 330pt.
+                Flexible(
+                  child: Text(
+                    AppLocalizations.of(context)!.todaysWorkouts,
+                    style: theme.textTheme.headlineSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -755,7 +787,7 @@ class _DashboardContent extends HookConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
           Text(
-                  'Start Workout', // Step 5: no subtitle
+                  AppLocalizations.of(context)!.startWorkout, // Step 5: no subtitle
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: Colors.blue,
                     fontWeight: FontWeight.w600,
@@ -963,7 +995,6 @@ class _DashboardContent extends HookConsumerWidget {
                     final hasCar = (prefs.carbsGoal ?? 0) > 0;
                     final hasFat = (prefs.fatGoal ?? 0) > 0;
                     final hasAnyGoals = hasCal || hasPro || hasCar || hasFat;
-                    final hasAllThreeMacros = hasPro && hasCar && hasFat;
                     
                     if (hasAnyGoals) {
                       // Show progress bars when goals are set
@@ -1274,7 +1305,7 @@ class _TestDataDialogState extends State<_TestDataDialog> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_useHebrew ? 'נתונים נוצרו בהצלחה!' : '✅ Test data created successfully!'),
+            content: Text(_useHebrew ? 'נתונים נוצרו בהצלחה!' : 'Test data created successfully'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),

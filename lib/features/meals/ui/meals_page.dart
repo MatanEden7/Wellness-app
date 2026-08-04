@@ -3,14 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
 import '../../../services/preferences_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class MealsPage extends HookConsumerWidget {
   const MealsPage({super.key});
@@ -21,8 +20,8 @@ class MealsPage extends HookConsumerWidget {
     final selectedDate = useState(AppDateUtils.today);
     final dateInt = AppDateUtils.dateToInt(selectedDate.value);
     
-    final mealsAsync = ref.watch(mealsRepositoryProvider).watchMealsByDate(dateInt);
-    final dayTotalsAsync = ref.watch(mealsRepositoryProvider).watchDayTotals(dateInt);
+    final mealsAsync = ref.watch(mealsByDateStreamProvider(dateInt));
+    final dayTotalsAsync = ref.watch(dayTotalsStreamProvider(dateInt));
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +67,8 @@ class MealsPage extends HookConsumerWidget {
                     onPressed: () {
                       selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
                     },
-                  ),
+            tooltip: l10n.previous,
+          ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Center(
@@ -92,7 +92,8 @@ class MealsPage extends HookConsumerWidget {
                         selectedDate.value = tomorrow;
                       }
                     },
-                  ),
+            tooltip: l10n.next,
+          ),
                   TextButton(
                     onPressed: () {
                       selectedDate.value = AppDateUtils.today;

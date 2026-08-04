@@ -8,6 +8,17 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Wellness App</string>
+	<!-- The app uses no encryption beyond standard OS/HTTPS, so App Store
+	     Connect need not ask about export compliance on every upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Exposes the app's Documents folder (which holds wellness_data.json and
+	     any exports) in the iOS Files app, so a user can copy their data out
+	     without going through the in-app share sheet. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

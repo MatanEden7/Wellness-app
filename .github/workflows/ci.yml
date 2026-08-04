@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, rc]
+  pull_request:
+    branches: [main, rc]
+
+env:
+  FLUTTER_VERSION: '3.44.8'
+
+jobs:
+  unit-tests:
+    name: Analyze & fast tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localization files
+        run: flutter gen-l10n
+
+      - name: Generate Freezed/JSON code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run fast test suite (test/)
+        run: flutter test test/
+
+  simulator-tests:
+    name: Real-device sanity & regression tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localization files
+        run: flutter gen-l10n
+
+      - name: Generate Freezed/JSON code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+
+      - name: Boot iOS Simulator
+        id: simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+
+      - name: Run integration tests
+        run: |
+          for f in integration_test/sanity/*_test.dart integration_test/regression/*_test.dart; do
+            echo "::group::$f"
+            flutter test "$f" -d "${{ steps.simulator.outputs.udid }}"
+            echo "::endgroup::"
+          done

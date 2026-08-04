@@ -10,7 +10,9 @@ _$ExerciseImpl _$$ExerciseImplFromJson(Map<String, dynamic> json) =>
     _$ExerciseImpl(
       id: json['id'] as String,
       name: json['name'] as String,
+      nameHe: json['nameHe'] as String?,
       primaryMuscle: json['primaryMuscle'] as String?,
+      primaryMuscleHe: json['primaryMuscleHe'] as String?,
       unit: json['unit'] as String,
       notes: json['notes'] as String?,
     );
@@ -19,7 +21,9 @@ Map<String, dynamic> _$$ExerciseImplToJson(_$ExerciseImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
+      'nameHe': instance.nameHe,
       'primaryMuscle': instance.primaryMuscle,
+      'primaryMuscleHe': instance.primaryMuscleHe,
       'unit': instance.unit,
       'notes': instance.notes,
     };
@@ -29,7 +33,9 @@ _$WorkoutTemplateImpl _$$WorkoutTemplateImplFromJson(
     _$WorkoutTemplateImpl(
       id: json['id'] as String,
       name: json['name'] as String,
+      nameHe: json['nameHe'] as String?,
       notes: json['notes'] as String?,
+      notesHe: json['notesHe'] as String?,
       exercises: (json['exercises'] as List<dynamic>?)
               ?.map((e) => TemplateExercise.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -41,7 +47,9 @@ Map<String, dynamic> _$$WorkoutTemplateImplToJson(
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
+      'nameHe': instance.nameHe,
       'notes': instance.notes,
+      'notesHe': instance.notesHe,
       'exercises': instance.exercises,
     };
 

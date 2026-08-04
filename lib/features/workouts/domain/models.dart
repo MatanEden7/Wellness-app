@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../services/language_service.dart';
+
 part 'models.freezed.dart';
 part 'models.g.dart';
 
@@ -11,21 +13,29 @@ class Exercise with _$Exercise {
   const factory Exercise({
     required String id,
     required String name,
+    // Hebrew name, filled in separately -- see ExerciseDisplayName.
+    // Null until translated.
+    String? nameHe,
     String? primaryMuscle,
+    String? primaryMuscleHe,
     required String unit, // kg/lb
     String? notes,
   }) = _Exercise;
 
   factory Exercise.create({
     required String name,
+    String? nameHe,
     String? primaryMuscle,
+    String? primaryMuscleHe,
     required String unit,
     String? notes,
   }) {
     return Exercise(
       id: _uuid.v4(),
       name: name,
+      nameHe: nameHe,
       primaryMuscle: primaryMuscle,
+      primaryMuscleHe: primaryMuscleHe,
       unit: unit,
       notes: notes,
     );
@@ -34,27 +44,54 @@ class Exercise with _$Exercise {
   factory Exercise.fromJson(Map<String, dynamic> json) => _$ExerciseFromJson(json);
 }
 
+extension ExerciseDisplayName on Exercise {
+  /// The name to show for [language]: Hebrew if selected and translated,
+  /// English otherwise. Lets the library ship English-only today and grow
+  /// Hebrew names later without any further UI changes.
+  String displayName(AppLanguage language) =>
+      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+
+  String? displayPrimaryMuscle(AppLanguage language) =>
+      language == AppLanguage.hebrew && primaryMuscleHe != null && primaryMuscleHe!.trim().isNotEmpty
+          ? primaryMuscleHe
+          : primaryMuscle;
+}
+
 @freezed
 class WorkoutTemplate with _$WorkoutTemplate {
   const factory WorkoutTemplate({
     required String id,
     required String name,
+    String? nameHe,
     String? notes,
+    String? notesHe,
     @Default([]) List<TemplateExercise> exercises,
   }) = _WorkoutTemplate;
 
   factory WorkoutTemplate.create({
     required String name,
+    String? nameHe,
     String? notes,
+    String? notesHe,
   }) {
     return WorkoutTemplate(
       id: _uuid.v4(),
       name: name,
+      nameHe: nameHe,
       notes: notes,
+      notesHe: notesHe,
     );
   }
 
   factory WorkoutTemplate.fromJson(Map<String, dynamic> json) => _$WorkoutTemplateFromJson(json);
+}
+
+extension WorkoutTemplateDisplayName on WorkoutTemplate {
+  String displayName(AppLanguage language) =>
+      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+
+  String? displayNotes(AppLanguage language) =>
+      language == AppLanguage.hebrew && notesHe != null && notesHe!.trim().isNotEmpty ? notesHe : notes;
 }
 
 @freezed

@@ -21,6 +21,10 @@ import '../features/settings/ui/settings_stub.dart';
 import '../features/settings/ui/appearance_editor_page.dart';
 import '../features/settings/ui/notification_settings_page.dart';
 import '../features/settings/ui/workout_settings_page.dart';
+import '../features/settings/ui/profile_page.dart';
+import '../features/settings/ui/nutrition_goals_page.dart';
+import '../features/settings/ui/theme_page.dart';
+import '../features/settings/ui/language_page.dart';
 import '../features/setup/ui/onboarding_page.dart';
 import '../services/user_profile_service.dart';
 
@@ -42,17 +46,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isSetupComplete = profileService.isSetupCompleted;
       final isOnOnboarding = state.matchedLocation == '/onboarding';
       
-      print('[ROUTER] Redirect check: isSetupComplete=$isSetupComplete, location=${state.matchedLocation}');
+      debugPrint('[ROUTER] Redirect check: isSetupComplete=$isSetupComplete, location=${state.matchedLocation}');
       
       // If setup is not complete and not already on onboarding, redirect
       if (!isSetupComplete && !isOnOnboarding) {
-        print('[ROUTER] Redirecting to onboarding');
+        debugPrint('[ROUTER] Redirecting to onboarding');
         return '/onboarding';
       }
       
       // If setup is complete and on onboarding, redirect to dashboard
       if (isSetupComplete && isOnOnboarding) {
-        print('[ROUTER] Redirecting to dashboard');
+        debugPrint('[ROUTER] Redirecting to dashboard');
         return '/';
       }
       
@@ -185,6 +189,26 @@ final routerProvider = Provider<GoRouter>((ref) {
             name: 'workout_settings',
             pageBuilder: (context, state) => _platformPage(const WorkoutSettingsPage()),
           ),
+          GoRoute(
+            path: 'profile',
+            name: 'profile',
+            pageBuilder: (context, state) => _platformPage(const ProfilePage()),
+          ),
+          GoRoute(
+            path: 'nutrition-goals',
+            name: 'nutrition_goals',
+            pageBuilder: (context, state) => _platformPage(const NutritionGoalsPage()),
+          ),
+          GoRoute(
+            path: 'theme',
+            name: 'theme_page',
+            pageBuilder: (context, state) => _platformPage(const ThemePage()),
+          ),
+          GoRoute(
+            path: 'language',
+            name: 'language_page',
+            pageBuilder: (context, state) => _platformPage(const LanguagePage()),
+          ),
         ],
       ),
     ],
@@ -211,6 +235,10 @@ class Routes {
   static const appearanceEditor = '/settings/appearance';
   static const notificationSettings = '/settings/notifications';
   static const workoutSettings = '/settings/workouts';
+  static const profile = '/settings/profile';
+  static const nutritionGoals = '/settings/nutrition-goals';
+  static const themePage = '/settings/theme';
+  static const languagePage = '/settings/language';
 }
 
 // Navigation helpers

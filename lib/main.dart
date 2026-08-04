@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'app.dart';
 import 'data/db/drift_database.dart';
-import 'data/db/seeds/seed_service.dart';
+import 'services/backup_location_service.dart';
 import 'services/preferences_service.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
@@ -18,14 +17,17 @@ import 'features/calendar/data/calendar_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Create a local storage database
-  final database = await _createDatabase();
-  
+
   // Initialize preferences service
   final prefs = await SharedPreferences.getInstance();
   final preferencesService = PreferencesService(prefs);
-  
+
+  // Resolve where the snapshot lives *before* opening it: the user's
+  // "back up to iCloud/Google" preference decides both the path (Android) and
+  // the OS backup exclusion flag (iOS).
+  final backupLocationService = BackupLocationService(prefs);
+  final database = await _createDatabase(backupLocationService);
+
   // Initialize user profile service
   final userProfileService = UserProfileService(prefs);
   
@@ -41,7 +43,7 @@ void main() async {
 
   // Initialize notification service
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
-  final notificationService = NotificationService(notificationsPlugin, null);
+  final notificationService = NotificationService(notificationsPlugin);
   await notificationService.initialize();
   await notificationService.requestPermissions();
 
@@ -50,15 +52,15 @@ void main() async {
 
   // Initialize calendar service
   final calendarService = CalendarService(prefs, database);
-  
-  // Initialize seed service and load starter data
-  final seedService = SeedService(database);
-  await seedService.seedAll();
-  
+
+  // Persist pending changes when the app is backgrounded.
+  WidgetsBinding.instance.addObserver(_PersistenceLifecycleObserver(database));
+
   runApp(
     ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(database),
+        backupLocationServiceProvider.overrideWithValue(backupLocationService),
         preferencesServiceProvider.overrideWithValue(preferencesService),
         userProfileServiceProvider.overrideWithValue(userProfileService),
         themeServiceProvider.overrideWithValue(themeService),
@@ -73,15 +75,40 @@ void main() async {
   );
 }
 
-Future<LocalStorageDatabase> _createDatabase() async {
-  // Get the app's document directory for local storage
-  final appDocDir = await getApplicationDocumentsDirectory();
-  final dbPath = '${appDocDir.path}/wellness_app.db';
-  
-  return LocalStorageDatabase(dbPath);
+Future<LocalStorageDatabase> _createDatabase(
+  BackupLocationService backupLocation,
+) async {
+  // Honours the cloud-backup preference, and migrates the file if that
+  // preference changed while the app was closed.
+  final dbPath = await backupLocation.resolveSnapshotPath();
+
+  final database = LocalStorageDatabase(dbPath);
+  // Restore whatever the user logged in previous sessions before the first
+  // frame, so the UI never renders an empty state that then fills in.
+  await database.load();
+  return database;
 }
 
 // Local storage database implementation
 class LocalStorageDatabase extends AppDatabase {
-  LocalStorageDatabase(String path) : super(path);
+  LocalStorageDatabase(String path) : super(store: FileSnapshotStore(path));
+}
+
+/// Flushes pending writes when the app leaves the foreground.
+///
+/// Mutations are debounced by 300ms; iOS can suspend the process before that
+/// timer fires, which would lose the last edit the user made.
+class _PersistenceLifecycleObserver with WidgetsBindingObserver {
+  _PersistenceLifecycleObserver(this._database);
+
+  final AppDatabase _database;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _database.flush();
+    }
+  }
 }

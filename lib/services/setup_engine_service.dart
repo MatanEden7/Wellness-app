@@ -1,20 +1,13 @@
-import 'package:flutter/services.dart';
-import 'package:yaml/yaml.dart';
+import 'package:flutter/foundation.dart';
 import 'user_profile_service.dart';
 
 class SetupEngineService {
-  late YamlMap _spec;
-  bool _isInitialized = false;
-  
-  // Load the setup spec from assets
-  Future<void> initialize() async {
-    if (_isInitialized) return;
-    
-    final yamlString = await rootBundle.loadString('assets/data/setup_engine_spec.yaml');
-    _spec = loadYaml(yamlString) as YamlMap;
-    _isInitialized = true;
-    print('[SETUP-ENGINE] ✅ Spec loaded successfully');
-  }
+  /// No-op, kept so callers need not change.
+  ///
+  /// This used to parse assets/data/setup_engine_spec.yaml into a field that
+  /// nothing ever read -- every formula below is hardcoded in Dart. Loading
+  /// it implied the spec drove the engine, which it did not.
+  Future<void> initialize() async {}
   
   // Calculate BMR using Mifflin-St Jeor equation
   double calculateBMR({
@@ -140,13 +133,13 @@ class SetupEngineService {
     final fatG = calculateFatTarget(weightKg, calorieTarget, proteinG);
     final carbsG = calculateCarbsTarget(calorieTarget, proteinG, fatG);
     
-    print('[SETUP-ENGINE] 📊 Calculated targets:');
-    print('  BMR: ${bmr.toStringAsFixed(0)} kcal');
-    print('  TDEE: ${tdee.toStringAsFixed(0)} kcal');
-    print('  Target: ${calorieTarget.toStringAsFixed(0)} kcal');
-    print('  Protein: ${proteinG.toStringAsFixed(0)}g');
-    print('  Fat: ${fatG.toStringAsFixed(0)}g');
-    print('  Carbs: ${carbsG.toStringAsFixed(0)}g');
+    debugPrint('[SETUP-ENGINE] 📊 Calculated targets:');
+    debugPrint('  BMR: ${bmr.toStringAsFixed(0)} kcal');
+    debugPrint('  TDEE: ${tdee.toStringAsFixed(0)} kcal');
+    debugPrint('  Target: ${calorieTarget.toStringAsFixed(0)} kcal');
+    debugPrint('  Protein: ${proteinG.toStringAsFixed(0)}g');
+    debugPrint('  Fat: ${fatG.toStringAsFixed(0)}g');
+    debugPrint('  Carbs: ${carbsG.toStringAsFixed(0)}g');
     
     return UserProfile(
       sex: sex,

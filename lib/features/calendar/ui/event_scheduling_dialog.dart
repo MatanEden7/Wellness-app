@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme.dart';
 import '../../../core/utils.dart';
@@ -14,6 +15,17 @@ import '../../sleep/data/repositories.dart';
 import '../../sleep/domain/models.dart' as sleep_models;
 import '../data/calendar_service.dart';
 import '../../../data/db/drift_database.dart';
+
+/// The weekdays a weekly event should repeat on.
+///
+/// Falls back to the weekday of the event's own date when the user picked
+/// "Weekly" but never tapped a day chip. An empty list matches no weekday at
+/// all, so the event silently produced zero occurrences and looked like
+/// weekly recurrence was broken.
+List<int> _weeklyDaysOrDefault(Set<int> selected, DateTime scheduledAt) {
+  if (selected.isNotEmpty) return selected.toList()..sort();
+  return [scheduledAt.weekday];
+}
 
 class EventSchedulingDialog extends HookConsumerWidget {
   final DateTime? initialDate;
@@ -71,7 +83,8 @@ class EventSchedulingDialog extends HookConsumerWidget {
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.of(context).pop(),
-                  ),
+            tooltip: l10n.close,
+          ),
                 ],
               ),
             ),
@@ -87,21 +100,26 @@ class EventSchedulingDialog extends HookConsumerWidget {
                     Text(l10n.eventType, style: theme.textTheme.titleSmall),
                     const SizedBox(height: AppSpacing.xs),
                     SegmentedButton<EventType>(
+                      // Text-only, like a UISegmentedControl. Three segments
+                      // with both an icon and a label don't fit the dialog
+                      // width, so "Workout" wrapped to "Work / out". The
+                      // selected segment is already obvious from its fill, so
+                      // the checkmark is dropped too.
+                      showSelectedIcon: false,
                       segments: [
                         ButtonSegment(
                           value: EventType.meal,
-                          label: Text(l10n.meal),
-                          icon: const Icon(Icons.restaurant),
+                          label: Text(l10n.meal, maxLines: 1),
                         ),
                         ButtonSegment(
                           value: EventType.workout,
-                          label: Text(l10n.workout),
-                          icon: const Icon(Icons.fitness_center),
+                          label: Text(l10n.workout, maxLines: 1),
                         ),
                         ButtonSegment(
                           value: EventType.sleep,
-                          label: Text(l10n.sleepEntry),
-                          icon: const Icon(Icons.bedtime),
+                          // "Sleep", not "Sleep Entry" -- it sits under an
+                          // "Event Type" label, so the shorter form is clear.
+                          label: Text(l10n.sleep, maxLines: 1),
                         ),
                       ],
                       selected: {selectedType.value},
@@ -323,8 +341,8 @@ class EventSchedulingDialog extends HookConsumerWidget {
                               type: selectedType.value,
                               scheduledAt: scheduledDateTime,
                               recurrenceType: recurrenceType.value,
-                              recurrenceDays: recurrenceType.value == RecurrenceType.weekly 
-                                  ? selectedDays.value.toList() 
+                              recurrenceDays: recurrenceType.value == RecurrenceType.weekly
+                                  ? _weeklyDaysOrDefault(selectedDays.value, selectedDate.value)
                                   : [],
                               customInterval: recurrenceType.value == RecurrenceType.custom 
                                   ? customInterval.value 
@@ -339,8 +357,8 @@ class EventSchedulingDialog extends HookConsumerWidget {
                               type: selectedType.value,
                               scheduledAt: scheduledDateTime,
                               recurrenceType: recurrenceType.value,
-                              recurrenceDays: recurrenceType.value == RecurrenceType.weekly 
-                                  ? selectedDays.value.toList() 
+                              recurrenceDays: recurrenceType.value == RecurrenceType.weekly
+                                  ? _weeklyDaysOrDefault(selectedDays.value, selectedDate.value)
                                   : [],
                               customInterval: recurrenceType.value == RecurrenceType.custom 
                                   ? customInterval.value 
@@ -411,14 +429,14 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           children: [
             Expanded(
               child: SegmentedButton<int>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: 0,
-                    label: Text('Templates'),
+                    label: Text(AppLocalizations.of(context)!.templates),
                   ),
                   ButtonSegment(
                     value: 1,
-                    label: Text('Recent'),
+                    label: Text(AppLocalizations.of(context)!.recent),
                   ),
                 ],
                 selected: {selectedTab.value},
@@ -456,6 +474,10 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           
           return DropdownButtonFormField<String>(
             value: selectedTemplateId,
+            // Names like "Upper Body (Upper/Lower Split)" are wider than the
+            // dialog. isExpanded lets the item fill the field so the Text can
+            // ellipsize instead of overflowing the row.
+            isExpanded: true,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               hintText: l10n.selectTemplate,
@@ -463,7 +485,11 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
             items: templates.map((template) {
               return DropdownMenuItem(
                 value: template.id,
-                child: Text(template.name),
+                child: Text(
+                  template.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -491,6 +517,10 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           
           return DropdownButtonFormField<String>(
             value: selectedTemplateId,
+            // Names like "Upper Body (Upper/Lower Split)" are wider than the
+            // dialog. isExpanded lets the item fill the field so the Text can
+            // ellipsize instead of overflowing the row.
+            isExpanded: true,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               hintText: l10n.selectTemplate,
@@ -498,7 +528,11 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
             items: templates.map((template) {
               return DropdownMenuItem(
                 value: template.id,
-                child: Text(template.name),
+                child: Text(
+                  template.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -523,7 +557,7 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           
           if (meals.isEmpty) {
             return Text(
-              'No recent meals',
+              AppLocalizations.of(context)!.noRecentMeals,
               style: Theme.of(context).textTheme.bodySmall,
             );
           }
@@ -573,7 +607,7 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           
           if (sessions.isEmpty) {
             return Text(
-              'No recent workouts',
+              AppLocalizations.of(context)!.noRecentWorkouts,
               style: Theme.of(context).textTheme.bodySmall,
             );
           }
@@ -659,9 +693,19 @@ class _DatePicker extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
-          suffixIcon: const Icon(Icons.calendar_today),
+          isDense: true,
+          suffixIcon: const Icon(Icons.calendar_today, size: 18),
+          suffixIconConstraints: const BoxConstraints(minWidth: 34, minHeight: 34),
         ),
-        child: Text(AppDateUtils.formatDate(date)),
+        // A compact, locale-aware date. The shared AppDateUtils.formatDate is
+        // deliberately not used here: it is "yyyy-MM-dd" (which dateToInt
+        // parses, so it must not change), and at that length the date wrapped
+        // onto two lines in this half-width field -- "2026-08-0 / 3".
+        child: Text(
+          DateFormat.yMd(Localizations.localeOf(context).toString()).format(date),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -694,9 +738,15 @@ class _TimePicker extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
-          suffixIcon: const Icon(Icons.access_time),
+          isDense: true,
+          suffixIcon: const Icon(Icons.access_time, size: 18),
+          suffixIconConstraints: const BoxConstraints(minWidth: 34, minHeight: 34),
         ),
-        child: Text(time.format(context)),
+        child: Text(
+          time.format(context),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

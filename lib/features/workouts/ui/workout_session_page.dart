@@ -13,7 +13,7 @@ import '../../../services/time_service.dart';
 import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class WorkoutSessionPage extends HookConsumerWidget {
   final String sessionId;
@@ -373,7 +373,8 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                                 },
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-                              ),
+            tooltip: l10n.previous,
+          ),
                             if (currentExerciseIndex.value < exercises.length - 1)
                               IconButton(
                                 icon: const Icon(Icons.chevron_right),
@@ -383,7 +384,8 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                                 },
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-                              ),
+            tooltip: l10n.next,
+          ),
                           ],
                         ),
                       ],
@@ -519,7 +521,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'REPS',
+                                  AppLocalizations.of(context)!.repsUppercase,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     letterSpacing: 2,
                                     fontWeight: FontWeight.w500,
@@ -555,7 +557,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                 ),
                                 const SizedBox(height: 20),
                                 Text(
-                                  'Exercise Complete!',
+                                  AppLocalizations.of(context)!.exerciseComplete,
                                   style: theme.textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -587,7 +589,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Completed Sets',
+                                AppLocalizations.of(context)!.completedSets,
                                 style: theme.textTheme.labelLarge?.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -684,8 +686,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
           child: ElevatedButton.icon(
             onPressed: onExerciseComplete,
             icon: const Icon(Icons.arrow_forward_rounded, size: 24),
-            label: const Text(
-              'Next Exercise',
+            label: Text(
+              AppLocalizations.of(context)!.nextExercise,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
@@ -706,8 +708,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
           child: ElevatedButton.icon(
             onPressed: onFinishWorkout,
             icon: const Icon(Icons.check_circle_rounded, size: 24),
-            label: const Text(
-              'Finish Workout',
+            label: Text(
+              AppLocalizations.of(context)!.finishWorkout,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
@@ -922,7 +924,7 @@ class _RestTimerCard extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'REST TIMER',
+                AppLocalizations.of(context)!.restTimerUppercase,
                 style: theme.textTheme.labelLarge?.copyWith(
                   letterSpacing: 1.5,
                   fontWeight: FontWeight.w600,
@@ -940,7 +942,8 @@ class _RestTimerCard extends HookConsumerWidget {
                 color: isMuted.value ? Colors.grey : theme.colorScheme.primary,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-              ),
+            tooltip: l10n.muteSound,
+          ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1091,7 +1094,7 @@ class _CompletedWorkoutView extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Workout Complete!',
+                  AppLocalizations.of(context)!.workoutComplete,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: AppSpacing.sm),

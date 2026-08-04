@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../data/db/drift_database.dart';
 import 'user_profile_service.dart';
@@ -10,7 +11,7 @@ class WorkoutTemplateGenerator {
   WorkoutTemplateGenerator(this._database, this._profile);
 
   Future<void> generateTemplates() async {
-    print('[WORKOUT-GEN] 🏋️ Generating workout templates for ${_profile.trainingDaysPerWeek} days/week');
+    debugPrint('[WORKOUT-GEN] 🏋️ Generating workout templates for ${_profile.trainingDaysPerWeek} days/week');
     
     // Generate exercises based on equipment
     await _generateExercises();
@@ -29,7 +30,7 @@ class WorkoutTemplateGenerator {
     // Generate rehab addons if user has injuries
     await _generateRehabAddons();
     
-    print('[WORKOUT-GEN] ✅ Workout templates generated successfully');
+    debugPrint('[WORKOUT-GEN] ✅ Workout templates generated successfully');
   }
 
   String _getWorkoutSplit() {
@@ -44,7 +45,7 @@ class WorkoutTemplateGenerator {
     // Check if exercises already exist
     final existing = await _database.getAllExercises();
     if (existing.length > 2) {
-      print('[WORKOUT-GEN] Exercises already exist, skipping generation');
+      debugPrint('[WORKOUT-GEN] Exercises already exist, skipping generation');
       return;
     }
 
@@ -140,7 +141,7 @@ class WorkoutTemplateGenerator {
       await _database.insertExercise(exercise);
     }
 
-    print('[WORKOUT-GEN] ✅ Generated ${exercises.length} exercises');
+    debugPrint('[WORKOUT-GEN] ✅ Generated ${exercises.length} exercises');
   }
 
   ExerciseData _createExercise(String name, String muscle, String notes) {
@@ -190,7 +191,7 @@ class WorkoutTemplateGenerator {
       }
     }
 
-    print('[WORKOUT-GEN] ✅ Generated 3-day full body split');
+    debugPrint('[WORKOUT-GEN] ✅ Generated 3-day full body split');
   }
 
   List<ExerciseData> _selectExercisesForFullBody(List<ExerciseData> allExercises, String day) {
@@ -266,7 +267,7 @@ class WorkoutTemplateGenerator {
       }
     }
 
-    print('[WORKOUT-GEN] ✅ Generated 5-day PPL split');
+    debugPrint('[WORKOUT-GEN] ✅ Generated 5-day PPL split');
   }
 
   Future<void> _generateMobilityPack() async {
@@ -318,12 +319,12 @@ class WorkoutTemplateGenerator {
       );
     }
 
-    print('[WORKOUT-GEN] ✅ Generated mobility pack');
+    debugPrint('[WORKOUT-GEN] ✅ Generated mobility pack');
   }
 
   Future<void> _generateRehabAddons() async {
     if (_profile.injuries.isEmpty || _profile.injuries.contains('none')) {
-      print('[WORKOUT-GEN] No injuries reported, skipping rehab generation');
+      debugPrint('[WORKOUT-GEN] No injuries reported, skipping rehab generation');
       return;
     }
 
@@ -403,7 +404,7 @@ class WorkoutTemplateGenerator {
         );
       }
 
-      print('[WORKOUT-GEN] ✅ Generated rehab template for $injury');
+      debugPrint('[WORKOUT-GEN] ✅ Generated rehab template for $injury');
     }
   }
 }

@@ -21,8 +21,12 @@ Exercise _$ExerciseFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Exercise {
   String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
+  String get name =>
+      throw _privateConstructorUsedError; // Hebrew name, filled in separately -- see ExerciseDisplayName.
+// Null until translated.
+  String? get nameHe => throw _privateConstructorUsedError;
   String? get primaryMuscle => throw _privateConstructorUsedError;
+  String? get primaryMuscleHe => throw _privateConstructorUsedError;
   String get unit => throw _privateConstructorUsedError; // kg/lb
   String? get notes => throw _privateConstructorUsedError;
 
@@ -40,7 +44,9 @@ abstract class $ExerciseCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? primaryMuscle,
+      String? primaryMuscleHe,
       String unit,
       String? notes});
 }
@@ -60,7 +66,9 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? primaryMuscle = freezed,
+    Object? primaryMuscleHe = freezed,
     Object? unit = null,
     Object? notes = freezed,
   }) {
@@ -73,9 +81,17 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       primaryMuscle: freezed == primaryMuscle
           ? _value.primaryMuscle
           : primaryMuscle // ignore: cast_nullable_to_non_nullable
+              as String?,
+      primaryMuscleHe: freezed == primaryMuscleHe
+          ? _value.primaryMuscleHe
+          : primaryMuscleHe // ignore: cast_nullable_to_non_nullable
               as String?,
       unit: null == unit
           ? _value.unit
@@ -100,7 +116,9 @@ abstract class _$$ExerciseImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? primaryMuscle,
+      String? primaryMuscleHe,
       String unit,
       String? notes});
 }
@@ -118,7 +136,9 @@ class __$$ExerciseImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? primaryMuscle = freezed,
+    Object? primaryMuscleHe = freezed,
     Object? unit = null,
     Object? notes = freezed,
   }) {
@@ -131,9 +151,17 @@ class __$$ExerciseImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       primaryMuscle: freezed == primaryMuscle
           ? _value.primaryMuscle
           : primaryMuscle // ignore: cast_nullable_to_non_nullable
+              as String?,
+      primaryMuscleHe: freezed == primaryMuscleHe
+          ? _value.primaryMuscleHe
+          : primaryMuscleHe // ignore: cast_nullable_to_non_nullable
               as String?,
       unit: null == unit
           ? _value.unit
@@ -153,7 +181,9 @@ class _$ExerciseImpl implements _Exercise {
   const _$ExerciseImpl(
       {required this.id,
       required this.name,
+      this.nameHe,
       this.primaryMuscle,
+      this.primaryMuscleHe,
       required this.unit,
       this.notes});
 
@@ -164,8 +194,14 @@ class _$ExerciseImpl implements _Exercise {
   final String id;
   @override
   final String name;
+// Hebrew name, filled in separately -- see ExerciseDisplayName.
+// Null until translated.
+  @override
+  final String? nameHe;
   @override
   final String? primaryMuscle;
+  @override
+  final String? primaryMuscleHe;
   @override
   final String unit;
 // kg/lb
@@ -174,7 +210,7 @@ class _$ExerciseImpl implements _Exercise {
 
   @override
   String toString() {
-    return 'Exercise(id: $id, name: $name, primaryMuscle: $primaryMuscle, unit: $unit, notes: $notes)';
+    return 'Exercise(id: $id, name: $name, nameHe: $nameHe, primaryMuscle: $primaryMuscle, primaryMuscleHe: $primaryMuscleHe, unit: $unit, notes: $notes)';
   }
 
   @override
@@ -184,16 +220,19 @@ class _$ExerciseImpl implements _Exercise {
             other is _$ExerciseImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.primaryMuscle, primaryMuscle) ||
                 other.primaryMuscle == primaryMuscle) &&
+            (identical(other.primaryMuscleHe, primaryMuscleHe) ||
+                other.primaryMuscleHe == primaryMuscleHe) &&
             (identical(other.unit, unit) || other.unit == unit) &&
             (identical(other.notes, notes) || other.notes == notes));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, name, primaryMuscle, unit, notes);
+  int get hashCode => Object.hash(runtimeType, id, name, nameHe, primaryMuscle,
+      primaryMuscleHe, unit, notes);
 
   @JsonKey(ignore: true)
   @override
@@ -213,7 +252,9 @@ abstract class _Exercise implements Exercise {
   const factory _Exercise(
       {required final String id,
       required final String name,
+      final String? nameHe,
       final String? primaryMuscle,
+      final String? primaryMuscleHe,
       required final String unit,
       final String? notes}) = _$ExerciseImpl;
 
@@ -224,8 +265,13 @@ abstract class _Exercise implements Exercise {
   String get id;
   @override
   String get name;
+  @override // Hebrew name, filled in separately -- see ExerciseDisplayName.
+// Null until translated.
+  String? get nameHe;
   @override
   String? get primaryMuscle;
+  @override
+  String? get primaryMuscleHe;
   @override
   String get unit;
   @override // kg/lb
@@ -244,7 +290,9 @@ WorkoutTemplate _$WorkoutTemplateFromJson(Map<String, dynamic> json) {
 mixin _$WorkoutTemplate {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  String? get nameHe => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  String? get notesHe => throw _privateConstructorUsedError;
   List<TemplateExercise> get exercises => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -262,7 +310,9 @@ abstract class $WorkoutTemplateCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? notes,
+      String? notesHe,
       List<TemplateExercise> exercises});
 }
 
@@ -281,7 +331,9 @@ class _$WorkoutTemplateCopyWithImpl<$Res, $Val extends WorkoutTemplate>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? notes = freezed,
+    Object? notesHe = freezed,
     Object? exercises = null,
   }) {
     return _then(_value.copyWith(
@@ -293,9 +345,17 @@ class _$WorkoutTemplateCopyWithImpl<$Res, $Val extends WorkoutTemplate>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       notes: freezed == notes
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
+              as String?,
+      notesHe: freezed == notesHe
+          ? _value.notesHe
+          : notesHe // ignore: cast_nullable_to_non_nullable
               as String?,
       exercises: null == exercises
           ? _value.exercises
@@ -316,7 +376,9 @@ abstract class _$$WorkoutTemplateImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? notes,
+      String? notesHe,
       List<TemplateExercise> exercises});
 }
 
@@ -333,7 +395,9 @@ class __$$WorkoutTemplateImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? notes = freezed,
+    Object? notesHe = freezed,
     Object? exercises = null,
   }) {
     return _then(_$WorkoutTemplateImpl(
@@ -345,9 +409,17 @@ class __$$WorkoutTemplateImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       notes: freezed == notes
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
+              as String?,
+      notesHe: freezed == notesHe
+          ? _value.notesHe
+          : notesHe // ignore: cast_nullable_to_non_nullable
               as String?,
       exercises: null == exercises
           ? _value._exercises
@@ -363,7 +435,9 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
   const _$WorkoutTemplateImpl(
       {required this.id,
       required this.name,
+      this.nameHe,
       this.notes,
+      this.notesHe,
       final List<TemplateExercise> exercises = const []})
       : _exercises = exercises;
 
@@ -375,7 +449,11 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
   @override
   final String name;
   @override
+  final String? nameHe;
+  @override
   final String? notes;
+  @override
+  final String? notesHe;
   final List<TemplateExercise> _exercises;
   @override
   @JsonKey()
@@ -387,7 +465,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
 
   @override
   String toString() {
-    return 'WorkoutTemplate(id: $id, name: $name, notes: $notes, exercises: $exercises)';
+    return 'WorkoutTemplate(id: $id, name: $name, nameHe: $nameHe, notes: $notes, notesHe: $notesHe, exercises: $exercises)';
   }
 
   @override
@@ -397,14 +475,16 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
             other is _$WorkoutTemplateImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.notesHe, notesHe) || other.notesHe == notesHe) &&
             const DeepCollectionEquality()
                 .equals(other._exercises, _exercises));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, notes,
+  int get hashCode => Object.hash(runtimeType, id, name, nameHe, notes, notesHe,
       const DeepCollectionEquality().hash(_exercises));
 
   @JsonKey(ignore: true)
@@ -426,7 +506,9 @@ abstract class _WorkoutTemplate implements WorkoutTemplate {
   const factory _WorkoutTemplate(
       {required final String id,
       required final String name,
+      final String? nameHe,
       final String? notes,
+      final String? notesHe,
       final List<TemplateExercise> exercises}) = _$WorkoutTemplateImpl;
 
   factory _WorkoutTemplate.fromJson(Map<String, dynamic> json) =
@@ -437,7 +519,11 @@ abstract class _WorkoutTemplate implements WorkoutTemplate {
   @override
   String get name;
   @override
+  String? get nameHe;
+  @override
   String? get notes;
+  @override
+  String? get notesHe;
   @override
   List<TemplateExercise> get exercises;
   @override

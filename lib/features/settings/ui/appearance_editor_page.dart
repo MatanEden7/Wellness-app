@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme.dart';
-import '../../../core/widgets.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/theme_service.dart';
 import 'advanced_color_picker.dart';
@@ -21,11 +21,12 @@ class AppearanceEditorPage extends HookConsumerWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appearance & Colors'),
+        title: Text(AppLocalizations.of(context)!.appearance),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-        ),
+            tooltip: AppLocalizations.of(context)!.backToDashboard,
+          ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -110,7 +111,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
                     ref.invalidate(preferencesServiceProvider);
                   },
                   icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Reset Theme Colors'),
+                  label: Text(AppLocalizations.of(context)!.resetThemeColors),
                 ),
                 const SizedBox(height: 32),
               ],
@@ -154,7 +155,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
                   ref.invalidate(preferencesServiceProvider);
                 },
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Reset Section Colors'),
+                label: Text(AppLocalizations.of(context)!.resetSectionColors),
               ),
               
               const SizedBox(height: 32),
@@ -163,8 +164,8 @@ class AppearanceEditorPage extends HookConsumerWidget {
               _buildSectionHeader(context, 'Nutrition Colors', Icons.local_fire_department),
               const SizedBox(height: 12),
               SwitchListTile(
-                title: const Text('Follow Theme'),
-                subtitle: const Text('Use primary color for all nutrition metrics'),
+                title: Text(AppLocalizations.of(context)!.followTheme),
+                subtitle: Text(AppLocalizations.of(context)!.followThemeDesc),
                 value: prefs.useThemeColors,
                 onChanged: (value) async {
                   await prefs.setUseThemeColors(value);
@@ -219,7 +220,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
                     ref.invalidate(preferencesServiceProvider);
                   },
                   icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Reset Nutrition Colors'),
+                  label: Text(AppLocalizations.of(context)!.resetNutritionColors),
                 ),
               ],
               
@@ -257,18 +258,19 @@ class AppearanceEditorPage extends HookConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset All Colors'),
-        content: const Text(
-          'This will reset all custom colors to their defaults. This action cannot be undone.',
+        title: Text(AppLocalizations.of(context)!.resetAllColors),
+        content: Text(
+          AppLocalizations.of(context)!.resetColorsWarningBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Reset', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.reset,
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -378,7 +380,7 @@ class _PreviewPanel extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Preview',
+            AppLocalizations.of(context)!.preview,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -396,7 +398,7 @@ class _PreviewPanel extends ConsumerWidget {
                     ? Colors.black 
                     : Colors.white,
               ),
-              child: const Text('Primary Button'),
+              child: Text(AppLocalizations.of(context)!.primaryButton),
             ),
           ),
           const SizedBox(height: 12),
@@ -406,17 +408,17 @@ class _PreviewPanel extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Chip(
-                label: const Text('Meals'),
+                label: Text(AppLocalizations.of(context)!.meals),
                 backgroundColor: prefs.mealsColor.withOpacity(0.2),
                 side: BorderSide(color: prefs.mealsColor),
               ),
               Chip(
-                label: const Text('Workouts'),
+                label: Text(AppLocalizations.of(context)!.workouts),
                 backgroundColor: prefs.workoutsColor.withOpacity(0.2),
                 side: BorderSide(color: prefs.workoutsColor),
               ),
               Chip(
-                label: const Text('Sleep'),
+                label: Text(AppLocalizations.of(context)!.sleep),
                 backgroundColor: prefs.sleepColor.withOpacity(0.2),
                 side: BorderSide(color: prefs.sleepColor),
               ),

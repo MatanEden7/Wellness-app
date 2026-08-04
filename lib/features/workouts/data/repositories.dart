@@ -8,9 +8,40 @@ final exercisesRepositoryProvider = Provider<ExercisesRepository>((ref) {
   return ExercisesRepository(database);
 });
 
+/// One cached stream of the exercise library, shared by every screen.
+///
+/// Watch this instead of calling
+/// `ref.read(exercisesRepositoryProvider).watchAllExercises()` inside
+/// `build()`: that builds a brand-new stream on every rebuild, so the
+/// StreamBuilder reading it drops back to `ConnectionState.waiting` and
+/// briefly renders a spinner instead of the list it already had. Harmless
+/// while exercise mutations silently failed to notify anyone, but a visible
+/// flicker -- and a flaky test -- once they correctly do.
+///
+/// The underlying stream is broadcast-backed, so several widgets can listen
+/// to the same instance safely.
+final exercisesStreamProvider = Provider<Stream<List<Exercise>>>((ref) {
+  return ref.read(exercisesRepositoryProvider).watchAllExercises();
+});
+
 final workoutTemplatesRepositoryProvider = Provider<WorkoutTemplatesRepository>((ref) {
   final database = ref.read(databaseProvider);
   return WorkoutTemplatesRepository(database);
+});
+
+/// Cached stream of workout templates, shared by every screen -- see
+/// `exercisesStreamProvider` above for why `.watchAllTemplates()` should not
+/// be called directly inside `build()`.
+final workoutTemplatesStreamProvider =
+    Provider<Stream<List<WorkoutTemplate>>>((ref) {
+  return ref.read(workoutTemplatesRepositoryProvider).watchAllTemplates();
+});
+
+/// Cached, limit-keyed stream of recent sessions -- same reasoning as
+/// `workoutTemplatesStreamProvider`.
+final recentSessionsStreamProvider =
+    Provider.family<Stream<List<WorkoutSessionWithTemplate>>, int>((ref, limit) {
+  return ref.read(workoutSessionsRepositoryProvider).watchRecentSessions(limit: limit);
 });
 
 final workoutSessionsRepositoryProvider = Provider<WorkoutSessionsRepository>((ref) {
@@ -51,7 +82,9 @@ class ExercisesRepository {
     return Exercise(
       id: data.id,
       name: data.name,
+      nameHe: data.nameHe,
       primaryMuscle: data.primaryMuscle,
+      primaryMuscleHe: data.primaryMuscleHe,
       unit: data.unit,
       notes: data.notes,
     );
@@ -61,7 +94,9 @@ class ExercisesRepository {
     return ExerciseData(
       id: model.id,
       name: model.name,
+      nameHe: model.nameHe,
       primaryMuscle: model.primaryMuscle,
+      primaryMuscleHe: model.primaryMuscleHe,
       unit: model.unit,
       notes: model.notes,
     );
@@ -142,7 +177,9 @@ class WorkoutTemplatesRepository {
     return WorkoutTemplate(
       id: data.id,
       name: data.name,
+      nameHe: data.nameHe,
       notes: data.notes,
+      notesHe: data.notesHe,
     );
   }
 
@@ -150,7 +187,9 @@ class WorkoutTemplatesRepository {
     return WorkoutTemplateData(
       id: model.id,
       name: model.name,
+      nameHe: model.nameHe,
       notes: model.notes,
+      notesHe: model.notesHe,
     );
   }
 

@@ -23,7 +23,7 @@ class TimeService {
 // Rest Timer Controller
 final restTimerControllerProvider = StateNotifierProvider.autoDispose
     .family<RestTimerController, RestTimerState, int>((ref, initialSeconds) {
-  return RestTimerController(initialSeconds, ref.read(timeServiceProvider));
+  return RestTimerController(initialSeconds);
 });
 
 class RestTimerState {
@@ -51,10 +51,9 @@ class RestTimerState {
 }
 
 class RestTimerController extends StateNotifier<RestTimerState> {
-  final TimeService _timeService;
   Timer? _timer;
 
-  RestTimerController(int initialSeconds, this._timeService)
+  RestTimerController(int initialSeconds)
       : super(RestTimerState(
           remainingSeconds: initialSeconds,
           isRunning: false,

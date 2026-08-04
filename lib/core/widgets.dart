@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'theme.dart';
 import 'utils.dart';
@@ -743,6 +743,41 @@ class NutritionProgressGrid extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The rounded, tinted icon container used by settings-style list rows.
+///
+/// The main Settings list already used this treatment inline; secondary
+/// screens (notification settings, and others) used a bare `Icon` on the
+/// background instead, which reads as lower-contrast and inconsistent. Having
+/// it as one widget means the two can't drift apart again.
+///
+/// Pass [color] to tint per-row (as the main Settings list does); it defaults
+/// to the theme's primary.
+class SettingsIconBadge extends StatelessWidget {
+  const SettingsIconBadge(
+    this.icon, {
+    super.key,
+    this.color,
+    this.size = 24,
+  });
+
+  final IconData icon;
+  final Color? color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = color ?? Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: tint.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, color: tint, size: size),
     );
   }
 }

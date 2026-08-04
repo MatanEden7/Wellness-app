@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,14 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../services/preferences_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WorkoutSettingsPage extends HookConsumerWidget {
   const WorkoutSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     final prefs = ref.watch(preferencesServiceProvider);
     final theme = Theme.of(context);
     
@@ -32,15 +31,16 @@ class WorkoutSettingsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Workout Settings',
+        title: Text(
+          AppLocalizations.of(context)!.workoutSettingsTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 24),
           onPressed: () => context.pop(),
-        ),
+            tooltip: AppLocalizations.of(context)!.backToDashboard,
+          ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -49,7 +49,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Rest Timer',
+                AppLocalizations.of(context)!.restTimer,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -68,12 +68,12 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Default Rest Time',
+                              AppLocalizations.of(context)!.defaultRestTime,
                               style: theme.textTheme.titleMedium,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Time between sets',
+                              AppLocalizations.of(context)!.timeBetweenSets,
                               style: theme.textTheme.bodySmall,
                             ),
                           ],
@@ -103,7 +103,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('30s', style: theme.textTheme.bodySmall),
-                        Text('5min', style: theme.textTheme.bodySmall),
+                        Text(AppLocalizations.of(context)!.fiveMin, style: theme.textTheme.bodySmall),
                       ],
                     ),
                   ],
@@ -123,12 +123,12 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Timer Sound',
+                              AppLocalizations.of(context)!.timerSound,
                               style: theme.textTheme.titleMedium,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Play sound when rest timer completes',
+                              AppLocalizations.of(context)!.timerSoundSubtitle,
                               style: theme.textTheme.bodySmall,
                             ),
                           ],
@@ -157,7 +157,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Timer Volume',
+                            AppLocalizations.of(context)!.timerVolume,
                             style: theme.textTheme.titleMedium,
                           ),
                           Text(
@@ -214,7 +214,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
-                        'During workouts, you can mute the timer using the volume button and add extra rest time as needed.',
+                        AppLocalizations.of(context)!.workoutTimerHint,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface,
                         ),

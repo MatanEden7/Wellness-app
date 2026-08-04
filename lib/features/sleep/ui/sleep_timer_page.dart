@@ -6,9 +6,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
+import '../../../features/calendar/domain/models.dart' show EventType;
+import '../../../services/notification_preferences_service.dart';
+import '../../../services/notification_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class SleepTimerPage extends HookConsumerWidget {
   const SleepTimerPage({super.key});
@@ -44,7 +47,7 @@ class SleepTimerPage extends HookConsumerWidget {
                   )
                 : _ActiveSleepView(
                     entry: currentEntry.value!,
-                    onStop: () => _stopSleep(context, ref, currentEntry, isLoading),
+                    onStop: () => _stopSleep(context, ref, currentEntry, isLoading, l10n),
                     onEdit: () => _editSleep(context, ref, currentEntry),
                     isLoading: isLoading.value,
                   ),
@@ -89,23 +92,29 @@ class SleepTimerPage extends HookConsumerWidget {
     WidgetRef ref,
     ValueNotifier<SleepEntry?> currentEntry,
     ValueNotifier<bool> isLoading,
+    AppLocalizations l10n,
   ) async {
     if (currentEntry.value == null) return;
 
     isLoading.value = true;
-    
+
     try {
       final updatedEntry = currentEntry.value!.copyWith(
         endedAt: DateTime.now(),
       );
-      
+
       await ref.read(sleepRepositoryProvider).updateEntry(updatedEntry);
       currentEntry.value = null;
       HapticsHelper.mediumImpact();
-      
+
       // Trigger refresh to update UI immediately
       ref.invalidate(sleepRepositoryProvider);
-      
+
+      // sleepGoalHours was configurable in settings and compared against
+      // nothing -- reaching it never surfaced anywhere, even though
+      // NotificationService.showImmediate() exists for exactly this case.
+      await _notifyIfGoalReached(ref, updatedEntry, l10n);
+
       // Show completion dialog
       if (context.mounted) {
         _showSleepCompletedDialog(context, updatedEntry);
@@ -114,6 +123,28 @@ class SleepTimerPage extends HookConsumerWidget {
       // Handle error
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _notifyIfGoalReached(
+    WidgetRef ref,
+    SleepEntry entry,
+    AppLocalizations l10n,
+  ) async {
+    final hours = entry.durationInHours;
+    if (hours == null) return;
+
+    final goalHours = ref.read(notificationPreferencesProvider).sleepGoalHours;
+    if (hours < goalHours) return;
+
+    try {
+      await ref.read(notificationServiceProvider).showImmediate(
+            title: l10n.sleepGoalReachedTitle,
+            body: l10n.sleepGoalReachedBody(hours.toStringAsFixed(1)),
+            type: EventType.sleep,
+          );
+    } catch (e) {
+      debugPrint('[SLEEP] Could not show goal-reached notification: $e');
     }
   }
 
@@ -201,7 +232,7 @@ class _StartSleepView extends StatelessWidget {
         const SizedBox(height: 48),
         
         Text(
-          'Ready for Sleep?',
+          AppLocalizations.of(context)!.readyForSleep,
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -211,7 +242,7 @@ class _StartSleepView extends StatelessWidget {
         const SizedBox(height: 16),
         
         Text(
-          'Tap the button below to start tracking your sleep',
+          AppLocalizations.of(context)!.readyForSleepSubtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontSize: 17,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -283,7 +314,7 @@ class _ActiveSleepView extends HookWidget {
         const SizedBox(height: 32),
         
         Text(
-          'Sleeping...',
+          AppLocalizations.of(context)!.sleepingEllipsis,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -317,7 +348,7 @@ class _ActiveSleepView extends HookWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Sleep Duration',
+                AppLocalizations.of(context)!.sleepDuration,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 17,
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -414,7 +445,7 @@ class _EditActiveSleepDialog extends HookWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Edit Sleep Session',
+              AppLocalizations.of(context)!.editSleepSession,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -451,7 +482,7 @@ class _EditActiveSleepDialog extends HookWidget {
 
             // Quality Rating
             Text(
-              'Sleep Quality (optional)',
+              AppLocalizations.of(context)!.sleepQualityOptional,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),

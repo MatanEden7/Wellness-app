@@ -1,6 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../services/language_service.dart';
+import 'food_nutrition_math.dart';
+
 part 'models.freezed.dart';
 part 'models.g.dart';
 
@@ -11,6 +14,9 @@ class FoodItem with _$FoodItem {
   const factory FoodItem({
     required String id,
     required String name,
+    // Hebrew name, filled in separately from the English data -- see
+    // FoodItemDisplayName.displayName below. Null until translated.
+    String? nameHe,
     String? brand,
     required String unit,
     required double kcalPerUnit,
@@ -24,6 +30,7 @@ class FoodItem with _$FoodItem {
 
   factory FoodItem.create({
     required String name,
+    String? nameHe,
     String? brand,
     required String unit,
     required double kcalPerUnit,
@@ -36,6 +43,7 @@ class FoodItem with _$FoodItem {
     return FoodItem(
       id: _uuid.v4(),
       name: name,
+      nameHe: nameHe,
       brand: brand,
       unit: unit,
       kcalPerUnit: kcalPerUnit,
@@ -49,6 +57,14 @@ class FoodItem with _$FoodItem {
   }
 
   factory FoodItem.fromJson(Map<String, dynamic> json) => _$FoodItemFromJson(json);
+}
+
+extension FoodItemDisplayName on FoodItem {
+  /// The name to show for [language]: Hebrew if selected and translated,
+  /// English otherwise. Lets the catalog ship English-only today and grow
+  /// Hebrew names later without any further UI changes.
+  String displayName(AppLanguage language) =>
+      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
 }
 
 @freezed
@@ -70,64 +86,18 @@ class MealItem with _$MealItem {
     required double amount,
     required FoodItem food,
   }) {
-    // Smart calculation that handles any unit (g, 100g, oz, piece, etc.)
-    final nutrition = _calculateNutritionForAmount(
-      unit: food.unit,
-      amountInGrams: amount,
-      kcalPerUnit: food.kcalPerUnit,
-      proteinPerUnit: food.proteinPerUnit,
-      carbsPerUnit: food.carbsPerUnit,
-      fatPerUnit: food.fatPerUnit,
-    );
+    final nutrition = FoodNutritionMath.computeMacros(food, amount);
 
     return MealItem(
       id: _uuid.v4(),
       mealId: mealId,
       foodId: foodId,
       amount: amount,
-      kcal: nutrition['kcal']!,
-      protein: nutrition['protein']!,
-      carbs: nutrition['carbs']!,
-      fat: nutrition['fat']!,
+      kcal: nutrition.kcal,
+      protein: nutrition.protein,
+      carbs: nutrition.carbs,
+      fat: nutrition.fat,
     );
-  }
-
-  /// Smart calculation that recognizes units like g, 100g, oz, piece
-  static Map<String, double> _calculateNutritionForAmount({
-    required String unit,
-    required double amountInGrams,
-    required double kcalPerUnit,
-    required double proteinPerUnit,
-    required double carbsPerUnit,
-    required double fatPerUnit,
-  }) {
-    // Determine multiplier based on unit
-    double multiplier;
-    final unitLower = unit.toLowerCase().trim();
-
-    if (unitLower == 'g' || unitLower == 'gram' || unitLower == 'grams') {
-      // Already per gram: multiply directly
-      multiplier = amountInGrams;
-    } else if (unitLower.contains('100')) {
-      // Per 100g: amount is already in 100g units (e.g., 1.5 = 150g)
-      multiplier = amountInGrams;
-    } else if (unitLower == 'oz' || unitLower == 'ounce' || unitLower == 'ounces') {
-      // Per oz: convert grams to oz, then multiply
-      multiplier = amountInGrams / 28.35;
-    } else if (unitLower == 'piece' || unitLower == 'serving' || unitLower == 'item') {
-      // Per piece: treat amount as piece count
-      multiplier = amountInGrams;
-    } else {
-      // Unknown unit: assume per gram
-      multiplier = amountInGrams;
-    }
-
-    return {
-      'kcal': kcalPerUnit * multiplier,
-      'protein': proteinPerUnit * multiplier,
-      'carbs': carbsPerUnit * multiplier,
-      'fat': fatPerUnit * multiplier,
-    };
   }
 
   factory MealItem.fromJson(Map<String, dynamic> json) => _$MealItemFromJson(json);
@@ -142,6 +112,10 @@ class Meal with _$Meal {
     String? note,
     required DateTime createdAt,
     required DateTime updatedAt,
+    // The real time of day the meal was eaten, when set explicitly. Null
+    // means "not set" -- the calendar falls back to createdAt/keyword
+    // guessing the same way it always has for meals without one.
+    DateTime? loggedAt,
     @Default([]) List<MealItem> items,
   }) = _Meal;
 
@@ -214,7 +188,9 @@ class MealTemplate with _$MealTemplate {
   const factory MealTemplate({
     required String id,
     required String name,
+    String? nameHe,
     String? description,
+    String? descriptionHe,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default([]) List<MealTemplateItem> items,
@@ -222,17 +198,31 @@ class MealTemplate with _$MealTemplate {
 
   factory MealTemplate.create({
     required String name,
+    String? nameHe,
     String? description,
+    String? descriptionHe,
   }) {
     final now = DateTime.now();
     return MealTemplate(
       id: _uuid.v4(),
       name: name,
+      nameHe: nameHe,
       description: description,
+      descriptionHe: descriptionHe,
       createdAt: now,
       updatedAt: now,
     );
   }
 
   factory MealTemplate.fromJson(Map<String, dynamic> json) => _$MealTemplateFromJson(json);
+}
+
+extension MealTemplateDisplayName on MealTemplate {
+  String displayName(AppLanguage language) =>
+      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+
+  String? displayDescription(AppLanguage language) =>
+      language == AppLanguage.hebrew && descriptionHe != null && descriptionHe!.trim().isNotEmpty
+          ? descriptionHe
+          : description;
 }

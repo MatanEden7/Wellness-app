@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/validation.dart';
+import '../../../services/language_service.dart';
 import '../data/repositories.dart';
+import '../domain/food_nutrition_math.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class MealTemplateEditorPage extends HookConsumerWidget {
   final String? templateId;
@@ -135,17 +137,17 @@ class MealTemplateEditorPage extends HookConsumerWidget {
     TextEditingController descriptionController,
     ValueNotifier<List<MealTemplateItem>> templateItems,
   ) async {
-    print('[TEMPLATES-UI] 📖 Loading template for editing with ID: $templateId');
+    debugPrint('[TEMPLATES-UI] 📖 Loading template for editing with ID: $templateId');
     final template = await ref.read(mealsRepositoryProvider).getMealTemplateById(templateId);
     if (template != null) {
-      print('[TEMPLATES-UI] ✅ Loaded template: "${template.name}" with ${template.items.length} items');
-      print('[TEMPLATES-UI] 📋 Template ID: ${template.id}');
-      print('[TEMPLATES-UI] 📋 Item IDs: ${template.items.map((i) => 'templateId:${i.templateId}, foodId:${i.foodId}').join(', ')}');
+      debugPrint('[TEMPLATES-UI] ✅ Loaded template: "${template.name}" with ${template.items.length} items');
+      debugPrint('[TEMPLATES-UI] 📋 Template ID: ${template.id}');
+      debugPrint('[TEMPLATES-UI] 📋 Item IDs: ${template.items.map((i) => 'templateId:${i.templateId}, foodId:${i.foodId}').join(', ')}');
       nameController.text = template.name;
       descriptionController.text = template.description ?? '';
       templateItems.value = template.items;
     } else {
-      print('[TEMPLATES-UI] ❌ Template not found with ID: $templateId');
+      debugPrint('[TEMPLATES-UI] ❌ Template not found with ID: $templateId');
     }
   }
 
@@ -178,18 +180,18 @@ class MealTemplateEditorPage extends HookConsumerWidget {
     isLoading.value = true;
 
     try {
-      print('[TEMPLATES-UI] 💾 Saving template: isEditing=$isEditing, templateId=$templateId, items count=${items.length}');
+      debugPrint('[TEMPLATES-UI] 💾 Saving template: isEditing=$isEditing, templateId=$templateId, items count=${items.length}');
       if (isEditing && templateId != null) {
         // Get the existing template to preserve createdAt
-        print('[TEMPLATES-UI] 📖 Loading existing template with ID: $templateId');
+        debugPrint('[TEMPLATES-UI] 📖 Loading existing template with ID: $templateId');
         final existingTemplate = await ref.read(mealsRepositoryProvider).getMealTemplateById(templateId);
         
         if (existingTemplate == null) {
-          print('[TEMPLATES-UI] ❌ ERROR: Existing template not found with ID: $templateId');
+          debugPrint('[TEMPLATES-UI] ❌ ERROR: Existing template not found with ID: $templateId');
           throw Exception('Template not found for editing');
         }
         
-        print('[TEMPLATES-UI] ✅ Found existing template: ${existingTemplate.name} (created: ${existingTemplate.createdAt})');
+        debugPrint('[TEMPLATES-UI] ✅ Found existing template: ${existingTemplate.name} (created: ${existingTemplate.createdAt})');
         
         // Update existing template - fix templateId in items
         final correctedItems = items.map((item) => item.copyWith(templateId: templateId)).toList();
@@ -201,26 +203,26 @@ class MealTemplateEditorPage extends HookConsumerWidget {
           updatedAt: DateTime.now(),
           items: correctedItems,
         );
-        print('[TEMPLATES-UI] 🔄 Updating template ID "$templateId": ${template.name} with ${template.items.length} items');
+        debugPrint('[TEMPLATES-UI] 🔄 Updating template ID "$templateId": ${template.name} with ${template.items.length} items');
         await ref.read(mealsRepositoryProvider).updateMealTemplate(template);
-        print('[TEMPLATES-UI] ✅ Template updated successfully');
+        debugPrint('[TEMPLATES-UI] ✅ Template updated successfully');
       } else {
         // Create new template
         final template = MealTemplate.create(
           name: name.trim(),
           description: description.trim().isEmpty ? null : description.trim(),
         );
-        print('[TEMPLATES-UI] ➕ Creating new template: ${template.name} with ID: ${template.id}');
+        debugPrint('[TEMPLATES-UI] ➕ Creating new template: ${template.name} with ID: ${template.id}');
         // Fix templateId in items to match the new template's ID
         final correctedItems = items.map((item) => item.copyWith(templateId: template.id)).toList();
-        print('[TEMPLATES-UI] 🔧 Corrected ${correctedItems.length} items with template ID');
+        debugPrint('[TEMPLATES-UI] 🔧 Corrected ${correctedItems.length} items with template ID');
         final templateWithItems = template.copyWith(items: correctedItems);
-        print('[TEMPLATES-UI] 📤 Sending to repository: ${templateWithItems.name} with ${templateWithItems.items.length} items');
+        debugPrint('[TEMPLATES-UI] 📤 Sending to repository: ${templateWithItems.name} with ${templateWithItems.items.length} items');
         await ref.read(mealsRepositoryProvider).createMealTemplate(templateWithItems);
-        print('[TEMPLATES-UI] ✅ Template created successfully');
+        debugPrint('[TEMPLATES-UI] ✅ Template created successfully');
       }
 
-      print('[TEMPLATES-UI] 🔄 Invalidating provider to refresh UI');
+      debugPrint('[TEMPLATES-UI] 🔄 Invalidating provider to refresh UI');
       ref.invalidate(mealsRepositoryProvider);
 
       if (context.mounted) {
@@ -313,6 +315,7 @@ class _TemplateItemCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(currentLanguageProvider);
     return FutureBuilder<FoodItem?>(
       future: ref.read(mealsRepositoryProvider).getFoodById(item.foodId),
       builder: (context, snapshot) {
@@ -329,19 +332,15 @@ class _TemplateItemCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      food.name,
+                      food.displayName(language),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Builder(
                       builder: (context) {
                         // Convert to display amount (grams for 100g units)
-                        final displayAmount = food.unit.toLowerCase().contains('100')
-                            ? item.amount * 100
-                            : item.amount;
-                        final displayUnit = food.unit.toLowerCase().contains('100')
-                            ? 'g'
-                            : food.unit;
+                        final displayAmount = FoodNutritionMath.displayQuantity(food, item.amount);
+                        final displayUnit = FoodNutritionMath.displayUnitLabel(food);
                         return Text(
                           '${displayAmount.toStringAsFixed(displayAmount.truncateToDouble() == displayAmount ? 0 : 1)} $displayUnit',
                           style: Theme.of(context).textTheme.bodyMedium,
@@ -354,11 +353,13 @@ class _TemplateItemCard extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: onEdit,
-              ),
+            tooltip: AppLocalizations.of(context)!.edit,
+          ),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: onDelete,
-              ),
+            tooltip: AppLocalizations.of(context)!.delete,
+          ),
             ],
           ),
         );
@@ -379,37 +380,14 @@ class _TemplateItemDialog extends HookConsumerWidget {
 
   final WidgetRef ref;
 
-  // Helper to convert stored amount to display amount (grams)
-  double _toDisplayAmount(double amount, String unit) {
-    if (unit.toLowerCase().contains('100')) {
-      return amount * 100; // Convert from 100g units to grams
-    }
-    return amount;
-  }
-
-  // Helper to convert display amount (grams) to stored amount
-  double _toStoredAmount(double displayAmount, String unit) {
-    if (unit.toLowerCase().contains('100')) {
-      return displayAmount / 100; // Convert from grams to 100g units
-    }
-    return displayAmount;
-  }
-
-  // Helper to get display unit label
-  String _getDisplayUnit(String unit) {
-    if (unit.toLowerCase().contains('100')) {
-      return 'g'; // Show as 'g' instead of '100g'
-    }
-    return unit;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final language = ref.watch(currentLanguageProvider);
     final searchController = useTextEditingController();
     final amountController = useTextEditingController(text: '100');
     final selectedFoodState = useState<FoodItem?>(null);
-    final allFoods = ref.watch(mealsRepositoryProvider).watchAllFoods();
+    final allFoods = ref.watch(allFoodsStreamProvider);
 
     // Initialize with existing food if editing
     useEffect(() {
@@ -418,7 +396,7 @@ class _TemplateItemDialog extends HookConsumerWidget {
           if (food != null) {
             selectedFoodState.value = food;
             if (initialAmount != null) {
-              final displayAmount = _toDisplayAmount(initialAmount!, food.unit);
+              final displayAmount = FoodNutritionMath.displayQuantity(food, initialAmount!);
               amountController.text = displayAmount.toString();
             }
           }
@@ -453,31 +431,42 @@ class _TemplateItemDialog extends HookConsumerWidget {
 
             // Food List
             Expanded(
-              child: StreamBuilder<List<FoodItem>>(
-                stream: allFoods,
-                builder: (context, snapshot) {
-                  final foods = snapshot.data ?? [];
-                  if (foods.isEmpty) {
-                    return Center(child: Text(l10n.noFoodsAvailable));
-                  }
+              // AnimatedBuilder (not a plain StreamBuilder alone) so this
+              // rebuilds when searchController's text changes -- the
+              // TextFormField above has no onChanged, and without this
+              // listener typing in the search box never actually
+              // refiltered the list (same class of bug fixed earlier in
+              // meal_editor_page.dart's _FoodSelectorDialog preview).
+              child: AnimatedBuilder(
+                animation: searchController,
+                builder: (context, _) {
+                  return StreamBuilder<List<FoodItem>>(
+                    stream: allFoods,
+                    builder: (context, snapshot) {
+                      final foods = snapshot.data ?? [];
+                      if (foods.isEmpty) {
+                        return Center(child: Text(l10n.noFoodsAvailable));
+                      }
 
-                  final filteredFoods = foods.where((food) {
-                    final query = searchController.text.toLowerCase();
-                    return food.name.toLowerCase().contains(query) ||
-                           (food.brand?.toLowerCase().contains(query) ?? false);
-                  }).toList();
+                      final filteredFoods = foods.where((food) {
+                        final query = searchController.text.toLowerCase();
+                        return food.name.toLowerCase().contains(query) ||
+                               (food.brand?.toLowerCase().contains(query) ?? false);
+                      }).toList();
 
-                  return ListView.builder(
-                    itemCount: filteredFoods.length,
-                    itemBuilder: (context, index) {
-                      final food = filteredFoods[index];
-                      final isSelected = selectedFoodState.value?.id == food.id;
-                      
-                      return ListTile(
-                        title: Text(food.name),
-                        subtitle: Text('${food.brand ?? 'Generic'} • ${_getDisplayUnit(food.unit)}'),
-                        selected: isSelected,
-                        onTap: () => selectedFoodState.value = food,
+                      return ListView.builder(
+                        itemCount: filteredFoods.length,
+                        itemBuilder: (context, index) {
+                          final food = filteredFoods[index];
+                          final isSelected = selectedFoodState.value?.id == food.id;
+
+                          return ListTile(
+                            title: Text(food.displayName(language)),
+                            subtitle: Text('${food.brand ?? 'Generic'} • ${FoodNutritionMath.displayUnitLabel(food)}'),
+                            selected: isSelected,
+                            onTap: () => selectedFoodState.value = food,
+                          );
+                        },
                       );
                     },
                   );
@@ -497,7 +486,7 @@ class _TemplateItemDialog extends HookConsumerWidget {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   labelText: l10n.amount,
-                  suffixText: _getDisplayUnit(selectedFoodState.value!.unit),
+                  suffixText: FoodNutritionMath.displayUnitLabel(selectedFoodState.value!),
                 ),
               ),
             ],
@@ -526,7 +515,10 @@ class _TemplateItemDialog extends HookConsumerWidget {
                           }
 
                           // Convert display amount back to stored amount
-                          final storedAmount = _toStoredAmount(displayAmount, selectedFoodState.value!.unit);
+                          final storedAmount = FoodNutritionMath.storedQuantity(
+                            selectedFoodState.value!,
+                            displayAmount,
+                          );
 
                           Navigator.of(context).pop({
                             'foodId': selectedFoodState.value!.id,

@@ -6,17 +6,19 @@ import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
+import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class WorkoutsPage extends ConsumerWidget {
   const WorkoutsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final templatesAsync = ref.watch(workoutTemplatesRepositoryProvider).watchAllTemplates();
-    final recentSessionsAsync = ref.watch(workoutSessionsRepositoryProvider).watchRecentSessions(limit: 5);
+    final language = ref.watch(currentLanguageProvider);
+    final templatesAsync = ref.watch(workoutTemplatesStreamProvider);
+    final recentSessionsAsync = ref.watch(recentSessionsStreamProvider(5));
 
     return Scaffold(
       appBar: AppBar(
@@ -119,6 +121,7 @@ class WorkoutsPage extends ConsumerWidget {
                   children: templates.map((template) {
                     return _WorkoutTemplateCard(
                       template: template,
+                      language: language,
                       onStart: () => _startWorkout(context, ref, template),
                       onEdit: () => context.push('/workouts/templates/${template.id}'),
                       onDelete: () => _deleteTemplate(context, ref, template),
@@ -223,12 +226,14 @@ class WorkoutsPage extends ConsumerWidget {
 
 class _WorkoutTemplateCard extends StatelessWidget {
   final WorkoutTemplate template;
+  final AppLanguage language;
   final VoidCallback onStart;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _WorkoutTemplateCard({
     required this.template,
+    required this.language,
     required this.onStart,
     required this.onEdit,
     required this.onDelete,
@@ -248,7 +253,7 @@ class _WorkoutTemplateCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    template.name,
+                    template.displayName(language),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,

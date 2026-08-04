@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'dart:math' as math;
+
+import '../../../core/contrast.dart';
 
 class AdvancedColorPicker extends HookConsumerWidget {
   final String label;
@@ -149,13 +151,13 @@ class AdvancedColorPicker extends HookConsumerWidget {
                         
                         // Hue Picker
                         Text(
-                          'Hue',
+                          AppLocalizations.of(context)!.hue,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        _HuePicker(
+                        HuePicker(
                           hue: hsvColor.value.hue,
                           onChanged: (hue) {
                             final newHsv = hsvColor.value.withHue(hue);
@@ -167,13 +169,13 @@ class AdvancedColorPicker extends HookConsumerWidget {
                         
                         // Saturation-Brightness Picker
                         Text(
-                          'Saturation & Brightness',
+                          AppLocalizations.of(context)!.saturationAndBrightness,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        _SaturationBrightnessPicker(
+                        SaturationBrightnessPicker(
                           hue: hsvColor.value.hue,
                           saturation: hsvColor.value.saturation,
                           value: hsvColor.value.value,
@@ -192,7 +194,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                         
                         // HSVA Sliders
                         Text(
-                          'Precise Controls',
+                          AppLocalizations.of(context)!.preciseControls,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -285,7 +287,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                         
                         // Hex Input
                         Text(
-                          'Hex Code',
+                          AppLocalizations.of(context)!.hexCode,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -320,7 +322,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                         
                         // RGB Inputs
                         Text(
-                          'RGB Values',
+                          AppLocalizations.of(context)!.rgbValues,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -384,7 +386,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                         
                         // Presets
                         Text(
-                          'Presets',
+                          AppLocalizations.of(context)!.presets,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -465,7 +467,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Cancel'),
+                          child: Text(AppLocalizations.of(context)!.cancel),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -483,7 +485,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Apply'),
+                          child: Text(AppLocalizations.of(context)!.apply),
                         ),
                       ),
                     ],
@@ -505,7 +507,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Previous',
+                AppLocalizations.of(context)!.previous,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -526,7 +528,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Current',
+                AppLocalizations.of(context)!.currentColorLabel,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -556,9 +558,9 @@ class AdvancedColorPicker extends HookConsumerWidget {
   Widget _buildContrastIndicator(BuildContext context, Color color) {
     final luminance = color.computeLuminance();
     final textColor = luminance > 0.5 ? Colors.black : Colors.white;
-    final contrastRatio = _calculateContrastRatio(color, textColor);
-    final passesAA = contrastRatio >= 4.5;
-    final passesAAA = contrastRatio >= 7.0;
+    final ratio = contrastRatio(color, textColor);
+    final passesAA = ratio >= 4.5;
+    final passesAAA = ratio >= 7.0;
     
     return Container(
       height: 56, // Fixed height
@@ -587,7 +589,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Contrast: ${contrastRatio.toStringAsFixed(1)}:1',
+                  'Contrast: ${ratio.toStringAsFixed(1)}:1',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -646,20 +648,13 @@ class AdvancedColorPicker extends HookConsumerWidget {
     return color.value.toRadixString(16).substring(2, 8).toUpperCase();
   }
 
-  double _calculateContrastRatio(Color color1, Color color2) {
-    final lum1 = color1.computeLuminance();
-    final lum2 = color2.computeLuminance();
-    final lighter = lum1 > lum2 ? lum1 : lum2;
-    final darker = lum1 > lum2 ? lum2 : lum1;
-    return (lighter + 0.05) / (darker + 0.05);
-  }
 }
 
-class _HuePicker extends StatelessWidget {
+class HuePicker extends StatelessWidget {
   final double hue;
   final ValueChanged<double> onChanged;
 
-  const _HuePicker({
+  const HuePicker({
     required this.hue,
     required this.onChanged,
   });
@@ -681,6 +676,7 @@ class _HuePicker extends StatelessWidget {
       },
       child: Container(
         height: 40,
+        width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
@@ -695,8 +691,16 @@ class _HuePicker extends StatelessWidget {
             ],
           ),
         ),
-        child: CustomPaint(
-          painter: _HueThumbPainter(hue: hue),
+        // CustomPaint has no child, so it sizes itself to `size` (default
+        // Size.zero) constrained by whatever it's given. Container(height: 40)
+        // only fixes height, leaving width loose, so without this SizedBox
+        // the paint area collapsed to zero width -- the rainbow track never
+        // rendered, and only the thumb (drawn via canvas overflow past the
+        // zero-width box) was visible, floating with nothing behind it.
+        child: SizedBox.expand(
+          child: CustomPaint(
+            painter: _HueThumbPainter(hue: hue),
+          ),
         ),
       ),
     );
@@ -739,13 +743,13 @@ class _HueThumbPainter extends CustomPainter {
   }
 }
 
-class _SaturationBrightnessPicker extends StatelessWidget {
+class SaturationBrightnessPicker extends StatelessWidget {
   final double hue;
   final double saturation;
   final double value;
   final Function(double, double) onChanged;
 
-  const _SaturationBrightnessPicker({
+  const SaturationBrightnessPicker({
     required this.hue,
     required this.saturation,
     required this.value,
@@ -910,15 +914,19 @@ class _HSVASlider extends HookWidget {
               Expanded(
                 child: SizedBox(
                   height: 44, // Touch target
-                  child: GestureDetector(
+                  // Builder so the gesture handlers get a context whose
+                  // RenderBox *is* the track. Previously they used the whole
+                  // row's context and subtracted hardcoded label/badge widths.
+                  child: Builder(
+                    builder: (trackContext) => GestureDetector(
                     onPanStart: (details) {
-                      _updateValue(details.localPosition.dx, context);
+                      _updateValue(details.localPosition.dx, trackContext);
                     },
                     onPanUpdate: (details) {
-                      _updateValue(details.localPosition.dx, context);
+                      _updateValue(details.localPosition.dx, trackContext);
                     },
                     onTapDown: (details) {
-                      _updateValue(details.localPosition.dx, context);
+                      _updateValue(details.localPosition.dx, trackContext);
                     },
                     child: Container(
                       height: 36,
@@ -931,57 +939,71 @@ class _HSVASlider extends HookWidget {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: Stack(
-                          children: [
-                            // Checkerboard background for alpha
-                            if (showCheckerboard)
-                              Positioned.fill(
-                                child: CustomPaint(
-                                  painter: _CheckerboardPainter(),
-                                ),
-                              ),
-                            // Gradient
-                            Positioned.fill(
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final gradient = gradientBuilder(constraints.maxWidth);
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      gradient: gradient,
+                        // One LayoutBuilder for the whole stack so the thumb is
+                        // positioned from the track's *actual* width. It used to
+                        // derive that from MediaQuery screen width minus a
+                        // hardcoded 108, which only matched one device and one
+                        // set of paddings -- and was wrong in RTL, where the
+                        // track doesn't start at the screen edge.
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            const thumbSize = 28.0;
+                            final trackWidth = constraints.maxWidth;
+                            final fraction =
+                                ((sliderValue.value - min) / (max - min)).clamp(0.0, 1.0);
+                            // Inset so the thumb stays fully on the track at
+                            // both extremes instead of hanging off the ends.
+                            final left =
+                                fraction * (trackWidth - thumbSize);
+
+                            return Stack(
+                              children: [
+                                // Checkerboard background for alpha
+                                if (showCheckerboard)
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: _CheckerboardPainter(),
                                     ),
-                                  );
-                                },
-                              ),
-                            ),
-                            // Thumb
-                            Positioned(
-                              left: ((sliderValue.value - min) / (max - min)) * 
-                                  (MediaQuery.of(context).size.width - 108) - 14,
-                              top: 4,
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    width: 3,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
+                                // Gradient
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: gradientBuilder(trackWidth),
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
+                                // Thumb
+                                PositionedDirectional(
+                                  start: left,
+                                  top: 4,
+                                  child: Container(
+                                    width: thumbSize,
+                                    height: thumbSize,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        width: 3,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ),
               ),
@@ -1011,12 +1033,18 @@ class _HSVASlider extends HookWidget {
   void _updateValue(double dx, BuildContext context) {
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
-    
-    final width = renderBox.size.width - 108; // Account for label and badge
-    final position = (dx - 36).clamp(0.0, width); // Account for padding
-    final newValue = (position / width * (max - min) + min).clamp(min, max);
-    
-    onChanged(newValue);
+
+    final width = renderBox.size.width;
+    if (width <= 0) return;
+
+    var fraction = (dx / width).clamp(0.0, 1.0);
+    // The track is mirrored in RTL (the thumb is placed with
+    // PositionedDirectional), so dragging must be mirrored to match.
+    if (Directionality.of(context) == TextDirection.rtl) {
+      fraction = 1.0 - fraction;
+    }
+
+    onChanged((min + fraction * (max - min)).clamp(min, max));
   }
 }
 

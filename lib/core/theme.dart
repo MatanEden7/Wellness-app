@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -38,7 +39,11 @@ class AppTheme {
   static const _goldTextSecondary = Color(0xFFC7A200); // brighter gold for better contrast
 
   // ===== Ocean (Analogous: blues & teals - calming, trustworthy) =====
-  static const _oceanPrimary = Color(0xFF0EA5E9);     // Sky blue (main CTA)
+  // Darkened from 0xFF0EA5E9: that sky blue only hit 2.77:1 contrast against
+  // the white text buttons render on top of it (AA needs 4.5:1) -- caught by
+  // test/regression/theme_contrast_test.dart. Reuses the palette's existing
+  // deep-blue shade rather than inventing a new color.
+  static const _oceanPrimary = Color(0xFF0369A1);     // Sky blue (main CTA)
   static const _oceanSecondary = Color(0xFF06B6D4);   // Cyan (accents)
   static const _oceanBg = Color(0xFFF0F9FF);          // Very light blue bg
   static const _oceanSurface = Color(0xFFFFFFFF);     // White cards
@@ -46,7 +51,9 @@ class AppTheme {
   static const _oceanTextSecondary = Color(0xFF0369A1); // Medium blue
 
   // ===== Forest (Nature: greens - balanced, healthy, growth) =====
-  static const _forestPrimary = Color(0xFF10B981);    // Emerald green
+  // Darkened from 0xFF10B981 for the same reason as ocean above (2.54:1
+  // white-on-primary contrast, below the 4.5:1 AA bar).
+  static const _forestPrimary = Color(0xFF047857);    // Emerald green
   static const _forestSecondary = Color(0xFF059669);  // Darker green
   static const _forestBg = Color(0xFFF0FDF4);         // Very light green bg
   static const _forestSurface = Color(0xFFFFFFFF);    // White cards
@@ -54,7 +61,9 @@ class AppTheme {
   static const _forestTextSecondary = Color(0xFF047857); // Medium green
 
   // ===== Sunset (Warm: oranges & pinks - energetic, optimistic) =====
-  static const _sunsetPrimary = Color(0xFFFF6B35);    // Vibrant orange
+  // Darkened from 0xFFFF6B35 for the same reason as ocean above (2.84:1
+  // white-on-primary contrast, below the 4.5:1 AA bar).
+  static const _sunsetPrimary = Color(0xFFC2410C);    // Vibrant orange
   static const _sunsetSecondary = Color(0xFFF72585);  // Hot pink accent
   static const _sunsetBg = Color(0xFFFFF8F5);         // Warm cream bg
   static const _sunsetSurface = Color(0xFFFFFFFF);    // White cards
@@ -79,6 +88,19 @@ class AppTheme {
 
   // Public API: get ThemeData by kind
   static ThemeData byKind(AppThemeKind kind, {
+    Color? customPrimary,
+    Color? customBackground,
+    Color? customSurface,
+  }) {
+    return _appleize(_rawByKind(
+      kind,
+      customPrimary: customPrimary,
+      customBackground: customBackground,
+      customSurface: customSurface,
+    ));
+  }
+
+  static ThemeData _rawByKind(AppThemeKind kind, {
     Color? customPrimary,
     Color? customBackground,
     Color? customSurface,
@@ -108,6 +130,98 @@ class AppTheme {
       default:
         return _lightTheme;
     }
+  }
+
+  /// iOS-flavoured component styling applied on top of every theme.
+  ///
+  /// Layered here, in the single funnel all nine themes pass through, rather
+  /// than repeated in each `_xTheme` getter -- so a tweak lands everywhere and
+  /// the per-theme definitions stay purely about colour.
+  static ThemeData _appleize(ThemeData base) {
+    final scheme = base.colorScheme;
+
+    return base.copyWith(
+      // iOS switches are a white thumb on a tinted track. Material 3's default
+      // renders a dark thumb here, which reads as "off" at a glance.
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return scheme.onSurface.withOpacity(0.4);
+          }
+          return Colors.white;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return scheme.onSurface.withOpacity(0.12);
+          }
+          if (states.contains(WidgetState.selected)) return scheme.primary;
+          return scheme.onSurface.withOpacity(0.22);
+        }),
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+        trackOutlineWidth: WidgetStateProperty.all(0),
+      ),
+      // iOS never uses Material's filled/elevated slider look.
+      sliderTheme: base.sliderTheme.copyWith(
+        trackHeight: 4,
+        activeTrackColor: scheme.primary,
+        inactiveTrackColor: scheme.onSurface.withOpacity(0.16),
+        thumbColor: Colors.white,
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
+      ),
+      // Hairline dividers, as on iOS grouped lists.
+      dividerTheme: DividerThemeData(
+        space: 1,
+        thickness: 0.5,
+        color: scheme.onSurface.withOpacity(0.12),
+      ),
+      // iOS sheets and dialogs are noticeably more rounded than Material's.
+      dialogTheme: base.dialogTheme.copyWith(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      bottomSheetTheme: base.bottomSheetTheme.copyWith(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        showDragHandle: true,
+      ),
+      // iOS's taller, rounder buttons with its 17pt label.
+      //
+      // Height only -- deliberately NOT `Size.fromHeight`, which sets the
+      // *minimum width* to double.infinity. That forces every button to demand
+      // infinite width, so any button laid out in a Row (a dialog's
+      // Cancel/Confirm pair, for instance) fails to lay out and its whole
+      // dialog renders as an empty barrier. Callers that want full-width
+      // wrap the button in a SizedBox, as onboarding already does.
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(64, 50),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(64, 50),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+        ),
+      ),
+      snackBarTheme: base.snackBarTheme.copyWith(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      // 44pt is Apple's minimum comfortable hit target.
+      listTileTheme: base.listTileTheme.copyWith(
+        minVerticalPadding: 10,
+        iconColor: scheme.onSurface.withOpacity(0.55),
+      ),
+    );
   }
   
   // Build a custom theme from provided colors
@@ -151,7 +265,7 @@ class AppTheme {
           color: onSurface,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -220,7 +334,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _lightSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -335,7 +449,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -452,7 +566,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _goldSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -554,7 +668,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _oceanSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -651,7 +765,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _forestSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -748,7 +862,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _sunsetSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -845,7 +959,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _lavenderSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -950,7 +1064,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _midnightSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(

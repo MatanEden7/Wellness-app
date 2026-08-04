@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
+import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
 
@@ -15,7 +16,8 @@ class ExerciseLibraryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final exercisesAsync = ref.watch(exercisesRepositoryProvider).watchAllExercises();
+    final language = ref.watch(currentLanguageProvider);
+    final exercisesAsync = ref.watch(exercisesStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,6 +64,7 @@ class ExerciseLibraryPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _ExerciseCard(
                   exercise: exercise,
+                  language: language,
                   onEdit: () => _showEditExerciseDialog(context, ref, exercise),
                   onDelete: () => _deleteExercise(context, ref, exercise),
                 ),
@@ -117,19 +120,19 @@ class ExerciseLibraryPage extends HookConsumerWidget {
 
     if (confirmed == true) {
       await ref.read(exercisesRepositoryProvider).deleteExercise(exercise.id);
-      // Trigger refresh to update UI immediately
-      ref.invalidate(exercisesRepositoryProvider);
     }
   }
 }
 
 class _ExerciseCard extends StatelessWidget {
   final Exercise exercise;
+  final AppLanguage language;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _ExerciseCard({
     required this.exercise,
+    required this.language,
     required this.onEdit,
     required this.onDelete,
   });
@@ -146,7 +149,7 @@ class _ExerciseCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  exercise.name,
+                  exercise.displayName(language),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
@@ -209,7 +212,7 @@ class _ExerciseCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  exercise.primaryMuscle!,
+                  exercise.displayPrimaryMuscle(language) ?? exercise.primaryMuscle!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -405,8 +408,9 @@ class _AddExerciseDialog extends HookConsumerWidget {
         await ref.read(exercisesRepositoryProvider).createExercise(exerciseItem);
       }
 
-      // Trigger refresh to update UI immediately
-      ref.invalidate(exercisesRepositoryProvider);
+      // No invalidate needed: insert/update now notify the exercises stream,
+      // and tearing the cached stream down here would reset the list to its
+      // loading state.
 
       if (context.mounted) {
         Navigator.of(context).pop();

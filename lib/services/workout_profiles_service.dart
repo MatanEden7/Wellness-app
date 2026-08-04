@@ -1,4 +1,3 @@
-import '../features/workouts/domain/models.dart';
 
 enum WorkoutProfile {
   seniors,

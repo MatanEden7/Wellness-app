@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 import '../../../services/setup_engine_service.dart';
 import '../../../services/user_profile_service.dart';
@@ -75,7 +75,6 @@ class OnboardingPage extends HookConsumerWidget {
         final profileService = ref.read(userProfileServiceProvider);
         final prefs = ref.read(preferencesServiceProvider);
         final database = ref.read(databaseProvider);
-        final calendarService = ref.read(calendarServiceProvider);
         
         final setupEngine = SetupEngineService();
         await setupEngine.initialize();
@@ -114,18 +113,22 @@ class OnboardingPage extends HookConsumerWidget {
         final mealGen = MealTemplateGenerator(database, profile);
         await mealGen.generateTemplates();
         
-        // Generate calendar schedule
-        final calendarGen = CalendarScheduleGenerator(database, calendarService, profile);
-        await calendarGen.generateSchedule();
-        
-        print('[ONBOARDING] ✅ Setup completed successfully');
+        // Generate the starting calendar schedule (workouts, meals, sleep).
+        // Routed through the notifier rather than CalendarService directly,
+        // because that is the only path that also schedules the reminders.
+        final calendarGen = CalendarScheduleGenerator(database, profile);
+        await ref
+            .read(calendarStateProvider.notifier)
+            .addEvents(await calendarGen.buildSchedule());
+
+        debugPrint('[ONBOARDING] Setup completed successfully');
         
         // Navigate to dashboard
         if (context.mounted) {
           context.go('/');
         }
       } catch (e) {
-        print('[ONBOARDING] ❌ Setup failed: $e');
+        debugPrint('[ONBOARDING] ❌ Setup failed: $e');
         isCompleting.value = false;
         // Show error to user if mounted
         if (context.mounted) {
@@ -259,7 +262,6 @@ class _LanguageSelectionStep extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final languageService = ref.read(languageServiceProvider);
     // Watch language to rebuild when it changes
-    final currentLanguage = ref.watch(currentLanguageProvider);
     final l10n = AppLocalizations.of(context)!;
     
     return SingleChildScrollView(
@@ -290,7 +292,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
             context: context,
             ref: ref,
             languageCode: 'en',
-            flag: '🇺🇸',
+            badge: 'EN',
             languageName: 'English',
             nativeName: 'English',
             isSelected: selectedLanguage.value == 'en',
@@ -306,7 +308,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
             context: context,
             ref: ref,
             languageCode: 'he',
-            flag: '🇮🇱',
+            badge: 'עב',
             languageName: 'Hebrew',
             nativeName: 'עברית',
             isSelected: selectedLanguage.value == 'he',
@@ -336,7 +338,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
     required BuildContext context,
     required WidgetRef ref,
     required String languageCode,
-    required String flag,
+    required String badge,
     required String languageName,
     required String nativeName,
     required bool isSelected,
@@ -361,12 +363,35 @@ class _LanguageSelectionStep extends HookConsumerWidget {
         ),
         child: Row(
           children: [
-            // Flag emoji
-            Text(
-              flag,
-              style: const TextStyle(fontSize: 48),
+            // A typographic badge rather than a flag emoji. Regional-indicator
+            // flags render as tofu boxes wherever the platform font lacks
+            // them -- which is most Android builds, and was happening on the
+            // iOS simulator too. This also avoids equating a language with a
+            // single country's flag.
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                badge,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                ),
+              ),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 12),
             // Language names
             Expanded(
               child: Column(
@@ -374,6 +399,8 @@ class _LanguageSelectionStep extends HookConsumerWidget {
                 children: [
                   Text(
                     languageName,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: isSelected
@@ -384,6 +411,8 @@ class _LanguageSelectionStep extends HookConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     nativeName,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     ),
@@ -444,9 +473,10 @@ class _BasicInfoStep extends StatelessWidget {
           Text(l10n.onboardingSex, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           SegmentedButton<String>(
+            showSelectedIcon: false,
             segments: [
-              ButtonSegment(value: 'male', label: Text(l10n.onboardingMale)),
-              ButtonSegment(value: 'female', label: Text(l10n.onboardingFemale)),
+              ButtonSegment(value: 'male', label: Text(l10n.onboardingMale, maxLines: 1)),
+              ButtonSegment(value: 'female', label: Text(l10n.onboardingFemale, maxLines: 1)),
             ],
             selected: {sex.value},
             onSelectionChanged: (Set<String> newSelection) {
@@ -548,9 +578,12 @@ class _BasicInfoStep extends StatelessWidget {
                     Text(l10n.onboardingEnergy, style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(height: 4),
                     SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'kcal', label: Text('kcal')),
-                        ButtonSegment(value: 'kJ', label: Text('kJ')),
+                      // Half-width control: the selected-check icon left too
+                      // little room and "kcal" wrapped to "kca / l".
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(value: 'kcal', label: Text(AppLocalizations.of(context)!.kcal, maxLines: 1)),
+                        ButtonSegment(value: 'kJ', label: Text('kJ', maxLines: 1)),
                       ],
                       selected: {energyUnit.value},
                       onSelectionChanged: (Set<String> newSelection) {
@@ -568,9 +601,10 @@ class _BasicInfoStep extends StatelessWidget {
                     Text(l10n.onboardingWeightUnit, style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(height: 4),
                     SegmentedButton<String>(
+                      showSelectedIcon: false,
                       segments: const [
-                        ButtonSegment(value: 'g', label: Text('g')),
-                        ButtonSegment(value: 'oz', label: Text('oz')),
+                        ButtonSegment(value: 'g', label: Text('g', maxLines: 1)),
+                        ButtonSegment(value: 'oz', label: Text('oz', maxLines: 1)),
                       ],
                       selected: {weightUnit.value},
                       onSelectionChanged: (Set<String> newSelection) {
@@ -588,7 +622,7 @@ class _BasicInfoStep extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onNext,
-              child: const Text('Continue'),
+              child: Text(AppLocalizations.of(context)!.onboardingContinue),
             ),
           ),
         ],
@@ -621,7 +655,7 @@ class _GoalsStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'What are your goals?',
+            AppLocalizations.of(context)!.onboardingGoalsTitle,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -726,7 +760,7 @@ class _GoalsStep extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onNext,
-              child: const Text('Continue'),
+              child: Text(AppLocalizations.of(context)!.onboardingContinue),
             ),
           ),
         ],
@@ -755,14 +789,14 @@ class _EquipmentStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'What equipment do you have?',
+            AppLocalizations.of(context)!.onboardingEquipmentTitle,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Select all that apply',
+            AppLocalizations.of(context)!.selectAllThatApply,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -900,7 +934,7 @@ class _EquipmentStep extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onNext,
-              child: const Text('Continue'),
+              child: Text(AppLocalizations.of(context)!.onboardingContinue),
             ),
           ),
         ],
@@ -933,7 +967,7 @@ class _DietStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Dietary preferences',
+            AppLocalizations.of(context)!.onboardingDietTitle,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -944,10 +978,14 @@ class _DietStep extends StatelessWidget {
           Text(l10n.onboardingDietTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           SegmentedButton<String>(
+            // Three segments across a phone width leaves ~113pt each; the
+            // selected-check plus a 16-char label made "Omnivore" wrap to
+            // "Omnivor / e".
+            showSelectedIcon: false,
             segments: [
-              ButtonSegment(value: 'omnivore', label: Text(l10n.onboardingDietOmnivore)),
-              ButtonSegment(value: 'carnivore', label: Text(l10n.onboardingDietCarnivore)),
-              ButtonSegment(value: 'herbivore', label: Text(l10n.onboardingDietHerbivore)),
+              ButtonSegment(value: 'omnivore', label: Text(l10n.onboardingDietOmnivore, maxLines: 1)),
+              ButtonSegment(value: 'carnivore', label: Text(l10n.onboardingDietCarnivore, maxLines: 1)),
+              ButtonSegment(value: 'herbivore', label: Text(l10n.onboardingDietHerbivore, maxLines: 1)),
             ],
             selected: {dietType.value},
             onSelectionChanged: (Set<String> newSelection) {
@@ -995,7 +1033,7 @@ class _DietStep extends StatelessWidget {
             runSpacing: 8,
             children: [
               FilterChip(
-                label: const Text('None'),
+                label: Text(l10n.onboardingExclusionsNone),
                 selected: exclusions.value.contains('none'),
                 onSelected: (selected) {
                   if (selected) {
@@ -1004,7 +1042,7 @@ class _DietStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Dairy'),
+                label: Text(l10n.onboardingExclusionsDairy),
                 selected: exclusions.value.contains('dairy'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(exclusions.value);
@@ -1019,7 +1057,7 @@ class _DietStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Gluten'),
+                label: Text(l10n.onboardingExclusionsGluten),
                 selected: exclusions.value.contains('gluten'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(exclusions.value);
@@ -1034,7 +1072,7 @@ class _DietStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Nuts'),
+                label: Text(l10n.onboardingExclusionsNuts),
                 selected: exclusions.value.contains('nuts'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(exclusions.value);
@@ -1049,7 +1087,7 @@ class _DietStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Eggs'),
+                label: Text(l10n.onboardingExclusionsEggs),
                 selected: exclusions.value.contains('eggs'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(exclusions.value);
@@ -1064,7 +1102,7 @@ class _DietStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Shellfish'),
+                label: Text(l10n.onboardingExclusionsShellfish),
                 selected: exclusions.value.contains('shellfish'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(exclusions.value);
@@ -1079,7 +1117,7 @@ class _DietStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Soy'),
+                label: Text(l10n.onboardingExclusionsSoy),
                 selected: exclusions.value.contains('soy'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(exclusions.value);
@@ -1101,7 +1139,7 @@ class _DietStep extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onNext,
-              child: const Text('Continue'),
+              child: Text(AppLocalizations.of(context)!.onboardingContinue),
             ),
           ),
         ],
@@ -1122,20 +1160,21 @@ class _InjuriesStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Any injuries or limitations?',
+            AppLocalizations.of(context)!.onboardingInjuriesTitle,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'We\'ll suggest appropriate rehab exercises',
+            AppLocalizations.of(context)!.onboardingInjuriesHint,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -1147,7 +1186,7 @@ class _InjuriesStep extends StatelessWidget {
             runSpacing: 8,
             children: [
               FilterChip(
-                label: const Text('None'),
+                label: Text(l10n.onboardingInjuriesNone),
                 selected: injuries.value.contains('none'),
                 onSelected: (selected) {
                   if (selected) {
@@ -1156,7 +1195,7 @@ class _InjuriesStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Shoulder'),
+                label: Text(l10n.onboardingInjuriesShoulder),
                 selected: injuries.value.contains('shoulder'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(injuries.value);
@@ -1171,7 +1210,7 @@ class _InjuriesStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Back'),
+                label: Text(AppLocalizations.of(context)!.back),
                 selected: injuries.value.contains('back'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(injuries.value);
@@ -1186,7 +1225,7 @@ class _InjuriesStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Knee'),
+                label: Text(l10n.onboardingInjuriesKnee),
                 selected: injuries.value.contains('knee'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(injuries.value);
@@ -1201,7 +1240,7 @@ class _InjuriesStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Ankle'),
+                label: Text(l10n.onboardingInjuriesAnkle),
                 selected: injuries.value.contains('ankle'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(injuries.value);
@@ -1216,7 +1255,7 @@ class _InjuriesStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Elbow'),
+                label: Text(l10n.onboardingInjuriesElbow),
                 selected: injuries.value.contains('elbow'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(injuries.value);
@@ -1231,7 +1270,7 @@ class _InjuriesStep extends StatelessWidget {
                 },
               ),
               FilterChip(
-                label: const Text('Hip'),
+                label: Text(l10n.onboardingInjuriesHip),
                 selected: injuries.value.contains('hip'),
                 onSelected: (selected) {
                   final newSet = Set<String>.from(injuries.value);
@@ -1253,7 +1292,7 @@ class _InjuriesStep extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onNext,
-              child: const Text('Continue'),
+              child: Text(AppLocalizations.of(context)!.onboardingContinue),
             ),
           ),
         ],
@@ -1331,14 +1370,14 @@ class _SummaryStep extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Your personalized plan',
+            AppLocalizations.of(context)!.onboardingSummaryTitle,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Here\'s what we calculated for you',
+            AppLocalizations.of(context)!.onboardingSummarySubtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -1353,7 +1392,7 @@ class _SummaryStep extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Daily Targets',
+                    AppLocalizations.of(context)!.dailyTargets,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -1396,7 +1435,7 @@ class _SummaryStep extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Metabolic Info',
+                    AppLocalizations.of(context)!.metabolicInfo,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -1424,7 +1463,7 @@ class _SummaryStep extends HookConsumerWidget {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text('Complete Setup'),
+                  : Text(AppLocalizations.of(context)!.onboardingComplete),
             ),
           ),
         ],

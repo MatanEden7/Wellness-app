@@ -21,7 +21,10 @@ FoodItem _$FoodItemFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$FoodItem {
   String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
+  String get name =>
+      throw _privateConstructorUsedError; // Hebrew name, filled in separately from the English data -- see
+// FoodItemDisplayName.displayName below. Null until translated.
+  String? get nameHe => throw _privateConstructorUsedError;
   String? get brand => throw _privateConstructorUsedError;
   String get unit => throw _privateConstructorUsedError;
   double get kcalPerUnit => throw _privateConstructorUsedError;
@@ -46,6 +49,7 @@ abstract class $FoodItemCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? brand,
       String unit,
       double kcalPerUnit,
@@ -72,6 +76,7 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? brand = freezed,
     Object? unit = null,
     Object? kcalPerUnit = null,
@@ -91,6 +96,10 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       brand: freezed == brand
           ? _value.brand
           : brand // ignore: cast_nullable_to_non_nullable
@@ -142,6 +151,7 @@ abstract class _$$FoodItemImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? brand,
       String unit,
       double kcalPerUnit,
@@ -166,6 +176,7 @@ class __$$FoodItemImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? brand = freezed,
     Object? unit = null,
     Object? kcalPerUnit = null,
@@ -185,6 +196,10 @@ class __$$FoodItemImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       brand: freezed == brand
           ? _value.brand
           : brand // ignore: cast_nullable_to_non_nullable
@@ -231,6 +246,7 @@ class _$FoodItemImpl implements _FoodItem {
   const _$FoodItemImpl(
       {required this.id,
       required this.name,
+      this.nameHe,
       this.brand,
       required this.unit,
       required this.kcalPerUnit,
@@ -248,6 +264,10 @@ class _$FoodItemImpl implements _FoodItem {
   final String id;
   @override
   final String name;
+// Hebrew name, filled in separately from the English data -- see
+// FoodItemDisplayName.displayName below. Null until translated.
+  @override
+  final String? nameHe;
   @override
   final String? brand;
   @override
@@ -270,7 +290,7 @@ class _$FoodItemImpl implements _FoodItem {
 
   @override
   String toString() {
-    return 'FoodItem(id: $id, name: $name, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'FoodItem(id: $id, name: $name, nameHe: $nameHe, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -280,6 +300,7 @@ class _$FoodItemImpl implements _FoodItem {
             other is _$FoodItemImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.brand, brand) || other.brand == brand) &&
             (identical(other.unit, unit) || other.unit == unit) &&
             (identical(other.kcalPerUnit, kcalPerUnit) ||
@@ -304,6 +325,7 @@ class _$FoodItemImpl implements _FoodItem {
       runtimeType,
       id,
       name,
+      nameHe,
       brand,
       unit,
       kcalPerUnit,
@@ -332,6 +354,7 @@ abstract class _FoodItem implements FoodItem {
   const factory _FoodItem(
       {required final String id,
       required final String name,
+      final String? nameHe,
       final String? brand,
       required final String unit,
       required final double kcalPerUnit,
@@ -349,6 +372,9 @@ abstract class _FoodItem implements FoodItem {
   String get id;
   @override
   String get name;
+  @override // Hebrew name, filled in separately from the English data -- see
+// FoodItemDisplayName.displayName below. Null until translated.
+  String? get nameHe;
   @override
   String? get brand;
   @override
@@ -664,7 +690,11 @@ mixin _$Meal {
   String get name => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt =>
+      throw _privateConstructorUsedError; // The real time of day the meal was eaten, when set explicitly. Null
+// means "not set" -- the calendar falls back to createdAt/keyword
+// guessing the same way it always has for meals without one.
+  DateTime? get loggedAt => throw _privateConstructorUsedError;
   List<MealItem> get items => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -684,6 +714,7 @@ abstract class $MealCopyWith<$Res> {
       String? note,
       DateTime createdAt,
       DateTime updatedAt,
+      DateTime? loggedAt,
       List<MealItem> items});
 }
 
@@ -706,6 +737,7 @@ class _$MealCopyWithImpl<$Res, $Val extends Meal>
     Object? note = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? loggedAt = freezed,
     Object? items = null,
   }) {
     return _then(_value.copyWith(
@@ -733,6 +765,10 @@ class _$MealCopyWithImpl<$Res, $Val extends Meal>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      loggedAt: freezed == loggedAt
+          ? _value.loggedAt
+          : loggedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       items: null == items
           ? _value.items
           : items // ignore: cast_nullable_to_non_nullable
@@ -755,6 +791,7 @@ abstract class _$$MealImplCopyWith<$Res> implements $MealCopyWith<$Res> {
       String? note,
       DateTime createdAt,
       DateTime updatedAt,
+      DateTime? loggedAt,
       List<MealItem> items});
 }
 
@@ -774,6 +811,7 @@ class __$$MealImplCopyWithImpl<$Res>
     Object? note = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? loggedAt = freezed,
     Object? items = null,
   }) {
     return _then(_$MealImpl(
@@ -801,6 +839,10 @@ class __$$MealImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      loggedAt: freezed == loggedAt
+          ? _value.loggedAt
+          : loggedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       items: null == items
           ? _value._items
           : items // ignore: cast_nullable_to_non_nullable
@@ -819,6 +861,7 @@ class _$MealImpl extends _Meal {
       this.note,
       required this.createdAt,
       required this.updatedAt,
+      this.loggedAt,
       final List<MealItem> items = const []})
       : _items = items,
         super._();
@@ -839,6 +882,11 @@ class _$MealImpl extends _Meal {
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
+// The real time of day the meal was eaten, when set explicitly. Null
+// means "not set" -- the calendar falls back to createdAt/keyword
+// guessing the same way it always has for meals without one.
+  @override
+  final DateTime? loggedAt;
   final List<MealItem> _items;
   @override
   @JsonKey()
@@ -850,7 +898,7 @@ class _$MealImpl extends _Meal {
 
   @override
   String toString() {
-    return 'Meal(id: $id, date: $date, name: $name, note: $note, createdAt: $createdAt, updatedAt: $updatedAt, items: $items)';
+    return 'Meal(id: $id, date: $date, name: $name, note: $note, createdAt: $createdAt, updatedAt: $updatedAt, loggedAt: $loggedAt, items: $items)';
   }
 
   @override
@@ -866,13 +914,15 @@ class _$MealImpl extends _Meal {
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
+            (identical(other.loggedAt, loggedAt) ||
+                other.loggedAt == loggedAt) &&
             const DeepCollectionEquality().equals(other._items, _items));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, date, name, note, createdAt,
-      updatedAt, const DeepCollectionEquality().hash(_items));
+      updatedAt, loggedAt, const DeepCollectionEquality().hash(_items));
 
   @JsonKey(ignore: true)
   @override
@@ -896,6 +946,7 @@ abstract class _Meal extends Meal {
       final String? note,
       required final DateTime createdAt,
       required final DateTime updatedAt,
+      final DateTime? loggedAt,
       final List<MealItem> items}) = _$MealImpl;
   const _Meal._() : super._();
 
@@ -913,6 +964,10 @@ abstract class _Meal extends Meal {
   DateTime get createdAt;
   @override
   DateTime get updatedAt;
+  @override // The real time of day the meal was eaten, when set explicitly. Null
+// means "not set" -- the calendar falls back to createdAt/keyword
+// guessing the same way it always has for meals without one.
+  DateTime? get loggedAt;
   @override
   List<MealItem> get items;
   @override
@@ -1161,7 +1216,9 @@ class _$MealTemplateItemCopyWithImpl<$Res, $Val extends MealTemplateItem>
     implements $MealTemplateItemCopyWith<$Res> {
   _$MealTemplateItemCopyWithImpl(this._value, this._then);
 
+  // ignore: unused_field
   final $Val _value;
+  // ignore: unused_field
   final $Res Function($Val) _then;
 
   @pragma('vm:prefer-inline')
@@ -1175,16 +1232,20 @@ class _$MealTemplateItemCopyWithImpl<$Res, $Val extends MealTemplateItem>
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
-          : id as String,
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       templateId: null == templateId
           ? _value.templateId
-          : templateId as String,
+          : templateId // ignore: cast_nullable_to_non_nullable
+              as String,
       foodId: null == foodId
           ? _value.foodId
-          : foodId as String,
+          : foodId // ignore: cast_nullable_to_non_nullable
+              as String,
       amount: null == amount
           ? _value.amount
-          : amount as double,
+          : amount // ignore: cast_nullable_to_non_nullable
+              as double,
     ) as $Val);
   }
 }
@@ -1219,16 +1280,20 @@ class __$$MealTemplateItemImplCopyWithImpl<$Res>
     return _then(_$MealTemplateItemImpl(
       id: null == id
           ? _value.id
-          : id as String,
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       templateId: null == templateId
           ? _value.templateId
-          : templateId as String,
+          : templateId // ignore: cast_nullable_to_non_nullable
+              as String,
       foodId: null == foodId
           ? _value.foodId
-          : foodId as String,
+          : foodId // ignore: cast_nullable_to_non_nullable
+              as String,
       amount: null == amount
           ? _value.amount
-          : amount as double,
+          : amount // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }
@@ -1260,7 +1325,7 @@ class _$MealTemplateItemImpl implements _MealTemplateItem {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MealTemplateItemImpl &&
@@ -1322,7 +1387,9 @@ MealTemplate _$MealTemplateFromJson(Map<String, dynamic> json) {
 mixin _$MealTemplate {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  String? get nameHe => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
+  String? get descriptionHe => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
   List<MealTemplateItem> get items => throw _privateConstructorUsedError;
@@ -1342,7 +1409,9 @@ abstract class $MealTemplateCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? description,
+      String? descriptionHe,
       DateTime createdAt,
       DateTime updatedAt,
       List<MealTemplateItem> items});
@@ -1353,7 +1422,9 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
     implements $MealTemplateCopyWith<$Res> {
   _$MealTemplateCopyWithImpl(this._value, this._then);
 
+  // ignore: unused_field
   final $Val _value;
+  // ignore: unused_field
   final $Res Function($Val) _then;
 
   @pragma('vm:prefer-inline')
@@ -1361,7 +1432,9 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? description = freezed,
+    Object? descriptionHe = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? items = null,
@@ -1369,22 +1442,36 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
-          : id as String,
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       name: null == name
           ? _value.name
-          : name as String,
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       description: freezed == description
           ? _value.description
-          : description as String?,
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionHe: freezed == descriptionHe
+          ? _value.descriptionHe
+          : descriptionHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _value.createdAt
-          : createdAt as DateTime,
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       updatedAt: null == updatedAt
           ? _value.updatedAt
-          : updatedAt as DateTime,
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       items: null == items
           ? _value.items
-          : items as List<MealTemplateItem>,
+          : items // ignore: cast_nullable_to_non_nullable
+              as List<MealTemplateItem>,
     ) as $Val);
   }
 }
@@ -1400,7 +1487,9 @@ abstract class _$$MealTemplateImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
+      String? nameHe,
       String? description,
+      String? descriptionHe,
       DateTime createdAt,
       DateTime updatedAt,
       List<MealTemplateItem> items});
@@ -1419,7 +1508,9 @@ class __$$MealTemplateImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? nameHe = freezed,
     Object? description = freezed,
+    Object? descriptionHe = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? items = null,
@@ -1427,22 +1518,36 @@ class __$$MealTemplateImplCopyWithImpl<$Res>
     return _then(_$MealTemplateImpl(
       id: null == id
           ? _value.id
-          : id as String,
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       name: null == name
           ? _value.name
-          : name as String,
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      nameHe: freezed == nameHe
+          ? _value.nameHe
+          : nameHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       description: freezed == description
           ? _value.description
-          : description as String?,
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      descriptionHe: freezed == descriptionHe
+          ? _value.descriptionHe
+          : descriptionHe // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _value.createdAt
-          : createdAt as DateTime,
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       updatedAt: null == updatedAt
           ? _value.updatedAt
-          : updatedAt as DateTime,
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       items: null == items
           ? _value._items
-          : items as List<MealTemplateItem>,
+          : items // ignore: cast_nullable_to_non_nullable
+              as List<MealTemplateItem>,
     ));
   }
 }
@@ -1453,7 +1558,9 @@ class _$MealTemplateImpl implements _MealTemplate {
   const _$MealTemplateImpl(
       {required this.id,
       required this.name,
+      this.nameHe,
       this.description,
+      this.descriptionHe,
       required this.createdAt,
       required this.updatedAt,
       final List<MealTemplateItem> items = const []})
@@ -1467,7 +1574,11 @@ class _$MealTemplateImpl implements _MealTemplate {
   @override
   final String name;
   @override
+  final String? nameHe;
+  @override
   final String? description;
+  @override
+  final String? descriptionHe;
   @override
   final DateTime createdAt;
   @override
@@ -1477,23 +1588,27 @@ class _$MealTemplateImpl implements _MealTemplate {
   @JsonKey()
   List<MealTemplateItem> get items {
     if (_items is EqualUnmodifiableListView) return _items;
+    // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_items);
   }
 
   @override
   String toString() {
-    return 'MealTemplate(id: $id, name: $name, description: $description, createdAt: $createdAt, updatedAt: $updatedAt, items: $items)';
+    return 'MealTemplate(id: $id, name: $name, nameHe: $nameHe, description: $description, descriptionHe: $descriptionHe, createdAt: $createdAt, updatedAt: $updatedAt, items: $items)';
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MealTemplateImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.description, description) ||
                 other.description == description) &&
+            (identical(other.descriptionHe, descriptionHe) ||
+                other.descriptionHe == descriptionHe) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -1503,8 +1618,16 @@ class _$MealTemplateImpl implements _MealTemplate {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, description,
-      createdAt, updatedAt, const DeepCollectionEquality().hash(_items));
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      name,
+      nameHe,
+      description,
+      descriptionHe,
+      createdAt,
+      updatedAt,
+      const DeepCollectionEquality().hash(_items));
 
   @JsonKey(ignore: true)
   @override
@@ -1524,7 +1647,9 @@ abstract class _MealTemplate implements MealTemplate {
   const factory _MealTemplate(
       {required final String id,
       required final String name,
+      final String? nameHe,
       final String? description,
+      final String? descriptionHe,
       required final DateTime createdAt,
       required final DateTime updatedAt,
       final List<MealTemplateItem> items}) = _$MealTemplateImpl;
@@ -1537,7 +1662,11 @@ abstract class _MealTemplate implements MealTemplate {
   @override
   String get name;
   @override
+  String? get nameHe;
+  @override
   String? get description;
+  @override
+  String? get descriptionHe;
   @override
   DateTime get createdAt;
   @override

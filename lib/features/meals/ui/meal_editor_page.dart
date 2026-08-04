@@ -7,9 +7,11 @@ import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../core/validation.dart';
+import '../../../services/language_service.dart';
 import '../data/repositories.dart';
+import '../domain/food_nutrition_math.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class MealEditorPage extends HookConsumerWidget {
   final String? mealId;
@@ -22,6 +24,7 @@ class MealEditorPage extends HookConsumerWidget {
     final nameController = useTextEditingController();
     final noteController = useTextEditingController();
     final selectedDate = useState(AppDateUtils.today);
+    final selectedTime = useState<TimeOfDay?>(null);
     final mealItems = useState<List<MealItem>>([]);
     final isLoading = useState(false);
     final isEditing = mealId != null;
@@ -29,7 +32,8 @@ class MealEditorPage extends HookConsumerWidget {
     // Load existing meal if editing
     useEffect(() {
       if (isEditing) {
-        _loadMeal(ref, mealId!, nameController, noteController, selectedDate, mealItems);
+        _loadMeal(ref, mealId!, nameController, noteController, selectedDate,
+            selectedTime, mealItems);
       }
       return null;
     }, [mealId]);
@@ -59,6 +63,7 @@ class MealEditorPage extends HookConsumerWidget {
                 nameController.text,
                 noteController.text,
                 selectedDate.value,
+                selectedTime.value,
                 mealItems.value,
                 isLoading,
               ),
@@ -98,7 +103,7 @@ class MealEditorPage extends HookConsumerWidget {
 
               // Date Selector
               Text(
-                'Date',
+                AppLocalizations.of(context)!.date,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -140,6 +145,57 @@ class MealEditorPage extends HookConsumerWidget {
               ),
               const SizedBox(height: 20),
 
+              // Time (optional) -- when set, the calendar shows this meal at
+              // this exact time instead of guessing from createdAt/keywords.
+              Text(
+                l10n.mealTimeOptional,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        selectedTime.value?.format(context) ?? l10n.notSet,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (selectedTime.value != null)
+                      IconButton(
+                        icon: const Icon(Icons.clear, size: 20),
+                        tooltip: l10n.clear,
+                        onPressed: () => selectedTime.value = null,
+                      ),
+                    TextButton(
+                      onPressed: () => _selectTime(context, selectedTime),
+                      child: Text(l10n.change),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
               // Notes
               Text(
                 l10n.notesOptional,
@@ -166,7 +222,7 @@ class MealEditorPage extends HookConsumerWidget {
 
               // Meal Totals
               Text(
-                'Nutrition Totals',
+                AppLocalizations.of(context)!.nutritionTotals,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -261,6 +317,7 @@ class MealEditorPage extends HookConsumerWidget {
     TextEditingController nameController,
     TextEditingController noteController,
     ValueNotifier<DateTime> selectedDate,
+    ValueNotifier<TimeOfDay?> selectedTime,
     ValueNotifier<List<MealItem>> mealItems,
   ) async {
     final meal = await ref.read(mealsRepositoryProvider).getMealById(mealId);
@@ -268,6 +325,9 @@ class MealEditorPage extends HookConsumerWidget {
       nameController.text = meal.name;
       noteController.text = meal.note ?? '';
       selectedDate.value = AppDateUtils.intToDate(meal.date);
+      selectedTime.value = meal.loggedAt != null
+          ? TimeOfDay.fromDateTime(meal.loggedAt!)
+          : null;
       mealItems.value = meal.items;
     }
   }
@@ -284,6 +344,17 @@ class MealEditorPage extends HookConsumerWidget {
     }
   }
 
+  Future<void> _selectTime(
+      BuildContext context, ValueNotifier<TimeOfDay?> selectedTime) async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: selectedTime.value ?? TimeOfDay.now(),
+    );
+    if (time != null) {
+      selectedTime.value = time;
+    }
+  }
+
   Future<void> _saveMeal(
     BuildContext context,
     WidgetRef ref,
@@ -292,6 +363,7 @@ class MealEditorPage extends HookConsumerWidget {
     String name,
     String? note,
     DateTime date,
+    TimeOfDay? time,
     List<MealItem> items,
     ValueNotifier<bool> isLoading,
   ) async {
@@ -302,6 +374,10 @@ class MealEditorPage extends HookConsumerWidget {
       );
       return;
     }
+
+    final loggedAt = time != null
+        ? DateTime(date.year, date.month, date.day, time.hour, time.minute)
+        : null;
 
     isLoading.value = true;
 
@@ -314,13 +390,14 @@ class MealEditorPage extends HookConsumerWidget {
               note: note?.trim().isEmpty == true ? null : note?.trim(),
               createdAt: DateTime.now(), // Will be preserved in update
               updatedAt: DateTime.now(),
+              loggedAt: loggedAt,
               items: items,
             )
           : Meal.create(
               date: AppDateUtils.dateToInt(date),
               name: name.trim(),
               note: note?.trim().isEmpty == true ? null : note?.trim(),
-            );
+            ).copyWith(loggedAt: loggedAt);
 
       // Update meal items with the correct meal ID
       final updatedItems = items.map((item) => MealItem(
@@ -456,7 +533,7 @@ class _MealItemCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final foodStream = ref.watch(mealsRepositoryProvider).watchFoodById(item.foodId);
+    final foodStream = ref.watch(foodByIdStreamProvider(item.foodId));
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -484,11 +561,13 @@ class _MealItemCard extends HookConsumerWidget {
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: onEdit,
-                  ),
+            tooltip: AppLocalizations.of(context)!.edit,
+          ),
                   IconButton(
                     icon: const Icon(Icons.delete, size: 20, color: Colors.red),
                     onPressed: onDelete,
-                  ),
+            tooltip: AppLocalizations.of(context)!.delete,
+          ),
                 ],
               ),
             ],
@@ -504,12 +583,8 @@ class _MealItemCard extends HookConsumerWidget {
                 );
               }
               // Convert to display amount (grams for 100g units)
-              final displayAmount = food.unit.toLowerCase().contains('100')
-                  ? item.amount * 100
-                  : item.amount;
-              final displayUnit = food.unit.toLowerCase().contains('100')
-                  ? 'g'
-                  : food.unit;
+              final displayAmount = FoodNutritionMath.displayQuantity(food, item.amount);
+              final displayUnit = FoodNutritionMath.displayUnitLabel(food);
               return Text(
                 'Amount: ${Formatters.formatNumber(displayAmount)} $displayUnit',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -541,46 +616,23 @@ class _FoodSelectorDialog extends HookConsumerWidget {
     this.currentAmount,
   });
 
-  // Helper to convert stored amount to display amount (grams)
-  double _toDisplayAmount(double amount, String unit) {
-    if (unit.toLowerCase().contains('100')) {
-      return amount * 100; // Convert from 100g units to grams
-    }
-    return amount;
-  }
-
-  // Helper to convert display amount (grams) to stored amount
-  double _toStoredAmount(double displayAmount, String unit) {
-    if (unit.toLowerCase().contains('100')) {
-      return displayAmount / 100; // Convert from grams to 100g units
-    }
-    return displayAmount;
-  }
-
-  // Helper to get display unit label
-  String _getDisplayUnit(String unit) {
-    if (unit.toLowerCase().contains('100')) {
-      return 'g'; // Show as 'g' instead of '100g'
-    }
-    return unit;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final language = ref.watch(currentLanguageProvider);
     final searchController = useTextEditingController();
     final selectedFoodState = useState<FoodItem?>(this.selectedFood);
-    
+
     // Convert current amount to display format if editing
     final displayAmount = currentAmount != null && this.selectedFood != null
-        ? _toDisplayAmount(currentAmount!, this.selectedFood!.unit)
+        ? FoodNutritionMath.displayQuantity(this.selectedFood!, currentAmount!)
         : 100.0;
     
     final amountController = useTextEditingController(
       text: displayAmount.toString(),
     );
     
-    final allFoods = ref.watch(mealsRepositoryProvider).watchAllFoods();
+    final allFoods = ref.watch(allFoodsStreamProvider);
 
     return Dialog(
       child: Container(
@@ -591,7 +643,7 @@ class _FoodSelectorDialog extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Select Food Item',
+              AppLocalizations.of(context)!.selectFoodItem,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -608,29 +660,39 @@ class _FoodSelectorDialog extends HookConsumerWidget {
 
             // Food List
             Expanded(
-              child: StreamBuilder<List<FoodItem>>(
-                stream: allFoods,
-                builder: (context, snapshot) {
-                  final foods = snapshot.data ?? [];
-                  final filteredFoods = foods.where((food) {
-                    final query = searchController.text.toLowerCase();
-                    return food.name.toLowerCase().contains(query) ||
-                           (food.brand?.toLowerCase().contains(query) ?? false);
-                  }).toList();
+              // AnimatedBuilder (not a plain StreamBuilder alone) so this
+              // rebuilds when searchController's text changes -- see the
+              // identical fix in meal_template_editor_page.dart's
+              // _TemplateItemDialog for why a bare StreamBuilder here never
+              // actually refilters as you type.
+              child: AnimatedBuilder(
+                animation: searchController,
+                builder: (context, _) {
+                  return StreamBuilder<List<FoodItem>>(
+                    stream: allFoods,
+                    builder: (context, snapshot) {
+                      final foods = snapshot.data ?? [];
+                      final filteredFoods = foods.where((food) {
+                        final query = searchController.text.toLowerCase();
+                        return food.name.toLowerCase().contains(query) ||
+                               (food.brand?.toLowerCase().contains(query) ?? false);
+                      }).toList();
 
-                  return ListView.builder(
-                    itemCount: filteredFoods.length,
-                    itemBuilder: (context, index) {
-                      final food = filteredFoods[index];
-                      final isSelected = selectedFoodState.value?.id == food.id;
-                      
-                      return ListTile(
-                        title: Text(food.name),
-                        subtitle: Text(
-                          '${food.brand ?? 'Generic'} • ${Formatters.formatCalories(food.kcalPerUnit)} cal/${food.unit}',
-                        ),
-                        selected: isSelected,
-                        onTap: () => selectedFoodState.value = food,
+                      return ListView.builder(
+                        itemCount: filteredFoods.length,
+                        itemBuilder: (context, index) {
+                          final food = filteredFoods[index];
+                          final isSelected = selectedFoodState.value?.id == food.id;
+
+                          return ListTile(
+                            title: Text(food.displayName(language)),
+                            subtitle: Text(
+                              '${food.brand ?? 'Generic'} • ${Formatters.formatCalories(food.kcalPerUnit)} cal/${food.unit}',
+                            ),
+                            selected: isSelected,
+                            onTap: () => selectedFoodState.value = food,
+                          );
+                        },
                       );
                     },
                   );
@@ -641,7 +703,7 @@ class _FoodSelectorDialog extends HookConsumerWidget {
             if (selectedFoodState.value != null) ...[
               const Divider(),
               Text(
-                'Amount (${_getDisplayUnit(selectedFoodState.value!.unit)})',
+                'Amount (${FoodNutritionMath.displayUnitLabel(selectedFoodState.value!)})',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -649,23 +711,27 @@ class _FoodSelectorDialog extends HookConsumerWidget {
                 controller: amountController,
                 decoration: InputDecoration(
                   labelText: l10n.amount,
-                  suffixText: _getDisplayUnit(selectedFoodState.value!.unit),
+                  suffixText: FoodNutritionMath.displayUnitLabel(selectedFoodState.value!),
                 ),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: AppSpacing.md),
-              
-              // Preview
-              Builder(
-                builder: (context) {
+
+              // Preview -- AnimatedBuilder (not Builder) so this rebuilds
+              // when amountController's text changes; a plain Builder never
+              // gets notified of the controller changing and just kept
+              // showing the macros for whatever amount was set when the
+              // dialog opened.
+              AnimatedBuilder(
+                animation: amountController,
+                builder: (context, _) {
                   final displayAmount = double.tryParse(amountController.text) ?? 0;
                   final food = selectedFoodState.value!;
-                  // Convert display amount to stored amount for calculation
-                  final storedAmount = _toStoredAmount(displayAmount, food.unit);
-                  final kcal = food.kcalPerUnit * storedAmount;
-                  final protein = food.proteinPerUnit * storedAmount;
-                  final carbs = food.carbsPerUnit * storedAmount;
-                  final fat = food.fatPerUnit * storedAmount;
+                  final nutrition = FoodNutritionMath.computeMacrosFromDisplay(food, displayAmount);
+                  final kcal = nutrition.kcal;
+                  final protein = nutrition.protein;
+                  final carbs = nutrition.carbs;
+                  final fat = nutrition.fat;
 
                   return Container(
                     padding: const EdgeInsets.all(AppSpacing.sm),
@@ -705,7 +771,10 @@ class _FoodSelectorDialog extends HookConsumerWidget {
                           final displayAmount = double.tryParse(amountController.text) ?? 0;
                           if (displayAmount > 0) {
                             // Convert display amount back to stored amount
-                            final storedAmount = _toStoredAmount(displayAmount, selectedFoodState.value!.unit);
+                            final storedAmount = FoodNutritionMath.storedQuantity(
+                              selectedFoodState.value!,
+                              displayAmount,
+                            );
                             final mealItem = MealItem.create(
                               mealId: '', // Will be set by parent
                               foodId: selectedFoodState.value!.id,

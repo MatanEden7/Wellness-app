@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/theme.dart';
 import '../../../services/notification_preferences_service.dart';
 
@@ -20,7 +22,8 @@ class NotificationSettingsPage extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-        ),
+            tooltip: l10n.backToDashboard,
+          ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -40,7 +43,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.meals),
                   subtitle: Text(l10n.mealsNotificationDesc),
-                  secondary: const Icon(Icons.restaurant),
+                  secondary: SettingsIconBadge(Icons.restaurant, color: Colors.orange),
                   value: prefs.mealsEnabled,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -50,7 +53,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.workouts),
                   subtitle: Text(l10n.workoutsNotificationDesc),
-                  secondary: const Icon(Icons.fitness_center),
+                  secondary: SettingsIconBadge(Icons.fitness_center, color: Colors.blue),
                   value: prefs.workoutsEnabled,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -60,7 +63,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.sleep),
                   subtitle: Text(l10n.sleepNotificationDesc),
-                  secondary: const Icon(Icons.bedtime),
+                  secondary: SettingsIconBadge(Icons.bedtime, color: Colors.purple),
                   value: prefs.sleepEnabled,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -87,6 +90,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 _LeadTimeSetting(
                   title: l10n.mealReminders,
                   icon: Icons.restaurant,
+                  iconColor: Colors.orange,
                   value: prefs.mealLeadTime,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -96,6 +100,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 _LeadTimeSetting(
                   title: l10n.workoutReminders,
                   icon: Icons.fitness_center,
+                  iconColor: Colors.blue,
                   value: prefs.workoutLeadTime,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -105,6 +110,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 _LeadTimeSetting(
                   title: l10n.sleepReminders,
                   icon: Icons.bedtime,
+                  iconColor: Colors.purple,
                   value: prefs.sleepLeadTime,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -129,14 +135,14 @@ class NotificationSettingsPage extends ConsumerWidget {
                   ),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.hotel),
+                  leading: SettingsIconBadge(Icons.hotel, color: Colors.indigo),
                   title: Text(l10n.sleepGoal),
                   subtitle: Text('${prefs.sleepGoalHours.toStringAsFixed(1)} ${l10n.hours}'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showSleepGoalDialog(context, ref, prefs.sleepGoalHours),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.alarm),
+                  leading: SettingsIconBadge(Icons.alarm, color: Colors.teal),
                   title: Text(l10n.sleepLogReminder),
                   subtitle: Text(l10n.sleepLogReminderDesc(
                     TimeOfDay(hour: prefs.sleepReminderHour, minute: prefs.sleepReminderMinute)
@@ -162,7 +168,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.quietHours),
                   subtitle: Text(l10n.quietHoursDesc),
-                  secondary: const Icon(Icons.do_not_disturb),
+                  secondary: SettingsIconBadge(Icons.do_not_disturb, color: Colors.redAccent),
                   value: prefs.quietHoursEnabled,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -171,7 +177,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 ),
                 if (prefs.quietHoursEnabled) ...[
                   ListTile(
-                    leading: const Icon(Icons.bedtime),
+                    leading: SettingsIconBadge(Icons.bedtime, color: Colors.purple),
                     title: Text(l10n.startTime),
                     subtitle: Text(
                       TimeOfDay(hour: prefs.quietHoursStartHour, minute: prefs.quietHoursStartMinute)
@@ -185,7 +191,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                     ),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.wb_sunny),
+                    leading: SettingsIconBadge(Icons.wb_sunny, color: Colors.amber),
                     title: Text(l10n.endTime),
                     subtitle: Text(
                       TimeOfDay(hour: prefs.quietHoursEndHour, minute: prefs.quietHoursEndMinute)
@@ -211,7 +217,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.sound),
                   subtitle: Text(l10n.soundDesc),
-                  secondary: const Icon(Icons.volume_up),
+                  secondary: SettingsIconBadge(Icons.volume_up, color: Colors.green),
                   value: prefs.soundEnabled,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -221,7 +227,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.vibration),
                   subtitle: Text(l10n.vibrationDesc),
-                  secondary: const Icon(Icons.vibration),
+                  secondary: SettingsIconBadge(Icons.vibration, color: Colors.blueGrey),
                   value: prefs.vibrationEnabled,
                   onChanged: (value) {
                     ref.read(notificationPreferencesProvider.notifier)
@@ -325,12 +331,14 @@ class _LeadTimeSetting extends ConsumerWidget {
   final IconData icon;
   final int value;
   final Function(int) onChanged;
+  final Color? iconColor;
 
   const _LeadTimeSetting({
     required this.title,
     required this.icon,
     required this.value,
     required this.onChanged,
+    this.iconColor,
   });
 
   @override
@@ -338,7 +346,7 @@ class _LeadTimeSetting extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     
     return ListTile(
-      leading: Icon(icon),
+      leading: SettingsIconBadge(icon, color: iconColor),
       title: Text(title),
       subtitle: Text(_getLeadTimeLabel(value, l10n)),
       trailing: const Icon(Icons.chevron_right),

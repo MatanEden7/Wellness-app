@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,12 +9,6 @@ final userProfileServiceProvider = Provider<UserProfileService>((ref) {
   throw UnimplementedError('UserProfileService must be overridden');
 });
 
-// Simple provider for setup completion status - avoids recreating router
-final isSetupCompletedProvider = Provider<bool>((ref) {
-  final profileService = ref.watch(userProfileServiceProvider);
-  // This creates a listenable that notifies when isSetupCompleted changes
-  return profileService.isSetupCompleted;
-});
 
 // User profile data model
 class UserProfile {
@@ -177,50 +173,35 @@ class UserProfileService extends ChangeNotifier {
     await _prefs.setBool(_setupCompletedKey, completed);
   }
   
-  // Load user profile
+  /// Loads the saved profile, or null when setup has not run yet.
+  ///
+  /// Note this used to be unrecoverable: the profile was written as
+  /// `key:value,key:value`, but list fields (equipment, exclusions, injuries)
+  /// stringify as `[a, b]` and contain the field separator, so the format could
+  /// not be parsed back. It is plain JSON now.
   UserProfile? loadProfile() {
-    final json = _prefs.getString(_profileKey);
-    if (json == null) return null;
-    
+    final raw = _prefs.getString(_profileKey);
+    if (raw == null) return null;
+
     try {
-      final Map<String, dynamic> data = {};
-      // Parse simple JSON string format
-      json.split(',').forEach((pair) {
-        final parts = pair.split(':');
-        if (parts.length == 2) {
-          data[parts[0].trim()] = parts[1].trim();
-        }
-      });
-      return UserProfile.fromJson(data);
+      return UserProfile.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (e) {
-      print('[PROFILE] Error loading profile: $e');
+      debugPrint('[PROFILE] Error loading profile: $e');
       return null;
     }
   }
-  
+
   // Save user profile
   Future<void> saveProfile(UserProfile profile) async {
-    try {
-      final json = profile.toJson();
-      // Simple string storage format
-      final jsonString = json.entries
-          .map((e) => '${e.key}:${e.value}')
-          .join(',');
-      await _prefs.setString(_profileKey, jsonString);
-      await setSetupCompleted(true);
-      print('[PROFILE] ✅ Profile saved successfully');
-      notifyListeners(); // Notify router to refresh
-    } catch (e) {
-      print('[PROFILE] ❌ Error saving profile: $e');
-      rethrow;
-    }
+    await _prefs.setString(_profileKey, jsonEncode(profile.toJson()));
+    await setSetupCompleted(true);
+    notifyListeners(); // Notify router to refresh
   }
-  
+
   // Clear profile
   Future<void> clearProfile() async {
     await _prefs.remove(_profileKey);
     await setSetupCompleted(false);
-    print('[PROFILE] 🗑️ Profile cleared');
     notifyListeners(); // Notify router to refresh and redirect to onboarding
   }
 }

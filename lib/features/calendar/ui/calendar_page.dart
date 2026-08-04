@@ -1,8 +1,6 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme.dart';
@@ -13,12 +11,13 @@ import '../../../routing/routes.dart';
 import '../domain/models.dart';
 import '../data/calendar_service.dart';
 import '../../meals/data/repositories.dart';
+import '../../meals/domain/food_nutrition_math.dart';
 import '../../../services/preferences_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../workouts/data/repositories.dart';
 import '../../sleep/data/repositories.dart';
 import 'event_scheduling_dialog.dart';
+import 'ios_month_calendar.dart';
 import '../../../data/db/drift_database.dart';
 
 class CalendarPage extends ConsumerWidget {
@@ -159,115 +158,43 @@ class CalendarPage extends ConsumerWidget {
   }
 
   Widget _buildCalendarView(BuildContext context, WidgetRef ref, CalendarState state) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      child: RTLHelper.withDirectionality(
-        context,
-        TableCalendar<ScheduledEvent>(
-          locale: Localizations.localeOf(context).toString(),
-          firstDay: DateTime.utc(2020, 1, 1),
-          lastDay: DateTime.utc(2030, 12, 31),
-          focusedDay: state.focusedDate,
-        selectedDayPredicate: (day) {
-          return state.selectedDate != null && isSameDay(state.selectedDate!, day);
+    return RTLHelper.withDirectionality(
+      context,
+      IosMonthCalendar(
+        selectedDate: state.selectedDate,
+        focusedDate: state.focusedDate,
+        weekView: state.viewMode == CalendarViewMode.week,
+        eventsForDay: (day) => _visibleEventsFor(state, day),
+        colorForType: (type) =>
+            eventColorFor(ref.watch(preferencesServiceProvider), type),
+        onDaySelected: (day) {
+          ref.read(calendarStateProvider.notifier).setSelectedDate(day);
         },
-        calendarFormat: state.viewMode == CalendarViewMode.month 
-            ? CalendarFormat.month 
-            : CalendarFormat.week,
-        // Fix weekend highlighting: Friday (5) and Saturday (6) instead of Sunday (7)
-        weekendDays: const [DateTime.friday, DateTime.saturday],
-        startingDayOfWeek: StartingDayOfWeek.sunday,
-        eventLoader: (day) {
-          final dayKey = DateTime(day.year, day.month, day.day);
-          final calendarDay = state.days[dayKey];
-          if (calendarDay == null) return [];
-          
-          return calendarDay.events.where((event) {
-            if (!state.visibleTypes.contains(event.type)) return false;
-            if (!state.showPlanned && event.isPlanned) return false;
-            if (!state.showCompleted && event.isCompleted) return false;
-            return true;
-          }).toList();
+        onMonthChanged: (month) {
+          // Load that month's events as it scrolls into view.
+          //
+          // Deliberately NOT setFocusedDate: that would change the focusedDate
+          // this widget is driven by, whose didUpdateWidget animates the list
+          // back to that month -- so scrolling fought itself and months past
+          // the first never finished loading. Paging in events is all that's
+          // needed here.
+          ref.read(calendarStateProvider.notifier).loadEventsForMonth(month);
         },
-        onDaySelected: (selectedDay, focusedDay) {
-          ref.read(calendarStateProvider.notifier).setSelectedDate(selectedDay);
-          ref.read(calendarStateProvider.notifier).setFocusedDate(focusedDay);
-        },
-        onPageChanged: (focusedDay) {
-          ref.read(calendarStateProvider.notifier).setFocusedDate(focusedDay);
-          // Load events for the new month when page changes
-          ref.read(calendarStateProvider.notifier).loadEventsForMonth(focusedDay);
-        },
-        calendarStyle: CalendarStyle(
-          outsideDaysVisible: false,
-          weekendTextStyle: TextStyle(color: theme.colorScheme.error),
-          holidayTextStyle: TextStyle(color: theme.colorScheme.error),
-          markerDecoration: BoxDecoration(
-            color: theme.colorScheme.primary,
-            shape: BoxShape.circle,
-          ),
-          // Fix selected vs today distinction
-          selectedDecoration: BoxDecoration(
-            color: theme.colorScheme.primary,
-            shape: BoxShape.circle,
-          ),
-          todayDecoration: BoxDecoration(
-            color: Colors.transparent,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: theme.colorScheme.primary.withOpacity(0.6),
-              width: 2,
-            ),
-          ),
-        ),
-        headerStyle: HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-          titleTextStyle: theme.textTheme.titleLarge!,
-          titleTextFormatter: (date, locale) {
-            return DateFormat.yMMMM(Localizations.localeOf(context).toString()).format(date);
-          },
-        ),
-        daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: theme.textTheme.bodyMedium!,
-          weekendStyle: theme.textTheme.bodyMedium!.copyWith(
-            color: theme.colorScheme.primary,
-          ),
-        ),
-        calendarBuilders: CalendarBuilders(
-          markerBuilder: (context, day, events) {
-            if (events.isEmpty) return null;
-            
-            return Stack(
-              children: events.map((event) {
-                final scheduledEvent = event as ScheduledEvent;
-                final position = _getClockPosition(scheduledEvent.scheduledAt);
-                
-                return Positioned(
-                  left: position.dx,
-                  top: position.dy,
-                  child: Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: _getEventColor(scheduledEvent),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: theme.colorScheme.surface,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            );
-          },
-        ),
       ),
-    ),
     );
+  }
+
+  /// Events for [day] after the screen's type / planned / completed filters.
+  List<ScheduledEvent> _visibleEventsFor(CalendarState state, DateTime day) {
+    final calendarDay = state.days[DateTime(day.year, day.month, day.day)];
+    if (calendarDay == null) return const [];
+
+    return calendarDay.events.where((event) {
+      if (!state.visibleTypes.contains(event.type)) return false;
+      if (!state.showPlanned && event.isPlanned) return false;
+      if (!state.showCompleted && event.isCompleted) return false;
+      return true;
+    }).toList();
   }
 
   Widget _buildDayAgenda(BuildContext context, WidgetRef ref, CalendarState state, ScrollController scrollController) {
@@ -324,7 +251,8 @@ class CalendarPage extends ConsumerWidget {
                           iconSize: 24,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                        ),
+            tooltip: AppLocalizations.of(context)!.addEventTooltip,
+          ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.xs),
@@ -422,7 +350,7 @@ class CalendarPage extends ConsumerWidget {
                       child: _buildEventCard(context, ref, event),
                     );
                   },
-                  childCount: (calendarDay?.events.length ?? 0) + 1,
+                  childCount: calendarDay.events.length + 1,
                 ),
               ),
       ],
@@ -472,7 +400,7 @@ class CalendarPage extends ConsumerWidget {
 
   Widget _buildEventCard(BuildContext context, WidgetRef ref, ScheduledEvent event) {
     final theme = Theme.of(context);
-    final eventColor = _getEventColor(event);
+    final eventColor = _getEventColor(ref, event);
     
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.xs),
@@ -480,14 +408,21 @@ class CalendarPage extends ConsumerWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: eventColor.withOpacity(0.3),
-          width: 1.5,
+          color: theme.colorScheme.onSurface.withOpacity(0.08),
         ),
       ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _navigateToEventDetail(context, ref, event),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Row(
+          children: [
+            // iOS-style leading colour bar: a solid accent down the leading
+            // edge, the way an event row reads in the iOS Calendar day list.
+            // Replaces a fully tinted border, which washed the colour out at
+            // 30% opacity and made the three types hard to tell apart.
+            Container(width: 4, height: 68, color: eventColor),
+            Expanded(
+              child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
@@ -563,6 +498,9 @@ class CalendarPage extends ConsumerWidget {
               ),
             ],
           ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -612,7 +550,7 @@ class CalendarPage extends ConsumerWidget {
             if (event.status != EventStatus.completed) ...[
               ListTile(
                 leading: const Icon(Icons.check_circle, color: Colors.green),
-                title: const Text('Mark as Completed'),
+                title: Text(AppLocalizations.of(context)!.markAsCompleted),
                 onTap: () async {
                   Navigator.of(context).pop();
                   // Create the actual data entry when marking as complete
@@ -631,7 +569,7 @@ class CalendarPage extends ConsumerWidget {
             if (event.type == EventType.workout) ...[
               ListTile(
                 leading: const Icon(Icons.play_arrow, color: Colors.blue),
-                title: const Text('Start Workout'),
+                title: Text(AppLocalizations.of(context)!.startWorkout),
                 onTap: () async {
                   Navigator.of(context).pop();
                   await _startWorkoutFromEvent(context, ref, event);
@@ -643,7 +581,7 @@ class CalendarPage extends ConsumerWidget {
             if (event.type == EventType.sleep) ...[
               ListTile(
                 leading: const Icon(Icons.bedtime, color: Colors.purple),
-                title: const Text('Start Sleep Timer'),
+                title: Text(AppLocalizations.of(context)!.startSleepTimer),
                 onTap: () {
                   Navigator.of(context).pop();
                   context.push('/sleep/timer');
@@ -694,6 +632,7 @@ class CalendarPage extends ConsumerWidget {
             note: event.description,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
+            sourceEventId: event.id,
           );
           
           await database.insertMeal(mealData);
@@ -703,15 +642,16 @@ class CalendarPage extends ConsumerWidget {
           for (final item in templateItems) {
             final food = await database.getFoodById(item.foodId);
             if (food != null) {
+              final nutrition = FoodNutritionMath.computeMacros(foodItemFromData(food), item.amount);
               final mealItem = MealItemData(
                 id: 'item_${DateTime.now().millisecondsSinceEpoch}_${item.foodId}',
                 mealId: mealData.id,
                 foodId: item.foodId,
                 amount: item.amount,
-                kcal: food.kcalPerUnit * item.amount,
-                protein: food.proteinPerUnit * item.amount,
-                carbs: food.carbsPerUnit * item.amount,
-                fat: food.fatPerUnit * item.amount,
+                kcal: nutrition.kcal,
+                protein: nutrition.protein,
+                carbs: nutrition.carbs,
+                fat: nutrition.fat,
               );
               await database.insertMealItem(mealItem);
             }
@@ -730,6 +670,7 @@ class CalendarPage extends ConsumerWidget {
             endedAt: null,
             quality: null,
             note: event.description,
+            sourceEventId: event.id,
           );
           await database.insertSleepEntry(sleepData);
           break;
@@ -750,6 +691,7 @@ class CalendarPage extends ConsumerWidget {
         startedAt: DateTime.now(),
         endedAt: null,
         note: event.description,
+        sourceEventId: event.id,
       );
       
       await database.insertWorkoutSession(sessionData);
@@ -800,41 +742,25 @@ class CalendarPage extends ConsumerWidget {
     );
   }
 
-  Color _getEventColor(ScheduledEvent event) {
-    switch (event.type) {
+  /// An event's colour, taken from the user's configured section colours.
+  ///
+  /// These were hardcoded to orange/blue/purple, so recolouring a section in
+  /// Settings > Appearance changed the rest of the app but not the calendar --
+  /// a pink "Sleep" still showed purple here.
+  static Color eventColorFor(PreferencesService prefs, EventType type) {
+    switch (type) {
       case EventType.meal:
-        return Colors.orange;
+        return prefs.mealsColor;
       case EventType.workout:
-        return Colors.blue;
+        return prefs.workoutsColor;
       case EventType.sleep:
-        return Colors.purple;
+        return prefs.sleepColor;
     }
   }
 
-  Offset _getClockPosition(DateTime eventTime) {
-    // Calculate position around the date cell like a clock face
-    // Cell is approximately 48x48 pixels, center is at 24,24
-    const cellSize = 48.0;
-    const centerX = cellSize / 2;
-    const centerY = cellSize / 2;
-    const radius = 18.0; // Distance from center
-    const dotSize = 7.0;
-    
-    // Snap to 10-minute intervals (144 positions in 24 hours)
-    final totalMinutes = eventTime.hour * 60 + eventTime.minute;
-    final snappedMinutes = (totalMinutes / 10).round() * 10;
-    final minutesInDay = 24 * 60; // 1440 minutes in a day
-    
-    // Calculate angle in radians (starting at top, rotating clockwise)
-    // Subtract pi/2 to start at top instead of right
-    final angle = (snappedMinutes / minutesInDay) * 2 * pi - (pi / 2);
-    
-    // Calculate position using trigonometry
-    final x = centerX + radius * cos(angle) - (dotSize / 2); // Center the dot
-    final y = centerY + radius * sin(angle) - (dotSize / 2); // Center the dot
-    
-    return Offset(x, y);
-  }
+  Color _getEventColor(WidgetRef ref, ScheduledEvent event) =>
+      eventColorFor(ref.read(preferencesServiceProvider), event.type);
+
 
   IconData _getEventIcon(EventType type) {
     switch (type) {
@@ -883,7 +809,8 @@ class CalendarPage extends ConsumerWidget {
                   ref.read(calendarStateProvider.notifier).setSelectedDate(previousDay);
                   ref.read(calendarStateProvider.notifier).setFocusedDate(previousDay);
                 },
-              ),
+            tooltip: AppLocalizations.of(context)!.previousMonth,
+          ),
               Column(
                 children: [
                   Text(
@@ -907,7 +834,8 @@ class CalendarPage extends ConsumerWidget {
                   ref.read(calendarStateProvider.notifier).setSelectedDate(nextDay);
                   ref.read(calendarStateProvider.notifier).setFocusedDate(nextDay);
                 },
-              ),
+            tooltip: AppLocalizations.of(context)!.nextMonth,
+          ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -931,7 +859,7 @@ class CalendarPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Daily Overview',
+          AppLocalizations.of(context)!.dailyOverview,
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -1050,7 +978,7 @@ class CalendarPage extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Events & Activities',
+              AppLocalizations.of(context)!.eventsAndActivities,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -1058,6 +986,7 @@ class CalendarPage extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => _showAddEventDialog(context, ref, selectedDate),
+              tooltip: AppLocalizations.of(context)!.addEventTooltip,
             ),
           ],
         ),

@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../data/db/drift_database.dart';
@@ -8,6 +10,64 @@ final mealsRepositoryProvider = Provider<MealsRepository>((ref) {
   final database = ref.read(databaseProvider);
   return MealsRepository(database);
 });
+
+/// Cached streams, one per distinct parameter value, shared by every screen
+/// that watches them.
+///
+/// Calling `ref.watch(mealsRepositoryProvider).watchX()` directly inside a
+/// widget's `build()` creates a brand-new stream on every rebuild, which
+/// resets any `StreamBuilder` reading it to `ConnectionState.waiting` and
+/// flashes a loading spinner even though the data hasn't changed. Watch these
+/// providers instead. See `exercisesStreamProvider` in
+/// `workouts/data/repositories.dart` for the same fix applied there first.
+final allFoodsStreamProvider = Provider<Stream<List<FoodItem>>>((ref) {
+  return ref.read(mealsRepositoryProvider).watchAllFoods();
+});
+
+final starterFoodsStreamProvider = Provider<Stream<List<FoodItem>>>((ref) {
+  return ref.read(mealsRepositoryProvider).watchStarterFoods();
+});
+
+final userFoodsStreamProvider = Provider<Stream<List<FoodItem>>>((ref) {
+  return ref.read(mealsRepositoryProvider).watchUserFoods();
+});
+
+final foodByIdStreamProvider =
+    Provider.family<Stream<FoodItem?>, String>((ref, id) {
+  return ref.read(mealsRepositoryProvider).watchFoodById(id);
+});
+
+final mealsByDateStreamProvider =
+    Provider.family<Stream<List<Meal>>, int>((ref, date) {
+  return ref.read(mealsRepositoryProvider).watchMealsByDate(date);
+});
+
+final dayTotalsStreamProvider =
+    Provider.family<Stream<DayTotals>, int>((ref, date) {
+  return ref.read(mealsRepositoryProvider).watchDayTotals(date);
+});
+
+final allMealTemplatesStreamProvider = Provider<Stream<List<MealTemplate>>>((ref) {
+  return ref.read(mealsRepositoryProvider).watchAllMealTemplates();
+});
+
+/// Shared FoodItemData -> FoodItem mapper, reused anywhere a raw DB row
+/// needs to go through [FoodNutritionMath] (the single source of truth for
+/// unit conversion and macro math).
+FoodItem foodItemFromData(FoodItemData data) => FoodItem(
+      id: data.id,
+      name: data.name,
+      nameHe: data.nameHe,
+      brand: data.brand,
+      unit: data.unit,
+      kcalPerUnit: data.kcalPerUnit,
+      proteinPerUnit: data.proteinPerUnit,
+      carbsPerUnit: data.carbsPerUnit,
+      fatPerUnit: data.fatPerUnit,
+      isStarter: data.isStarter,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    );
 
 class MealsRepository {
   final AppDatabase _database;
@@ -74,10 +134,13 @@ class MealsRepository {
         ));
       }
       return result;
-    }).distinct((prev, next) => 
-      prev.length == next.length && 
-      prev.every((meal) => next.any((m) => m.id == meal.id && m.items.length == meal.items.length))
-    );
+      // listEquals compares element by element, and Meal's freezed `==` is a
+      // deep comparison including its items. The previous predicate only
+      // checked list length and item *count*, so editing an amount
+      // (150g -> 300g) or renaming a meal was treated as "no change" and
+      // never reached the UI -- which also left watchDayTotals, chained off
+      // this stream, showing stale macros.
+    }).distinct(listEquals);
   }
 
   Future<Meal?> getMealById(String id) async {
@@ -165,7 +228,6 @@ class MealsRepository {
 
   // Meal Templates - reactive stream that updates when data changes
   Stream<List<MealTemplate>> watchAllMealTemplates() {
-    print('[REPO] 🎬 Setting up event-driven meal templates stream');
     return _database.watchMealTemplatesStream().asyncMap((_) async {
       final templates = await _database.getAllMealTemplates();
       final List<MealTemplate> result = [];
@@ -175,12 +237,10 @@ class MealsRepository {
           items: items.map(_mealTemplateItemDataToModel).toList(),
         ));
       }
-      print('[REPO] 📤 Loaded ${result.length} templates');
       return result;
-    }).distinct((prev, next) => 
-      prev.length == next.length && 
-      prev.every((template) => next.any((t) => t.id == template.id && t.items.length == template.items.length))
-    );
+      // See watchMealsByDate: the old length-and-count predicate suppressed
+      // renames and amount edits.
+    }).distinct(listEquals);
   }
 
   Future<MealTemplate?> getMealTemplateById(String id) async {
@@ -194,14 +254,10 @@ class MealsRepository {
   }
 
   Future<void> createMealTemplate(MealTemplate template) async {
-    print('[REPO] 💾 Creating template: ${template.name} with ${template.items.length} items');
     await _database.insertMealTemplate(_mealTemplateModelToData(template));
-    print('[REPO] ✅ Template saved to database');
     for (final item in template.items) {
-      print('[REPO] ➕ Adding item: foodId=${item.foodId}, amount=${item.amount}');
       await _database.insertMealTemplateItem(_mealTemplateItemModelToData(item));
     }
-    print('[REPO] ✅ All ${template.items.length} items saved');
   }
 
   Future<void> updateMealTemplate(MealTemplate template) async {
@@ -225,26 +281,13 @@ class MealsRepository {
   }
 
   // Conversion methods
-  FoodItem _foodDataToModel(FoodItemData data) {
-    return FoodItem(
-      id: data.id,
-      name: data.name,
-      brand: data.brand,
-      unit: data.unit,
-      kcalPerUnit: data.kcalPerUnit,
-      proteinPerUnit: data.proteinPerUnit,
-      carbsPerUnit: data.carbsPerUnit,
-      fatPerUnit: data.fatPerUnit,
-      isStarter: data.isStarter,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    );
-  }
+  FoodItem _foodDataToModel(FoodItemData data) => foodItemFromData(data);
 
   FoodItemData _foodModelToData(FoodItem model) {
     return FoodItemData(
       id: model.id,
       name: model.name,
+      nameHe: model.nameHe,
       brand: model.brand,
       unit: model.unit,
       kcalPerUnit: model.kcalPerUnit,
@@ -265,6 +308,7 @@ class MealsRepository {
       note: data.note,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      loggedAt: data.loggedAt,
     );
   }
 
@@ -276,6 +320,7 @@ class MealsRepository {
       note: model.note,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
+      loggedAt: model.loggedAt,
     );
   }
 
@@ -309,7 +354,9 @@ class MealsRepository {
     return MealTemplate(
       id: data.id,
       name: data.name,
+      nameHe: data.nameHe,
       description: data.description,
+      descriptionHe: data.descriptionHe,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     );
@@ -319,7 +366,9 @@ class MealsRepository {
     return MealTemplateData(
       id: model.id,
       name: model.name,
+      nameHe: model.nameHe,
       description: model.description,
+      descriptionHe: model.descriptionHe,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     );

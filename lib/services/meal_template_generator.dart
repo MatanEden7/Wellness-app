@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../data/db/drift_database.dart';
 import 'user_profile_service.dart';
@@ -10,7 +11,7 @@ class MealTemplateGenerator {
   MealTemplateGenerator(this._database, this._profile);
 
   Future<void> generateTemplates() async {
-    print('[MEAL-GEN] 🍽️ Generating meal templates for ${_profile.dietType} diet');
+    debugPrint('[MEAL-GEN] 🍽️ Generating meal templates for ${_profile.dietType} diet');
     
     // Generate food items based on diet type
     await _generateFoods();
@@ -18,14 +19,14 @@ class MealTemplateGenerator {
     // Generate meal templates based on diet and meal count
     await _generateMealTemplates();
     
-    print('[MEAL-GEN] ✅ Meal templates generated successfully');
+    debugPrint('[MEAL-GEN] ✅ Meal templates generated successfully');
   }
 
   Future<void> _generateFoods() async {
     // Check if foods already exist (beyond starter foods)
     final existing = await _database.getAllFoods();
     if (existing.length > 10) {
-      print('[MEAL-GEN] Foods already exist, skipping generation');
+      debugPrint('[MEAL-GEN] Foods already exist, skipping generation');
       return;
     }
 
@@ -70,7 +71,7 @@ class MealTemplateGenerator {
       await _database.insertFood(food);
     }
 
-    print('[MEAL-GEN] ✅ Generated ${filteredFoods.length} foods');
+    debugPrint('[MEAL-GEN] ✅ Generated ${filteredFoods.length} foods');
   }
 
   /// All foods VERIFIED with USDA database - normalized to PER 100G
@@ -223,13 +224,13 @@ class MealTemplateGenerator {
   Future<void> _generateMealTemplates() async {
     final foods = await _database.getAllFoods();
     if (foods.isEmpty) {
-      print('[MEAL-GEN] ⚠️ No foods available, skipping template generation');
+      debugPrint('[MEAL-GEN] ⚠️ No foods available, skipping template generation');
       return;
     }
     
     // Get meal distribution for the selected meal count
     final distribution = _getMealDistribution();
-    print('[MEAL-GEN] Meal distribution for ${_profile.mealCountPerDay}: ${distribution.map((d) => '${(d * 100).toInt()}%').join(', ')}');
+    debugPrint('[MEAL-GEN] Meal distribution for ${_profile.mealCountPerDay}: ${distribution.map((d) => '${(d * 100).toInt()}%').join(', ')}');
     
     // Create templates based on diet type
     final templates = _getTemplateSuggestions();
@@ -256,12 +257,12 @@ class MealTemplateGenerator {
         final foodMatch = foods.where((f) => f.name == foodName).toList();
         
         if (foodMatch.isEmpty) {
-          print('[MEAL-GEN] ⚠️ WARNING: Food "$foodName" not found in database! Skipping item.');
+          debugPrint('[MEAL-GEN] ⚠️ WARNING: Food "$foodName" not found in database! Skipping item.');
           continue; // Skip this item instead of using wrong food
         }
         
         final food = foodMatch.first;
-        print('[MEAL-GEN]   Adding ${amount.toStringAsFixed(1)}g ${food.name}');
+        debugPrint('[MEAL-GEN]   Adding ${amount.toStringAsFixed(1)}g ${food.name}');
 
         await _database.insertMealTemplateItem(
           MealTemplateItemData(
@@ -274,7 +275,7 @@ class MealTemplateGenerator {
       }
     }
 
-    print('[MEAL-GEN] ✅ Generated ${templates.length} meal templates');
+    debugPrint('[MEAL-GEN] ✅ Generated ${templates.length} meal templates');
   }
 
   List<double> _getMealDistribution() {
@@ -300,8 +301,8 @@ class MealTemplateGenerator {
     // Scale templates to average meal size (typically 30-33% of daily intake)
     final mealProteinTarget = _profile.proteinTargetG * avgMealFraction;
     
-    print('[MEAL-GEN] 📊 Scaling templates: ${(avgMealFraction * 100).toInt()}% of daily targets');
-    print('[MEAL-GEN] 📊 Target protein per template: ${mealProteinTarget.toStringAsFixed(1)}g');
+    debugPrint('[MEAL-GEN] 📊 Scaling templates: ${(avgMealFraction * 100).toInt()}% of daily targets');
+    debugPrint('[MEAL-GEN] 📊 Target protein per template: ${mealProteinTarget.toStringAsFixed(1)}g');
     
     if (_profile.dietType == 'omnivore') {
       return [
@@ -310,7 +311,7 @@ class MealTemplateGenerator {
           'description': 'High protein balanced meal',
           'items': [
             {'food': 'Chicken Breast', 'amount': (mealProteinTarget / 0.31).roundToDouble()}, // Target protein
-            {'food': 'Rice', 'amount': 150.0},
+            {'food': 'White Rice', 'amount': 150.0},
             {'food': 'Broccoli', 'amount': 100.0},
             {'food': 'Olive Oil', 'amount': 8.0},
           ],
@@ -339,20 +340,20 @@ class MealTemplateGenerator {
     } else if (_profile.dietType == 'carnivore') {
       return [
         {
-          'name': 'Steak & Eggs',
+          'name': 'Beef & Eggs',
           'description': 'High protein, zero carb',
           'items': [
-            {'food': 'Ribeye Steak', 'amount': 200.0},
+            {'food': 'Ground Beef', 'amount': 200.0},
             {'food': 'Eggs', 'amount': 100.0},
             {'food': 'Butter', 'amount': 10.0},
           ],
         },
         {
-          'name': 'Salmon & Liver',
+          'name': 'Salmon & Shrimp',
           'description': 'Nutrient-dense carnivore',
           'items': [
             {'food': 'Salmon', 'amount': 150.0},
-            {'food': 'Beef Liver', 'amount': 60.0},
+            {'food': 'Shrimp', 'amount': 60.0},
           ],
         },
       ];
@@ -363,10 +364,10 @@ class MealTemplateGenerator {
           'name': 'Tofu Stir Fry',
           'description': 'Plant-based protein bowl',
           'items': [
-            {'food': 'Firm Tofu', 'amount': 200.0},
-            {'food': 'Rice Noodles', 'amount': 100.0},
-            {'food': 'Mixed Veg', 'amount': 150.0},
-            {'food': 'Tahini', 'amount': 15.0},
+            {'food': 'Tofu', 'amount': 200.0},
+            {'food': 'Brown Rice', 'amount': 100.0},
+            {'food': 'Bell Pepper', 'amount': 150.0},
+            {'food': 'Peanut Butter', 'amount': 15.0},
           ],
         },
         {
@@ -374,7 +375,7 @@ class MealTemplateGenerator {
           'description': 'High fiber and protein',
           'items': [
             {'food': 'Lentils', 'amount': 150.0},
-            {'food': 'Rice', 'amount': 130.0},
+            {'food': 'White Rice', 'amount': 130.0},
             {'food': 'Spinach', 'amount': 100.0},
             {'food': 'Olive Oil', 'amount': 8.0},
           ],

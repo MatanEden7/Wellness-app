@@ -6,9 +6,10 @@ import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../core/validation.dart';
+import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class FoodCatalogPage extends HookConsumerWidget {
   const FoodCatalogPage({super.key});
@@ -74,9 +75,10 @@ class _FoodList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final language = ref.watch(currentLanguageProvider);
     final foodsStream = isStarter
-        ? ref.watch(mealsRepositoryProvider).watchStarterFoods()
-        : ref.watch(mealsRepositoryProvider).watchUserFoods();
+        ? ref.watch(starterFoodsStreamProvider)
+        : ref.watch(userFoodsStreamProvider);
 
     return StreamBuilder<List<FoodItem>>(
       stream: foodsStream,
@@ -110,6 +112,7 @@ class _FoodList extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: _FoodCard(
                 food: food,
+                language: language,
                 onEdit: () => _showEditFoodDialog(context, ref, food),
                 onDelete: isStarter ? null : () => _deleteFood(context, ref, food),
               ),
@@ -169,11 +172,13 @@ class _FoodList extends ConsumerWidget {
 
 class _FoodCard extends StatelessWidget {
   final FoodItem food;
+  final AppLanguage language;
   final VoidCallback onEdit;
   final VoidCallback? onDelete;
 
   const _FoodCard({
     required this.food,
+    required this.language,
     required this.onEdit,
     this.onDelete,
   });
@@ -194,7 +199,7 @@ class _FoodCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      food.name,
+                      food.displayName(language),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,

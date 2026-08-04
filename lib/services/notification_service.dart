@@ -4,7 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../features/calendar/domain/models.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 // Provider for notification service
 final notificationServiceProvider = Provider<NotificationService>((ref) {
@@ -33,12 +33,11 @@ enum NotificationAction {
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _notifications;
-  final BuildContext? _context;
   
   // Callback for handling notification taps and actions
   Function(NotificationResponse)? onNotificationTap;
 
-  NotificationService(this._notifications, this._context);
+  NotificationService(this._notifications);
 
   // Initialize notification service with iOS categories
   Future<void> initialize() async {
@@ -142,6 +141,14 @@ class NotificationService {
     );
   }
 
+  /// Details of the notification that launched the app, when a tap on one is
+  /// what started it from terminated. Returns null otherwise.
+  Future<NotificationAppLaunchDetails?> getLaunchDetails() async {
+    final details = await _notifications.getNotificationAppLaunchDetails();
+    if (details == null || !details.didNotificationLaunchApp) return null;
+    return details;
+  }
+
   // Request notification permissions
   Future<bool> requestPermissions() async {
     final iOS = await _notifications
@@ -179,6 +186,8 @@ class NotificationService {
     ScheduledEvent event,
     AppLocalizations l10n, {
     int leadTimeMinutes = 0,
+    bool soundEnabled = true,
+    bool vibrationEnabled = true,
   }) async {
     debugPrint('🔔 NotificationService.scheduleEventNotification called');
     debugPrint('🔔 Event: ${event.title}, Type: ${event.type}');
@@ -215,7 +224,11 @@ class NotificationService {
         details.title,
         details.body,
         tzScheduleTime,
-        _getPlatformNotificationDetails(event.type),
+        _getPlatformNotificationDetails(
+          event.type,
+          soundEnabled: soundEnabled,
+          vibrationEnabled: vibrationEnabled,
+        ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -239,6 +252,12 @@ class NotificationService {
     await _notifications.cancelAll();
   }
 
+  /// The OS-level pending queue. Exists mainly so tests can assert a
+  /// schedule call actually reached the OS without waiting for real
+  /// delivery -- see `integration_test/e2e/notification_scheduling_test.dart`.
+  Future<List<PendingNotificationRequest>> pendingRequests() =>
+      _notifications.pendingNotificationRequests();
+
   // Show immediate notification (for sleep goal reached, etc.)
   Future<void> showImmediate({
     required String title,
@@ -253,15 +272,6 @@ class NotificationService {
       _getPlatformNotificationDetails(type),
       payload: payload,
     );
-  }
-
-  // Update badge count
-  Future<void> updateBadgeCount(int count) async {
-    // iOS badge update
-    final plugin = _notifications.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
-    await plugin?.requestPermissions(badge: true);
-    // Note: Actual badge count update needs to be done through native code
   }
 
   // Get notification details based on event and localization
@@ -291,9 +301,17 @@ class NotificationService {
   }
 
   // Get platform-specific notification details with categories
-  NotificationDetails _getPlatformNotificationDetails(EventType type) {
+  //
+  // [soundEnabled]/[vibrationEnabled] come from NotificationPreferences. They
+  // used to be persisted and shown as switches in settings but never read
+  // here, so turning them off did nothing.
+  NotificationDetails _getPlatformNotificationDetails(
+    EventType type, {
+    bool soundEnabled = true,
+    bool vibrationEnabled = true,
+  }) {
     String categoryId;
-    
+
     switch (type) {
       case EventType.meal:
         categoryId = 'meal_category';
@@ -305,22 +323,29 @@ class NotificationService {
         categoryId = 'sleep_category';
         break;
     }
-    
+
     return NotificationDetails(
       iOS: DarwinNotificationDetails(
         categoryIdentifier: categoryId,
         presentAlert: true,
         presentBadge: true,
-        presentSound: true,
+        presentSound: soundEnabled,
         interruptionLevel: InterruptionLevel.timeSensitive,
       ),
       android: AndroidNotificationDetails(
-        'wellness_events',
-        'Wellness Events',
+        // Android bakes sound/vibration into the channel at creation time, so
+        // the four combinations need distinct channel ids -- reusing one id
+        // would keep whatever settings it was first registered with.
+        'wellness_events'
+            '${soundEnabled ? '_snd' : ''}${vibrationEnabled ? '_vib' : ''}',
+        'Wellness Events'
+            '${soundEnabled || vibrationEnabled ? '' : ' (Silent)'}',
         channelDescription: 'Notifications for scheduled meals, workouts, and sleep',
         importance: Importance.high,
         priority: Priority.high,
         category: AndroidNotificationCategory.event,
+        playSound: soundEnabled,
+        enableVibration: vibrationEnabled,
       ),
     );
   }

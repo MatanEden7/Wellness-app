@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -370,11 +370,13 @@ class _TemplateExerciseCard extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.edit, size: 20),
                 onPressed: onEdit,
-              ),
+            tooltip: AppLocalizations.of(context)!.edit,
+          ),
               IconButton(
                 icon: const Icon(Icons.delete, size: 20, color: Colors.red),
                 onPressed: onDelete,
-              ),
+            tooltip: AppLocalizations.of(context)!.delete,
+          ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -413,7 +415,7 @@ class _ExerciseSelectorDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final exercisesAsync = ref.watch(exercisesRepositoryProvider).watchAllExercises();
+    final exercisesAsync = ref.watch(exercisesStreamProvider);
 
     return Dialog(
       child: Container(
@@ -424,7 +426,7 @@ class _ExerciseSelectorDialog extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Select Exercise',
+              AppLocalizations.of(context)!.selectExercise,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -503,7 +505,7 @@ class _TemplateExerciseEditorDialog extends HookWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Exercise Settings',
+              AppLocalizations.of(context)!.exerciseSettings,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.lg),

@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../features/calendar/domain/models.dart';
 import '../features/calendar/data/calendar_service.dart';
+import '../features/meals/data/repositories.dart';
+import '../features/meals/domain/food_nutrition_math.dart';
 import '../data/db/drift_database.dart';
+import '../routing/routes.dart';
 import 'notification_service.dart';
 
 // Provider for notification action handler
@@ -74,33 +77,63 @@ class NotificationActionHandler {
     }
   }
 
-  // Open event detail page
+  // Open the page the notification is about.
+  //
+  // This used to key off ids starting `meal_` / `workout_`, but those prefixes
+  // only ever appear on events synthesized from *already logged* data, which
+  // are never notified about. Scheduled events carry a uuid (or an occurrence
+  // id), so neither branch could match and tapping a meal or workout
+  // notification did nothing at all. Routing is by event type instead.
   Future<void> _openEventDetail(({EventType type, String eventId, String? templateId}) payload) async {
     if (context == null || !context!.mounted) return;
 
     switch (payload.type) {
       case EventType.meal:
-        // Open meal editor if it's a logged meal, otherwise open scheduling dialog
-        if (payload.eventId.startsWith('meal_')) {
-          final mealId = payload.eventId.replaceFirst('meal_', '');
-          context!.push('/meals/edit/$mealId');
-        }
+        // If completing this event already logged a meal, open that meal.
+        // Otherwise go to the meal list for the day so it can be added.
+        final meal = await _mealForEvent(payload.eventId);
+        if (context == null || !context!.mounted) return;
+        context!.push(meal == null ? Routes.meals : '${Routes.mealEditor}/${meal.id}');
         break;
       case EventType.workout:
-        if (payload.eventId.startsWith('workout_')) {
-          final workoutId = payload.eventId.replaceFirst('workout_', '');
-          context!.push('/workouts/session/$workoutId');
+        // A workout already under way reopens its session; otherwise this is
+        // the "start the workout" entry point.
+        final session = await _sessionForEvent(payload.eventId);
+        if (session != null) {
+          if (context == null || !context!.mounted) return;
+          context!.push('${Routes.workoutSession}/${session.id}');
+        } else {
+          await _handleWorkoutStart(payload.eventId, payload.templateId);
         }
         break;
       case EventType.sleep:
-        context!.push('/sleep');
+        context!.push(Routes.sleepTimer);
         break;
     }
   }
 
+  /// The meal logged by completing [eventId], if any.
+  Future<MealData?> _mealForEvent(String eventId) async {
+    final meals = await ref.read(databaseProvider).getAllMeals();
+    return meals.where((m) => m.sourceEventId == eventId).firstOrNull;
+  }
+
+  /// The workout session started from [eventId], if any.
+  Future<WorkoutSessionData?> _sessionForEvent(String eventId) async {
+    final sessions = await ref.read(databaseProvider).getAllWorkoutSessions();
+    return sessions.where((s) => s.sourceEventId == eventId).firstOrNull;
+  }
+
   // Meal approve - use template to create meal
   Future<void> _handleMealApprove(String eventId, String? templateId) async {
-    if (templateId == null) return;
+    // A meal event scheduled without a template has nothing to copy, but
+    // "Approve" must still do something -- it used to return silently. Open
+    // the meal editor so the user can log it by hand.
+    if (templateId == null) {
+      if (context == null || !context!.mounted) return;
+      context!.push(Routes.mealEditor);
+      return;
+    }
 
     try {
       final database = ref.read(databaseProvider);
@@ -118,6 +151,7 @@ class NotificationActionHandler {
           note: 'Auto-created from template',
           createdAt: now,
           updatedAt: now,
+          sourceEventId: eventId,
         );
         
         await database.insertMeal(mealData);
@@ -127,15 +161,16 @@ class NotificationActionHandler {
         for (final item in templateItems) {
           final food = await database.getFoodById(item.foodId);
           if (food != null) {
+            final nutrition = FoodNutritionMath.computeMacros(foodItemFromData(food), item.amount);
             final mealItem = MealItemData(
               id: 'item_${DateTime.now().millisecondsSinceEpoch}_${item.foodId}',
               mealId: mealData.id,
               foodId: item.foodId,
               amount: item.amount,
-              kcal: food.kcalPerUnit * item.amount,
-              protein: food.proteinPerUnit * item.amount,
-              carbs: food.carbsPerUnit * item.amount,
-              fat: food.fatPerUnit * item.amount,
+              kcal: nutrition.kcal,
+              protein: nutrition.protein,
+              carbs: nutrition.carbs,
+              fat: nutrition.fat,
             );
             await database.insertMealItem(mealItem);
           }
@@ -165,32 +200,40 @@ class NotificationActionHandler {
     if (context == null || !context!.mounted) return;
 
     try {
-      if (templateId != null) {
-        // Create a workout session from template
-        final database = ref.read(databaseProvider);
-        final sessionData = WorkoutSessionData(
-          id: 'session_${DateTime.now().millisecondsSinceEpoch}',
-          templateId: templateId,
-          startedAt: DateTime.now(),
-          endedAt: null,
-          note: null,
-        );
-        
-        await database.insertWorkoutSession(sessionData);
-        
-        // Navigate to workout session
-        if (context!.mounted) {
-          context!.push('/workouts/session/${sessionData.id}');
-        }
-        
-        // Mark event as active
-        final events = await ref.read(calendarServiceProvider).getEvents();
-        final event = events.where((e) => e.id == eventId).firstOrNull;
-        if (event != null) {
-          await ref.read(calendarStateProvider.notifier).updateEvent(
-            event.copyWith(status: EventStatus.active),
+      final database = ref.read(databaseProvider);
+
+      // An already-started session is reopened rather than duplicated -- two
+      // taps on "Start Workout" used to create two sessions for one event.
+      final existing = await _sessionForEvent(eventId);
+      final session = existing ??
+          WorkoutSessionData(
+            id: 'session_${DateTime.now().millisecondsSinceEpoch}',
+            // A workout event scheduled without a template still starts a
+            // session -- an ad-hoc one the user fills in. This whole block used
+            // to be skipped when templateId was null, so the button did nothing.
+            templateId: templateId,
+            startedAt: DateTime.now(),
+            endedAt: null,
+            note: null,
+            sourceEventId: eventId,
           );
-        }
+
+      if (existing == null) {
+        await database.insertWorkoutSession(session);
+      }
+
+      if (context != null && context!.mounted) {
+        context!.push('${Routes.workoutSession}/${session.id}');
+      }
+
+      // Mark the event active. Resolved via getEventById so that an occurrence
+      // of a recurring event is found -- a plain id lookup never matched one.
+      final event =
+          await ref.read(calendarServiceProvider).getEventById(eventId);
+      if (event != null) {
+        await ref.read(calendarStateProvider.notifier).updateEvent(
+              event.copyWith(status: EventStatus.active),
+            );
       }
     } catch (e) {
       debugPrint('Error starting workout: $e');
@@ -200,32 +243,58 @@ class NotificationActionHandler {
   // Sleep start - navigate to sleep timer
   Future<void> _handleSleepStart() async {
     if (context == null || !context!.mounted) return;
-    
-    context!.push('/sleep/timer');
+
+    context!.push(Routes.sleepTimer);
   }
 
-  // Sleep stop - mark sleep as completed (would be handled by sleep timer)
+  // Sleep stop - end the sleep session that is actually running.
+  //
+  // This used to only navigate to /sleep, so the action labelled "Stop Sleep"
+  // never stopped anything.
   Future<void> _handleSleepStop() async {
-    // This would typically be handled by the sleep timer page
-    // Just navigate to sleep page for now
+    try {
+      final database = ref.read(databaseProvider);
+      final entries = await database.getAllSleepEntries();
+      final active = entries.where((e) => e.endedAt == null).toList()
+        ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+
+      if (active.isNotEmpty) {
+        final entry = active.first;
+        await database.updateSleepEntry(SleepEntryData(
+          id: entry.id,
+          startedAt: entry.startedAt,
+          endedAt: DateTime.now(),
+          quality: entry.quality,
+          note: entry.note,
+          sourceEventId: entry.sourceEventId,
+        ));
+      }
+    } catch (e) {
+      debugPrint('Error stopping sleep: $e');
+    }
+
     if (context == null || !context!.mounted) return;
-    
-    context!.push('/sleep');
+    context!.push(Routes.sleep);
   }
 
-  // Snooze - reschedule notification
+  // Snooze - re-fire this notification later.
+  //
+  // Snooze deliberately does not touch the schedule. It used to rewrite the
+  // event's `scheduledAt`, which had two problems: for a recurring event the
+  // payload carries an occurrence id that matched no stored event, so nothing
+  // happened at all; and had it matched, moving the base event would have
+  // dragged the entire series to the snoozed time. "Remind me in 10 minutes"
+  // is a notification concern, so only the notification is rescheduled.
   Future<void> _handleSnooze(String eventId, int minutes) async {
     try {
-      final calendarService = ref.read(calendarServiceProvider);
-      final events = await calendarService.getEvents();
-      final event = events.where((e) => e.id == eventId).firstOrNull;
-      
-      if (event != null) {
-        final newTime = DateTime.now().add(Duration(minutes: minutes));
-        final updatedEvent = event.copyWith(scheduledAt: newTime);
-        
-        await ref.read(calendarStateProvider.notifier).updateEvent(updatedEvent);
-      }
+      final event =
+          await ref.read(calendarServiceProvider).getEventById(eventId);
+      if (event == null) return;
+
+      await ref.read(calendarStateProvider.notifier).snoozeEventNotification(
+            event,
+            Duration(minutes: minutes),
+          );
     } catch (e) {
       debugPrint('Error snoozing notification: $e');
     }
