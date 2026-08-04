@@ -5,6 +5,26 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Edit-path fixes (2026-08-05)
+
+- **Calendar "Edit" no longer opens a blank form — or creates a duplicate.** The
+  scheduling dialog always supported editing; the Edit action just never handed it
+  the event, so the form came up empty *and* saving added a second event instead of
+  updating the one being edited. Recurring occurrences now resolve to their base
+  event first (editing an occurrence edits the series).
+- **Editing a meal, workout or sleep entry no longer un-links it from the calendar
+  event that created it.** `sourceEventId` lives only on the DB row, so every
+  repository update silently nulled it and brought back the duplicated-row bug.
+  Reachable just by stopping a sleep timer started from an event.
+- **Editing a meal no longer moves it on the calendar.** Its `createdAt` was being
+  stamped forward on every edit, and the calendar falls back to `createdAt` when no
+  explicit time is set.
+- **Deleted workout sessions and sleep entries no longer resolve by id.** Both
+  deletes skipped their `*ById` cache — same class of bug as the referential-integrity
+  pass, missed there.
+- **Export share sheet no longer crashes on iPad**, which the app ships for: UIKit
+  needs a `sharePositionOrigin` to anchor the popover.
+
 - Profile screen wired up end-to-end: view/edit body, goal, activity, targets;
   reachable from Settings and the dashboard. Recomputes BMR/TDEE/targets live
   via `SetupEngineService`, matches `PROFILE_AND_SETTINGS_PLAN.md`'s Option A

@@ -306,6 +306,16 @@ class SettingsStub extends ConsumerWidget {
 
   Future<void> _exportData(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
+    // Anchor for the iPad share popover. UIKit needs a non-nil source rect to
+    // present a popover from; without one the share sheet throws on iPad
+    // ("UIPopoverPresentationController should have a non-nil sourceView...").
+    // This app ships for iPhone *and* iPad (TARGETED_DEVICE_FAMILY = "1,2"),
+    // so it is a real crash, not a theoretical one. Ignored on iPhone, where
+    // the sheet slides up from the bottom regardless.
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box != null && box.hasSize
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
     try {
       final file = await ref.read(exportImportServiceProvider).exportToFile();
       // Previously the export sat in the app's Documents directory with just
@@ -314,6 +324,7 @@ class SettingsStub extends ConsumerWidget {
       final result = await Share.shareXFiles(
         [XFile(file.path)],
         subject: l10n.exportData,
+        sharePositionOrigin: origin,
       );
       if (context.mounted && result.status == ShareResultStatus.dismissed) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

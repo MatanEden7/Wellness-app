@@ -164,10 +164,30 @@ class MealsRepository {
 
   Future<void> updateMeal(Meal meal) async {
     await _database.transaction(() async {
-      await _database.updateMeal(_mealModelToData(meal.copyWith(
-        updatedAt: DateTime.now(),
-      )));
-      
+      // Carry over the fields the domain model cannot represent or that the
+      // caller has no business rewriting:
+      //
+      //  * `sourceEventId` exists only on MealData -- the `Meal` domain model
+      //    has no such field, so a plain model->data conversion always nulls
+      //    it. That link is what stops the calendar rendering the scheduled
+      //    event *and* the meal it created as two separate rows, so editing a
+      //    meal logged from an event used to silently resurrect that
+      //    duplicate.
+      //  * `createdAt` is set to `DateTime.now()` by the meal editor's edit
+      //    path (its comment claims it "will be preserved in update" -- it
+      //    was not). Stamping it forward on every edit both loses the real
+      //    creation time and, since the calendar falls back to `createdAt`
+      //    when `loggedAt` is unset, silently moved the meal to whatever time
+      //    it happened to be edited at.
+      final existing = await _database.getMealById(meal.id);
+      final data = _mealModelToData(meal.copyWith(updatedAt: DateTime.now()));
+      await _database.updateMeal(existing == null
+          ? data
+          : data.copyWith(
+              createdAt: existing.createdAt,
+              sourceEventId: existing.sourceEventId,
+            ));
+
       // Delete existing items and re-insert
       final existingItems = await _database.getMealItemsByMealId(meal.id);
       for (final item in existingItems) {

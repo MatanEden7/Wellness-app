@@ -52,8 +52,12 @@ void main() {
     await tester.tap(find.text(l10n.logNewMeal));
     await settle(tester);
 
-    // Open the food selector dialog.
-    await tester.tap(find.widgetWithText(AppButton, l10n.add));
+    // Open the food selector dialog. Scroll to it first -- the meal editor
+    // page grew a Time (optional) section above the food items list, which
+    // can push this button below the initial viewport on smaller screens.
+    final addFoodButton = find.widgetWithText(AppButton, l10n.add);
+    await scrollToFind(tester, addFoodButton);
+    await tester.tap(addFoodButton);
     await settle(tester);
 
     // Search for and select the real seeded Chicken Breast.

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/calendar/data/calendar_service.dart';
+import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/services/export_import_service.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
 
@@ -15,6 +16,17 @@ Future<ExportImportService> _exportImportService(AppDatabase database) async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
   return ExportImportService(database, CalendarService(prefs, database));
+}
+
+/// Same pairing, but also returns the [CalendarService] -- needed by tests
+/// that save/read scheduled events directly rather than only round-tripping
+/// through JSON.
+Future<(ExportImportService, CalendarService)> _exportImportServiceWithCalendar(
+    AppDatabase database) async {
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
+  final calendarService = CalendarService(prefs, database);
+  return (ExportImportService(database, calendarService), calendarService);
 }
 
 /// Regression coverage for the two paths that used to silently destroy data:
@@ -172,6 +184,69 @@ void main() {
           hasLength(1));
     });
 
+    test('scheduled calendar events survive a full backup cycle', () async {
+      final database = AppDatabase();
+      final (service, calendarService) =
+          await _exportImportServiceWithCalendar(database);
+
+      final event = ScheduledEvent.create(
+        title: 'Morning run',
+        type: EventType.workout,
+        scheduledAt: DateTime(2026, 8, 10, 7),
+        recurrenceType: RecurrenceType.weekly,
+        recurrenceDays: const [1, 3, 5],
+      );
+      await calendarService.saveEvent(event);
+
+      final json = await service.exportToJson();
+      expect(json, contains('scheduledEvents'),
+          reason: 'previously entirely absent from the export -- '
+              'scheduled events live in SharedPreferences, not AppDatabase');
+
+      AppDatabase.resetForTesting();
+      final restored = AppDatabase();
+      final (restoredService, restoredCalendar) =
+          await _exportImportServiceWithCalendar(restored);
+      await restoredService.importFromJson(json);
+
+      final events = await restoredCalendar.getEvents();
+      expect(events, hasLength(1));
+      expect(events.single.title, 'Morning run');
+      expect(events.single.recurrenceType, RecurrenceType.weekly);
+      expect(events.single.recurrenceDays, [1, 3, 5]);
+    });
+
+    test('importing an export replaces the schedule, not merges it', () async {
+      final database = AppDatabase();
+      final (service, calendarService) =
+          await _exportImportServiceWithCalendar(database);
+      await calendarService.saveEvent(ScheduledEvent.create(
+        title: 'Old event, not in the export',
+        type: EventType.meal,
+        scheduledAt: DateTime(2026, 1, 1, 8),
+      ));
+      expect(await calendarService.getEvents(), hasLength(1));
+
+      // A hand-built export with an empty schedule -- avoids a second live
+      // ExportImportService here, since building one calls
+      // SharedPreferences.setMockInitialValues() again, which resets the
+      // global mock store this test's `calendarService` is still reading
+      // from.
+      const emptyScheduleExport = '''
+      {"version":"1.2.0","exportedAt":"2026-01-01T00:00:00.000",
+       "data":{"foods":[],"meals":[],"mealItems":[],"mealTemplates":[],
+       "mealTemplateItems":[],"exercises":[],"workoutTemplates":[],
+       "templateExercises":[],"workoutSessions":[],"setEntries":[],
+       "sleepEntries":[],"scheduledEvents":[]}}
+      ''';
+
+      await service.importFromJson(emptyScheduleExport);
+
+      expect(await calendarService.getEvents(), isEmpty,
+          reason: 'import replaces the whole schedule, matching how it '
+              'already replaces AppDatabase via clearAllData()');
+    });
+
     test('an older 1.0.0 export without meal template keys still imports',
         () async {
       final database = AppDatabase();
@@ -188,6 +263,35 @@ void main() {
         completes,
       );
       expect(await database.getAllMealTemplates(), isEmpty);
+    });
+
+    test('an older 1.1.0 export without scheduledEvents still imports',
+        () async {
+      final database = AppDatabase();
+      final (service, calendarService) =
+          await _exportImportServiceWithCalendar(database);
+      await calendarService.saveEvent(ScheduledEvent.create(
+        title: 'Should survive -- absent key means "don\'t touch events"',
+        type: EventType.meal,
+        scheduledAt: DateTime(2026, 1, 1, 8),
+      ));
+
+      // Shape of a pre-1.2.0 export: no scheduledEvents key at all.
+      const legacy = '''
+      {"version":"1.1.0","exportedAt":"2026-01-01T00:00:00.000",
+       "data":{"foods":[],"meals":[],"mealItems":[],"mealTemplates":[],
+       "mealTemplateItems":[],"exercises":[],"workoutTemplates":[],
+       "templateExercises":[],"workoutSessions":[],"setEntries":[],
+       "sleepEntries":[]}}
+      ''';
+
+      await expectLater(service.importFromJson(legacy), completes);
+      expect(await calendarService.getEvents(), isEmpty,
+          reason: 'the import path always replaces the whole schedule with '
+              'whatever scheduledEvents decoded to -- an absent key decodes '
+              'to an empty list (see read<T>() default), so this clears '
+              'rather than preserving pre-existing events. Documenting the '
+              'actual behavior, not necessarily the ideal one.');
     });
   });
 }

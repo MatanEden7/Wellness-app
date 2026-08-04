@@ -48,7 +48,17 @@ class SleepRepository {
   }
 
   Future<void> updateEntry(SleepEntry entry) async {
-    await _database.updateSleepEntry(_sleepEntryModelToData(entry));
+    // `sourceEventId` lives only on the DB row -- the [SleepEntry] domain
+    // model has no such field, so a plain model->data conversion nulls it and
+    // un-links the entry from the calendar event that created it. The
+    // calendar then renders the scheduled event *and* the logged sleep as two
+    // separate rows. Stopping a sleep session started from an event goes
+    // straight through here, so this was reachable in normal use.
+    // See MealsRepository.updateMeal for the same fix on meals.
+    final existing = await _database.getSleepEntryById(entry.id);
+    await _database.updateSleepEntry(
+      _sleepEntryModelToData(entry, sourceEventId: existing?.sourceEventId),
+    );
   }
 
   Future<void> deleteEntry(String id) async {
@@ -103,13 +113,17 @@ class SleepRepository {
     );
   }
 
-  SleepEntryData _sleepEntryModelToData(SleepEntry model) {
+  /// [sourceEventId] has no counterpart on the domain model, so callers that
+  /// are updating an existing row must read it off that row and pass it back
+  /// in -- otherwise the calendar link is dropped. See [updateEntry].
+  SleepEntryData _sleepEntryModelToData(SleepEntry model, {String? sourceEventId}) {
     return SleepEntryData(
       id: model.id,
       startedAt: model.startedAt,
       endedAt: model.endedAt,
       quality: model.quality,
       note: model.note,
+      sourceEventId: sourceEventId,
     );
   }
 }

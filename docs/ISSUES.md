@@ -80,6 +80,11 @@ remaining work is a translator/designer decision, not engineering effort.
 | 61 | Repeated "Start Workout" created duplicate sessions for one event | Medium | Fixed (reopen existing) | ~20min |
 | 62 | "Stop Sleep" never stopped sleep, and its button was unreachable | Medium | Partly fixed (now ends the session; button still not surfaced) | ~30min done / ~1h remaining |
 | 51 | Bundle IDs differ across platforms (`com.matan.wellnessx123` vs `com.wellness.wellness_app`) | High | **OPEN — your decision** | ~15min |
+| 63 | Calendar "Edit" opened a blank form and saved a **duplicate** event | High | Fixed | ~45min |
+| 64 | Editing a meal/workout/sleep row silently dropped `sourceEventId`, resurrecting the calendar duplicate (#57) | High | Fixed | ~45min |
+| 65 | Editing a meal stamped `createdAt` forward, moving it on the calendar | Medium | Fixed | ~15min |
+| 66 | `deleteWorkoutSession`/`deleteSleepEntry` left a stale id-cache entry (deleted rows still resolvable by id) | Medium | Fixed | ~15min |
+| 67 | Share sheet crashed on iPad (no `sharePositionOrigin`) | Medium | Fixed | ~10min |
 
 **Totals:** 27 fully fixed, 6 partly fixed, 2 fully open (excluding the "Missing
 functionality" list below, which is out-of-scope feature work, not bugs).
@@ -530,6 +535,71 @@ downstream providers to react to it being invalidated. Re-verified: full device 
   integration suite could not run at all. Relaxed to `^1.9.0`.
 - **Dead Drift dependency.** `_openConnection()` and the `drift`/`sqlite3` imports were the
   only Drift usage and were unreachable; removed.
+
+---
+
+## Edit-path audit (2026-08-05)
+
+Prompted by the report that "the edits ask you to add all the parameters again".
+Every edit form in the app was checked for whether it pre-populates from the entity
+being edited. **Only the calendar was broken** — foods, exercises, sleep entries, meal
+items, meal-template items, and both template editors all prefill correctly.
+
+### 63. Calendar "Edit" opened a blank form and saved a duplicate  **[FIXED]**
+
+`EventSchedulingDialog` has full edit support — it takes an `existingEvent`, prefills
+all 11 fields from it, switches its title to "Edit Event", its button to "Save", and
+routes to `updateEvent()` instead of `addEvent()`. But `calendar_page.dart`'s Edit
+action called `_showAddEventDialog(context, ref, event.scheduledAt, event.type)`, which
+only forwards a date and a type. So `existingEvent` was always null: the form opened
+blank (title, description, template, recurrence all lost) **and** saving took the create
+path, leaving the original event untouched and adding a second one.
+
+**Solution:** new `_showEditEventDialog()` passes the real event. Recurring occurrences
+(`<baseId>__occ_<dateInt>`) are generated on the fly rather than stored, so they are
+resolved back to their base event first — `saveEvent()` matches on id and would
+otherwise insert a new row under the synthetic occurrence id. Editing an occurrence
+therefore edits the whole series, which is all the storage model supports (only
+completed/missed/skipped dates are tracked per occurrence). Covered by
+`test/regression/source_event_link_test.dart`.
+
+### 64. Editing anything dropped `sourceEventId`  **[FIXED]**
+
+`sourceEventId` exists only on the DB-layer `*Data` classes — none of `Meal`,
+`WorkoutSession` or `SleepEntry` has the field. Every repository `update*` method
+converted model → data, which nulled it. That link is the entire mechanism stopping the
+calendar rendering the scheduled event *and* the row it created as two entries (#57), so
+editing a logged item quietly resurrected that bug. The sleep case was reachable just by
+stopping a sleep timer that had been started from an event.
+
+**Solution:** all three `update*` methods now read the stored row and carry
+`sourceEventId` across. Covered by `test/regression/source_event_link_test.dart`, which
+was verified to fail against the unfixed code.
+
+### 65. Editing a meal stamped `createdAt` forward  **[FIXED]**
+
+`meal_editor_page.dart`'s edit path passes `createdAt: DateTime.now()` with a comment
+claiming it "will be preserved in update" — it was not; the repository wrote it straight
+through. Beyond losing the real creation time, the calendar falls back to `createdAt`
+when `loggedAt` is unset, so editing a meal silently moved it to whatever time it was
+edited at.
+
+**Solution:** `MealsRepository.updateMeal` preserves the stored `createdAt`, so no caller
+can rewrite it.
+
+### 66. Stale id-cache on delete  **[FIXED]**
+
+`deleteWorkoutSession` and `deleteSleepEntry` removed the row from the list but never
+from `_workoutSessionsById` / `_sleepEntriesById`, so a deleted session or sleep entry
+still resolved by id — the same class of bug as #10, missed in that pass. Found by the
+new `deleteDataOlderThan` test, not by inspection.
+
+### 67. Share sheet crashed on iPad  **[FIXED]**
+
+The export share sheet was added without `sharePositionOrigin`. UIKit needs a non-nil
+source rect to present a popover from, and this app ships for iPhone *and* iPad
+(`TARGETED_DEVICE_FAMILY = "1,2"`), so this was a real crash on iPad rather than a
+theoretical one. Now anchored to the settings page's render box; ignored on iPhone.
 
 ---
 

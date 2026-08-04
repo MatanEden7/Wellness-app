@@ -705,6 +705,7 @@ class AppDatabase {
     debugPrint('[WORKOUTS] 🗑️ Deleting workout session');
     final initialLength = _workoutSessions.length;
     _workoutSessions.removeWhere((s) => s.id == id);
+    _workoutSessionsById.remove(id); // O(1) lookup cache -- was left stale
     // Also remove associated set entries
     final setsRemoved = _setEntries.where((set) => set.sessionId == id).length;
     _setEntries.removeWhere((set) => set.sessionId == id);
@@ -770,6 +771,7 @@ class AppDatabase {
     debugPrint('[SLEEP] 🗑️ Deleting sleep entry');
     final initialLength = _sleepEntries.length;
     _sleepEntries.removeWhere((s) => s.id == id);
+    _sleepEntriesById.remove(id); // O(1) lookup cache -- was left stale
     if (_sleepEntries.length < initialLength) {
       _touch(_sleepController); // Trigger stream update
     }

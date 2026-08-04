@@ -544,7 +544,7 @@ class CalendarPage extends ConsumerWidget {
               title: Text(l10n.edit),
               onTap: () {
                 Navigator.of(context).pop();
-                _showAddEventDialog(context, ref, event.scheduledAt, event.type);
+                _showEditEventDialog(context, ref, event);
               },
             ),
             if (event.status != EventStatus.completed) ...[
@@ -785,6 +785,50 @@ class CalendarPage extends ConsumerWidget {
         initialDate: selectedDate,
         initialType: eventType,
       ),
+    );
+  }
+
+  /// Opens the scheduling dialog **pre-filled** with [event].
+  ///
+  /// This used to call [_showAddEventDialog], which only forwards a date and
+  /// a type -- so "Edit" opened an otherwise blank form (title, description,
+  /// template and recurrence all lost), and because the dialog only takes the
+  /// update path when it is given an `existingEvent`, saving created a second
+  /// event instead of updating the one being edited.
+  ///
+  /// A recurring occurrence (`<baseId>__occ_<dateInt>`) is generated on the
+  /// fly rather than stored, so it has to be resolved back to its base event
+  /// first -- `saveEvent()` matches on id and would otherwise insert a new row
+  /// under the synthetic occurrence id. Editing an occurrence therefore edits
+  /// the whole series, which is all the storage model supports: per-occurrence
+  /// overrides don't exist, only completed/missed/skipped dates are tracked
+  /// per occurrence.
+  ///
+  /// Rows synthesized from logged data (`meal_<id>` etc.) never reach here --
+  /// [_navigateToEventDetail] routes those to their own editors.
+  Future<void> _showEditEventDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ScheduledEvent event,
+  ) async {
+    final occurrence = CalendarService.parseOccurrenceId(event.id);
+    final stored = await ref
+        .read(calendarServiceProvider)
+        .getEventById(occurrence?.baseId ?? event.id);
+
+    if (!context.mounted) return;
+
+    await showDialog(
+      context: context,
+      // Falling back to the blank-form dialog would silently recreate the
+      // duplicate-on-save bug, so only offer it when there is genuinely no
+      // stored event to edit.
+      builder: (context) => stored != null
+          ? EventSchedulingDialog(existingEvent: stored)
+          : EventSchedulingDialog(
+              initialDate: event.scheduledAt,
+              initialType: event.type,
+            ),
     );
   }
 

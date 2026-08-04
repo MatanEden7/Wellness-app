@@ -263,7 +263,15 @@ class WorkoutSessionsRepository {
   }
 
   Future<void> updateSession(WorkoutSession session) async {
-    await _database.updateWorkoutSession(_sessionModelToData(session));
+    // `sourceEventId` lives only on the DB row -- see the same fix in
+    // MealsRepository.updateMeal and SleepRepository.updateEntry. Finishing a
+    // workout started from a calendar event goes through here, so without
+    // this the calendar shows the scheduled event and the logged session as
+    // two separate rows.
+    final existing = await _database.getWorkoutSessionById(session.id);
+    await _database.updateWorkoutSession(
+      _sessionModelToData(session, sourceEventId: existing?.sourceEventId),
+    );
   }
 
   Future<void> deleteSession(String id) async {
@@ -296,13 +304,17 @@ class WorkoutSessionsRepository {
     );
   }
 
-  WorkoutSessionData _sessionModelToData(WorkoutSession model) {
+  /// [sourceEventId] has no counterpart on the domain model, so callers that
+  /// are updating an existing row must read it off that row and pass it back
+  /// in -- otherwise the calendar link is dropped. See [updateSession].
+  WorkoutSessionData _sessionModelToData(WorkoutSession model, {String? sourceEventId}) {
     return WorkoutSessionData(
       id: model.id,
       templateId: model.templateId,
       startedAt: model.startedAt,
       endedAt: model.endedAt,
       note: model.note,
+      sourceEventId: sourceEventId,
     );
   }
 

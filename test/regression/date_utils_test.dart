@@ -41,12 +41,39 @@ void main() {
       final wednesday = DateTime(2026, 3, 4);
       expect(AppDateUtils.startOfWeek(wednesday), DateTime(2026, 3, 1));
     });
+
+    test('stays exact across a week containing a DST transition', () {
+      // Israel's 2026 spring-forward is Fri Mar 27 (02:00 -> 03:00, a real
+      // 23-hour day). The week Sun Mar 22 - Sat Mar 28 contains it. The
+      // previous implementation subtracted via `Duration(days: n)`, which is
+      // exactly n*24h -- on a machine whose local timezone observes DST
+      // (this one does; skip/irrelevant on a fixed-offset CI timezone),
+      // subtracting 6*24h from Sat Mar 28 00:00 overshoots by the missing
+      // hour and lands on Mar 21 23:00, not Mar 22 00:00.
+      final saturday = DateTime(2026, 3, 28);
+      final result = AppDateUtils.startOfWeek(saturday);
+      expect(result, DateTime(2026, 3, 22));
+      expect(result.hour, 0,
+          reason: 'Duration-based subtraction would land on 23:00 the day '
+              'before, not midnight, across this DST boundary');
+    });
   });
 
   test('endOfWeek is exactly 7 days after startOfWeek', () {
     final value = DateTime(2026, 3, 4);
     final start = AppDateUtils.startOfWeek(value);
     expect(AppDateUtils.endOfWeek(value), start.add(const Duration(days: 7)));
+  });
+
+  test('endOfWeek stays exact across a week containing a DST transition', () {
+    // Same Mar 22-28, 2026 week as the startOfWeek DST test above. The old
+    // `startOfWeek(value).add(Duration(days: 7))` would add a flat 168h to
+    // Mar 22 00:00 and overshoot to Mar 29 01:00 (this machine's local
+    // timezone loses an hour that week), not Mar 29 00:00.
+    final saturday = DateTime(2026, 3, 28);
+    final result = AppDateUtils.endOfWeek(saturday);
+    expect(result, DateTime(2026, 3, 29));
+    expect(result.hour, 0);
   });
 
   group('isInRange', () {

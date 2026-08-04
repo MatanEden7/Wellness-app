@@ -4,24 +4,23 @@ Snapshot only — update when overall project status changes, not on every commi
 See `CLAUDE.md` for the doc-tracking rules and `.claude/commands/status.md` /
 `big-status.md` / `my-status.md` for how to regenerate this.
 
-Last updated: 2026-08-04
+Last updated: 2026-08-05
 
 ## Current task
 
-Diagnosing one device-suite failure:
-`integration_test/regression/nutrition_math_ui_test.dart` — "typing 150g of Chicken
-Breast previews and saves the correct macros". 11/12 device tests otherwise pass.
+None in progress. Last batch (edit-path fixes, ISSUES.md #63–67) is complete and
+awaiting review.
 
 ## Snapshot
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 259/259 |
+| Fast unit suite | ✅ Green | 286/286 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
-| Device suite | ⚠️ 1 failing | 11/12 |
-| `docs/ISSUES.md` open items | 8 remain | 27 fixed, 6 partly-fixed-but-open items closed this pass |
-| `docs/ROADMAP.md` epics A–F | Closed except 4 items | A3, B1, B3, C5, F2 need you (see below) |
-| `docs/ROADMAP.md` Epic G (perf) | Not started | 6 items, no urgency |
+| Device suite | ⚠️ Stale | 12/12 passed on 2026-08-04; not re-run since (no simulator runs without an explicit request) |
+| `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |
+| `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |
+| `docs/ROADMAP.md` Epic G (perf) | Not started | 6 items, no urgency, nothing blocking |
 
 ## Waiting on you
 
@@ -36,13 +35,13 @@ Breast previews and saves the correct macros". 11/12 device tests otherwise pass
 
 ## ETA
 
-Remaining engineering (excluding "waiting on you" items): none currently queued —
-the last batch of roadmap/issue work just closed. Next work is diagnosing the one
-device-test failure above (~30 min).
+No engineering work currently queued. Epic G (performance) is the only unblocked
+work left and is ~1–2 days end to end, or pickable one item at a time.
 
 ## Next 3 tasks
 
-1. Fix `nutrition_math_ui_test.dart` failure, re-run device suite.
-2. Confirm the doc/command restructure (this file, `CLAUDE.md`, `.claude/commands/`)
-   is working as intended.
-3. Pick up Epic G (performance) or wait on the "waiting on you" items — no fixed order.
+1. Review the edit-path fixes (ISSUES.md #63–67) — 3 of them were user-visible.
+2. Re-run the device suite when convenient (it has not run since the #63–67 fixes;
+   `nutrition_math_ui_test.dart` passed after its fix, the rest are untouched by
+   these changes but unverified together).
+3. Start Epic G, or clear the user-blocked items above — no dependency between them.
