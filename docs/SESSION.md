@@ -4,6 +4,41 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-05 (later) — content/profile architecture
+
+**Current task:** Epic H paused after H1/H2/H5/H6a; H3, H4 and H6b remain.
+
+**Last completed:**
+- Diagnosed why nothing matched the onboarding answers. Root cause was that
+  content carried no metadata: `FoodItemData` had no allergen/diet fields and
+  `ExerciseData` had no equipment/contraindication fields, so "does this fit
+  me?" was unanswerable and was being faked with hardcoded English food-name
+  lists and self-minted exercises.
+- Built the architecture first, as asked: `FoodTag`, `Equipment`, `BodyPart`,
+  `TemplateOrigin`, and `ProfileFit` as the single source of truth (the role
+  `FoodNutritionMath` plays for unit math).
+- Tagged the whole catalog and expanded it using values pulled from the USDA
+  FoodData Central API: foods 42 -> 52, exercises 16 -> 40. Added the `neck`
+  injury. Sizing driven by a new coverage test across all 192 diet x exclusion
+  combinations plus every equipment and injury option.
+- Rewrote both generators to select from the catalog through `ProfileFit`.
+- Added the opt-in "set up my full schedule" step to onboarding, and fixed the
+  schedule generator to pin events to profile-generated templates rather than
+  blind built-ins.
+- Fixed several converter bugs found along the way, all the same class as the
+  earlier `sourceEventId` drop: the *shared* `foodItemFromData` dropped `tags`
+  (so all filtering would have silently no-op'd), the exercise and template
+  converters dropped their new fields, and seeded built-ins were labelled
+  `user` instead of `builtin`.
+- 286 -> 331 tests, analyze clean. Four commits, pushed to `rc`.
+
+**Next task:** H3 (tag editors, so user-added content is tagged), H4 (list
+filtering + "show all"), H6b (regenerate-on-profile-change prompt). The
+service-layer support for H6b already exists and is tested --
+`ProfileFit.contentAffectingFieldsChanged` and `isReplaceable`.
+
+---
+
 ## 2026-08-05
 
 **Current task:** Done — awaiting review of the edit-path fixes.

@@ -4,18 +4,18 @@ Snapshot only — update when overall project status changes, not on every commi
 See `CLAUDE.md` for the doc-tracking rules and `.claude/commands/status.md` /
 `big-status.md` / `my-status.md` for how to regenerate this.
 
-Last updated: 2026-08-05
+Last updated: 2026-08-05 (content architecture pass)
 
 ## Current task
 
-None in progress. Last batch (edit-path fixes, ISSUES.md #63–67) is complete and
-awaiting review.
+Epic H (content fits the profile) is partly done: H1/H2/H5/H6a shipped, H3/H4/H6b
+remain. See `docs/ROADMAP.md`.
 
 ## Snapshot
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 286/286 |
+| Fast unit suite | ✅ Green | 331/331 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
 | Device suite | ⚠️ Stale | 12/12 passed on 2026-08-04; not re-run since (no simulator runs without an explicit request) |
 | `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |

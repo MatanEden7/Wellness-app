@@ -208,6 +208,53 @@ needed before first frame vs. deferrable.
 
 ---
 
+## Epic H — Content actually fits the profile
+
+Onboarding collects diet, exclusions, equipment and injuries, but nothing
+downstream honoured them: built-in templates were seeded blind before a
+profile existed, and the generators faked the check with hardcoded English
+food-name lists and self-minted exercises.
+
+**Decisions taken** (2026-08-05): non-fitting content is *hidden with a
+"show all" escape hatch* (never deleted); profile changes *prompt* before
+regenerating, and only ever replace `origin: generated`; tags are
+*first-class editable fields*, so user-added content is covered too; `goal`
+stays **target-only** and does not drive content selection.
+
+**H1. Tag model + ProfileFit.** — P0, M — **[DONE]**
+`FoodTag`, `Equipment`, `BodyPart`, `TemplateOrigin`, and `ProfileFit` as
+the single source of truth for "does this suit this user?".
+
+**H2. Tag + expand the catalog.** — P0, L — **[DONE]**
+Foods 42 -> 52 (USDA-verified), exercises 16 -> 40, `neck` injury added.
+Sized by `catalog_coverage_test.dart`, which walks all 192 diet x exclusion
+combinations plus every equipment and injury option.
+
+**H5. Generators select from the catalog.** — P0, M — **[DONE]**
+Both generators now go through `ProfileFit` instead of string matching and
+self-minted content.
+
+**H6a. Onboarding full-schedule option.** — P0, S — **[DONE]**
+Opt-in (default on) complete recurring schedule, pinned to generated
+templates so the calendar respects the profile too.
+
+**H3. Tag editors in the food and exercise UI.** — P1, M
+Allergen/diet chips in the food editor, equipment + contraindication chips
+in the exercise editor. Without this, anything the user adds is untagged --
+which `ProfileFit` treats as "fits everyone", so their own content silently
+escapes filtering. This is what stops the whole system rotting.
+
+**H4. Filtering + "show all" escape hatch.** — P1, M
+Filter the four browsing lists (foods, exercises, meal templates, workout
+templates) by `ProfileFit`, with a per-list toggle to reveal everything and
+a badge naming the reason (`FitResult` already carries it).
+
+**H6b. Regenerate on profile change.** — P1, M
+`ProfileFit.contentAffectingFieldsChanged` and `isReplaceable` already
+exist and are tested; what's missing is the prompt and the replace pass.
+
+---
+
 ## Suggested sequencing
 
 Epics A–F above are now fully closed except the items marked **me** below — see
