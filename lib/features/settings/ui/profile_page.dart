@@ -64,12 +64,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final preview = await service.preview();
     if (!mounted) return;
 
-    // Nothing generated to replace -- generate silently rather than asking a
-    // question whose answer costs the user nothing either way.
-    if (preview.isEmpty) {
-      await service.regenerate(profile);
-      return;
-    }
+    // Nothing generated to replace -- do nothing. This used to silently call
+    // regenerate(), which runs both generators (and the meal generator now
+    // does a least-squares solve per meal). That put real work on a profile
+    // *save* path, unprompted, and generating content the user never asked
+    // for is surprising in its own right: if they skipped the schedule at
+    // onboarding, a weight edit should not conjure one.
+    if (preview.isEmpty) return;
 
     final confirmed = await showDialog<bool>(
       context: context,

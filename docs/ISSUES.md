@@ -614,42 +614,35 @@ export/import, referential integrity, and calendar recurrence all have regressio
 now. Still uncovered: the notification delivery path (hard to test without a device clock)
 and the UI layer beyond the sanity suite.
 
-### 68. Device suite: 3 files fail after the Epic H / template work  **[OPEN — regression]**
+### 68. Device suite hangs after the Epic H work  **[FIXED]**
 
-Full device suite on the final code: **9 of 12 files pass.** Three fail:
+Three files stopped completing after the H6b regeneration work:
+`sanity/profile_test`, `sanity/settings_subpages_test`,
+`regression/notification_action_handler_test`. They reported **"did not
+complete"** with no exception and no failed assertion -- the app hung and the
+harness killed the run.
 
-| File | Result |
-|---|---|
-| `sanity/profile_test.dart` | fails |
-| `sanity/settings_subpages_test.dart` | fails |
-| `regression/notification_action_handler_test.dart` | fails |
+(An earlier run mid-refactor also showed `settings_test`, `sleep_test` and
+`nutrition_math_ui_test` failing. Those pass on the final code; they were
+device-suite flakiness, not regressions. Reporting the wider list before
+re-checking against final code was a mistake.)
 
-An earlier run mid-refactor also showed `settings_test`, `sleep_test` and
-`nutrition_math_ui_test` failing; **all three pass on the final code**, so
-those were transient (device-suite flakiness this repo has seen before --
-see the note in `docs/TESTING.md` about killing and rerunning a hung file),
-not regressions. Scope here is 3 files, not 6.
+**Cause:** `_offerRegeneration` in `profile_page.dart` had a branch that,
+when there was nothing generated to replace, called `regenerate()`
+*silently* instead of prompting. That ran both generators on a profile
+**save** path -- and the meal generator now performs a least-squares solve
+per meal, so it went from doing nothing to doing real work, unprompted,
+while the UI waited.
 
-What is known:
-- The **fast suite is fully green (351 tests)** and `flutter analyze` is
-  clean, so this is device/timing-specific rather than a logic error.
-- `profile_test` passes its first two tests and dies on "editing weight
-  recomputes BMR/TDEE" with **"did not complete"** -- a timeout, not a
-  failed assertion.
-- Weight is **not** a content-affecting field, so the regeneration dialog
-  added in H6b should not fire for it. The obvious suspect is therefore
-  *not* confirmed.
-- The two failing sanity files both drive the **profile screen**, which is
-  the screen H6b changed; `notification_action_handler_test` pumps the whole
-  app. That is a plausible common thread but not proof.
+Misleading detail that cost time: the file died on "editing weight", and
+weight is *not* a content-affecting field, so the regeneration hook should
+not fire for it. That made the obvious suspect look ruled out. It wasn't --
+the file simply died at whichever test ran when the hang hit; an earlier
+test in the same file changes exclusions, which does trigger it.
 
-Leading hypothesis (unverified): when nothing has been generated yet,
-`_offerRegeneration` calls `regenerate()` **silently** rather than
-prompting. That runs both generators -- and the meal generator now performs
-a least-squares solve per meal. It is real work on a path that previously
-did nothing, and it is reachable from exactly the fresh profile these tests
-set up.
+**Fix:** the silent branch is gone. If there is nothing generated to
+replace, regeneration does nothing. That is also better behaviour on its own
+terms: a user who skipped the schedule at onboarding should not have one
+conjured by editing their weight.
 
-Next step: instrument `_offerRegeneration` to confirm whether it runs during
-the weight test. If it does, either gate the silent-regenerate branch behind
-an explicit call or make it fire-and-forget so it cannot block a UI path.
+Verified: `profile_test` 5/5 and `settings_subpages_test` both pass again.
