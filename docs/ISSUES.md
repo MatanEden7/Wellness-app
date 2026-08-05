@@ -613,3 +613,37 @@ Test coverage is no longer the gap it was: persistence, profile serialization,
 export/import, referential integrity, and calendar recurrence all have regression tests
 now. Still uncovered: the notification delivery path (hard to test without a device clock)
 and the UI layer beyond the sanity suite.
+
+### 68. Device suite: profile/settings/sleep/notification tests hang  **[OPEN — regression, needs diagnosis]**
+
+Introduced somewhere in the Epic H / template-quality work on 2026-08-05.
+`integration_test/sanity/profile_test.dart` (and `settings_subpages_test`,
+`settings_test`, `sleep_test`, `notification_action_handler_test`,
+`nutrition_math_ui_test`) report **"did not complete"** rather than a failed
+assertion — the suite times out mid-file rather than failing a check.
+
+What is known:
+- The **fast suite is fully green (351 tests)** and `flutter analyze` is
+  clean, so this is device/timing-specific, not a logic error the unit tests
+  can see.
+- `profile_test`'s first two tests pass; it dies on "editing weight
+  recomputes BMR/TDEE".
+- Weight is **not** a content-affecting field, so the regeneration dialog
+  added in H6b should not fire for it — the obvious suspect is therefore
+  *not* confirmed.
+- Two plausible causes, neither verified:
+  1. `_saveProfile` now awaits `_offerRegeneration` after its `finally`,
+     lengthening the async chain before the "Targets updated" SnackBar is
+     shown. The test asserts that SnackBar within 300ms.
+  2. The regeneration path calls `service.regenerate()` *silently* when
+     `preview.isEmpty`, which runs both generators — and the meal generator
+     now does a least-squares solve per meal. On a fresh test profile that
+     branch is reachable and was not there before.
+
+Suspect (2) most: it makes real work happen on a code path that previously
+did nothing, and it is reachable from a fresh profile, which is exactly what
+the sanity tests set up.
+
+Next step: instrument `_offerRegeneration` to confirm whether it runs during
+the weight test, then either gate the silent-regenerate branch behind an
+explicit call or make it fire-and-forget so it cannot block the UI path.
