@@ -4,11 +4,11 @@ Audit of the code as found on branch `rc`, with **fix status** as of the repair 
 
 Legend: **[FIXED]** — fixed and covered by a regression test · **[OPEN]** — still outstanding.
 
-Fast suite: `flutter test test/` (69 tests). Device suite: `integration_test/sanity/` and
+Fast suite: `flutter test test/` (331 tests). Device suite: `integration_test/sanity/` and
 `integration_test/regression/` on a booted simulator — this is what CI runs.
 `flutter analyze lib/` is clean of warnings and errors.
 
-Requires **Flutter 3.24.5** (see `.fvmrc`); newer SDKs fail dependency resolution.
+Requires **Flutter 3.44.8** (see `.fvmrc`).
 
 ## Summary table: severity, status, time
 
@@ -20,20 +20,20 @@ remaining work is a translator/designer decision, not engineering effort.
 |---|---|---|---|---|
 | 1 | Zero persistence | Critical | Fixed | ~4h |
 | 2 | Profile destroyed on save | Critical | Fixed | ~1h |
-| 3 | Export/import not a usable backup | Critical | Partly fixed | ~5h spent / ~3h remaining (share sheet, file picker, calendar events in export) |
+| 3 | Export/import not a usable backup | Critical | Fixed (share sheet + file picker + calendar events all shipped) | ~8h |
 | 4 | Notification taps/actions dead | Critical | Fixed | ~2h |
 | 5 | Fake "planned" workouts | High | Fixed | ~2h |
 | 6 | Recurring events display-only | High | Fixed | ~3h |
 | 7 | Onboarding schedule skips notifications | High | Fixed | ~2h |
-| 8 | Notification prefs control nothing | Medium | Partly fixed | ~1h spent / ~1h remaining (badge count) |
-| 9 | Sleep tracking half-feature | Medium | Partly fixed | ~1h spent / 15min (device verify) + ~2h (streaks, DST) |
+| 8 | Notification prefs control nothing | Medium | Fixed (badge-count API no longer exists; nothing dead left) | ~1h |
+| 9 | Sleep tracking half-feature | Medium | Partly fixed (streaks + DST shipped) | 15min device verify — **me** |
 | 10 | No referential integrity / stale caches | High | Fixed | ~2h |
 | 11 | Unguarded `firstWhere` crash | High | Fixed | ~30min |
 | 12 | Exercise CRUD invisible to stream | Medium | Fixed | ~30min |
 | 13 | Over-aggressive `.distinct()` | High | Fixed | ~1h |
 | 14 | Denormalized nutrition never re-syncs | Medium | Open | ~3h (needs product decision first) |
 | 15 | Calendar ±1 day fuzz | Medium | Fixed | ~30min |
-| 16 | Meal times guessed from English substrings | Low | Partly fixed | ~1h spent / ~4h remaining (schema + UI) |
+| 16 | Meal times guessed from English substrings | Low | Fixed (`Meal.loggedAt` + editor UI) | ~5h |
 | 17 | Week start wrong convention | Medium | Fixed | ~1h |
 | 18 | Midnight-exact entries dropped | Low | Fixed | ~30min |
 | 19 | Monthly recurrence rollover | Low | Fixed | ~30min |
@@ -78,7 +78,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 59 | Snooze was a no-op on recurring events, and would have moved the whole series | High | Fixed (reschedule the notification, never the event) | ~1h |
 | 60 | "Start Workout" / "Approve" did nothing when the event had no template | Medium | Fixed (ad-hoc session / open editor) | ~45min |
 | 61 | Repeated "Start Workout" created duplicate sessions for one event | Medium | Fixed (reopen existing) | ~20min |
-| 62 | "Stop Sleep" never stopped sleep, and its button was unreachable | Medium | Partly fixed (now ends the session; button still not surfaced) | ~30min done / ~1h remaining |
+| 62 | "Stop Sleep" never stopped sleep, and its button was unreachable | Medium | Fixed (surfaced on the dashboard quick action) | ~1.5h |
 | 51 | Bundle IDs differ across platforms (`com.matan.wellnessx123` vs `com.wellness.wellness_app`) | High | **OPEN — your decision** | ~15min |
 | 63 | Calendar "Edit" opened a blank form and saved a **duplicate** event | High | Fixed | ~45min |
 | 64 | Editing a meal/workout/sleep row silently dropped `sourceEventId`, resurrecting the calendar duplicate (#57) | High | Fixed | ~45min |
@@ -86,11 +86,10 @@ remaining work is a translator/designer decision, not engineering effort.
 | 66 | `deleteWorkoutSession`/`deleteSleepEntry` left a stale id-cache entry (deleted rows still resolvable by id) | Medium | Fixed | ~15min |
 | 67 | Share sheet crashed on iPad (no `sharePositionOrigin`) | Medium | Fixed | ~10min |
 
-**Totals:** 27 fully fixed, 6 partly fixed, 2 fully open (excluding the "Missing
-functionality" list below, which is out-of-scope feature work, not bugs).
-Actual time spent so far: roughly 27 hours. Remaining engineering estimate on
-open/partial items: roughly 14-17 hours, plus an untimeable translator pass for
-items 30/31.
+**Totals:** 62 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --
+a keystore (#49), a bundle-ID decision (#51), a product decision (#14), a
+translator (#31), and one 15-minute device check (#9). No engineering work is
+blocked on anything but those.
 
 ---
 
