@@ -8,6 +8,7 @@ import '../../../services/preferences_service.dart';
 import '../../../services/content_regeneration_service.dart';
 import '../../../services/profile_fit.dart';
 import '../../../data/db/drift_database.dart';
+import '../../calendar/data/calendar_service.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
 
@@ -100,6 +101,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     setState(() => _saving = true);
     try {
       final created = await service.regenerate(profile);
+      // Regeneration rebuilds templates under fresh ids, leaving every
+      // calendar event onboarding pinned to the old ones pointing at nothing.
+      // Silent until the user presses "Approve" or "Start Workout" on a
+      // reminder and it does nothing at all.
+      await ref.read(calendarStateProvider.notifier).repinDanglingTemplates();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Rebuilt $created templates')),

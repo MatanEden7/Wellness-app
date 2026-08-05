@@ -1,7 +1,6 @@
 @Tags(['catalog', 'nutrition'])
 library;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/services/meal_template_generator.dart';
 import 'package:wellness_app/services/user_profile_service.dart';

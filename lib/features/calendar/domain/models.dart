@@ -78,6 +78,12 @@ class ScheduledEvent {
     DateTime? recurrenceEndDate,
     String? templateId,
     Map<String, dynamic>? metadata,
+    // `templateId: null` is indistinguishable from "leave it alone" in the
+    // usual copyWith idiom, so unpinning needs its own flag. Used when a
+    // regeneration leaves an event pointing at a template that no longer
+    // exists and there is nothing generated to re-point it to -- a null
+    // templateId has working fallbacks, a dangling one does not.
+    bool clearTemplateId = false,
   }) {
     return ScheduledEvent(
       id: id ?? this.id,
@@ -91,7 +97,7 @@ class ScheduledEvent {
       recurrenceDays: recurrenceDays ?? this.recurrenceDays,
       customInterval: customInterval ?? this.customInterval,
       recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
-      templateId: templateId ?? this.templateId,
+      templateId: clearTemplateId ? null : (templateId ?? this.templateId),
       metadata: metadata ?? this.metadata,
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import '../domain/models.dart';
 import '../../../core/utils.dart';
+import '../../../core/template_origin.dart';
 import '../../../data/db/drift_database.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/notification_preferences_service.dart';
@@ -709,6 +710,87 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     
     // Cancel notification since event is completed
     await _cancelNotification(eventId);
+  }
+
+  /// Re-points calendar events whose pinned template no longer exists.
+  ///
+  /// `ContentRegenerationService.regenerate()` deletes every generated
+  /// template and rebuilds them under fresh ids, but only ever touched the
+  /// template tables. The events onboarding pinned to the old ids were left
+  /// dangling, which is silent and nastier than it sounds: a meal
+  /// notification's "Approve" looks the template up, gets null, and falls
+  /// straight through its `if (template != null)` -- doing nothing and never
+  /// marking the event complete. "Start Workout" builds a session against a
+  /// template that no longer resolves. Both buttons render and both do
+  /// nothing, which is exactly the class of bug ISSUES #60 was.
+  ///
+  /// Re-pins by position within type, mirroring how
+  /// [CalendarScheduleGenerator] assigns templates in the first place
+  /// (`pool[i % pool.length]` over slots in time order). An event whose
+  /// template still resolves is left alone, so a user's hand-pinned choice
+  /// survives. If nothing generated remains to point at, the id is cleared
+  /// rather than left dangling -- a null templateId has working fallbacks
+  /// (open the editor, start an ad-hoc session); a dead one does not.
+  ///
+  /// Returns the number of events re-pinned.
+  Future<int> repinDanglingTemplates() async {
+    final database = _ref.read(databaseProvider);
+    final mealTemplates = await database.getAllMealTemplates();
+    final workoutTemplates = await database.getAllWorkoutTemplates();
+
+    // Two distinct sets, and conflating them is a bug: "does this pin still
+    // resolve" must be asked of *every* template, while "what should it point
+    // at instead" prefers the generated ones. Checking liveness against the
+    // re-pin pool alone would treat a user's hand-pinned template as dangling
+    // and overwrite a deliberate choice.
+    final mealPool = _generatedFirst(mealTemplates, (t) => t.origin, (t) => t.id);
+    final workoutPool =
+        _generatedFirst(workoutTemplates, (t) => t.origin, (t) => t.id);
+    final liveMeals = mealTemplates.map((t) => t.id).toSet();
+    final liveWorkouts = workoutTemplates.map((t) => t.id).toSet();
+
+    final events = await _calendarService.getEvents();
+    var repinned = 0;
+
+    for (final type in [EventType.meal, EventType.workout]) {
+      final pool = type == EventType.meal ? mealPool : workoutPool;
+      final live = type == EventType.meal ? liveMeals : liveWorkouts;
+
+      // Time order, so index i matches the slot the generator pinned.
+      final ofType = events.where((e) => e.type == type).toList()
+        ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+
+      for (var i = 0; i < ofType.length; i++) {
+        final event = ofType[i];
+        if (event.templateId == null || live.contains(event.templateId)) {
+          continue;
+        }
+
+        final replacement = pool.isEmpty ? null : pool[i % pool.length];
+        await _calendarService
+            .saveEvent(event.copyWith(templateId: replacement, clearTemplateId: replacement == null));
+        repinned++;
+      }
+    }
+
+    if (repinned > 0) {
+      debugPrint('[CALENDAR] Re-pinned $repinned event(s) after regeneration');
+      await refresh();
+    }
+    return repinned;
+  }
+
+  /// Template ids with generated ones first, matching the preference
+  /// [CalendarScheduleGenerator] applies: a generated template is guaranteed
+  /// to respect the profile's diet/equipment/injuries, a built-in is not.
+  static List<String> _generatedFirst<T>(
+    List<T> templates,
+    TemplateOrigin Function(T) originOf,
+    String Function(T) idOf,
+  ) {
+    final generated =
+        templates.where((t) => originOf(t) == TemplateOrigin.generated).toList();
+    return (generated.isNotEmpty ? generated : templates).map(idOf).toList();
   }
 
   /// Re-syncs the OS notification queue with the current events *and the
