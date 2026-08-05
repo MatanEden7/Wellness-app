@@ -42,6 +42,13 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
       // out of date after a reboot, a timezone change, or simply time passing
       // (the recurrence horizon is 30 days and was never re-anchored).
       ref.read(calendarStateProvider.notifier).rescheduleAllNotifications();
+      // Safety net for pins broken while the app was closed. Deleting a
+      // template from the meal/workout screens leaves calendar events pointing
+      // at a row that no longer exists -- there is no foreign key between the
+      // SharedPreferences-backed calendar and the database, so nothing
+      // cascades. Repairing centrally on launch covers every door, including
+      // ones added later, rather than each delete site remembering to.
+      ref.read(calendarStateProvider.notifier).repinDanglingTemplates();
     });
 
     // BackgroundRefreshService.onAppResumed()/onDateChanged() were fully

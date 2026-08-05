@@ -126,59 +126,69 @@ class NotificationActionHandler {
 
   // Meal approve - use template to create meal
   Future<void> _handleMealApprove(String eventId, String? templateId) async {
-    // A meal event scheduled without a template has nothing to copy, but
-    // "Approve" must still do something -- it used to return silently. Open
-    // the meal editor so the user can log it by hand.
-    if (templateId == null) {
+    final database = ref.read(databaseProvider);
+
+    // An event can be pinned to a template that no longer exists: the calendar
+    // lives in SharedPreferences and templates live in the DB, so there is no
+    // foreign key between them and nothing cascades. Deleting a template from
+    // the meal-templates screen, or regenerating from Profile, leaves the pin
+    // dangling. A template that survives with zero items (every food in it was
+    // deleted from the catalog) is just as unusable.
+    //
+    // Both used to fall through the `if (template != null)` below and do
+    // nothing at all -- Approve looked like a dead button, and in the
+    // empty-template case would otherwise have logged a meal with no food in
+    // it. Treated exactly like an unpinned event instead: open the editor.
+    final template =
+        templateId == null ? null : await database.getMealTemplateById(templateId);
+    final templateItems = template == null
+        ? const <MealTemplateItemData>[]
+        : await database.getMealTemplateItemsByTemplateId(template.id);
+
+    if (template == null || templateItems.isEmpty) {
       if (context == null || !context!.mounted) return;
       context!.push(Routes.mealEditor);
       return;
     }
 
     try {
-      final database = ref.read(databaseProvider);
-      final template = await database.getMealTemplateById(templateId);
-      
-      if (template != null) {
-        // Create a meal from the template
-        final now = DateTime.now();
-        final dateInt = now.year * 10000 + now.month * 100 + now.day;
-        
-        final mealData = MealData(
-          id: 'meal_${DateTime.now().millisecondsSinceEpoch}',
-          date: dateInt,
-          name: template.name,
-          note: 'Auto-created from template',
-          createdAt: now,
-          updatedAt: now,
-          sourceEventId: eventId,
-        );
-        
-        await database.insertMeal(mealData);
-        
-        // Copy template items
-        final templateItems = await database.getMealTemplateItemsByTemplateId(templateId);
-        for (final item in templateItems) {
-          final food = await database.getFoodById(item.foodId);
-          if (food != null) {
-            final nutrition = FoodNutritionMath.computeMacros(foodItemFromData(food), item.amount);
-            final mealItem = MealItemData(
-              id: 'item_${DateTime.now().millisecondsSinceEpoch}_${item.foodId}',
-              mealId: mealData.id,
-              foodId: item.foodId,
-              amount: item.amount,
-              kcal: nutrition.kcal,
-              protein: nutrition.protein,
-              carbs: nutrition.carbs,
-              fat: nutrition.fat,
-            );
-            await database.insertMealItem(mealItem);
-          }
+      // Create a meal from the template
+      final now = DateTime.now();
+      final dateInt = now.year * 10000 + now.month * 100 + now.day;
+
+      final mealData = MealData(
+        id: 'meal_${DateTime.now().millisecondsSinceEpoch}',
+        date: dateInt,
+        name: template.name,
+        note: 'Auto-created from template',
+        createdAt: now,
+        updatedAt: now,
+        sourceEventId: eventId,
+      );
+
+      await database.insertMeal(mealData);
+
+      // Copy template items
+      for (final item in templateItems) {
+        final food = await database.getFoodById(item.foodId);
+        if (food != null) {
+          final nutrition = FoodNutritionMath.computeMacros(foodItemFromData(food), item.amount);
+          final mealItem = MealItemData(
+            id: 'item_${DateTime.now().millisecondsSinceEpoch}_${item.foodId}',
+            mealId: mealData.id,
+            foodId: item.foodId,
+            amount: item.amount,
+            kcal: nutrition.kcal,
+            protein: nutrition.protein,
+            carbs: nutrition.carbs,
+            fat: nutrition.fat,
+          );
+          await database.insertMealItem(mealItem);
         }
-        
-        // Mark event as completed
-        await ref.read(calendarStateProvider.notifier).markEventCompleted(eventId, now);
       }
+
+      // Mark event as completed
+      await ref.read(calendarStateProvider.notifier).markEventCompleted(eventId, now);
     } catch (e) {
       debugPrint('Error auto-creating meal: $e');
     }
@@ -204,6 +214,17 @@ class NotificationActionHandler {
 
       // An already-started session is reopened rather than duplicated -- two
       // taps on "Start Workout" used to create two sessions for one event.
+      // Same dangling-pin problem as Approve: a deleted or regenerated
+      // template leaves the event pointing at nothing. Carrying that dead id
+      // onto the session produced a session whose template never loads, which
+      // reads as an empty workout. Resolved to null instead, which the ad-hoc
+      // path below already handles properly.
+      final liveTemplateId = templateId == null ||
+              (await database.getAllWorkoutTemplates())
+                  .every((t) => t.id != templateId)
+          ? null
+          : templateId;
+
       final existing = await _sessionForEvent(eventId);
       final session = existing ??
           WorkoutSessionData(
@@ -211,7 +232,7 @@ class NotificationActionHandler {
             // A workout event scheduled without a template still starts a
             // session -- an ad-hoc one the user fills in. This whole block used
             // to be skipped when templateId was null, so the button did nothing.
-            templateId: templateId,
+            templateId: liveTemplateId,
             startedAt: DateTime.now(),
             endedAt: null,
             note: null,
