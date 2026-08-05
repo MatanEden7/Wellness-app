@@ -858,20 +858,32 @@ class AppDatabase {
   // Aggregate queries - calculated from actual data
   Future<Map<String, double>> getDayTotals(int date) async {
     // Removed debug prints - this is called every 500ms by reactive stream
-    final mealsForDate = _meals.where((m) => m.date == date).toList();
+    // Single pass over each collection rather than re-scanning _mealItems
+    // once per meal. The old nested `_mealItems.where(...)` inside a loop
+    // over the day's meals was O(meals x allItems), and this runs on every
+    // emission of the meals stream -- i.e. after every edit, on a list that
+    // only ever grows.
+    //
+    // Deliberately not a maintained mealId->items index: this app has now
+    // shipped two separate stale-id-cache bugs (deleteExercise, then
+    // deleteWorkoutSession/deleteSleepEntry), and a derived set built per
+    // call cannot go stale.
+    final mealIdsForDate = <String>{
+      for (final meal in _meals)
+        if (meal.date == date) meal.id,
+    };
+
     double totalKcal = 0;
     double totalProtein = 0;
     double totalCarbs = 0;
     double totalFat = 0;
-    
-    for (final meal in mealsForDate) {
-      final mealItems = _mealItems.where((item) => item.mealId == meal.id).toList();
-      for (final item in mealItems) {
-        totalKcal += item.kcal;
-        totalProtein += item.protein;
-        totalCarbs += item.carbs;
-        totalFat += item.fat;
-      }
+
+    for (final item in _mealItems) {
+      if (!mealIdsForDate.contains(item.mealId)) continue;
+      totalKcal += item.kcal;
+      totalProtein += item.protein;
+      totalCarbs += item.carbs;
+      totalFat += item.fat;
     }
     
     return {

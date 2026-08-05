@@ -194,7 +194,7 @@ to `.select()` on the specific field would cut a chunk of unnecessary rebuilds.
 Dashboard/meals/workouts screens are large single-`build()` widgets; breaking them into
 focused components would make G1/G2 easier to apply precisely.
 
-**G4. Cache aggregations.** — P3, S
+**G4. Cache aggregations.** — P3, S — **[PARTLY DONE]** `getDayTotals` was O(meals x allItems) and ran on every meals-stream emission; now a single pass. Deliberately *not* a maintained index — this app has shipped two stale-id-cache bugs already.
 Daily nutrition totals, workout summaries recomputed on every watch instead of cached
 and invalidated on mutation.
 
@@ -202,7 +202,7 @@ and invalidated on mutation.
 Text-input-driven filtering (food catalog, exercise library) has no debounce; every
 keystroke re-filters immediately.
 
-**G6. Lazy-load non-critical services at startup.** — P3, XS
+**G6. Lazy-load non-critical services at startup.** — P3, XS — **[DONE]** `requestPermissions()` was awaited before `runApp()`, holding the first frame behind the OS permission dialog. Now unawaited; nothing at boot schedules a notification.
 Everything currently initializes eagerly in `main.dart`; worth checking what's actually
 needed before first frame vs. deferrable.
 
@@ -238,18 +238,18 @@ self-minted content.
 Opt-in (default on) complete recurring schedule, pinned to generated
 templates so the calendar respects the profile too.
 
-**H3. Tag editors in the food and exercise UI.** — P1, M
+**H3. Tag editors in the food and exercise UI.** — P1, M — **[DONE]**
 Allergen/diet chips in the food editor, equipment + contraindication chips
 in the exercise editor. Without this, anything the user adds is untagged --
 which `ProfileFit` treats as "fits everyone", so their own content silently
 escapes filtering. This is what stops the whole system rotting.
 
-**H4. Filtering + "show all" escape hatch.** — P1, M
+**H4. Filtering + "show all" escape hatch.** — P1, M — **[DONE]**
 Filter the four browsing lists (foods, exercises, meal templates, workout
 templates) by `ProfileFit`, with a per-list toggle to reveal everything and
 a badge naming the reason (`FitResult` already carries it).
 
-**H6b. Regenerate on profile change.** — P1, M
+**H6b. Regenerate on profile change.** — P1, M — **[DONE]**
 `ProfileFit.contentAffectingFieldsChanged` and `isReplaceable` already
 exist and are tested; what's missing is the prompt and the replace pass.
 

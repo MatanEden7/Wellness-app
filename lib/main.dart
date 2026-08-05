@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,7 +47,14 @@ void main() async {
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
   final notificationService = NotificationService(notificationsPlugin);
   await notificationService.initialize();
-  await notificationService.requestPermissions();
+  // Permissions are deliberately NOT awaited here. requestPermissions() shows
+  // the OS permission dialog, so awaiting it before runApp() holds the first
+  // frame behind a modal the user has to answer -- the app appears to hang on
+  // a blank screen on first launch. Nothing at boot schedules a notification
+  // (verified: no rescheduleAll/scheduleEventNotification on the startup
+  // path), and the plugin queues the request fine, so letting this run in the
+  // background costs nothing and gets the UI up immediately.
+  unawaited(notificationService.requestPermissions());
 
   // Initialize notification preferences
   final notificationPrefs = NotificationPreferencesNotifier(prefs);
