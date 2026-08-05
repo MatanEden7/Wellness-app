@@ -35,7 +35,10 @@ mixin _$Exercise {
   Set<Equipment> get equipment =>
       throw _privateConstructorUsedError; // Body parts this exercise is unsafe for. Empty means no known
 // contraindication.
-  Set<BodyPart> get contraindicatedFor => throw _privateConstructorUsedError;
+  Set<BodyPart> get contraindicatedFor =>
+      throw _privateConstructorUsedError; // Body parts this exercise actively helps rehabilitate. Distinct from
+// [contraindicatedFor] -- see the doc on BodyPartCodec.
+  Set<BodyPart> get rehabFor => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -57,7 +60,8 @@ abstract class $ExerciseCopyWith<$Res> {
       String unit,
       String? notes,
       Set<Equipment> equipment,
-      Set<BodyPart> contraindicatedFor});
+      Set<BodyPart> contraindicatedFor,
+      Set<BodyPart> rehabFor});
 }
 
 /// @nodoc
@@ -82,6 +86,7 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
     Object? notes = freezed,
     Object? equipment = null,
     Object? contraindicatedFor = null,
+    Object? rehabFor = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -120,6 +125,10 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
           ? _value.contraindicatedFor
           : contraindicatedFor // ignore: cast_nullable_to_non_nullable
               as Set<BodyPart>,
+      rehabFor: null == rehabFor
+          ? _value.rehabFor
+          : rehabFor // ignore: cast_nullable_to_non_nullable
+              as Set<BodyPart>,
     ) as $Val);
   }
 }
@@ -141,7 +150,8 @@ abstract class _$$ExerciseImplCopyWith<$Res>
       String unit,
       String? notes,
       Set<Equipment> equipment,
-      Set<BodyPart> contraindicatedFor});
+      Set<BodyPart> contraindicatedFor,
+      Set<BodyPart> rehabFor});
 }
 
 /// @nodoc
@@ -164,6 +174,7 @@ class __$$ExerciseImplCopyWithImpl<$Res>
     Object? notes = freezed,
     Object? equipment = null,
     Object? contraindicatedFor = null,
+    Object? rehabFor = null,
   }) {
     return _then(_$ExerciseImpl(
       id: null == id
@@ -202,6 +213,10 @@ class __$$ExerciseImplCopyWithImpl<$Res>
           ? _value._contraindicatedFor
           : contraindicatedFor // ignore: cast_nullable_to_non_nullable
               as Set<BodyPart>,
+      rehabFor: null == rehabFor
+          ? _value._rehabFor
+          : rehabFor // ignore: cast_nullable_to_non_nullable
+              as Set<BodyPart>,
     ));
   }
 }
@@ -218,9 +233,11 @@ class _$ExerciseImpl implements _Exercise {
       required this.unit,
       this.notes,
       final Set<Equipment> equipment = const <Equipment>{},
-      final Set<BodyPart> contraindicatedFor = const <BodyPart>{}})
+      final Set<BodyPart> contraindicatedFor = const <BodyPart>{},
+      final Set<BodyPart> rehabFor = const <BodyPart>{}})
       : _equipment = equipment,
-        _contraindicatedFor = contraindicatedFor;
+        _contraindicatedFor = contraindicatedFor,
+        _rehabFor = rehabFor;
 
   factory _$ExerciseImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExerciseImplFromJson(json);
@@ -271,9 +288,22 @@ class _$ExerciseImpl implements _Exercise {
     return EqualUnmodifiableSetView(_contraindicatedFor);
   }
 
+// Body parts this exercise actively helps rehabilitate. Distinct from
+// [contraindicatedFor] -- see the doc on BodyPartCodec.
+  final Set<BodyPart> _rehabFor;
+// Body parts this exercise actively helps rehabilitate. Distinct from
+// [contraindicatedFor] -- see the doc on BodyPartCodec.
+  @override
+  @JsonKey()
+  Set<BodyPart> get rehabFor {
+    if (_rehabFor is EqualUnmodifiableSetView) return _rehabFor;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_rehabFor);
+  }
+
   @override
   String toString() {
-    return 'Exercise(id: $id, name: $name, nameHe: $nameHe, primaryMuscle: $primaryMuscle, primaryMuscleHe: $primaryMuscleHe, unit: $unit, notes: $notes, equipment: $equipment, contraindicatedFor: $contraindicatedFor)';
+    return 'Exercise(id: $id, name: $name, nameHe: $nameHe, primaryMuscle: $primaryMuscle, primaryMuscleHe: $primaryMuscleHe, unit: $unit, notes: $notes, equipment: $equipment, contraindicatedFor: $contraindicatedFor, rehabFor: $rehabFor)';
   }
 
   @override
@@ -293,7 +323,8 @@ class _$ExerciseImpl implements _Exercise {
             const DeepCollectionEquality()
                 .equals(other._equipment, _equipment) &&
             const DeepCollectionEquality()
-                .equals(other._contraindicatedFor, _contraindicatedFor));
+                .equals(other._contraindicatedFor, _contraindicatedFor) &&
+            const DeepCollectionEquality().equals(other._rehabFor, _rehabFor));
   }
 
   @JsonKey(ignore: true)
@@ -308,7 +339,8 @@ class _$ExerciseImpl implements _Exercise {
       unit,
       notes,
       const DeepCollectionEquality().hash(_equipment),
-      const DeepCollectionEquality().hash(_contraindicatedFor));
+      const DeepCollectionEquality().hash(_contraindicatedFor),
+      const DeepCollectionEquality().hash(_rehabFor));
 
   @JsonKey(ignore: true)
   @override
@@ -334,7 +366,8 @@ abstract class _Exercise implements Exercise {
       required final String unit,
       final String? notes,
       final Set<Equipment> equipment,
-      final Set<BodyPart> contraindicatedFor}) = _$ExerciseImpl;
+      final Set<BodyPart> contraindicatedFor,
+      final Set<BodyPart> rehabFor}) = _$ExerciseImpl;
 
   factory _Exercise.fromJson(Map<String, dynamic> json) =
       _$ExerciseImpl.fromJson;
@@ -361,6 +394,9 @@ abstract class _Exercise implements Exercise {
   @override // Body parts this exercise is unsafe for. Empty means no known
 // contraindication.
   Set<BodyPart> get contraindicatedFor;
+  @override // Body parts this exercise actively helps rehabilitate. Distinct from
+// [contraindicatedFor] -- see the doc on BodyPartCodec.
+  Set<BodyPart> get rehabFor;
   @override
   @JsonKey(ignore: true)
   _$$ExerciseImplCopyWith<_$ExerciseImpl> get copyWith =>

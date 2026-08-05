@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
 import '../features/meals/data/repositories.dart';
+import 'meal_portion_solver.dart';
 import 'profile_fit.dart';
 import 'user_profile_service.dart';
 
@@ -39,27 +40,50 @@ class MealTemplateGenerator {
     debugPrint('[MEAL-GEN] ${_profile.mealCountPerDay} meals/day -> '
         '${meals.length} template(s), ${available.length} foods available');
 
-    // Sorted once, highest-protein first, so each meal is anchored on the
-    // best protein source this profile can actually eat.
-    final proteins = available.where((f) => _proteinPerUnit(f) >= 5).toList()
-      ..sort((a, b) => _proteinPerUnit(b).compareTo(_proteinPerUnit(a)));
-    final carbs = available.where(_isCarbSource).toList();
+    // Classify once.
+    //
+    // Protein sources are NOT sorted by density. Doing that picked the
+    // fattiest options first -- for a vegan avoiding soy, gluten and nuts,
+    // seeds (~30g protein but ~50g fat per 100g) outranked lentils and beans
+    // and were the only anchors ever chosen, which overshot calories by ~40%
+    // and fat by 4x. Anchors are instead chosen per meal by how cleanly they
+    // fit that meal's calorie budget; see _bestAnchor.
+    final proteins = available.where((f) => f.proteinPerUnit >= 5).toList();
+    final carbs = available.where(_isCarbSource).toList()
+      ..sort((a, b) => b.carbsPerUnit.compareTo(a.carbsPerUnit));
+    final fats = available.where(_isFatSource).toList()
+      ..sort((a, b) => b.fatPerUnit.compareTo(a.fatPerUnit));
     final veg = available.where(_isVegetable).toList();
 
     final created = <MealTemplateData>[];
     for (var i = 0; i < meals.length; i++) {
       final meal = meals[i];
-      final items = _buildMeal(
-        proteins: proteins,
-        carbs: carbs,
-        veg: veg,
-        // Rotate the starting index so three meals a day aren't three
-        // servings of the same food.
-        rotation: i,
-        calorieTarget: _profile.calorieTarget * meal.fraction,
+
+      // Every macro target is split by this meal's share of the day, so the
+      // meals add up to the daily goals rather than each chasing them.
+      final portions = MealPortionSolver.solve(
+        protein: _bestAnchor(proteins, i,
+            kcalBudget: _profile.calorieTarget * meal.fraction,
+            proteinNeeded: _profile.proteinTargetG * meal.fraction,
+            fatBudget: _profile.fatTargetG * meal.fraction),
+        carb: _rotate(carbs, i),
+        fat: _rotate(fats, i),
+        veg: _rotate(veg, i),
+        kcalTarget: _profile.calorieTarget * meal.fraction,
         proteinTarget: _profile.proteinTargetG * meal.fraction,
+        carbsTarget: _profile.carbsTargetG * meal.fraction,
+        fatTarget: _profile.fatTargetG * meal.fraction,
       );
-      if (items.isEmpty) continue;
+      if (portions.isEmpty) continue;
+
+      // A food can be classified into more than one bucket (kale reads as
+      // both a carb source and a vegetable), which produced the same
+      // ingredient listed twice in one meal.
+      final seen = <String>{};
+      final deduped = [
+        for (final portion in portions)
+          if (seen.add(portion.food.id)) portion,
+      ];
 
       final now = DateTime.now();
       final template = MealTemplateData(
@@ -74,12 +98,12 @@ class MealTemplateGenerator {
       );
       await _database.insertMealTemplate(template);
 
-      for (final item in items) {
+      for (final portion in deduped) {
         await _database.insertMealTemplateItem(MealTemplateItemData(
           id: _uuid.v4(),
           templateId: template.id,
-          foodId: item.food.id,
-          amount: item.amount,
+          foodId: portion.food.id,
+          amount: portion.amount,
         ));
       }
       created.add(template);
@@ -96,50 +120,76 @@ class MealTemplateGenerator {
         .toList();
   }
 
-  /// Assembles one meal: a protein anchor, a carb, and a vegetable, with the
-  /// protein portion sized to hit that meal's protein share.
-  List<_Item> _buildMeal({
-    required List<FoodItemData> proteins,
-    required List<FoodItemData> carbs,
-    required List<FoodItemData> veg,
-    required int rotation,
-    required double calorieTarget,
-    required double proteinTarget,
+  /// The protein source that best fits this meal's calorie budget.
+  ///
+  /// Sizing any anchor to the protein target implies a calorie cost; the
+  /// best anchor is the one whose implied cost lands closest to the budget.
+  /// That naturally prefers lean sources (chicken, lentils, seitan) over
+  /// calorie-dense ones (seeds, nut butters), while still allowing the dense
+  /// ones when nothing leaner fits the profile.
+  ///
+  /// [rotation] then varies the choice across meals so a day isn't three
+  /// servings of the same food: candidates are ranked by fit and the
+  /// rotation walks the top few.
+  FoodItemData? _bestAnchor(
+    List<FoodItemData> options,
+    int rotation, {
+    required double kcalBudget,
+    required double proteinNeeded,
+    required double fatBudget,
   }) {
-    final items = <_Item>[];
+    if (options.isEmpty) return null;
 
-    final protein = _rotate(proteins, rotation);
-    if (protein != null) {
-      // Portion to hit the protein target, then clamp: without an upper
-      // bound a low-protein anchor produces an absurd serving (2kg of rice),
-      // and without a lower bound a very dense one rounds to nothing.
-      final perUnit = _proteinPerUnit(protein);
-      final amount = perUnit > 0 ? (proteinTarget / perUnit) : 1.0;
-      items.add(_Item(protein, amount.clamp(0.5, 4.0)));
-    }
+    final ranked = [...options]..sort((a, b) {
+        // Distance across the macros that actually get blown, not calories
+        // alone. Scoring on calories only still picked cheddar and hemp
+        // seeds -- they fit the calorie budget, then delivered 2-3x the fat
+        // target, because reaching the protein target with a ~50%-fat food
+        // drags its fat along. Overshooting fat is penalised harder than
+        // undershooting, since fat is the macro that runs away here.
+        double cost(FoodItemData f) {
+          if (f.proteinPerUnit <= 0) return double.infinity;
+          // Score the amount that will ACTUALLY be used, i.e. after the
+          // solver's portion bounds. Scoring the unclamped amount made a
+          // low-density anchor look like a perfect calorie fit (8.4 x 100g of
+          // chickpeas), then the clamp cut it to 4.0 and delivered half the
+          // protein. Penalise anchors that can't reach the target within a
+          // sane serving.
+          final raw = proteinNeeded / f.proteinPerUnit;
+          final amount = MealPortionSolver.clampFor(f, raw);
+          final proteinShortfall =
+              proteinNeeded - (f.proteinPerUnit * amount);
+          final kcalMiss = (f.kcalPerUnit * amount - kcalBudget).abs();
+          final fatOver = (f.fatPerUnit * amount) - fatBudget;
+          // ~9 kcal/g of fat, doubled so an overshoot outweighs the calorie
+          // term it hides inside.
+          final fatPenalty = fatOver > 0 ? fatOver * 18 : 0;
+          // ~4 kcal/g of protein, weighted so missing protein outranks a
+          // calorie miss -- protein is the target users actually track.
+          final shortfallPenalty =
+              proteinShortfall > 0 ? proteinShortfall * 30 : 0;
+          return kcalMiss + fatPenalty + shortfallPenalty;
+        }
 
-    final carb = _rotate(carbs, rotation);
-    if (carb != null) items.add(_Item(carb, 1.0));
+        return cost(a).compareTo(cost(b));
+      });
 
-    final vegetable = _rotate(veg, rotation);
-    if (vegetable != null) items.add(_Item(vegetable, 1.0));
-
-    // calorieTarget isn't used to resize further: the protein anchor already
-    // dominates a meal's macros, and the user can adjust amounts in the
-    // editor. Kept in the signature because sizing by calories is the
-    // obvious next refinement and the call sites already compute it.
-    return items;
+    // Rotate within the best-fitting few rather than the whole list, so
+    // variety never costs macro accuracy much.
+    final pool = ranked.take(4).toList();
+    return pool[rotation % pool.length];
   }
 
   T? _rotate<T>(List<T> options, int rotation) =>
       options.isEmpty ? null : options[rotation % options.length];
 
-  /// Protein per *unit* rather than per 100g, because the catalog mixes
-  /// units and `FoodNutritionMath` treats a `100g` unit as portions.
-  double _proteinPerUnit(FoodItemData f) => f.proteinPerUnit;
-
   bool _isCarbSource(FoodItemData f) =>
       f.carbsPerUnit >= 15 && f.proteinPerUnit < 15;
+
+  /// Calorie-dense fat sources (oils, butter, nut butters). Excludes the
+  /// protein-dense ones so seeds aren't picked as both anchor and fat.
+  bool _isFatSource(FoodItemData f) =>
+      f.fatPerUnit > 0 && f.proteinPerUnit < 5 && f.carbsPerUnit < 10;
 
   bool _isVegetable(FoodItemData f) =>
       f.kcalPerUnit <= 60 && f.carbsPerUnit < 15 && f.proteinPerUnit < 5;
@@ -183,10 +233,4 @@ class _MealSlot {
 
   /// Share of the day's calorie and protein targets this meal carries.
   final double fraction;
-}
-
-class _Item {
-  const _Item(this.food, this.amount);
-  final FoodItemData food;
-  final double amount;
 }

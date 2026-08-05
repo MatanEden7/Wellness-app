@@ -1238,6 +1238,7 @@ class AppDatabase {
       required String notes,
       Set<Equipment> equipment = const {Equipment.bodyweight},
       Set<BodyPart> contraindicatedFor = const <BodyPart>{},
+      Set<BodyPart> rehabFor = const <BodyPart>{},
     }) {
       return ExerciseData(
         id: id,
@@ -1247,6 +1248,7 @@ class AppDatabase {
         notes: notes,
         equipment: equipment,
         contraindicatedFor: contraindicatedFor,
+        rehabFor: rehabFor,
       );
     }
 
@@ -1301,23 +1303,23 @@ class AppDatabase {
       ex(id: '19', name: 'Landmine Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Press at roughly 45 degrees -- avoids the neck extension a strict overhead press needs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}),
 
       // Back -- horizontal pulling, neck- and shoulder-friendly
-      ex(id: '20', name: 'Band Row', primaryMuscle: 'Back', unit: 'band', notes: 'Anchor at waist height, pull elbows past your ribs', equipment: const {Equipment.bands}),
+      ex(id: '20', name: 'Band Row', primaryMuscle: 'Back', unit: 'band', notes: 'Anchor at waist height, pull elbows past your ribs', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.neck, BodyPart.shoulder}),
       ex(id: '21', name: 'Inverted Row', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Body under a bar or sturdy table, pull chest to the bar', equipment: const {Equipment.bodyweight, Equipment.barbellRack}),
       ex(id: '22', name: 'Seated Cable Row', primaryMuscle: 'Back', unit: 'kg', notes: 'Chest tall, pull to the navel without leaning back', equipment: const {Equipment.cable, Equipment.machines}),
-      ex(id: '23', name: 'Superman Hold', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Face down, lift chest and thighs; reps field tracks seconds held', equipment: const {Equipment.bodyweight}),
+      ex(id: '23', name: 'Superman Hold', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Face down, lift chest and thighs; reps field tracks seconds held', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back}),
 
       // Legs -- knee- and back-sparing options
       ex(id: '24', name: 'Bodyweight Squat', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'No load on the spine, unlike a barbell back squat', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee}),
-      ex(id: '25', name: 'Glute Bridge', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Drive through the heels; loads the hips with the spine supported', equipment: const {Equipment.bodyweight}),
+      ex(id: '25', name: 'Glute Bridge', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Drive through the heels; loads the hips with the spine supported', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip, BodyPart.knee}),
       ex(id: '26', name: 'Step-ups', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Step onto a knee-height box, control the way down', equipment: const {Equipment.bodyweight, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.knee}),
-      ex(id: '27', name: 'Wall Sit', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Isometric hold -- quad work without knee travel; reps field tracks seconds', equipment: const {Equipment.bodyweight}),
+      ex(id: '27', name: 'Wall Sit', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Isometric hold -- quad work without knee travel; reps field tracks seconds', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.knee}),
       ex(id: '28', name: 'Leg Press', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Back supported throughout', equipment: const {Equipment.machines}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip}),
       ex(id: '29', name: 'Kettlebell Swing', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hip hinge, not a squat -- power comes from the glutes', equipment: const {Equipment.kettlebells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}),
       ex(id: '30', name: 'Seated Leg Curl', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Isolates the hamstrings with no spinal load', equipment: const {Equipment.machines}),
 
       // Shoulders -- options that avoid overhead pressing
       ex(id: '31', name: 'Band Lateral Raise', primaryMuscle: 'Shoulders', unit: 'band', notes: 'Stand on the band, raise to shoulder height', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.shoulder}),
-      ex(id: '32', name: 'Face Pull', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Pull to the forehead with elbows high; a rear-delt and posture staple', equipment: const {Equipment.cable, Equipment.bands}),
+      ex(id: '32', name: 'Face Pull', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Pull to the forehead with elbows high; a rear-delt and posture staple', equipment: const {Equipment.cable, Equipment.bands}, rehabFor: const {BodyPart.shoulder, BodyPart.neck}),
 
       // Arms
       ex(id: '33', name: 'Band Bicep Curl', primaryMuscle: 'Biceps', unit: 'band', notes: 'Stand on the band, curl with elbows pinned', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.elbow}),
@@ -1325,13 +1327,48 @@ class AppDatabase {
       ex(id: '35', name: 'Band Triceps Pushdown', primaryMuscle: 'Triceps', unit: 'band', notes: 'Anchor high, extend the elbows fully', equipment: const {Equipment.bands, Equipment.cable}, contraindicatedFor: const {BodyPart.elbow}),
 
       // Core -- neck-safe (no repeated cervical flexion, unlike sit-ups)
-      ex(id: '36', name: 'Dead Bug', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Lower opposite arm and leg with the low back flat; head stays down', equipment: const {Equipment.bodyweight}),
+      ex(id: '36', name: 'Dead Bug', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Lower opposite arm and leg with the low back flat; head stays down', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back}),
       ex(id: '37', name: 'Side Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulder to ankle; reps field tracks seconds', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder}),
-      ex(id: '38', name: 'Bird Dog', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Opposite arm and leg extended, spine neutral -- a common low-back rehab staple', equipment: const {Equipment.bodyweight}),
+      ex(id: '38', name: 'Bird Dog', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Opposite arm and leg extended, spine neutral -- a common low-back rehab staple', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip}),
 
       // Conditioning / low-impact
       ex(id: '39', name: 'Brisk Walk', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact; reps field tracks minutes', equipment: const {Equipment.bodyweight}),
       ex(id: '40', name: 'Stationary Bike', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact on the ankles and spine; reps field tracks minutes', equipment: const {Equipment.machines}),
+
+      // ---------------------------------------------------------------
+      // Physiotherapy / rehab movements.
+      //
+      // `rehabFor` is a separate axis from `contraindicatedFor`: plenty of
+      // exercises are merely *safe* with a bad shoulder, but only a few
+      // actively rehabilitate one. Physiotherapy sessions are built from
+      // this pool, so every injury the onboarding offers needs coverage --
+      // enforced by catalog_coverage_test.
+      //
+      // All are low-load and bodyweight/band by design: a rehab session
+      // should be doable on a rest day and without a gym.
+      // ---------------------------------------------------------------
+      ex(id: '41', name: 'Shoulder Pendulum', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Lean forward, let the arm hang and circle gently; reps field tracks seconds', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.shoulder}),
+      ex(id: '42', name: 'Band External Rotation', primaryMuscle: 'Rehab', unit: 'band', notes: 'Elbow tucked at your side, rotate the forearm outwards -- rotator-cuff staple', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.shoulder}),
+      ex(id: '43', name: 'Scapular Wall Slide', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Forearms on the wall, slide up and down keeping contact', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.shoulder, BodyPart.neck}),
+      ex(id: '44', name: 'Chin Tuck', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Draw the chin straight back without tilting; deep neck flexor work', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.neck}),
+      ex(id: '45', name: 'Neck Isometric Hold', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Press the head lightly into your hand without movement; reps field tracks seconds', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.neck}),
+      ex(id: '46', name: 'Cat-Cow', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'On all fours, alternate arching and rounding the spine slowly', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.neck}),
+      ex(id: '47', name: 'Pelvic Tilt', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Lying down, flatten the low back into the floor and release', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip}),
+      ex(id: '48', name: 'Straight Leg Raise', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Quad activation without bending the knee -- standard post-knee-injury work', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.knee}),
+      ex(id: '49', name: 'Terminal Knee Extension', primaryMuscle: 'Rehab', unit: 'band', notes: 'Band behind the knee, straighten against the resistance', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.knee}),
+      ex(id: '50', name: 'Ankle Alphabet', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Trace the alphabet with the toes to restore ankle range', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.ankle}),
+      ex(id: '51', name: 'Heel Raise (Seated)', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Seated so bodyweight is off the joint; rebuilds calf and ankle', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.ankle}),
+      ex(id: '52', name: 'Wrist & Elbow Extension', primaryMuscle: 'Rehab', unit: 'band', notes: 'Slow eccentric wrist extension -- the standard tennis-elbow protocol', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.elbow}),
+      ex(id: '53', name: 'Forearm Supination', primaryMuscle: 'Rehab', unit: 'band', notes: 'Rotate the palm up against light resistance, elbow tucked', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.elbow}),
+      ex(id: '54', name: 'Clamshell', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Side-lying, knees bent, open the top knee -- glute medius work', equipment: const {Equipment.bodyweight, Equipment.bands}, rehabFor: const {BodyPart.hip}),
+      // Bodyweight fallbacks. Every body part needs at least one rehab
+      // option that requires no equipment, or a user without bands gets no
+      // physiotherapy session at all for that injury -- which is exactly
+      // what the coverage test caught for the elbow.
+      ex(id: '56', name: 'Wrist Flexor Stretch', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Arm straight, gently pull the fingers back; hold and release', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.elbow}),
+      ex(id: '57', name: 'Elbow Range of Motion', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Slow full bend and straighten, no load', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.elbow}),
+      ex(id: '58', name: 'Ankle Dorsiflexion Stretch', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Knee travels over the toes with the heel down', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.ankle}),
+      ex(id: '59', name: 'Hip Flexor Stretch', primaryMuscle: 'Rehab', unit: 'bodyweight', notes: 'Half-kneeling, tuck the pelvis and lean forward gently', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.hip}),
     ];
   }
 
@@ -1747,6 +1784,9 @@ class ExerciseData {
   /// Both drive `ProfileFit`; empty means unspecified.
   final Set<Equipment> equipment;
   final Set<BodyPart> contraindicatedFor;
+  /// Body parts this exercise helps rehabilitate -- the pool physiotherapy
+  /// sessions are built from.
+  final Set<BodyPart> rehabFor;
 
   ExerciseData({
     required this.id,
@@ -1758,6 +1798,7 @@ class ExerciseData {
     this.notes,
     this.equipment = const <Equipment>{},
     this.contraindicatedFor = const <BodyPart>{},
+    this.rehabFor = const <BodyPart>{},
   });
 
   Map<String, dynamic> toJson() => {
@@ -1770,6 +1811,7 @@ class ExerciseData {
     'notes': notes,
     'equipment': EquipmentCodec.encode(equipment),
     'contraindicatedFor': BodyPartCodec.encode(contraindicatedFor),
+    'rehabFor': BodyPartCodec.encode(rehabFor),
   };
 
   factory ExerciseData.fromJson(Map<String, dynamic> json) => ExerciseData(
@@ -1783,6 +1825,7 @@ class ExerciseData {
     // Absent on rows written before these fields existed -> empty.
     equipment: EquipmentCodec.decode(json['equipment']),
     contraindicatedFor: BodyPartCodec.decode(json['contraindicatedFor']),
+    rehabFor: BodyPartCodec.decode(json['rehabFor']),
   );
 }
 

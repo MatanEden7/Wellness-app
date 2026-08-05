@@ -23,6 +23,10 @@ _$ExerciseImpl _$$ExerciseImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => $enumDecode(_$BodyPartEnumMap, e))
               .toSet() ??
           const <BodyPart>{},
+      rehabFor: (json['rehabFor'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$BodyPartEnumMap, e))
+              .toSet() ??
+          const <BodyPart>{},
     );
 
 Map<String, dynamic> _$$ExerciseImplToJson(_$ExerciseImpl instance) =>
@@ -39,6 +43,7 @@ Map<String, dynamic> _$$ExerciseImplToJson(_$ExerciseImpl instance) =>
       'contraindicatedFor': instance.contraindicatedFor
           .map((e) => _$BodyPartEnumMap[e]!)
           .toList(),
+      'rehabFor': instance.rehabFor.map((e) => _$BodyPartEnumMap[e]!).toList(),
     };
 
 const _$EquipmentEnumMap = {

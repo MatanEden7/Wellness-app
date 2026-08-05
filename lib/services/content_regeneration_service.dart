@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
 import 'meal_template_generator.dart';
 import 'profile_fit.dart';

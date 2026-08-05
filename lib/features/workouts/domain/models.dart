@@ -29,6 +29,9 @@ class Exercise with _$Exercise {
     // Body parts this exercise is unsafe for. Empty means no known
     // contraindication.
     @Default(<BodyPart>{}) Set<BodyPart> contraindicatedFor,
+    // Body parts this exercise actively helps rehabilitate. Distinct from
+    // [contraindicatedFor] -- see the doc on BodyPartCodec.
+    @Default(<BodyPart>{}) Set<BodyPart> rehabFor,
   }) = _Exercise;
 
   factory Exercise.create({

@@ -89,6 +89,7 @@ class ExercisesRepository {
       notes: data.notes,
       equipment: data.equipment,
       contraindicatedFor: data.contraindicatedFor,
+      rehabFor: data.rehabFor,
     );
   }
 
@@ -103,6 +104,7 @@ class ExercisesRepository {
       notes: model.notes,
       equipment: model.equipment,
       contraindicatedFor: model.contraindicatedFor,
+      rehabFor: model.rehabFor,
     );
   }
 }

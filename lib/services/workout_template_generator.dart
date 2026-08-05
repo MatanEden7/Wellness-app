@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
+import '../features/workouts/domain/exercise_tags.dart';
 import '../features/workouts/domain/models.dart';
 import 'profile_fit.dart';
 import 'user_profile_service.dart';
@@ -33,66 +34,145 @@ class WorkoutTemplateGenerator {
   static const _core = ['Core'];
 
   Future<List<WorkoutTemplateData>> generateTemplates() async {
-    final available = await _availableExercises();
+    final all = await _database.getAllExercises();
+    final available = all.where(_fits).toList();
     if (available.isEmpty) {
-      // Unreachable with the seeded catalog -- the coverage test proves a
-      // full-body program survives every equipment/injury combination -- but
-      // a user who deleted their whole library shouldn't crash onboarding.
       debugPrint('[WORKOUT-GEN] No exercises fit this profile; skipping');
       return const [];
     }
 
-    final plan = _splitForTrainingDays(_profile.trainingDaysPerWeek);
-    debugPrint('[WORKOUT-GEN] ${_profile.trainingDaysPerWeek} days/week -> '
-        '${plan.length} template(s), ${available.length} exercises available');
-
     final created = <WorkoutTemplateData>[];
+
+    // One template per training day the user asked for. Previously this
+    // produced a fixed 2-3 templates regardless, so someone who said "I
+    // train 6 days a week" got three -- the answer was collected and then
+    // ignored.
+    final plan = _sessionsFor(_profile.trainingDaysPerWeek);
     for (final day in plan) {
       final picks = _pick(available, day.muscles, day.exercisesPerSession);
       if (picks.isEmpty) continue;
-
-      final template = WorkoutTemplateData(
-        id: _uuid.v4(),
-        name: day.name,
-        notes: day.notes,
-        // Marked generated so a later profile change can replace it without
-        // touching anything the user built. See ProfileFit.isReplaceable.
-        origin: TemplateOrigin.generated,
-      );
-      await _database.insertWorkoutTemplate(template);
-
-      for (var i = 0; i < picks.length; i++) {
-        await _database.insertTemplateExercise(TemplateExerciseData(
-          id: _uuid.v4(),
-          templateId: template.id,
-          exerciseId: picks[i].id,
-          orderIndex: i,
-          defaultSets: day.sets,
-          defaultReps: day.reps,
-        ));
-      }
-      created.add(template);
+      created.add(await _write(day.name, day.notes, picks));
     }
 
-    debugPrint('[WORKOUT-GEN] Generated ${created.length} workout templates');
+    // Plus a physiotherapy session per reported injury, built from the
+    // rehabFor pool rather than "whatever isn't contraindicated" -- being
+    // safe with a bad shoulder is not the same as rehabilitating one.
+    for (final injury in _profile.injuries) {
+      final part = BodyPart.forProfileId(injury);
+      if (part == null) continue; // 'none'
+      final rehab = all
+          .where((e) => e.rehabFor.contains(part) && _fits(e))
+          .toList();
+      if (rehab.isEmpty) continue;
+      created.add(await _write(
+        'Physiotherapy — ${part.label}',
+        'Rehab work for your ${part.label.toLowerCase()}. Low load; safe on '
+            'a rest day.',
+        rehab.take(5).toList(),
+        sets: 2,
+        reps: 12,
+      ));
+    }
+
+    debugPrint('[WORKOUT-GEN] Generated ${created.length} templates '
+        '(${plan.length} training + ${created.length - plan.length} rehab)');
     return created;
   }
 
-  /// Library entries this user can actually perform -- owns the equipment
-  /// for, and not contraindicated by any of their injuries.
-  Future<List<ExerciseData>> _availableExercises() async {
-    final all = await _database.getAllExercises();
-    return all.where((data) {
-      final exercise = Exercise(
-        id: data.id,
-        name: data.name,
-        unit: data.unit,
-        primaryMuscle: data.primaryMuscle,
-        equipment: data.equipment,
-        contraindicatedFor: data.contraindicatedFor,
+  bool _fits(ExerciseData data) => ProfileFit.exerciseFits(
+        Exercise(
+          id: data.id,
+          name: data.name,
+          unit: data.unit,
+          primaryMuscle: data.primaryMuscle,
+          equipment: data.equipment,
+          contraindicatedFor: data.contraindicatedFor,
+          rehabFor: data.rehabFor,
+        ),
+        _profile,
       );
-      return ProfileFit.exerciseFits(exercise, _profile);
-    }).toList();
+
+  Future<WorkoutTemplateData> _write(
+    String name,
+    String notes,
+    List<ExerciseData> picks, {
+    int sets = 3,
+    int reps = 10,
+  }) async {
+    final template = WorkoutTemplateData(
+      id: _uuid.v4(),
+      name: name,
+      notes: notes,
+      // Marked generated so a later profile change can replace it without
+      // touching anything the user built. See ProfileFit.isReplaceable.
+      origin: TemplateOrigin.generated,
+    );
+    await _database.insertWorkoutTemplate(template);
+    for (var i = 0; i < picks.length; i++) {
+      await _database.insertTemplateExercise(TemplateExerciseData(
+        id: _uuid.v4(),
+        templateId: template.id,
+        exerciseId: picks[i].id,
+        orderIndex: i,
+        defaultSets: sets,
+        defaultReps: reps,
+      ));
+    }
+    return template;
+  }
+
+  /// Exactly [days] sessions, following the split convention for that
+  /// frequency: full-body when training infrequently (each session has to
+  /// cover everything), upper/lower at 4, push/pull/legs at 5+, cycling the
+  /// pattern to fill the week.
+  ///
+  /// `goal` is intentionally not consulted -- per the product decision it
+  /// drives calorie and macro targets only, not template selection.
+  List<_SessionPlan> _sessionsFor(int days) {
+    final count = days.clamp(1, 7);
+    late final List<_SessionPlan> pattern;
+
+    if (count <= 3) {
+      pattern = const [
+        _SessionPlan('Full Body A', 'Every major muscle group',
+            [..._push, ..._pull, ..._legs, ..._core], 6),
+        _SessionPlan('Full Body B', 'Same coverage, different selection',
+            [..._legs, ..._pull, ..._push, ..._core], 6),
+        _SessionPlan('Full Body C', 'Third variation to keep it fresh',
+            [..._pull, ..._legs, ..._push, ..._core], 6),
+      ];
+    } else if (count == 4) {
+      pattern = const [
+        _SessionPlan('Upper Body A', 'Chest, back, shoulders and arms',
+            [..._push, ..._pull], 6),
+        _SessionPlan('Lower Body A', 'Legs and core', [..._legs, ..._core], 6),
+        _SessionPlan('Upper Body B', 'Upper body, second variation',
+            [..._pull, ..._push], 6),
+        _SessionPlan('Lower Body B', 'Lower body, second variation',
+            [..._legs, ..._core], 6),
+      ];
+    } else {
+      pattern = const [
+        _SessionPlan('Push Day', 'Chest, shoulders and triceps', _push, 5),
+        _SessionPlan('Pull Day', 'Back and biceps', _pull, 5),
+        _SessionPlan('Leg Day', 'Quads, hamstrings, glutes and calves',
+            [..._legs, ..._core], 5),
+      ];
+    }
+
+    // Cycle the pattern up to `count`, suffixing repeats so names stay
+    // distinct (Push Day, ... , Push Day 2).
+    return [
+      for (var i = 0; i < count; i++)
+        () {
+          final base = pattern[i % pattern.length];
+          final cycle = (i ~/ pattern.length) + 1;
+          return cycle == 1
+              ? base
+              : _SessionPlan('${base.name} $cycle', base.notes, base.muscles,
+                  base.exercisesPerSession);
+        }(),
+    ];
   }
 
   /// Picks up to [count] exercises spread across [muscles], taking one per
@@ -123,88 +203,27 @@ class WorkoutTemplateGenerator {
       if (!addedThisRound) break; // every group exhausted
       round++;
     }
+
+    // Backfill. When most of a group is contraindicated -- e.g. a shoulder
+    // injury guts Push day -- the loop above returns two exercises and calls
+    // it a session. Top up from anything else available so the user still
+    // gets a workout worth doing.
+    if (picked.length < count) {
+      for (final exercise in available) {
+        if (picked.length >= count) break;
+        if (!picked.contains(exercise)) picked.add(exercise);
+      }
+    }
     return picked;
   }
 
-  /// The split to run for a given weekly frequency.
-  ///
-  /// Deliberately conventional: full-body when training 1-3 days (each
-  /// session has to cover everything), upper/lower at 4, push/pull/legs at
-  /// 5+. `goal` is intentionally not consulted -- per the product decision
-  /// it drives calorie and macro targets only, not template selection.
-  List<_SessionPlan> _splitForTrainingDays(int days) {
-    if (days <= 3) {
-      return const [
-        _SessionPlan(
-          name: 'Full Body A',
-          notes: 'Covers every major muscle group in one session',
-          muscles: [..._push, ..._pull, ..._legs, ..._core],
-          exercisesPerSession: 6,
-        ),
-        _SessionPlan(
-          name: 'Full Body B',
-          notes: 'Same coverage, different movement selection',
-          muscles: [..._legs, ..._pull, ..._push, ..._core],
-          exercisesPerSession: 6,
-        ),
-      ];
-    }
-
-    if (days == 4) {
-      return const [
-        _SessionPlan(
-          name: 'Upper Body',
-          notes: 'Chest, back, shoulders and arms',
-          muscles: [..._push, ..._pull],
-          exercisesPerSession: 6,
-        ),
-        _SessionPlan(
-          name: 'Lower Body',
-          notes: 'Legs and core',
-          muscles: [..._legs, ..._core],
-          exercisesPerSession: 6,
-        ),
-      ];
-    }
-
-    return const [
-      _SessionPlan(
-        name: 'Push Day',
-        notes: 'Chest, shoulders and triceps',
-        muscles: _push,
-        exercisesPerSession: 5,
-      ),
-      _SessionPlan(
-        name: 'Pull Day',
-        notes: 'Back and biceps',
-        muscles: _pull,
-        exercisesPerSession: 5,
-      ),
-      _SessionPlan(
-        name: 'Leg Day',
-        notes: 'Quads, hamstrings, glutes and calves',
-        muscles: [..._legs, ..._core],
-        exercisesPerSession: 5,
-      ),
-    ];
-  }
 }
 
 class _SessionPlan {
-  const _SessionPlan({
-    required this.name,
-    required this.notes,
-    required this.muscles,
-    required this.exercisesPerSession,
-  });
+  const _SessionPlan(this.name, this.notes, this.muscles, this.exercisesPerSession);
 
   final String name;
   final String notes;
   final List<String> muscles;
   final int exercisesPerSession;
-
-  /// Fixed for now: 3x10 is a reasonable default for every split here, and
-  /// the user can adjust per-exercise in the template editor.
-  int get sets => 3;
-  int get reps => 10;
 }

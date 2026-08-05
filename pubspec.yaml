@@ -20,10 +20,9 @@ dependencies:
   # Navigation
   go_router: 12.1.3
   
-  # Database
-  drift: 2.14.1
-  sqlite3_flutter_libs: 0.5.15
-  sqlite3: 2.4.5
+  # Storage: the app persists an in-memory model as a JSON snapshot (see
+  # AppDatabase). Drift/sqlite3 were removed -- nothing imported them, and
+  # drift_dev's builder was failing on every test file, breaking codegen.
   ffi: ^2.1.0
   
   # Code Generation
@@ -62,7 +61,6 @@ dev_dependencies:
   
   # Code Generation
   build_runner: 2.4.9
-  drift_dev: 2.14.1
   freezed: 2.4.6
   json_serializable: 6.7.1
 

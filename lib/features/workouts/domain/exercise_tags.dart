@@ -111,6 +111,15 @@ abstract final class EquipmentCodec {
   }
 }
 
+/// Exercises that are *therapeutic* for a body part, as opposed to unsafe
+/// for it.
+///
+/// Deliberately a separate axis from `contraindicatedFor`: a glute bridge is
+/// both safe with a bad back *and* actively part of rehabbing one, while a
+/// bodyweight squat is merely safe. Only the second kind belongs in a
+/// physiotherapy session, and without this distinction the generator would
+/// have to guess by exclusion -- "not contraindicated" is a very weak proxy
+/// for "will help you recover".
 abstract final class BodyPartCodec {
   static List<String> encode(Set<BodyPart> value) {
     final keys = value.map((e) => e.key).toList()..sort();
