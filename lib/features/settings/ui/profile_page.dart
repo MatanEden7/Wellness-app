@@ -5,6 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../services/user_profile_service.dart';
 import '../../../services/setup_engine_service.dart';
 import '../../../services/preferences_service.dart';
+import '../../../services/content_regeneration_service.dart';
+import '../../../services/profile_fit.dart';
+import '../../../data/db/drift_database.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
 
@@ -26,6 +29,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _saveProfile(UserProfile updated) async {
+    final previous = _profile;
     setState(() {
       _profile = updated;
       _saving = true;
@@ -39,6 +43,67 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       await prefs.setCarbsGoal(updated.carbsTargetG);
       await prefs.setFatGoal(updated.fatTargetG);
       ref.invalidate(preferencesServiceProvider);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+
+    // Changing diet, exclusions, equipment, injuries, training days or meal
+    // count changes *which content suits the user*, so the templates
+    // generated from the old answers may no longer fit. Offer to rebuild --
+    // never do it silently, since it discards templates they may have been
+    // using all week. Target-only changes (goal, weight, activity) don't
+    // qualify; see ProfileFit.contentAffectingFieldsChanged.
+    if (previous != null &&
+        ProfileFit.contentAffectingFieldsChanged(previous, updated)) {
+      await _offerRegeneration(updated);
+    }
+  }
+
+  Future<void> _offerRegeneration(UserProfile profile) async {
+    final service = ContentRegenerationService(ref.read(databaseProvider));
+    final preview = await service.preview();
+    if (!mounted) return;
+
+    // Nothing generated to replace -- generate silently rather than asking a
+    // question whose answer costs the user nothing either way.
+    if (preview.isEmpty) {
+      await service.regenerate(profile);
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Update your templates?'),
+        content: Text(
+          'Your profile changed in a way that affects which meals and '
+          'workouts suit you.\n\n'
+          'Rebuilding replaces ${preview.mealTemplates} generated meal '
+          'template(s) and ${preview.workoutTemplates} generated workout '
+          'template(s). Anything you created or edited yourself is kept.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Keep as is'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Rebuild'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _saving = true);
+    try {
+      final created = await service.regenerate(profile);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Rebuilt $created templates')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

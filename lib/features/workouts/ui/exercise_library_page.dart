@@ -8,6 +8,11 @@ import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../services/language_service.dart';
 import '../data/repositories.dart';
+import '../../../core/tag_chips.dart';
+import '../../../services/profile_filter_service.dart';
+import '../../../services/profile_fit.dart';
+import '../../meals/ui/food_catalog_page.dart' show MismatchBadge;
+import '../domain/exercise_tags.dart';
 import '../domain/models.dart';
 
 class ExerciseLibraryPage extends HookConsumerWidget {
@@ -42,7 +47,16 @@ class ExerciseLibraryPage extends HookConsumerWidget {
             return const LoadingIndicator();
           }
 
-          final exercises = snapshot.data ?? [];
+          final all = snapshot.data ?? [];
+
+          // Same contract as the food catalog: hide what the user can't do,
+          // never delete it, and make the escape hatch one tap away.
+          final profile = ref.watch(filterProfileProvider);
+          final showAll = ref.watch(showAllContentProvider);
+          final exercises = (profile == null || showAll)
+              ? all
+              : all.where((e) => ProfileFit.exerciseFits(e, profile)).toList();
+          final hiddenCount = all.length - exercises.length;
 
           if (exercises.isEmpty) {
             return EmptyState(
@@ -55,21 +69,39 @@ class ExerciseLibraryPage extends HookConsumerWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            itemCount: exercises.length,
-            itemBuilder: (context, index) {
-              final exercise = exercises[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _ExerciseCard(
-                  exercise: exercise,
-                  language: language,
-                  onEdit: () => _showEditExerciseDialog(context, ref, exercise),
-                  onDelete: () => _deleteExercise(context, ref, exercise),
+          return Column(
+            children: [
+              if (hiddenCount > 0)
+                _ExerciseHiddenBanner(
+                  count: hiddenCount,
+                  onShowAll: () =>
+                      ref.read(showAllContentProvider.notifier).state = true,
                 ),
-              );
-            },
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  itemCount: exercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = exercises[index];
+                    final reason = profile == null
+                        ? null
+                        : fitFailureLabel(
+                            ProfileFit.exerciseFit(exercise, profile));
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _ExerciseCard(
+                        exercise: exercise,
+                        language: language,
+                        mismatchReason: reason,
+                        onEdit: () =>
+                            _showEditExerciseDialog(context, ref, exercise),
+                        onDelete: () => _deleteExercise(context, ref, exercise),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -130,11 +162,16 @@ class _ExerciseCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
+  /// Non-null only when shown despite not suiting the profile -- see the
+  /// food catalog's equivalent.
+  final String? mismatchReason;
+
   const _ExerciseCard({
     required this.exercise,
     required this.language,
     required this.onEdit,
     required this.onDelete,
+    this.mismatchReason,
   });
 
   @override
@@ -143,6 +180,10 @@ class _ExerciseCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (mismatchReason != null) ...[
+            MismatchBadge(mismatchReason!),
+            const SizedBox(height: 8),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,6 +307,12 @@ class _AddExerciseDialog extends HookConsumerWidget {
     final notesController = useTextEditingController(text: exercise?.notes ?? '');
     final isLoading = useState(false);
     final formKey = useMemoized(() => GlobalKey<FormState>());
+    // See the food editor: untagged content fits every profile, so without
+    // these the user's own exercises escape equipment/injury filtering.
+    final equipment =
+        useState<Set<Equipment>>(exercise?.equipment ?? <Equipment>{});
+    final contraindicated =
+        useState<Set<BodyPart>>(exercise?.contraindicatedFor ?? <BodyPart>{});
 
     final isEditing = exercise != null;
 
@@ -337,6 +384,27 @@ class _AddExerciseDialog extends HookConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
 
+              TagChips<Equipment>(
+                title: 'Equipment needed',
+                subtitle: 'Pick every option this can be done with. Leave '
+                    'blank and it will be treated as always available.',
+                options: Equipment.values,
+                selected: equipment.value,
+                labelOf: (e) => e.label,
+                onChanged: (next) => equipment.value = next,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TagChips<BodyPart>(
+                title: 'Avoid with injury to',
+                subtitle: 'This will be hidden for anyone reporting one of '
+                    'these injuries.',
+                options: BodyPart.values,
+                selected: contraindicated.value,
+                labelOf: (b) => b.label,
+                onChanged: (next) => contraindicated.value = next,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
               // Actions
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -358,6 +426,8 @@ class _AddExerciseDialog extends HookConsumerWidget {
                       muscleController.text,
                       unitController.text,
                       notesController.text,
+                      equipment.value,
+                      contraindicated.value,
                       isLoading,
                     ),
                     isLoading: isLoading.value,
@@ -381,6 +451,8 @@ class _AddExerciseDialog extends HookConsumerWidget {
     String muscle,
     String unit,
     String notes,
+    Set<Equipment> equipment,
+    Set<BodyPart> contraindicated,
     ValueNotifier<bool> isLoading,
   ) async {
     if (!formKey.currentState!.validate()) return;
@@ -394,12 +466,17 @@ class _AddExerciseDialog extends HookConsumerWidget {
               primaryMuscle: muscle.trim().isEmpty ? null : muscle.trim(),
               unit: unit,
               notes: notes.trim().isEmpty ? null : notes.trim(),
+              equipment: equipment,
+              contraindicatedFor: contraindicated,
             )
           : Exercise.create(
               name: name.trim(),
               primaryMuscle: muscle.trim().isEmpty ? null : muscle.trim(),
               unit: unit,
               notes: notes.trim().isEmpty ? null : notes.trim(),
+            ).copyWith(
+              equipment: equipment,
+              contraindicatedFor: contraindicated,
             );
 
       if (isEditing) {
@@ -424,5 +501,35 @@ class _AddExerciseDialog extends HookConsumerWidget {
     } finally {
       isLoading.value = false;
     }
+  }
+}
+
+
+class _ExerciseHiddenBanner extends StatelessWidget {
+  const _ExerciseHiddenBanner({required this.count, required this.onShowAll});
+
+  final int count;
+  final VoidCallback onShowAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
+      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      child: Row(
+        children: [
+          Icon(Icons.filter_alt_outlined,
+              size: 18, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text('$count hidden by your profile',
+                style: theme.textTheme.bodySmall),
+          ),
+          TextButton(onPressed: onShowAll, child: const Text('Show all')),
+        ],
+      ),
+    );
   }
 }

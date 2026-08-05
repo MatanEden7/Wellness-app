@@ -126,3 +126,47 @@ abstract final class BodyPartCodec {
         .toSet();
   }
 }
+
+extension EquipmentLabel on Equipment {
+  String get label {
+    switch (this) {
+      case Equipment.bodyweight:
+        return 'Bodyweight';
+      case Equipment.dumbbells:
+        return 'Dumbbells';
+      case Equipment.barbellRack:
+        return 'Barbell & rack';
+      case Equipment.machines:
+        return 'Machines';
+      case Equipment.bands:
+        return 'Bands';
+      case Equipment.kettlebells:
+        return 'Kettlebells';
+      case Equipment.cable:
+        return 'Cable';
+      case Equipment.pullupBar:
+        return 'Pull-up bar';
+    }
+  }
+}
+
+extension BodyPartLabel on BodyPart {
+  String get label {
+    switch (this) {
+      case BodyPart.shoulder:
+        return 'Shoulder';
+      case BodyPart.back:
+        return 'Back';
+      case BodyPart.knee:
+        return 'Knee';
+      case BodyPart.ankle:
+        return 'Ankle';
+      case BodyPart.elbow:
+        return 'Elbow';
+      case BodyPart.hip:
+        return 'Hip';
+      case BodyPart.neck:
+        return 'Neck';
+    }
+  }
+}

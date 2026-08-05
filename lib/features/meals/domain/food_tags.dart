@@ -108,3 +108,52 @@ abstract final class FoodTagCodec {
         .toSet();
   }
 }
+
+/// Human-readable label for a tag.
+///
+/// English-only for now, matching how the seeded catalog ships: the
+/// exclusion chips in onboarding already have Hebrew, but wiring those keys
+/// through here needs the l10n lookup, and these six strings are the same
+/// words. Left as a single place to localise later rather than scattered
+/// through the editors.
+extension FoodTagLabel on FoodTag {
+  String get label {
+    switch (this) {
+      case FoodTag.dairy:
+        return 'Dairy';
+      case FoodTag.gluten:
+        return 'Gluten';
+      case FoodTag.nuts:
+        return 'Nuts';
+      case FoodTag.eggs:
+        return 'Eggs';
+      case FoodTag.shellfish:
+        return 'Shellfish';
+      case FoodTag.soy:
+        return 'Soy';
+      case FoodTag.meat:
+        return 'Meat';
+      case FoodTag.fish:
+        return 'Fish';
+      case FoodTag.animalProduct:
+        return 'Animal product';
+    }
+  }
+
+  /// Tags that answer "what allergen does this contain?".
+  static const allergens = [
+    FoodTag.dairy,
+    FoodTag.gluten,
+    FoodTag.nuts,
+    FoodTag.eggs,
+    FoodTag.shellfish,
+    FoodTag.soy,
+  ];
+
+  /// Tags that answer "does this come from an animal?".
+  static const animalOrigin = [
+    FoodTag.meat,
+    FoodTag.fish,
+    FoodTag.animalProduct,
+  ];
+}

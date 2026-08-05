@@ -8,6 +8,10 @@ import '../../../core/utils.dart';
 import '../../../core/validation.dart';
 import '../../../services/language_service.dart';
 import '../data/repositories.dart';
+import '../../../core/tag_chips.dart';
+import '../../../services/profile_filter_service.dart';
+import '../../../services/profile_fit.dart';
+import '../domain/food_tags.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
@@ -88,7 +92,17 @@ class _FoodList extends ConsumerWidget {
             return const LoadingIndicator();
           }
 
-          final foods = snapshot.data ?? [];
+          final all = snapshot.data ?? [];
+
+          // Hide what clashes with the user's diet/exclusions, unless they
+          // asked to see everything. Nothing is deleted -- the toggle in the
+          // app bar brings it all back, with a badge naming the reason.
+          final profile = ref.watch(filterProfileProvider);
+          final showAll = ref.watch(showAllContentProvider);
+          final foods = (profile == null || showAll)
+              ? all
+              : all.where((f) => ProfileFit.foodFits(f, profile)).toList();
+          final hiddenCount = all.length - foods.length;
 
         if (foods.isEmpty) {
           return EmptyState(
@@ -103,21 +117,43 @@ class _FoodList extends ConsumerWidget {
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-          itemCount: foods.length,
-          itemBuilder: (context, index) {
-            final food = foods[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _FoodCard(
-                food: food,
-                language: language,
-                onEdit: () => _showEditFoodDialog(context, ref, food),
-                onDelete: isStarter ? null : () => _deleteFood(context, ref, food),
+        return Column(
+          children: [
+            if (hiddenCount > 0)
+              _HiddenBanner(
+                count: hiddenCount,
+                onShowAll: () =>
+                    ref.read(showAllContentProvider.notifier).state = true,
               ),
-            );
-          },
+            if (showAll && profile != null)
+              _ShowingAllBanner(
+                onFilter: () =>
+                    ref.read(showAllContentProvider.notifier).state = false,
+              ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                itemCount: foods.length,
+                itemBuilder: (context, index) {
+                  final food = foods[index];
+                  final reason = profile == null
+                      ? null
+                      : fitFailureLabel(ProfileFit.foodFit(food, profile));
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _FoodCard(
+                      food: food,
+                      language: language,
+                      mismatchReason: reason,
+                      onEdit: () => _showEditFoodDialog(context, ref, food),
+                      onDelete:
+                          isStarter ? null : () => _deleteFood(context, ref, food),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -176,10 +212,15 @@ class _FoodCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback? onDelete;
 
+  /// Non-null only when this row is being shown despite not suiting the
+  /// profile -- i.e. the user turned "show all" on. Names the clash.
+  final String? mismatchReason;
+
   const _FoodCard({
     required this.food,
     required this.language,
     required this.onEdit,
+    this.mismatchReason,
     this.onDelete,
   });
 
@@ -190,6 +231,10 @@ class _FoodCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (mismatchReason != null) ...[
+            MismatchBadge(mismatchReason!),
+            const SizedBox(height: 8),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,6 +351,10 @@ class _AddFoodDialog extends HookConsumerWidget {
     );
     final isLoading = useState(false);
     final formKey = useMemoized(() => GlobalKey<FormState>());
+    // Seeded foods ship tagged; anything the user adds starts untagged,
+    // which ProfileFit reads as "fits everyone". Letting them label it here
+    // is what keeps their own catalog filterable.
+    final tags = useState<Set<FoodTag>>(food?.tags ?? <FoodTag>{});
 
     final isEditing = food != null;
 
@@ -411,6 +460,33 @@ class _AddFoodDialog extends HookConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
 
+              TagChips<FoodTag>(
+                title: 'Contains',
+                subtitle: 'Used to hide this food when it clashes with your '
+                    'diet or exclusions. Leave blank if it contains none.',
+                options: FoodTagLabel.allergens,
+                selected: tags.value,
+                labelOf: (t) => t.label,
+                onChanged: (next) => tags.value = {
+                  ...next,
+                  // Preserve the animal-origin tags the other group owns.
+                  ...tags.value.where(FoodTagLabel.animalOrigin.contains),
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TagChips<FoodTag>(
+                title: 'Animal origin',
+                subtitle: 'Used for plant-based diets.',
+                options: FoodTagLabel.animalOrigin,
+                selected: tags.value,
+                labelOf: (t) => t.label,
+                onChanged: (next) => tags.value = {
+                  ...next,
+                  ...tags.value.where(FoodTagLabel.allergens.contains),
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
               // Actions
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -435,6 +511,7 @@ class _AddFoodDialog extends HookConsumerWidget {
                       proteinController.text,
                       carbsController.text,
                       fatController.text,
+                      tags.value,
                       isLoading,
                     ),
                     isLoading: isLoading.value,
@@ -461,6 +538,7 @@ class _AddFoodDialog extends HookConsumerWidget {
     String protein,
     String carbs,
     String fat,
+    Set<FoodTag> tags,
     ValueNotifier<bool> isLoading,
   ) async {
     if (!formKey.currentState!.validate()) return;
@@ -477,6 +555,7 @@ class _AddFoodDialog extends HookConsumerWidget {
               proteinPerUnit: double.parse(protein),
               carbsPerUnit: double.parse(carbs),
               fatPerUnit: double.parse(fat),
+              tags: tags,
               updatedAt: DateTime.now(),
             )
           : FoodItem.create(
@@ -487,7 +566,7 @@ class _AddFoodDialog extends HookConsumerWidget {
               proteinPerUnit: double.parse(protein),
               carbsPerUnit: double.parse(carbs),
               fatPerUnit: double.parse(fat),
-            );
+            ).copyWith(tags: tags);
 
       if (isEditing) {
         await ref.read(mealsRepositoryProvider).updateFood(foodItem);
@@ -510,5 +589,92 @@ class _AddFoodDialog extends HookConsumerWidget {
     } finally {
       isLoading.value = false;
     }
+  }
+}
+
+
+/// Shown above a filtered list when items were hidden, with a one-tap
+/// escape hatch. Counting them is the point: silently showing a shorter
+/// list looks like missing data, which is what makes hiding feel broken.
+class _HiddenBanner extends StatelessWidget {
+  const _HiddenBanner({required this.count, required this.onShowAll});
+
+  final int count;
+  final VoidCallback onShowAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
+      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      child: Row(
+        children: [
+          Icon(Icons.filter_alt_outlined,
+              size: 18, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$count hidden by your profile',
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          TextButton(onPressed: onShowAll, child: const Text('Show all')),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShowingAllBanner extends StatelessWidget {
+  const _ShowingAllBanner({required this.onFilter});
+
+  final VoidCallback onFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
+      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      child: Row(
+        children: [
+          Icon(Icons.visibility_outlined,
+              size: 18, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text('Showing everything',
+                style: theme.textTheme.bodySmall),
+          ),
+          TextButton(onPressed: onFilter, child: const Text('Filter')),
+        ],
+      ),
+    );
+  }
+}
+
+/// The "why is this here" badge on a revealed, non-fitting row.
+class MismatchBadge extends StatelessWidget {
+  const MismatchBadge(this.reason, {super.key});
+
+  final String reason;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        reason,
+        style: theme.textTheme.labelSmall
+            ?.copyWith(color: theme.colorScheme.onErrorContainer),
+      ),
+    );
   }
 }
