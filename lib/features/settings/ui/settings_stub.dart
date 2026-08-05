@@ -489,7 +489,15 @@ class SettingsStub extends ConsumerWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      await ref.read(databaseProvider).clearAllData();
+      // Both halves are required. The database reset also reseeds the starter
+      // catalog (a bare clearAllData left the user unable to log anything),
+      // and the calendar lives in SharedPreferences, so no database call can
+      // reach it -- without this the reminders survive a "reset all data",
+      // every one of them pinned to a template that has just been deleted.
+      await ref.read(databaseProvider).resetToFactoryState();
+      await ref.read(calendarServiceProvider).clearAllEvents();
+      await ref.read(calendarStateProvider.notifier).refresh();
+      await ref.read(calendarStateProvider.notifier).rescheduleAllNotifications();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.resetAllDataDone)));

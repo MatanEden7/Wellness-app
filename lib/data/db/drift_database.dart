@@ -1063,6 +1063,29 @@ class AppDatabase {
     _touch(_sleepController);
   }
 
+  /// Wipes user data and puts the starter catalog back.
+  ///
+  /// Distinct from [clearAllData], which must *not* reseed: import calls that
+  /// one and its payload contains the catalog, so reseeding there would
+  /// duplicate every food and exercise.
+  ///
+  /// Settings' "Reset all data" used to call [clearAllData] directly and left
+  /// the app unusable: the seed only ever runs from the constructor, and the
+  /// singleton is long since constructed by the time anyone reaches Settings,
+  /// so the food and exercise catalogs stayed empty. Nothing could be logged
+  /// afterwards. The caller is also responsible for clearing the calendar --
+  /// see `CalendarService.clearAllEvents`; it lives in SharedPreferences, not
+  /// here, so no database call can reach it.
+  Future<void> resetToFactoryState() async {
+    await clearAllData();
+    _initializeWithSampleData();
+    _touch(_foodsController);
+    _touch(_mealsController);
+    _touch(_mealTemplatesController);
+    _touch(_workoutsController);
+    _touch(_sleepController);
+  }
+
   /// Deletes logged data (meals, workout sessions, sleep entries -- and
   /// anything cascading from them) older than [cutoff]. Catalog data (foods,
   /// exercises, templates) is never touched here; only the ever-growing logs

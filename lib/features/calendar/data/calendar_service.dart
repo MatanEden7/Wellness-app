@@ -80,6 +80,16 @@ class CalendarService {
     return eventsJson.map((json) => ScheduledEvent.fromJson(jsonDecode(json))).toList();
   }
 
+  /// Removes every scheduled event.
+  ///
+  /// Needed because the calendar is the one part of the user's data that does
+  /// not live in [AppDatabase] -- `clearAllData()` cannot reach it, so a
+  /// "reset everything" that only talks to the database leaves a full
+  /// calendar behind, every event pinned to a template that no longer exists.
+  Future<void> clearAllEvents() async {
+    await _saveEvents(const []);
+  }
+
   Future<void> saveEvent(ScheduledEvent event) async {
     final events = await getEvents();
     final existingIndex = events.indexWhere((e) => e.id == event.id);

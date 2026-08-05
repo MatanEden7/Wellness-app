@@ -277,7 +277,19 @@ class MealsRepository {
   Future<void> createMealTemplate(MealTemplate template) async {
     await _database.insertMealTemplate(_mealTemplateModelToData(template));
     for (final item in template.items) {
-      await _database.insertMealTemplateItem(_mealTemplateItemModelToData(item));
+      // Force the parent id, exactly as WorkoutTemplatesRepository.createTemplate
+      // does for its exercises. Without it an item carrying any other
+      // templateId is written but never found again -- the template is created
+      // looking perfectly fine and is silently empty, and an empty meal
+      // template is a dead "Approve" button on the reminder pinned to it.
+      //
+      // `meal_template_editor_page` happens to correct the ids itself before
+      // calling this, so nothing was broken today. That is the trap: the
+      // invariant lived in one caller instead of here, so the next caller
+      // (import, a generator, a new screen) inherits none of it.
+      await _database.insertMealTemplateItem(
+        _mealTemplateItemModelToData(item.copyWith(templateId: template.id)),
+      );
     }
   }
 
