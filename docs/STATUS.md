@@ -8,19 +8,20 @@ Last updated: 2026-08-05 (content architecture pass)
 
 ## Current task
 
-Epic H (content fits the profile) is partly done: H1/H2/H5/H6a shipped, H3/H4/H6b
-remain. See `docs/ROADMAP.md`.
+None. Epic H (content fits the profile) is complete, and the two smallest Epic G
+performance items are done. Everything still open needs you — see below.
 
 ## Snapshot
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 331/331 |
+| Fast unit suite | ✅ Green | 336/336 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
 | Device suite | ⚠️ Stale | 12/12 passed on 2026-08-04; not re-run since (no simulator runs without an explicit request) |
 | `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |
 | `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |
-| `docs/ROADMAP.md` Epic G (perf) | Not started | 6 items, no urgency, nothing blocking |
+| `docs/ROADMAP.md` Epic H | ✅ Complete | tagging, filtering, regeneration all shipped |
+| `docs/ROADMAP.md` Epic G (perf) | 2 of 6 done | G1/G2/G3/G5 remain — real but low-urgency |
 
 ## Waiting on you
 

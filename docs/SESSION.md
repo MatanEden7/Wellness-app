@@ -4,6 +4,35 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-05 (final) — Epic H complete + perf
+
+**Current task:** None. Everything not needing the user is done.
+
+**Last completed:**
+- H3 tag editors (food + exercise), so user-added content gets tagged too --
+  the piece that stops the tagging system decaying, since untagged content
+  fits every profile by design.
+- H4 profile filtering on the food catalog and exercise library, with a
+  hidden-count banner, one-tap "Show all", and a reason badge on revealed
+  rows. Session-scoped toggle, not persisted.
+- H6b regenerate-on-profile-change: offers a rebuild when diet, exclusions,
+  equipment, injuries, training days or meal count change, showing exactly
+  how much would be replaced. Only `TemplateOrigin.generated` is ever
+  touched; user templates and built-ins survive.
+- G6: moved `requestPermissions()` off the first-frame path (it was holding
+  the UI behind the OS permission dialog on first launch).
+- G4 (partly): `getDayTotals` was O(meals x allItems) per stream emission,
+  now a single pass. Deliberately not a maintained index, given two
+  stale-id-cache bugs already shipped.
+- 331 -> 336 tests, analyze clean. Three commits pushed to `rc`.
+
+**Next task:** Nothing unblocked remains. Outstanding work is the 5 items
+needing the user (keystore, bundle ID, stale-nutrition decision, Hebrew
+translation, two device checks) plus the larger Epic G items (G1/G2/G3
+rebuild-reduction, G5 search debounce) which are real but low-urgency.
+
+---
+
 ## 2026-08-05 (later) — content/profile architecture
 
 **Current task:** Epic H paused after H1/H2/H5/H6a; H3, H4 and H6b remain.
