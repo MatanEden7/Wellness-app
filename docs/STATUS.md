@@ -15,9 +15,9 @@ performance items are done. Everything still open needs you — see below.
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 336/336 |
+| Fast unit suite | ✅ Green | 351/351 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
-| Device suite | ⚠️ Stale | 12/12 passed on 2026-08-04; not re-run since (no simulator runs without an explicit request) |
+| Device suite | ⚠️ 9/12 | 3 files regressed — see ISSUES.md #68 |
 | `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |
 | `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |
 | `docs/ROADMAP.md` Epic H | ✅ Complete | tagging, filtering, regeneration all shipped |

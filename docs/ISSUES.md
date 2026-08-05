@@ -614,36 +614,42 @@ export/import, referential integrity, and calendar recurrence all have regressio
 now. Still uncovered: the notification delivery path (hard to test without a device clock)
 and the UI layer beyond the sanity suite.
 
-### 68. Device suite: profile/settings/sleep/notification tests hang  **[OPEN — regression, needs diagnosis]**
+### 68. Device suite: 3 files fail after the Epic H / template work  **[OPEN — regression]**
 
-Introduced somewhere in the Epic H / template-quality work on 2026-08-05.
-`integration_test/sanity/profile_test.dart` (and `settings_subpages_test`,
-`settings_test`, `sleep_test`, `notification_action_handler_test`,
-`nutrition_math_ui_test`) report **"did not complete"** rather than a failed
-assertion — the suite times out mid-file rather than failing a check.
+Full device suite on the final code: **9 of 12 files pass.** Three fail:
+
+| File | Result |
+|---|---|
+| `sanity/profile_test.dart` | fails |
+| `sanity/settings_subpages_test.dart` | fails |
+| `regression/notification_action_handler_test.dart` | fails |
+
+An earlier run mid-refactor also showed `settings_test`, `sleep_test` and
+`nutrition_math_ui_test` failing; **all three pass on the final code**, so
+those were transient (device-suite flakiness this repo has seen before --
+see the note in `docs/TESTING.md` about killing and rerunning a hung file),
+not regressions. Scope here is 3 files, not 6.
 
 What is known:
 - The **fast suite is fully green (351 tests)** and `flutter analyze` is
-  clean, so this is device/timing-specific, not a logic error the unit tests
-  can see.
-- `profile_test`'s first two tests pass; it dies on "editing weight
-  recomputes BMR/TDEE".
+  clean, so this is device/timing-specific rather than a logic error.
+- `profile_test` passes its first two tests and dies on "editing weight
+  recomputes BMR/TDEE" with **"did not complete"** -- a timeout, not a
+  failed assertion.
 - Weight is **not** a content-affecting field, so the regeneration dialog
-  added in H6b should not fire for it — the obvious suspect is therefore
+  added in H6b should not fire for it. The obvious suspect is therefore
   *not* confirmed.
-- Two plausible causes, neither verified:
-  1. `_saveProfile` now awaits `_offerRegeneration` after its `finally`,
-     lengthening the async chain before the "Targets updated" SnackBar is
-     shown. The test asserts that SnackBar within 300ms.
-  2. The regeneration path calls `service.regenerate()` *silently* when
-     `preview.isEmpty`, which runs both generators — and the meal generator
-     now does a least-squares solve per meal. On a fresh test profile that
-     branch is reachable and was not there before.
+- The two failing sanity files both drive the **profile screen**, which is
+  the screen H6b changed; `notification_action_handler_test` pumps the whole
+  app. That is a plausible common thread but not proof.
 
-Suspect (2) most: it makes real work happen on a code path that previously
-did nothing, and it is reachable from a fresh profile, which is exactly what
-the sanity tests set up.
+Leading hypothesis (unverified): when nothing has been generated yet,
+`_offerRegeneration` calls `regenerate()` **silently** rather than
+prompting. That runs both generators -- and the meal generator now performs
+a least-squares solve per meal. It is real work on a path that previously
+did nothing, and it is reachable from exactly the fresh profile these tests
+set up.
 
 Next step: instrument `_offerRegeneration` to confirm whether it runs during
-the weight test, then either gate the silent-regenerate branch behind an
-explicit call or make it fire-and-forget so it cannot block the UI path.
+the weight test. If it does, either gate the silent-regenerate branch behind
+an explicit call or make it fire-and-forget so it cannot block a UI path.
