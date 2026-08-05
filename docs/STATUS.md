@@ -8,8 +8,9 @@ Last updated: 2026-08-05 (content architecture pass)
 
 ## Current task
 
-None. Epic H (content fits the profile) is complete, and the two smallest Epic G
-performance items are done. Everything still open needs you — see below.
+None. Epic H is complete, template generation now hits the onboarding targets
+(calories ±5%, protein ±9%), and both suites are green. Everything still open
+needs you — see below.
 
 ## Snapshot
 
@@ -17,7 +18,7 @@ performance items are done. Everything still open needs you — see below.
 |---|---|---|
 | Fast unit suite | ✅ Green | 351/351 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
-| Device suite | ⚠️ 9/12 | 3 files regressed — see ISSUES.md #68 |
+| Device suite | ✅ Green | 12/12 on 2026-08-05 |
 | `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |
 | `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |
 | `docs/ROADMAP.md` Epic H | ✅ Complete | tagging, filtering, regeneration all shipped |

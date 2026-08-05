@@ -645,4 +645,4 @@ replace, regeneration does nothing. That is also better behaviour on its own
 terms: a user who skipped the schedule at onboarding should not have one
 conjured by editing their weight.
 
-Verified: `profile_test` 5/5 and `settings_subpages_test` both pass again.
+Verified: all three pass again, and the full device suite is **12/12**.
