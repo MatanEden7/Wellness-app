@@ -75,26 +75,23 @@ void main() {
           }
         }
 
-        // 20%, not tighter, and that is a real limitation rather than a
-        // comfortable bound: with portion sizes clamped to sane servings
-        // (<=400g of a 100g-unit food) and only 3-4 components per meal, the
-        // solver cannot always hit protein AND calories at once. It
-        // prioritises protein, so calories run high -- currently ~+17% worst
-        // case, down from +47% before this pass. Closing the rest needs
-        // either more components per meal or per-food serving sizes, both of
-        // which are bigger changes than this one.
-        expect(kcal, closeTo(2500, 2500 * 0.20),
+        // Bounds are set just outside measured worst-case behaviour, so a
+        // regression trips them but normal variation does not. Measured
+        // across the seven profiles below: calories within 5%, protein
+        // within 9%, carbs within 22%, fat within 10%.
+        expect(kcal, closeTo(2500, 2500 * 0.10),
             reason: '$label daily calories were $kcal against a 2500 target');
-        // Protein is the anchor's job; looser because portion bounds can cap
-        // a low-density anchor (400g of lentils is the sane maximum).
-        expect(protein, greaterThan(150 * 0.7),
-            reason: '$label protein was only $protein against 150');
-        // Fat used to run 4x over. This is the assertion that would have
-        // caught it.
-        expect(fat, lessThan(70 * 2.0),
-            reason: '$label fat was $fat against a 70g target');
-        expect(carbs, greaterThan(280 * 0.4),
-            reason: '$label carbs were only $carbs against 280');
+        expect(protein, closeTo(150, 150 * 0.15),
+            reason: '$label protein was $protein against 150');
+        // Carbs get the widest bound, and that is nutrition rather than
+        // slack: plant protein arrives bound to carbohydrate, so a vegan
+        // hitting 150g of protein from legumes necessarily overshoots a 280g
+        // carb target. Tightening this would force the solver to miss
+        // protein instead, which is the worse trade.
+        expect(carbs, closeTo(280, 280 * 0.30),
+            reason: '$label carbs were $carbs against 280');
+        expect(fat, closeTo(70, 70 * 0.25),
+            reason: '$label fat was $fat against 70');
       });
     });
 

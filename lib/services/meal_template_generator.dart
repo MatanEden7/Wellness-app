@@ -69,6 +69,14 @@ class MealTemplateGenerator {
         carb: _rotate(carbs, i),
         fat: _rotate(fats, i),
         veg: _rotate(veg, i),
+        // A second protein and a second carb give the solver enough degrees
+        // of freedom to satisfy four targets at once. With only 3-4 foods
+        // the system is underdetermined and something always has to give --
+        // which is where the residual calorie overshoot came from.
+        extras: [
+          _rotate(proteins, i + 1),
+          _rotate(carbs, i + 1),
+        ].whereType<FoodItemData>().toList(),
         kcalTarget: _profile.calorieTarget * meal.fraction,
         proteinTarget: _profile.proteinTargetG * meal.fraction,
         carbsTarget: _profile.carbsTargetG * meal.fraction,

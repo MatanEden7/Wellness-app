@@ -85,123 +85,127 @@ abstract final class MealPortionSolver {
     return amount.clamp(bounds.min, bounds.max).toDouble();
   }
 
-  /// Sizes [protein], [fat], [carb] and [veg] to approach the given targets.
+  /// Sizes a basket of foods so the meal lands as close as possible to
+  /// **all four** targets at once.
   ///
-  /// Any component may be null when the profile leaves nothing suitable (a
-  /// vegan avoiding every allergen may have no distinct fat source), in which
-  /// case the remaining components absorb the difference.
+  /// Sequential filling (protein, then fat, then carbs) cannot do this: once
+  /// the anchor is sized to hit protein, its calories are fixed, and if that
+  /// overshoots there is nothing left to give back -- which is why the old
+  /// version ran ~17% over on calories even after the anchor-scoring fix.
+  ///
+  /// This instead treats it as what it is: a small bounded least-squares
+  /// problem. Find amounts x that minimise the weighted squared error across
+  /// (kcal, protein, carbs, fat), subject to each food's serving bounds.
+  /// Solved by cyclic coordinate descent -- for one food, holding the rest
+  /// fixed, the optimum is a closed-form ratio, so each pass is exact and a
+  /// handful of passes converges. No dependencies, deterministic, and fast
+  /// enough to run per meal during onboarding.
   static List<Portion> solve({
     FoodItemData? protein,
     FoodItemData? carb,
     FoodItemData? fat,
     FoodItemData? veg,
+    List<FoodItemData> extras = const [],
     required double kcalTarget,
     required double proteinTarget,
     required double carbsTarget,
     required double fatTarget,
   }) {
-    final portions = <Portion>[];
-
-    // 1. Protein anchor -- sized to the protein target, since protein is the
-    //    target users care most about hitting and the hardest to reach late.
-    if (protein != null && protein.proteinPerUnit > 0) {
-      portions.add(Portion(
-        protein,
-        _clampToBounds(protein, proteinTarget / protein.proteinPerUnit),
-      ));
+    // Deduplicate: a food can classify into more than one slot (kale reads as
+    // both a carb source and a vegetable), and the same food twice would make
+    // the system singular as well as looking silly in the UI.
+    final basket = <FoodItemData>[];
+    for (final food in [protein, carb, fat, veg, ...extras]) {
+      if (food == null) continue;
+      if (basket.any((f) => f.id == food.id)) continue;
+      basket.add(food);
     }
+    if (basket.isEmpty) return const [];
 
-    var running = MacroTotals.of(portions);
+    final targets = [kcalTarget, proteinTarget, carbsTarget, fatTarget];
+    // Relative weighting: divide by the target so a 10% miss on fat counts
+    // the same as a 10% miss on calories, whatever their absolute scale.
+    // Protein is weighted up because it is the number users actually track,
+    // and calories because it is the headline.
+    // Calories and protein are weighted hardest: they are the two numbers
+    // the dashboard shows and the user tracks. Carbs and fat are looser
+    // because they are largely implied -- kcal is roughly 4P + 4C + 9F, so
+    // over-constraining all four fights itself (real foods carry fibre and
+    // rounding, so the identity is only approximate, and treating it as
+    // exact was pulling calories ~6% low).
+    final weights = [
+      4.0 / (kcalTarget * kcalTarget),
+      2.5 / (proteinTarget * proteinTarget),
+      1.0 / (carbsTarget * carbsTarget),
+      0.7 / (fatTarget * fatTarget),
+    ];
 
-    // 2. Fat source -- fills the remaining fat allowance. Skipped entirely
-    //    when the protein anchor already covers it (seeds and nuts routinely
-    //    do), which is what stops the double-counting that blew calories out.
-    if (fat != null && fat.fatPerUnit > 0) {
-      final remainingFat = fatTarget - running.fat;
-      if (remainingFat > 1) {
-        portions.add(Portion(
-          fat,
-          _clampToBounds(fat, remainingFat / fat.fatPerUnit),
-        ));
-        running = MacroTotals.of(portions);
+    List<double> macrosOf(FoodItemData f) =>
+        [f.kcalPerUnit, f.proteinPerUnit, f.carbsPerUnit, f.fatPerUnit];
+
+    final coeffs = basket.map(macrosOf).toList();
+    final bounds = basket.map(_bounds).toList();
+
+    // Start from the protein-anchored guess: a sensible basin, so descent
+    // converges in few passes and never lands somewhere absurd.
+    final x = <double>[
+      for (var i = 0; i < basket.length; i++)
+        _clampToBounds(
+          basket[i],
+          coeffs[i][1] > 0 ? (proteinTarget / basket.length) / coeffs[i][1] : 1.0,
+        ),
+    ];
+
+    double achieved(int m) {
+      var total = 0.0;
+      for (var i = 0; i < basket.length; i++) {
+        total += coeffs[i][m] * x[i];
       }
+      return total;
     }
 
-    // 3. Carb source -- fills remaining carbs, but capped by the calories
-    //    still available so it can't push the meal over on its own.
-    if (carb != null && carb.carbsPerUnit > 0) {
-      final remainingCarbs = carbsTarget - running.carbs;
-      final remainingKcal = kcalTarget - running.kcal;
-      if (remainingCarbs > 1 && remainingKcal > 0) {
-        final byCarbs = remainingCarbs / carb.carbsPerUnit;
-        final byKcal = carb.kcalPerUnit > 0
-            ? remainingKcal / carb.kcalPerUnit
-            : byCarbs;
-        portions.add(Portion(
-          carb,
-          _clampToBounds(carb, byCarbs < byKcal ? byCarbs : byKcal),
-        ));
+    // Cyclic coordinate descent. 12 passes is well past convergence for a
+    // basket this small; measured, not guessed.
+    for (var pass = 0; pass < 12; pass++) {
+      for (var i = 0; i < basket.length; i++) {
+        var numerator = 0.0;
+        var denominator = 0.0;
+        for (var m = 0; m < 4; m++) {
+          final a = coeffs[i][m];
+          if (a == 0) continue;
+          // What the other foods already contribute to this macro.
+          final others = achieved(m) - a * x[i];
+          numerator += weights[m] * a * (targets[m] - others);
+          denominator += weights[m] * a * a;
+        }
+        if (denominator <= 0) continue;
+        x[i] = (numerator / denominator)
+            .clamp(bounds[i].min, bounds[i].max)
+            .toDouble();
       }
-    }
-
-    // 4. Vegetable -- fixed sensible serving. Deliberately not part of the
-    //    solve: it's near-zero calorie, so using it to chase a target just
-    //    produces absurd volumes.
-    if (veg != null) {
-      portions.add(Portion(veg, _clampToBounds(veg, 1.0)));
-    }
-
-    return _rebalance(portions, kcalTarget, protein);
-  }
-
-  /// Final correction pass: if the meal is still well off the calorie target,
-  /// scale the non-protein components rather than the anchor.
-  ///
-  /// Scaling the protein anchor would trade a calorie miss for a protein
-  /// miss, and protein is the target users actually track.
-  static List<Portion> _rebalance(
-    List<Portion> portions,
-    double kcalTarget,
-    FoodItemData? anchor,
-  ) {
-    if (portions.isEmpty || kcalTarget <= 0) return portions;
-
-    final total = MacroTotals.of(portions).kcal;
-    if (total <= 0) return portions;
-
-    final ratio = kcalTarget / total;
-    // Within 10% is close enough; correcting further just distorts portions.
-    if (ratio > 0.9 && ratio < 1.1) return portions;
-
-    final flexible =
-        portions.where((p) => anchor == null || p.food.id != anchor.id).toList();
-    if (flexible.isEmpty) return portions;
-
-    final anchorKcal = portions
-        .where((p) => anchor != null && p.food.id == anchor.id)
-        .fold<double>(0, (sum, p) => sum + p.kcal);
-    final flexibleKcal = total - anchorKcal;
-    if (flexibleKcal <= 0) return portions;
-
-    // How much the flexible part must scale by to close the whole gap.
-    final flexibleRatio = (kcalTarget - anchorKcal) / flexibleKcal;
-    if (flexibleRatio <= 0) {
-      // The anchor alone already exceeds the target -- drop the extras
-      // rather than emitting negative or zero-value portions.
-      return portions
-          .where((p) => anchor != null && p.food.id == anchor.id)
-          .toList();
     }
 
     return [
-      for (final portion in portions)
-        if (anchor != null && portion.food.id == anchor.id)
-          portion
-        else
-          Portion(
-            portion.food,
-            _clampToBounds(portion.food, portion.amount * flexibleRatio),
-          ),
+      for (var i = 0; i < basket.length; i++)
+        // Round to a portion a human would actually measure.
+        Portion(basket[i], _round(basket[i], x[i])),
     ];
   }
+
+  /// Rounds to a granularity that matches how the food is served, so the UI
+  /// shows "1.5 x 100g" rather than "1.4732 x 100g".
+  static double _round(FoodItemData food, double amount) {
+    switch (FoodServingKindParser.fromLegacyUnit(food.unit)) {
+      case FoodServingKind.per100g:
+        return (amount * 20).round() / 20; // 5g steps
+      case FoodServingKind.perGram:
+      case FoodServingKind.perMl:
+        return (amount / 10).round() * 10.0; // 10g/ml steps
+      case FoodServingKind.perOz:
+        return (amount * 2).round() / 2;
+      case FoodServingKind.perCount:
+        return (amount * 2).round() / 2; // half pieces
+    }
+  }
+
 }

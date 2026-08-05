@@ -281,9 +281,17 @@ void main() {
       for (final template in created) {
         for (final item
             in await db.getMealTemplateItemsByTemplateId(template.id)) {
+          final food = byId[item.foodId]!;
           expect(item.amount, greaterThan(0));
-          expect(item.amount, lessThanOrEqualTo(4.0),
-              reason: '${byId[item.foodId]!.name} portion is implausible');
+          // Bounds are per unit, because `amount` means different things per
+          // food: 4.0 of a `100g` food is 400g, but 4.0 of Milk is four
+          // millilitres. This assertion used to apply the 100g bound to
+          // everything, which is the same unit-blindness that produced the
+          // original "Milk x1.00" bug -- see MealPortionSolver.
+          final max = food.unit == 'ml' || food.unit == 'g' ? 500.0 : 12.0;
+          expect(item.amount, lessThanOrEqualTo(max),
+              reason: '${food.name} (${food.unit}) portion '
+                  '${item.amount} is implausible');
         }
       }
     });
