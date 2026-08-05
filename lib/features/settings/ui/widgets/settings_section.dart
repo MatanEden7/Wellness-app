@@ -26,7 +26,7 @@ class SettingsSection extends StatelessWidget {
             child: Text(
               title!.toUpperCase(),
               style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.45),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
                 letterSpacing: 0.6,
               ),
             ),
@@ -41,7 +41,7 @@ class SettingsSection extends StatelessWidget {
                   Divider(
                     height: 1,
                     indent: 56,
-                    color: theme.dividerColor.withOpacity(0.6),
+                    color: theme.dividerColor.withValues(alpha: 0.6),
                   ),
               ],
             ],

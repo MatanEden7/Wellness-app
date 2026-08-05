@@ -134,14 +134,19 @@ class SleepTimerPage extends HookConsumerWidget {
     final hours = entry.durationInHours;
     if (hours == null) return;
 
-    final goalHours = ref.read(notificationPreferencesProvider).sleepGoalHours;
-    if (hours < goalHours) return;
+    final notificationPrefs = ref.read(notificationPreferencesProvider);
+    if (hours < notificationPrefs.sleepGoalHours) return;
 
     try {
+      // No categoryId on purpose: the sleep category's buttons are "Start
+      // Sleep" and "Snooze 30m", neither of which means anything on an alert
+      // announcing that the sleep just finished.
       await ref.read(notificationServiceProvider).showImmediate(
             title: l10n.sleepGoalReachedTitle,
             body: l10n.sleepGoalReachedBody(hours.toStringAsFixed(1)),
             type: EventType.sleep,
+            soundEnabled: notificationPrefs.soundEnabled,
+            vibrationEnabled: notificationPrefs.vibrationEnabled,
           );
     } catch (e) {
       debugPrint('[SLEEP] Could not show goal-reached notification: $e');
@@ -245,7 +250,7 @@ class _StartSleepView extends StatelessWidget {
           AppLocalizations.of(context)!.readyForSleepSubtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontSize: 17,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
           textAlign: TextAlign.center,
         ),
@@ -267,7 +272,7 @@ class _StartSleepView extends StatelessWidget {
           'Current time: ${AppDateUtils.formatTime(DateTime.now())}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontSize: 15,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -328,10 +333,10 @@ class _ActiveSleepView extends HookWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
               width: 2,
             ),
           ),
@@ -351,7 +356,7 @@ class _ActiveSleepView extends HookWidget {
                 AppLocalizations.of(context)!.sleepDuration,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 17,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -366,14 +371,14 @@ class _ActiveSleepView extends HookWidget {
             Icon(
               Icons.bedtime,
               size: 20,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 8),
             Text(
               'Started at ${AppDateUtils.formatTime(entry.startedAt)}',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontSize: 16,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -413,7 +418,7 @@ class _ActiveSleepView extends HookWidget {
           'Current time: ${AppDateUtils.formatTime(currentTime.value)}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       ],

@@ -576,6 +576,15 @@
   "onboardingBMR": "BMR",
   "onboardingTDEE": "TDEE",
   "onboardingGoalLabel": "Goal",
+  "restTimerCompleteTitle": "Rest Complete!",
+  "restTimerCompleteBody": "Time to continue with {exercise}",
+  "@restTimerCompleteBody": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      }
+    }
+  },
   "sleepGoalReachedTitle": "Sleep Goal Reached!",
   "sleepGoalReachedBody": "You slept {hours} hours -- that's your goal.",
   "@sleepGoalReachedBody": {

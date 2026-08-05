@@ -141,7 +141,7 @@ class CalendarPage extends ConsumerWidget {
                             color: Theme.of(context).colorScheme.surface,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.12),
+                                color: Colors.black.withValues(alpha: 0.12),
                                 blurRadius: 20,
                                 offset: const Offset(0, -4),
                               ),
@@ -221,7 +221,7 @@ class CalendarPage extends ConsumerWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.outline.withOpacity(0.4),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -314,7 +314,7 @@ class CalendarPage extends ConsumerWidget {
                       Icon(
                         Icons.event_available,
                         size: 48,
-                        color: theme.colorScheme.outline.withOpacity(0.5),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.5),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
@@ -326,7 +326,7 @@ class CalendarPage extends ConsumerWidget {
                       Text(
                         AppLocalizations.of(context)!.addMealsWorkoutsSleep,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -375,9 +375,9 @@ class CalendarPage extends ConsumerWidget {
           vertical: 6,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -408,7 +408,7 @@ class CalendarPage extends ConsumerWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.08),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -431,7 +431,7 @@ class CalendarPage extends ConsumerWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: eventColor.withOpacity(0.15),
+                  color: eventColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -470,12 +470,12 @@ class CalendarPage extends ConsumerWidget {
                     // Time and description
                     Row(
                       children: [
-                        Icon(Icons.access_time, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                        Icon(Icons.access_time, size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                         const SizedBox(width: 4),
                         Text(
                           AppDateUtils.formatTime(event.scheduledAt),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.8),
+                            color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
                           ),
                         ),
                         if (event.description != null) ...[
@@ -484,7 +484,7 @@ class CalendarPage extends ConsumerWidget {
                             child: Text(
                               event.description!,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -735,7 +735,7 @@ class CalendarPage extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: chipColor.withOpacity(0.15),
+        color: chipColor.withValues(alpha: 0.15),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, size: 12, color: chipColor),

@@ -116,7 +116,7 @@ class MealEditorPage extends HookConsumerWidget {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -161,7 +161,7 @@ class MealEditorPage extends HookConsumerWidget {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -621,11 +621,11 @@ class _FoodSelectorDialog extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final language = ref.watch(currentLanguageProvider);
     final searchController = useTextEditingController();
-    final selectedFoodState = useState<FoodItem?>(this.selectedFood);
+    final selectedFoodState = useState<FoodItem?>(selectedFood);
 
     // Convert current amount to display format if editing
-    final displayAmount = currentAmount != null && this.selectedFood != null
-        ? FoodNutritionMath.displayQuantity(this.selectedFood!, currentAmount!)
+    final displayAmount = currentAmount != null && selectedFood != null
+        ? FoodNutritionMath.displayQuantity(selectedFood!, currentAmount!)
         : 100.0;
     
     final amountController = useTextEditingController(

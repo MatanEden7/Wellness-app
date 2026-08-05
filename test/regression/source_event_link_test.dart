@@ -8,9 +8,7 @@ import 'package:wellness_app/features/calendar/data/calendar_service.dart';
 import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/features/meals/data/repositories.dart';
 import 'package:wellness_app/features/sleep/data/repositories.dart';
-import 'package:wellness_app/features/sleep/domain/models.dart';
 import 'package:wellness_app/features/workouts/data/repositories.dart';
-import 'package:wellness_app/features/workouts/domain/models.dart';
 
 /// Regression coverage for `sourceEventId` being silently dropped on update.
 ///

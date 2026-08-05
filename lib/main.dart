@@ -77,7 +77,17 @@ void main() async {
         calendarServiceProvider.overrideWithValue(calendarService),
         timezoneServiceProvider.overrideWithValue(timezoneService),
         notificationServiceProvider.overrideWithValue(notificationService),
-        notificationPreferencesProvider.overrideWith((ref) => notificationPrefs),
+        notificationPreferencesProvider.overrideWith((ref) {
+          // Changing a notification preference has to reach the reminders
+          // that are *already* in the OS queue, or the settings screen only
+          // affects events scheduled after the toggle. Resolved lazily inside
+          // the callback: CalendarNotifier reads this provider, so taking the
+          // dependency eagerly here would be a cycle.
+          notificationPrefs.onScheduleAffectingChange =
+              () => ref.read(calendarStateProvider.notifier)
+                  .rescheduleAllNotifications();
+          return notificationPrefs;
+        }),
       ],
       child: const WellnessApp(),
     ),

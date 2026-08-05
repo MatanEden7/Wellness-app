@@ -280,7 +280,7 @@ void main() {
         'ohp': _exercise('OHP', contraindicatedFor: {BodyPart.shoulder}),
         'squat': _exercise('Squat', equipment: {Equipment.bodyweight}),
       };
-      final template = const WorkoutTemplate(
+      const template = WorkoutTemplate(
         id: 'w',
         name: 'Upper',
         exercises: [

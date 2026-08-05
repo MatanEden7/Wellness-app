@@ -538,6 +538,15 @@
   "onboardingBMR": "BMR",
   "onboardingTDEE": "TDEE",
   "onboardingGoalLabel": "מטרה",
+  "restTimerCompleteTitle": "!המנוחה הסתיימה",
+  "restTimerCompleteBody": "אפשר להמשיך עם {exercise}",
+  "@restTimerCompleteBody": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      }
+    }
+  },
   "sleepGoalReachedTitle": "!יעד השינה הושג",
   "sleepGoalReachedBody": "ישנת {hours} שעות -- זה בדיוק היעד שלך.",
   "@sleepGoalReachedBody": {

@@ -67,7 +67,12 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
-  
+  assets:
+    # The rest timer's beep. It used to construct an AudioPlayer, set its
+    # volume, and never give it a source -- so the "Rest timer sound" switch
+    # and volume slider controlled nothing audible.
+    - assets/audio/
+
 dependency_overrides:
   # file_picker's Windows implementation transitively pins win32 5.2.0, whose
   # guid.dart references `UnmodifiableUint8ListView` -- removed from

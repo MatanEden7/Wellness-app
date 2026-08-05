@@ -590,7 +590,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       backgroundColor: Theme.of(context)
                           .colorScheme
                           .primary
-                          .withOpacity(0.15),
+                          .withValues(alpha: 0.15),
                       child: Icon(Icons.person,
                           size: 32,
                           color: Theme.of(context).colorScheme.primary),
@@ -614,7 +614,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurface
-                                      .withOpacity(0.6),
+                                      .withValues(alpha: 0.6),
                                 ),
                           ),
                         ],
@@ -744,7 +744,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.15),
+                      color: Colors.green.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.refresh, color: Colors.green, size: 19),
@@ -1075,7 +1075,7 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
                       color: Theme.of(context)
                           .colorScheme
                           .onSurface
-                          .withOpacity(0.5),
+                          .withValues(alpha: 0.5),
                     ),
               ),
             ],

@@ -1606,6 +1606,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingGoalLabel => 'Goal';
 
   @override
+  String get restTimerCompleteTitle => 'Rest Complete!';
+
+  @override
+  String restTimerCompleteBody(String exercise) {
+    return 'Time to continue with $exercise';
+  }
+
+  @override
   String get sleepGoalReachedTitle => 'Sleep Goal Reached!';
 
   @override

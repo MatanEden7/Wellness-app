@@ -220,7 +220,9 @@ lib/features/{meals|workouts|sleep|calendar}/
 - **[`lib/services/language_service.dart`](lib/services/language_service.dart)** - i18n (English/Hebrew)
 - **[`lib/services/calendar_service.dart`](lib/features/calendar/data/calendar_service.dart)** - Dual-source calendar (SharedPreferences + DB)
 - **[`lib/services/export_import_service.dart`](lib/services/export_import_service.dart)** - JSON backup/restore
-- **[`lib/services/notification_service.dart`](lib/services/notification_service.dart)** - Local notifications (partially wired)
+- **[`lib/services/notification_service.dart`](lib/services/notification_service.dart)** - Local notifications: iOS action categories, scheduling, immediate alerts, the rest-timer alert. The **only** `NotificationService` — a duplicate in `lib/core/notifications.dart` was removed in #69, because its separate `initialize()` on the singleton plugin silently nulled this one's tap handler.
+- **[`lib/services/notification_action_handler.dart`](lib/services/notification_action_handler.dart)** - What each notification tap and action button does. Reached only for actions declared `foreground` in `NotificationService.notificationCategories`; anything else is delivered by iOS to a background isolate that cannot act.
+- **[`lib/services/notification_preferences_service.dart`](lib/services/notification_preferences_service.dart)** - Per-category switches, lead times, quiet hours, sound/vibration. Every schedule-affecting setter fires `onScheduleAffectingChange`, wired in `main.dart` to `CalendarNotifier.rescheduleAllNotifications()` so a toggle also re-issues reminders already sitting in the OS queue.
 
 ### Unused/Dead Code
 
@@ -405,11 +407,11 @@ Use the bounded `settle()` helper in
    - Add migrations for schema updates
    - Wire up foreign key constraints
 
-2. **Fix Notification System**
-   - Wire `NotificationActionHandler` in `main.dart`
-   - Apply sound/vibration preferences
-   - Schedule recurring event instances
-   - Fix onboarding schedule notifications
+2. **Notification System** — *done; see `ISSUES.md` #4/#7/#58/#59/#69.* The
+   handler is wired in `app.dart`, sound/vibration prefs are applied and
+   re-applied to pending reminders, recurring occurrences are expanded under
+   iOS's 64-pending cap, and onboarding-generated schedules notify. What
+   remains is device verification only (ROADMAP B1/B3/B4).
 
 3. **User Profile**
    - Fix save/load format
@@ -503,7 +505,18 @@ instead of doing its own `unit.contains(...)` math.
 
 ### "Notifications don't work"
 
-Scheduling works, but action handler isn't wired up. See "Known Issues" section.
+Scheduling and the action handler both work as of #69. Two things to check first,
+because both were real bugs and both are silent:
+
+1. **A button renders but does nothing** — the action is probably missing
+   `DarwinNotificationActionOption.foreground` in
+   `NotificationService.notificationCategories`. iOS picks the destination isolate
+   from that option alone, never from whether the app is running, so an action
+   without it goes to the background isolate and is dropped.
+2. **Nothing responds at all any more, mid-session** — something called
+   `FlutterLocalNotificationsPlugin().initialize()` a second time. It is a
+   singleton, and a re-initialize without `onDidReceiveNotificationResponse`
+   nulls the callback while leaving the buttons on screen.
 
 ### "My changes disappeared after restarting"
 

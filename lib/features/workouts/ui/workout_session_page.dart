@@ -7,8 +7,9 @@ import 'package:just_audio/just_audio.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
-import '../../../core/notifications.dart';
 import '../../../routing/routes.dart';
+import '../../../services/notification_service.dart';
+import '../../../services/notification_preferences_service.dart';
 import '../../../services/time_service.dart';
 import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
@@ -67,10 +68,10 @@ class WorkoutSessionPage extends HookConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
                 border: Border(
                   bottom: BorderSide(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),
@@ -506,7 +507,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                     letterSpacing: 1.5,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13,
-                                    color: theme.colorScheme.primary.withOpacity(0.7),
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
                                   ),
                                 ),
                                 const SizedBox(height: 24),
@@ -550,7 +551,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                 ],
                               ],
                               if (isExerciseComplete) ...[
-                                Icon(
+                                const Icon(
                                   Icons.check_circle_rounded,
                                   size: 64,
                                   color: Colors.green,
@@ -581,7 +582,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -626,7 +627,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
             color: theme.colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 16,
                 offset: const Offset(0, -4),
               ),
@@ -688,7 +689,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
             icon: const Icon(Icons.arrow_forward_rounded, size: 24),
             label: Text(
               AppLocalizations.of(context)!.nextExercise,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
@@ -710,7 +711,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
             icon: const Icon(Icons.check_circle_rounded, size: 24),
             label: Text(
               AppLocalizations.of(context)!.finishWorkout,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
@@ -734,7 +735,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
         child: isLoading.value
             ? Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
@@ -828,14 +829,14 @@ class _CompactSetChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle, size: 16, color: Colors.green),
+          const Icon(Icons.check_circle, size: 16, color: Colors.green),
           const SizedBox(width: 6),
           Text(
             '$setNumber: ${setEntry.reps}',
@@ -878,8 +879,9 @@ class _RestTimerCard extends HookConsumerWidget {
     final theme = Theme.of(context);
     final timerController = ref.watch(restTimerControllerProvider(initialSeconds));
     final notificationService = ref.read(notificationServiceProvider);
+    final notificationPrefs = ref.watch(notificationPreferencesProvider);
     final prefs = ref.watch(preferencesServiceProvider);
-    
+
     final audioPlayer = useMemoized(() => AudioPlayer());
     final isMuted = useState(false);
 
@@ -896,7 +898,12 @@ class _RestTimerCard extends HookConsumerWidget {
       if (timerController.isCompleted) {
         if (!isMuted.value) {
           _playTimerBeep(audioPlayer, prefs);
-          notificationService.showRestTimerNotification(exerciseName: exerciseName);
+          notificationService.showRestTimerNotification(
+            title: l10n.restTimerCompleteTitle,
+            body: l10n.restTimerCompleteBody(exerciseName),
+            soundEnabled: notificationPrefs.soundEnabled,
+            vibrationEnabled: notificationPrefs.vibrationEnabled,
+          );
           HapticsHelper.heavyImpact();
         }
         // Auto-dismiss timer after completion
@@ -929,7 +936,7 @@ class _RestTimerCard extends HookConsumerWidget {
                   letterSpacing: 1.5,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(width: 6),
@@ -1041,24 +1048,30 @@ class _RestTimerCard extends HookConsumerWidget {
     );
   }
 
+  /// Path of the rest-timer beep. Declared in `pubspec.yaml`'s `assets:`.
+  static const String _beepAsset = 'assets/audio/rest_timer_beep.wav';
+
+  /// Plays the end-of-rest beep at the user's configured volume.
+  ///
+  /// This used to set the volume on a player that had no audio source and
+  /// then just buzz the haptics engine three times, so "Rest timer sound"
+  /// and its volume slider produced no sound at all. Haptics are kept as a
+  /// deliberate fallback for a silenced device, where the beep is inaudible.
   Future<void> _playTimerBeep(AudioPlayer player, PreferencesService prefs) async {
     if (!prefs.restTimerSoundEnabled) return;
-    
+
     try {
-      // Play system beep sound (3 short beeps)
       await player.setVolume(prefs.restTimerVolume);
-      
-      // Generate a simple beep tone (using asset if available, or system sound)
-      // For now, we'll use a simple audio asset
-      // In production, you'd want to add an actual beep sound file to assets
-      
-      // Alternative: Use multiple short vibrations as audio feedback
+      await player.setAsset(_beepAsset);
+      await player.play();
+    } catch (e) {
+      debugPrint('Error playing timer beep: $e');
+      // Audio failed -- fall back to the buzz pattern so the end of the rest
+      // period is still signalled.
       for (int i = 0; i < 3; i++) {
         HapticsHelper.heavyImpact();
         await Future.delayed(const Duration(milliseconds: 300));
       }
-    } catch (e) {
-      debugPrint('Error playing timer beep: $e');
     }
   }
 
@@ -1137,7 +1150,7 @@ class _CompletedWorkoutView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle, size: 16, color: Colors.green),
+                            const Icon(Icons.check_circle, size: 16, color: Colors.green),
                             const SizedBox(width: AppSpacing.xs),
                             Text('Set ${index + 1}: ', 
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1146,7 +1159,7 @@ class _CompletedWorkoutView extends StatelessWidget {
                             ),
                             Text('${set.reps} reps'),
                             if (set.weight != null) ...[
-                              Text(' × '),
+                              const Text(' × '),
                               Text(
                                 '${Formatters.formatWeight(set.weight!)} ${exercise.unit}',
                                 style: const TextStyle(fontWeight: FontWeight.bold),

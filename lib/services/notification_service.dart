@@ -39,14 +39,13 @@ class NotificationService {
 
   NotificationService(this._notifications);
 
-  // Initialize notification service with iOS categories
-  Future<void> initialize() async {
-    // iOS initialization
-    final iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-      notificationCategories: [
+  /// The iOS action categories, exposed so tests can assert on them.
+  ///
+  /// Every action here carries [DarwinNotificationActionOption.foreground].
+  /// That is load-bearing, not cosmetic: iOS picks the destination isolate
+  /// from this option alone, so an action without it is delivered to the
+  /// background isolate even when the app is open in front of the user.
+  static List<DarwinNotificationCategory> get notificationCategories => [
         // Meal category
         DarwinNotificationCategory(
           'meal_category',
@@ -59,11 +58,22 @@ class NotificationService {
             DarwinNotificationAction.plain(
               'meal_remove',
               'Remove',
-              options: {DarwinNotificationActionOption.destructive},
+              options: {
+                DarwinNotificationActionOption.destructive,
+                // Foreground, despite not needing any UI: iOS decides where to
+                // deliver an action purely from whether it carries this
+                // option, never from whether the app happens to be running.
+                // Without it the tap goes to the background isolate, whose
+                // handler cannot reach the database or the calendar notifier
+                // -- so Remove did nothing, always. Same for every snooze
+                // below.
+                DarwinNotificationActionOption.foreground,
+              },
             ),
             DarwinNotificationAction.plain(
               'meal_snooze',
               'Snooze 10m',
+              options: {DarwinNotificationActionOption.foreground},
             ),
           ],
           options: {
@@ -83,6 +93,7 @@ class NotificationService {
             DarwinNotificationAction.plain(
               'workout_snooze',
               'Snooze 10m',
+              options: {DarwinNotificationActionOption.foreground},
             ),
           ],
           options: {
@@ -102,6 +113,7 @@ class NotificationService {
             DarwinNotificationAction.plain(
               'sleep_snooze',
               'Snooze 30m',
+              options: {DarwinNotificationActionOption.foreground},
             ),
           ],
           options: {
@@ -123,7 +135,16 @@ class NotificationService {
             DarwinNotificationCategoryOption.customDismissAction,
           },
         ),
-      ],
+      ];
+
+  // Initialize notification service with iOS categories
+  Future<void> initialize() async {
+    // iOS initialization
+    final iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      notificationCategories: notificationCategories,
     );
 
     // Android initialization
@@ -173,12 +194,17 @@ class NotificationService {
     }
   }
 
-  // Handle notification response in background
+  // Handle notification response in background.
+  //
+  // Nothing the app offers is routed here any more: every action button is
+  // declared `foreground`, so iOS delivers all of them to the main isolate
+  // and `NotificationActionHandler`. This stays registered only as a
+  // safety net -- a background isolate has no ProviderContainer, no open
+  // database and no navigator, so it deliberately does not try to act.
   @pragma('vm:entry-point')
   static void _handleBackgroundNotificationResponse(NotificationResponse response) {
-    // Handle background notification taps
-    // This needs to be a static or top-level function
-    debugPrint('Background notification response: ${response.actionId}');
+    debugPrint('Background notification response (not actionable): '
+        '${response.actionId}');
   }
 
   // Schedule a notification for a scheduled event
@@ -224,8 +250,8 @@ class NotificationService {
         details.title,
         details.body,
         tzScheduleTime,
-        _getPlatformNotificationDetails(
-          event.type,
+        _platformDetails(
+          categoryId: categoryIdFor(event.type),
           soundEnabled: soundEnabled,
           vibrationEnabled: vibrationEnabled,
         ),
@@ -258,19 +284,65 @@ class NotificationService {
   Future<List<PendingNotificationRequest>> pendingRequests() =>
       _notifications.pendingNotificationRequests();
 
-  // Show immediate notification (for sleep goal reached, etc.)
+  /// Show a notification right now (sleep goal reached, and similar).
+  ///
+  /// No action buttons unless [categoryId] asks for them. It used to attach
+  /// the category matching [type] unconditionally, which put "Start Sleep" and
+  /// "Snooze 30m" on the *you just finished sleeping* alert -- buttons that
+  /// made no sense for the thing being announced.
   Future<void> showImmediate({
     required String title,
     required String body,
     required EventType type,
     String? payload,
+    String? categoryId,
+    bool soundEnabled = true,
+    bool vibrationEnabled = true,
   }) async {
     await _notifications.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title,
       body,
-      _getPlatformNotificationDetails(type),
+      _platformDetails(
+        categoryId: categoryId,
+        soundEnabled: soundEnabled,
+        vibrationEnabled: vibrationEnabled,
+      ),
       payload: payload,
+    );
+  }
+
+  /// The rest period between sets is over.
+  ///
+  /// Fixed id so a new rest period replaces the previous alert rather than
+  /// stacking; negative so it can never collide with an event notification
+  /// ([_generateNotificationId] only ever returns non-negative ids).
+  ///
+  /// This lived on a second, near-duplicate `NotificationService` in
+  /// `lib/core/notifications.dart` that owned its own `initialize()`. Because
+  /// `FlutterLocalNotificationsPlugin` is a singleton, that second initialize
+  /// re-initialized *this* plugin with no `onDidReceiveNotificationResponse`,
+  /// silently nulling the tap handler -- so one completed rest timer killed
+  /// every notification button in the app for the rest of the session.
+  static const int restTimerNotificationId = -1;
+
+  Future<void> showRestTimerNotification({
+    required String title,
+    required String body,
+    bool soundEnabled = true,
+    bool vibrationEnabled = true,
+  }) async {
+    await _notifications.show(
+      restTimerNotificationId,
+      title,
+      body,
+      _platformDetails(
+        channelId: 'rest_timer',
+        channelName: 'Rest Timer',
+        channelDescription: 'Notifications for the workout rest timer',
+        soundEnabled: soundEnabled,
+        vibrationEnabled: vibrationEnabled,
+      ),
     );
   }
 
@@ -300,30 +372,32 @@ class NotificationService {
     return (title: title, body: body);
   }
 
-  // Get platform-specific notification details with categories
+  /// The iOS category carrying the action buttons for [type].
+  static String categoryIdFor(EventType type) {
+    switch (type) {
+      case EventType.meal:
+        return 'meal_category';
+      case EventType.workout:
+        return 'workout_category';
+      case EventType.sleep:
+        return 'sleep_category';
+    }
+  }
+
+  // Platform-specific details, optionally with an iOS action category.
   //
   // [soundEnabled]/[vibrationEnabled] come from NotificationPreferences. They
   // used to be persisted and shown as switches in settings but never read
   // here, so turning them off did nothing.
-  NotificationDetails _getPlatformNotificationDetails(
-    EventType type, {
+  NotificationDetails _platformDetails({
+    String? categoryId,
+    String channelId = 'wellness_events',
+    String channelName = 'Wellness Events',
+    String channelDescription =
+        'Notifications for scheduled meals, workouts, and sleep',
     bool soundEnabled = true,
     bool vibrationEnabled = true,
   }) {
-    String categoryId;
-
-    switch (type) {
-      case EventType.meal:
-        categoryId = 'meal_category';
-        break;
-      case EventType.workout:
-        categoryId = 'workout_category';
-        break;
-      case EventType.sleep:
-        categoryId = 'sleep_category';
-        break;
-    }
-
     return NotificationDetails(
       iOS: DarwinNotificationDetails(
         categoryIdentifier: categoryId,
@@ -336,11 +410,11 @@ class NotificationService {
         // Android bakes sound/vibration into the channel at creation time, so
         // the four combinations need distinct channel ids -- reusing one id
         // would keep whatever settings it was first registered with.
-        'wellness_events'
+        '$channelId'
             '${soundEnabled ? '_snd' : ''}${vibrationEnabled ? '_vib' : ''}',
-        'Wellness Events'
+        '$channelName'
             '${soundEnabled || vibrationEnabled ? '' : ' (Silent)'}',
-        channelDescription: 'Notifications for scheduled meals, workouts, and sleep',
+        channelDescription: channelDescription,
         importance: Importance.high,
         priority: Priority.high,
         category: AndroidNotificationCategory.event,
@@ -379,15 +453,11 @@ class NotificationService {
     );
   }
 
-  // Reschedule all notifications (useful after language change or timezone change)
-  Future<void> rescheduleAll(List<ScheduledEvent> events, AppLocalizations l10n) async {
-    await cancelAll();
-    
-    for (final event in events) {
-      if (event.status == EventStatus.planned && event.scheduledAt.isAfter(DateTime.now())) {
-        await scheduleEventNotification(event, l10n);
-      }
-    }
-  }
+  // A rescheduleAll() used to live here. It was never called from anywhere,
+  // and it bypassed NotificationPreferences entirely (no per-category enable,
+  // no lead time, no quiet hours, no recurrence expansion), so calling it
+  // would have quietly reinstated notifications the user had turned off.
+  // CalendarNotifier.rescheduleAllNotifications() is the real one -- it goes
+  // through the same _scheduleNotification() path as every other write.
 }
 

@@ -163,8 +163,8 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
 
     return Column(
       children: [
-        _WeekdayHeader(height: _weekdayHeaderHeight),
-        Divider(height: 1, thickness: 1, color: theme.dividerColor.withOpacity(0.5)),
+        const _WeekdayHeader(height: _weekdayHeaderHeight),
+        Divider(height: 1, thickness: 1, color: theme.dividerColor.withValues(alpha: 0.5)),
         Expanded(
           child: widget.weekView ? _buildWeek(context) : _buildMonthList(context),
         ),
@@ -305,7 +305,7 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
       numberColor = scheme.primary;
     } else if (isWeekend) {
       circleColor = null;
-      numberColor = scheme.onSurface.withOpacity(0.45);
+      numberColor = scheme.onSurface.withValues(alpha: 0.45);
     } else {
       circleColor = null;
       numberColor = scheme.onSurface;
@@ -411,7 +411,7 @@ class _WeekdayHeader extends StatelessWidget {
                   letterSpacing: 0.6,
                   fontWeight: FontWeight.w600,
                   color: theme.colorScheme.onSurface
-                      .withOpacity(isWeekend ? 0.35 : 0.55),
+                      .withValues(alpha: isWeekend ? 0.35 : 0.55),
                 ),
               ),
             ),

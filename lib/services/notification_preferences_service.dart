@@ -110,7 +110,20 @@ class NotificationPreferences {
 
 class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferences> {
   final SharedPreferences _prefs;
-  
+
+  /// Invoked after any change that affects *already-scheduled* notifications.
+  ///
+  /// Wired in `main.dart` to `CalendarNotifier.rescheduleAllNotifications()`.
+  /// Kept as a callback rather than a direct dependency so this notifier stays
+  /// constructible from a bare SharedPreferences in tests, and so the calendar
+  /// -> preferences provider dependency does not become a cycle.
+  Future<void> Function()? onScheduleAffectingChange;
+
+  void _resync() {
+    // Fire-and-forget: a settings toggle must not wait on the OS queue.
+    onScheduleAffectingChange?.call();
+  }
+
   static const String _keyMealsEnabled = 'notif_meals_enabled';
   static const String _keyWorkoutsEnabled = 'notif_workouts_enabled';
   static const String _keySleepEnabled = 'notif_sleep_enabled';
@@ -156,31 +169,37 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
   Future<void> setMealsEnabled(bool value) async {
     await _prefs.setBool(_keyMealsEnabled, value);
     state = state.copyWith(mealsEnabled: value);
+    _resync();
   }
 
   Future<void> setWorkoutsEnabled(bool value) async {
     await _prefs.setBool(_keyWorkoutsEnabled, value);
     state = state.copyWith(workoutsEnabled: value);
+    _resync();
   }
 
   Future<void> setSleepEnabled(bool value) async {
     await _prefs.setBool(_keySleepEnabled, value);
     state = state.copyWith(sleepEnabled: value);
+    _resync();
   }
 
   Future<void> setMealLeadTime(int minutes) async {
     await _prefs.setInt(_keyMealLeadTime, minutes);
     state = state.copyWith(mealLeadTime: minutes);
+    _resync();
   }
 
   Future<void> setWorkoutLeadTime(int minutes) async {
     await _prefs.setInt(_keyWorkoutLeadTime, minutes);
     state = state.copyWith(workoutLeadTime: minutes);
+    _resync();
   }
 
   Future<void> setSleepLeadTime(int minutes) async {
     await _prefs.setInt(_keySleepLeadTime, minutes);
     state = state.copyWith(sleepLeadTime: minutes);
+    _resync();
   }
 
   Future<void> setSleepGoalHours(double hours) async {
@@ -200,6 +219,7 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
   Future<void> setQuietHoursEnabled(bool value) async {
     await _prefs.setBool(_keyQuietHoursEnabled, value);
     state = state.copyWith(quietHoursEnabled: value);
+    _resync();
   }
 
   Future<void> setQuietHoursStart(int hour, int minute) async {
@@ -209,6 +229,7 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
       quietHoursStartHour: hour,
       quietHoursStartMinute: minute,
     );
+    _resync();
   }
 
   Future<void> setQuietHoursEnd(int hour, int minute) async {
@@ -218,16 +239,19 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
       quietHoursEndHour: hour,
       quietHoursEndMinute: minute,
     );
+    _resync();
   }
 
   Future<void> setSoundEnabled(bool value) async {
     await _prefs.setBool(_keySoundEnabled, value);
     state = state.copyWith(soundEnabled: value);
+    _resync();
   }
 
   Future<void> setVibrationEnabled(bool value) async {
     await _prefs.setBool(_keyVibrationEnabled, value);
     state = state.copyWith(vibrationEnabled: value);
+    _resync();
   }
 }
 

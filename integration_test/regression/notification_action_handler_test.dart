@@ -13,7 +13,6 @@ import 'package:wellness_app/features/settings/ui/settings_stub.dart';
 import 'package:wellness_app/features/sleep/ui/sleep_page.dart';
 import 'package:wellness_app/features/sleep/ui/sleep_timer_page.dart';
 import 'package:wellness_app/features/workouts/ui/workout_session_page.dart';
-import 'package:wellness_app/routing/routes.dart';
 import 'package:wellness_app/services/notification_action_handler.dart';
 
 import '../support/app_launcher.dart';

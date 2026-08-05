@@ -5,6 +5,36 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Notification audit (2026-08-05)
+
+Full pass over the notification path. Dispatch was already fixed (#4/#58/#59);
+these are the defects underneath it, in the layer that decides whether the
+handler is reached at all. Filed as `ISSUES.md` #69.
+
+- **Snooze and meal "Remove" now actually work.** iOS routes an action to the
+  background isolate unless it is declared `foreground` — regardless of whether
+  the app is running. All four such actions were missing it, so their handler
+  code was unreachable in production. Pressing them did nothing, always.
+- **A completed rest timer no longer kills every notification button.** A
+  duplicate `NotificationService` in `lib/core/notifications.dart` ran its own
+  `initialize()` on the same (singleton) plugin, nulling the tap handler for the
+  rest of the session. File deleted; the rest-timer notification moved onto the
+  real service.
+- **The rest timer plays an actual sound.** It set a volume on a player that
+  had no audio source, so the sound switch and volume slider in workout settings
+  were inaudible no-ops. Ships a generated beep asset.
+- **Notification settings now apply to reminders already scheduled.** Sound,
+  vibration, lead time, quiet hours and the category switches were read only when
+  an event was written, so toggling one left the existing queue untouched. Every
+  such change now re-issues the queue.
+- **The queue is re-synced on app start and on language change** — it previously
+  drifted after a reboot or timezone change, and pending reminders kept whatever
+  language they were scheduled in.
+- **The sleep goal-reached alert no longer offers "Start Sleep" / "Snooze 30m"**
+  on an alert announcing that the sleep just finished.
+- **The rest-timer notification is localized** (it was the last hardcoded English
+  user-facing string) and honours the sound/vibration preferences.
+
 ### Edit-path fixes (2026-08-05)
 
 - **Calendar "Edit" no longer opens a blank form — or creates a duplicate.** The

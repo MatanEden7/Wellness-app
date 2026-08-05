@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/meals/data/repositories.dart';
 import 'package:wellness_app/features/meals/domain/models.dart';
-import 'package:wellness_app/features/workouts/domain/exercise_tags.dart';
 import 'package:wellness_app/features/workouts/domain/models.dart';
 import 'package:wellness_app/services/profile_fit.dart';
 import 'package:wellness_app/services/user_profile_service.dart';

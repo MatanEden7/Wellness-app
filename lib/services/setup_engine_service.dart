@@ -68,7 +68,7 @@ class SetupEngineService {
   
   // Calculate fat target in grams (minimum)
   double calculateFatTarget(double weightKg, double calorieTarget, double proteinG) {
-    final fatMinGPerKg = 0.6;
+    const fatMinGPerKg = 0.6;
     final fatMinG = weightKg * fatMinGPerKg;
     
     // Can be higher based on remaining calories, but start with minimum

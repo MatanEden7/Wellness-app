@@ -711,6 +711,30 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     await _cancelNotification(eventId);
   }
 
+  /// Re-syncs the OS notification queue with the current events *and the
+  /// current preferences*.
+  ///
+  /// Nothing used to do this. Every setting on the notification screen --
+  /// sound, vibration, lead time, quiet hours, the per-category switches --
+  /// was read only at the moment an event was written, so changing one left
+  /// every already-scheduled reminder exactly as it was: turning sound off
+  /// still chimed, turning meals off still fired meal reminders. Also
+  /// re-localizes pending reminders after a language change, and re-anchors
+  /// the 30-day recurrence horizon on app start.
+  Future<void> rescheduleAllNotifications() async {
+    try {
+      await _ref.read(notificationServiceProvider).cancelAll();
+
+      for (final event in await _calendarService.getEvents()) {
+        if (event.status == EventStatus.planned) {
+          await _scheduleNotification(event);
+        }
+      }
+    } catch (e) {
+      debugPrint('🔔 ❌ Error rescheduling notifications: $e');
+    }
+  }
+
   Future<void> _scheduleNotification(ScheduledEvent event) async {
     try {
       debugPrint('🔔 _scheduleNotification called for: ${event.title}');

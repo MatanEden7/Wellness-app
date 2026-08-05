@@ -200,7 +200,7 @@ class EventSchedulingDialog extends HookConsumerWidget {
                     Text(l10n.repeat, style: theme.textTheme.titleSmall),
                     const SizedBox(height: AppSpacing.xs),
                     DropdownButtonFormField<RecurrenceType>(
-                      value: recurrenceType.value,
+                      initialValue: recurrenceType.value,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                       ),
@@ -473,7 +473,7 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           }
           
           return DropdownButtonFormField<String>(
-            value: selectedTemplateId,
+            initialValue: selectedTemplateId,
             // Names like "Upper Body (Upper/Lower Split)" are wider than the
             // dialog. isExpanded lets the item fill the field so the Text can
             // ellipsize instead of overflowing the row.
@@ -516,7 +516,7 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           }
           
           return DropdownButtonFormField<String>(
-            value: selectedTemplateId,
+            initialValue: selectedTemplateId,
             // Names like "Upper Body (Upper/Lower Split)" are wider than the
             // dialog. isExpanded lets the item fill the field so the Text can
             // ellipsize instead of overflowing the row.
@@ -563,9 +563,9 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
           }
           
           return DropdownButtonFormField<String>(
-            value: selectedTemplateId?.startsWith('meal_') == true ? selectedTemplateId : null,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
+            initialValue: selectedTemplateId?.startsWith('meal_') == true ? selectedTemplateId : null,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
               hintText: 'Select a recent meal',
             ),
             isExpanded: true,
@@ -618,9 +618,9 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
               final templates = templateSnapshot.data ?? [];
               
               return DropdownButtonFormField<String>(
-                value: selectedTemplateId,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
+                initialValue: selectedTemplateId,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                   hintText: 'Select a recent workout',
                 ),
                 isExpanded: true,

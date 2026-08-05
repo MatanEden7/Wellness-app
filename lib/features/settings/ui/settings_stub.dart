@@ -606,7 +606,7 @@ class _ProfileCard extends StatelessWidget {
               CircleAvatar(
                 radius: 26,
                 backgroundColor:
-                    theme.colorScheme.primary.withOpacity(0.15),
+                    theme.colorScheme.primary.withValues(alpha: 0.15),
                 child: Icon(Icons.person,
                     size: 28, color: theme.colorScheme.primary),
               ),
@@ -624,7 +624,7 @@ class _ProfileCard extends StatelessWidget {
                         '${weightKg!.toStringAsFixed(1)} kg  ·  ${_goalLabel(goal!)}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color:
-                              theme.colorScheme.onSurface.withOpacity(0.55),
+                              theme.colorScheme.onSurface.withValues(alpha: 0.55),
                         ),
                       ),
                     ] else
@@ -638,7 +638,7 @@ class _ProfileCard extends StatelessWidget {
                 ),
               ),
               Icon(Icons.chevron_right,
-                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   size: 20),
             ],
           ),
@@ -680,7 +680,7 @@ class _CloudBackupTileState extends ConsumerState<_CloudBackupTile> {
         width: 34,
         height: 34,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.tertiary.withOpacity(0.15),
+          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -696,7 +696,7 @@ class _CloudBackupTileState extends ConsumerState<_CloudBackupTile> {
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withOpacity(0.5),
+                    .withValues(alpha: 0.5),
               )),
       value: enabled,
       onChanged: _busy ? null : _onChanged,

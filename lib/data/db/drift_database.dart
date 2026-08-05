@@ -1220,6 +1220,12 @@ class AppDatabase {
       // Gluten-free grain, so excluding gluten still leaves a grain that
       // isn't rice.
       food(id: '52', name: 'Buckwheat', brand: 'Cooked', unit: '100g', kcal: 92, protein: 3.4, carbs: 19.9, fat: 0.6),
+
+      // Egg whites: the calorie lever. 10.9g protein for 52 kcal and
+      // essentially no fat, so a recipe can hold its protein target while
+      // the calorie total comes down -- which is exactly how people actually
+      // adjust an egg breakfast. USDA SR Legacy 172183.
+      food(id: '53', name: 'Egg Whites', unit: '100g', kcal: 52, protein: 10.9, carbs: 0.7, fat: 0.2, tags: const {FoodTag.eggs, FoodTag.animalProduct}),
     ];
   }
 

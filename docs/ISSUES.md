@@ -4,7 +4,7 @@ Audit of the code as found on branch `rc`, with **fix status** as of the repair 
 
 Legend: **[FIXED]** — fixed and covered by a regression test · **[OPEN]** — still outstanding.
 
-Fast suite: `flutter test test/` (331 tests). Device suite: `integration_test/sanity/` and
+Fast suite: `flutter test test/` (360 tests). Device suite: `integration_test/sanity/` and
 `integration_test/regression/` on a booted simulator — this is what CI runs.
 `flutter analyze lib/` is clean of warnings and errors.
 
@@ -85,8 +85,10 @@ remaining work is a translator/designer decision, not engineering effort.
 | 65 | Editing a meal stamped `createdAt` forward, moving it on the calendar | Medium | Fixed | ~15min |
 | 66 | `deleteWorkoutSession`/`deleteSleepEntry` left a stale id-cache entry (deleted rows still resolvable by id) | Medium | Fixed | ~15min |
 | 67 | Share sheet crashed on iPad (no `sharePositionOrigin`) | Medium | Fixed | ~10min |
+| 68 | Device suite hung after the Epic H work (silent regeneration on profile save) | High | Fixed | ~2h |
+| 69 | Notification audit: snooze/remove unreachable, rest timer killed all buttons, no sound, prefs never re-applied | Critical | Fixed | ~3h |
 
-**Totals:** 62 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --
+**Totals:** 64 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --
 a keystore (#49), a bundle-ID decision (#51), a product decision (#14), a
 translator (#31), and one 15-minute device check (#9). No engineering work is
 blocked on anything but those.
@@ -611,8 +613,9 @@ sync, and no Android `SCHEDULE_EXACT_ALARM` permission request.
 
 Test coverage is no longer the gap it was: persistence, profile serialization,
 export/import, referential integrity, and calendar recurrence all have regression tests
-now. Still uncovered: the notification delivery path (hard to test without a device clock)
-and the UI layer beyond the sanity suite.
+now. Notification routing, preference re-application and the beep asset gained coverage in
+the #69 pass. Still uncovered: real OS notification *delivery* (needs a device clock and an
+attended session) and the UI layer beyond the sanity suite.
 
 ### 68. Device suite hangs after the Epic H work  **[FIXED]**
 
@@ -646,3 +649,91 @@ terms: a user who skipped the schedule at onboarding should not have one
 conjured by editing their weight.
 
 Verified: all three pass again, and the full device suite is **12/12**.
+
+### 69. Notification audit: interaction and sound  **[FIXED]**
+
+A full pass over the notification path — `main.dart` init, `app.dart` wiring,
+`CalendarNotifier` scheduling, the OS hop, `NotificationService`,
+`NotificationActionHandler` — after #4/#58/#59 had already fixed dispatch.
+Those earlier fixes were correct; the defects below sat *underneath* them, in
+the layer that decides whether the handler is reached at all.
+
+**a. Snooze (all three) and meal "Remove" could never run.** iOS picks the
+destination isolate for an action from one thing only: whether the action
+carries `DarwinNotificationActionOption.foreground`
+(`FlutterLocalNotificationsPlugin.m:1303-1326`). It does *not* consider
+whether the app is running. Those four actions were declared without it, so
+every press went to the background isolate, whose handler is a lone
+`debugPrint` — no ProviderContainer, no database, no navigator. The branches
+in `NotificationActionHandler` for them were unreachable in production, even
+with the app open in the foreground. Fixed by declaring all four `foreground`.
+
+**b. One rest-timer notification killed every notification button for the
+session.** `lib/core/notifications.dart` was a second, near-duplicate
+`NotificationService` exporting a *second* provider with the same name, and
+`workout_session_page.dart` imported that one. It ran its own `initialize()`
+— and `FlutterLocalNotificationsPlugin` is a singleton (`factory ... =>
+_instance`), so that re-initialized the real plugin with no
+`onDidReceiveNotificationResponse`, nulling the tap handler
+(`platform_flutter_local_notifications.dart:635`). Categories survived (the
+native side only replaces them when `count > 0`), so the buttons kept
+rendering and silently did nothing. Fixed by deleting the duplicate file and
+moving `showRestTimerNotification` onto the real service.
+
+**c. The rest timer played no sound at all.** `_playTimerBeep` constructed an
+`AudioPlayer`, set its volume, and never gave it a source — the body was three
+haptic buzzes and a comment reading "in production, you'd want to add an
+actual beep sound file to assets". There was no `assets/` directory and no
+`assets:` block in `pubspec.yaml`. So the "Rest timer sound" switch and the
+volume slider in workout settings controlled nothing audible. Fixed with a
+generated `assets/audio/rest_timer_beep.wav` (two 880 Hz beeps + a 1320 Hz
+resolve, 5 ms fades so it doesn't click), declared in `pubspec.yaml`; haptics
+kept as the fallback when audio fails.
+
+**d. No preference change reached notifications already in the OS queue.**
+Sound, vibration, lead time, quiet hours and the three category switches were
+read only at the moment an event was written. Turning sound off still left
+every pending reminder chiming; turning meals off still fired meal reminders —
+until the event happened to be edited. Fixed with
+`CalendarNotifier.rescheduleAllNotifications()`, invoked from every
+schedule-affecting setter via `NotificationPreferencesNotifier
+.onScheduleAffectingChange` (a callback, so the notifier keeps no calendar
+dependency and the provider graph stays acyclic).
+
+**e. Nothing ever re-synced the queue.** The old
+`NotificationService.rescheduleAll()` had no callers, and bypassed
+preferences entirely — calling it would have reinstated notifications the user
+had turned off. Deleted. The new path now also runs on app start (re-anchoring
+the 30-day recurrence horizon after a reboot or a timezone change) and on
+language change (title/body text is baked in at schedule time, so pending
+reminders kept the old language forever).
+
+**f. The sleep goal-reached alert showed the wrong buttons.**
+`showImmediate()` attached the category matching the event type
+unconditionally, putting "Start Sleep" and "Snooze 30m" on the alert
+announcing that the sleep had just *finished*. The category is now opt-in per
+call, and this call passes none.
+
+**g. The rest-timer notification was the app's only un-localized user-facing
+string** (`'Rest Complete!'` / `'Time to continue with …'`) and hardcoded
+`playSound: true`, ignoring the notification preferences. New
+`restTimerCompleteTitle`/`restTimerCompleteBody` keys in both ARBs; sound and
+vibration now come from prefs.
+
+Verified as already working, for the record: cold-start launch handling,
+tap-to-open routing by event type, the four foreground actions, recurrence
+expansion under iOS's 64-pending cap, quiet hours at schedule time, iOS
+foreground presentation (the plugin registers via `addApplicationDelegate:`
+and `FlutterAppDelegate` forwards the delegate callbacks), and the Android
+manifest's permissions and boot receiver.
+
+New coverage: `test/regression/notification_delivery_test.dart` (9 tests) —
+asserts every declared action is foreground, that the declared action ids
+match exactly what the handler dispatches on, that each event type maps to a
+real category, that the rest-timer id cannot collide with an event id, that
+every schedule-affecting setter resyncs and the two that affect nothing do
+not, and that the beep asset exists, is real RIFF/WAVE audio, and is declared
+in `pubspec.yaml`. Fast suite is **360 green**; `flutter analyze lib/` clean.
+
+Not covered, unchanged from before: real OS delivery, which needs an attended
+device session.

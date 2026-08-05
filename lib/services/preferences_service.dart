@@ -269,7 +269,7 @@ class PreferencesService {
   }
   
   Future<void> setCalorieColor(Color color) async {
-    await _prefs.setInt(_calorieColorKey, color.value);
+    await _prefs.setInt(_calorieColorKey, color.toARGB32());
   }
   
   Color get proteinColor {
@@ -278,7 +278,7 @@ class PreferencesService {
   }
   
   Future<void> setProteinColor(Color color) async {
-    await _prefs.setInt(_proteinColorKey, color.value);
+    await _prefs.setInt(_proteinColorKey, color.toARGB32());
   }
   
   Color get carbsColor {
@@ -287,7 +287,7 @@ class PreferencesService {
   }
   
   Future<void> setCarbsColor(Color color) async {
-    await _prefs.setInt(_carbsColorKey, color.value);
+    await _prefs.setInt(_carbsColorKey, color.toARGB32());
   }
   
   Color get fatColor {
@@ -296,7 +296,7 @@ class PreferencesService {
   }
   
   Future<void> setFatColor(Color color) async {
-    await _prefs.setInt(_fatColorKey, color.value);
+    await _prefs.setInt(_fatColorKey, color.toARGB32());
   }
   
   // Get color for a specific metric (considering theme colors setting)
@@ -359,7 +359,7 @@ class PreferencesService {
   }
   
   Future<void> setMealsColor(Color color) async {
-    await _prefs.setInt(_mealsColorKey, color.value);
+    await _prefs.setInt(_mealsColorKey, color.toARGB32());
   }
   
   Color get workoutsColor {
@@ -368,7 +368,7 @@ class PreferencesService {
   }
   
   Future<void> setWorkoutsColor(Color color) async {
-    await _prefs.setInt(_workoutsColorKey, color.value);
+    await _prefs.setInt(_workoutsColorKey, color.toARGB32());
   }
   
   Color get sleepColor {
@@ -377,7 +377,7 @@ class PreferencesService {
   }
   
   Future<void> setSleepColor(Color color) async {
-    await _prefs.setInt(_sleepColorKey, color.value);
+    await _prefs.setInt(_sleepColorKey, color.toARGB32());
   }
   
   // Reset colors to defaults
@@ -401,7 +401,7 @@ class PreferencesService {
   }
   
   Future<void> setCustomPrimaryColor(Color color) async {
-    await _prefs.setInt(_customPrimaryColorKey, color.value);
+    await _prefs.setInt(_customPrimaryColorKey, color.toARGB32());
   }
   
   Color get customBackgroundColor {
@@ -410,7 +410,7 @@ class PreferencesService {
   }
   
   Future<void> setCustomBackgroundColor(Color color) async {
-    await _prefs.setInt(_customBackgroundColorKey, color.value);
+    await _prefs.setInt(_customBackgroundColorKey, color.toARGB32());
   }
   
   Color get customSurfaceColor {
@@ -419,7 +419,7 @@ class PreferencesService {
   }
   
   Future<void> setCustomSurfaceColor(Color color) async {
-    await _prefs.setInt(_customSurfaceColorKey, color.value);
+    await _prefs.setInt(_customSurfaceColorKey, color.toARGB32());
   }
   
   // Reset theme colors

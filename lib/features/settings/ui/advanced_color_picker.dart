@@ -38,7 +38,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
     final blueController = useTextEditingController(
       text: initialColor.blue.toString(),
     );
-    final alphaValue = useState(initialColor.opacity);
+    final alphaValue = useState(initialColor.a);
     
     // HSV values for the pickers
     final hsvColor = useState(HSVColor.fromColor(initialColor));
@@ -85,7 +85,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
       redController.text = color.red.toString();
       greenController.text = color.green.toString();
       blueController.text = color.blue.toString();
-      alphaValue.value = color.opacity;
+      alphaValue.value = color.a;
     }
 
     return DraggableScrollableSheet(
@@ -211,15 +211,15 @@ class AdvancedColorPicker extends HookConsumerWidget {
                             hsvColor.value = newHsv;
                             updateFromColor(newHsv.toColor());
                           },
-                          gradientBuilder: (width) => LinearGradient(
+                          gradientBuilder: (width) => const LinearGradient(
                             colors: [
-                              const Color(0xFFFF0000),
-                              const Color(0xFFFFFF00),
-                              const Color(0xFF00FF00),
-                              const Color(0xFF00FFFF),
-                              const Color(0xFF0000FF),
-                              const Color(0xFFFF00FF),
-                              const Color(0xFFFF0000),
+                              Color(0xFFFF0000),
+                              Color(0xFFFFFF00),
+                              Color(0xFF00FF00),
+                              Color(0xFF00FFFF),
+                              Color(0xFF0000FF),
+                              Color(0xFFFF00FF),
+                              Color(0xFFFF0000),
                             ],
                           ),
                         ),
@@ -270,14 +270,14 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           suffix: '%',
                           onChanged: (value) {
                             alphaValue.value = value / 100;
-                            updateFromColor(selectedColor.value.withOpacity(value / 100));
+                            updateFromColor(selectedColor.value.withValues(alpha: value / 100));
                           },
                           gradientBuilder: (width) {
                             final baseColor = selectedColor.value;
                             return LinearGradient(
                               colors: [
-                                baseColor.withOpacity(0),
-                                baseColor.withOpacity(1),
+                                baseColor.withValues(alpha: 0),
+                                baseColor.withValues(alpha: 1),
                               ],
                             );
                           },
@@ -396,7 +396,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           spacing: 8,
                           runSpacing: 8,
                           children: presetColors.map((color) {
-                            final isSelected = color.value == selectedColor.value.value;
+                            final isSelected = color.toARGB32() == selectedColor.value.toARGB32();
                             return GestureDetector(
                               onTap: () => updateFromColor(color),
                               child: Container(
@@ -417,7 +417,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .primary
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             blurRadius: 8,
                                             spreadRadius: 1,
                                           ),
@@ -450,7 +450,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                     color: Theme.of(context).scaffoldBackgroundColor,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, -2),
                       ),
@@ -567,8 +567,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: passesAA 
-            ? Colors.green.withOpacity(0.1)
-            : Colors.orange.withOpacity(0.1),
+            ? Colors.green.withValues(alpha: 0.1)
+            : Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: passesAA ? Colors.green : Colors.orange,
@@ -645,7 +645,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
   }
 
   String _colorToHex(Color color) {
-    return color.value.toRadixString(16).substring(2, 8).toUpperCase();
+    return color.toARGB32().toRadixString(16).substring(2, 8).toUpperCase();
   }
 
 }
@@ -654,7 +654,7 @@ class HuePicker extends StatelessWidget {
   final double hue;
   final ValueChanged<double> onChanged;
 
-  const HuePicker({
+  const HuePicker({super.key, 
     required this.hue,
     required this.onChanged,
   });
@@ -749,7 +749,7 @@ class SaturationBrightnessPicker extends StatelessWidget {
   final double value;
   final Function(double, double) onChanged;
 
-  const SaturationBrightnessPicker({
+  const SaturationBrightnessPicker({super.key, 
     required this.hue,
     required this.saturation,
     required this.value,
@@ -820,7 +820,7 @@ class _SaturationBrightnessPainter extends CustomPainter {
     canvas.drawRect(satRect, Paint()..shader = satGradient.createShader(satRect));
     
     // Vertical gradient (brightness)
-    final brightGradient = LinearGradient(
+    const brightGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [Colors.transparent, Colors.black],
@@ -989,7 +989,7 @@ class _HSVASlider extends HookWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Colors.black.withValues(alpha: 0.2),
                                           blurRadius: 4,
                                           offset: const Offset(0, 2),
                                         ),
@@ -1012,7 +1012,7 @@ class _HSVASlider extends HookWidget {
                 width: 60,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

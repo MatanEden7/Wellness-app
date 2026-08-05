@@ -47,7 +47,7 @@ class OnboardingPage extends HookConsumerWidget {
     // worked. Off leaves the profile and templates but no calendar events.
     final buildFullSchedule = useState<bool>(true);
     
-    final totalSteps = 7; // Added language selection as Step 0
+    const totalSteps = 7; // Added language selection as Step 0
     
     void nextStep() {
       if (currentStep.value < totalSteps - 1) {
@@ -298,7 +298,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
           Text(
             l10n.onboardingChooseLanguage,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 48),
@@ -369,12 +369,12 @@ class _LanguageSelectionStep extends HookConsumerWidget {
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
             width: isSelected ? 3 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
               : Theme.of(context).colorScheme.surface,
         ),
         child: Row(
@@ -391,7 +391,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -403,7 +403,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
                   letterSpacing: 0.5,
                   color: isSelected
                       ? Theme.of(context).colorScheme.onPrimary
-                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -430,7 +430,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -446,7 +446,7 @@ class _LanguageSelectionStep extends HookConsumerWidget {
             else
               Icon(
                 Icons.circle_outlined,
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                 size: 32,
               ),
           ],
@@ -599,7 +599,7 @@ class _BasicInfoStep extends StatelessWidget {
                       showSelectedIcon: false,
                       segments: [
                         ButtonSegment(value: 'kcal', label: Text(AppLocalizations.of(context)!.kcal, maxLines: 1)),
-                        ButtonSegment(value: 'kJ', label: Text('kJ', maxLines: 1)),
+                        const ButtonSegment(value: 'kJ', label: Text('kJ', maxLines: 1)),
                       ],
                       selected: {energyUnit.value},
                       onSelectionChanged: (Set<String> newSelection) {

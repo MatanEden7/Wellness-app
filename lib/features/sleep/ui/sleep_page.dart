@@ -118,7 +118,7 @@ class SleepPage extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, -2),
                   ),
@@ -229,7 +229,7 @@ class _SleepEntryCard extends StatelessWidget {
                 PopupMenuButton(
                   icon: Icon(
                     Icons.more_vert,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   itemBuilder: (context) => [
                     PopupMenuItem(
@@ -314,7 +314,7 @@ class _SleepEntryCard extends StatelessWidget {
                     vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -332,7 +332,7 @@ class _SleepEntryCard extends StatelessWidget {
                     vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -437,7 +437,7 @@ class _AddSleepDialog extends HookConsumerWidget {
               decoration: InputDecoration(
                 labelText: l10n.bedtime,
                 hintText: '22:30',
-                suffixIcon: Icon(Icons.bedtime),
+                suffixIcon: const Icon(Icons.bedtime),
               ),
               onTap: () => _selectTime(context, startTimeController),
               readOnly: true,
@@ -450,7 +450,7 @@ class _AddSleepDialog extends HookConsumerWidget {
               decoration: InputDecoration(
                 labelText: l10n.wakeTimeOptional,
                 hintText: '07:00',
-                suffixIcon: Icon(Icons.wb_sunny),
+                suffixIcon: const Icon(Icons.wb_sunny),
               ),
               onTap: () => _selectTime(context, endTimeController),
               readOnly: true,

@@ -5,6 +5,7 @@ import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
 import '../features/meals/data/repositories.dart';
 import 'meal_portion_solver.dart';
+import 'meal_recipes.dart';
 import 'profile_fit.dart';
 import 'user_profile_service.dart';
 
@@ -35,48 +36,30 @@ class MealTemplateGenerator {
       debugPrint('[MEAL-GEN] No foods fit this profile; skipping');
       return const [];
     }
+    final byName = {for (final f in available) f.name: f};
 
     final meals = _mealPlan();
-    debugPrint('[MEAL-GEN] ${_profile.mealCountPerDay} meals/day -> '
-        '${meals.length} template(s), ${available.length} foods available');
-
-    // Classify once.
-    //
-    // Protein sources are NOT sorted by density. Doing that picked the
-    // fattiest options first -- for a vegan avoiding soy, gluten and nuts,
-    // seeds (~30g protein but ~50g fat per 100g) outranked lentils and beans
-    // and were the only anchors ever chosen, which overshot calories by ~40%
-    // and fat by 4x. Anchors are instead chosen per meal by how cleanly they
-    // fit that meal's calorie budget; see _bestAnchor.
-    final proteins = available.where((f) => f.proteinPerUnit >= 5).toList();
-    final carbs = available.where(_isCarbSource).toList()
-      ..sort((a, b) => b.carbsPerUnit.compareTo(a.carbsPerUnit));
-    final fats = available.where(_isFatSource).toList()
-      ..sort((a, b) => b.fatPerUnit.compareTo(a.fatPerUnit));
-    final veg = available.where(_isVegetable).toList();
-
     final created = <MealTemplateData>[];
+    final usedRecipes = <String>{};
+
     for (var i = 0; i < meals.length; i++) {
       final meal = meals[i];
+      final recipe = _pickRecipe(meal.kind, byName, usedRecipes);
+      if (recipe == null) continue;
+      usedRecipes.add(recipe.name);
 
-      // Every macro target is split by this meal's share of the day, so the
-      // meals add up to the daily goals rather than each chasing them.
+      final resolved = _resolve(recipe, byName);
       final portions = MealPortionSolver.solve(
-        protein: _bestAnchor(proteins, i,
-            kcalBudget: _profile.calorieTarget * meal.fraction,
-            proteinNeeded: _profile.proteinTargetG * meal.fraction,
-            fatBudget: _profile.fatTargetG * meal.fraction),
-        carb: _rotate(carbs, i),
-        fat: _rotate(fats, i),
-        veg: _rotate(veg, i),
-        // A second protein and a second carb give the solver enough degrees
-        // of freedom to satisfy four targets at once. With only 3-4 foods
-        // the system is underdetermined and something always has to give --
-        // which is where the residual calorie overshoot came from.
+        protein: resolved[RecipeRole.protein],
+        carb: resolved[RecipeRole.carb],
+        fat: resolved[RecipeRole.fat],
+        veg: resolved[RecipeRole.produce],
+        // The lean protein is what lets a dish hold its protein target while
+        // calories come down -- egg whites alongside whole eggs.
         extras: [
-          _rotate(proteins, i + 1),
-          _rotate(carbs, i + 1),
-        ].whereType<FoodItemData>().toList(),
+          if (resolved[RecipeRole.leanProtein] != null)
+            resolved[RecipeRole.leanProtein]!,
+        ],
         kcalTarget: _profile.calorieTarget * meal.fraction,
         proteinTarget: _profile.proteinTargetG * meal.fraction,
         carbsTarget: _profile.carbsTargetG * meal.fraction,
@@ -84,29 +67,20 @@ class MealTemplateGenerator {
       );
       if (portions.isEmpty) continue;
 
-      // A food can be classified into more than one bucket (kale reads as
-      // both a carb source and a vegetable), which produced the same
-      // ingredient listed twice in one meal.
-      final seen = <String>{};
-      final deduped = [
-        for (final portion in portions)
-          if (seen.add(portion.food.id)) portion,
-      ];
-
       final now = DateTime.now();
       final template = MealTemplateData(
         id: _uuid.v4(),
-        name: meal.name,
-        description: meal.description,
-        // See ProfileFit.isReplaceable -- only generated content is ever
-        // replaced when the profile changes.
+        // Named for the dish, prefixed with when it is eaten, so the list
+        // reads like a meal plan rather than a set of macro buckets.
+        name: '${meal.name}: ${recipe.name}',
+        description: recipe.description,
         origin: TemplateOrigin.generated,
         createdAt: now,
         updatedAt: now,
       );
       await _database.insertMealTemplate(template);
 
-      for (final portion in deduped) {
+      for (final portion in portions) {
         await _database.insertMealTemplateItem(MealTemplateItemData(
           id: _uuid.v4(),
           templateId: template.id,
@@ -121,6 +95,48 @@ class MealTemplateGenerator {
     return created;
   }
 
+  /// The first recipe for this slot whose required ingredients all exist and
+  /// suit the profile, preferring one not already used today so a day is not
+  /// the same dish three times.
+  MealRecipe? _pickRecipe(
+    MealSlotKind kind,
+    Map<String, FoodItemData> byName,
+    Set<String> used,
+  ) {
+    final candidates = MealRecipes.forKind(kind);
+    MealRecipe? fallback;
+    for (final recipe in candidates) {
+      if (!_canMake(recipe, byName)) continue;
+      fallback ??= recipe;
+      if (!used.contains(recipe.name)) return recipe;
+    }
+    // Every makeable recipe already used -- repeat rather than skip a meal.
+    return fallback;
+  }
+
+  bool _canMake(MealRecipe recipe, Map<String, FoodItemData> byName) =>
+      recipe.slots.every((slot) =>
+          !slot.required || slot.candidates.any(byName.containsKey));
+
+  /// Resolves each slot to the first candidate food the profile allows.
+  Map<RecipeRole, FoodItemData> _resolve(
+    MealRecipe recipe,
+    Map<String, FoodItemData> byName,
+  ) {
+    final resolved = <RecipeRole, FoodItemData>{};
+    for (final slot in recipe.slots) {
+      if (resolved.containsKey(slot.role)) continue;
+      for (final name in slot.candidates) {
+        final food = byName[name];
+        if (food != null) {
+          resolved[slot.role] = food;
+          break;
+        }
+      }
+    }
+    return resolved;
+  }
+
   Future<List<FoodItemData>> _availableFoods() async {
     final all = await _database.getAllFoods();
     return all
@@ -128,116 +144,42 @@ class MealTemplateGenerator {
         .toList();
   }
 
-  /// The protein source that best fits this meal's calorie budget.
-  ///
-  /// Sizing any anchor to the protein target implies a calorie cost; the
-  /// best anchor is the one whose implied cost lands closest to the budget.
-  /// That naturally prefers lean sources (chicken, lentils, seitan) over
-  /// calorie-dense ones (seeds, nut butters), while still allowing the dense
-  /// ones when nothing leaner fits the profile.
-  ///
-  /// [rotation] then varies the choice across meals so a day isn't three
-  /// servings of the same food: candidates are ranked by fit and the
-  /// rotation walks the top few.
-  FoodItemData? _bestAnchor(
-    List<FoodItemData> options,
-    int rotation, {
-    required double kcalBudget,
-    required double proteinNeeded,
-    required double fatBudget,
-  }) {
-    if (options.isEmpty) return null;
-
-    final ranked = [...options]..sort((a, b) {
-        // Distance across the macros that actually get blown, not calories
-        // alone. Scoring on calories only still picked cheddar and hemp
-        // seeds -- they fit the calorie budget, then delivered 2-3x the fat
-        // target, because reaching the protein target with a ~50%-fat food
-        // drags its fat along. Overshooting fat is penalised harder than
-        // undershooting, since fat is the macro that runs away here.
-        double cost(FoodItemData f) {
-          if (f.proteinPerUnit <= 0) return double.infinity;
-          // Score the amount that will ACTUALLY be used, i.e. after the
-          // solver's portion bounds. Scoring the unclamped amount made a
-          // low-density anchor look like a perfect calorie fit (8.4 x 100g of
-          // chickpeas), then the clamp cut it to 4.0 and delivered half the
-          // protein. Penalise anchors that can't reach the target within a
-          // sane serving.
-          final raw = proteinNeeded / f.proteinPerUnit;
-          final amount = MealPortionSolver.clampFor(f, raw);
-          final proteinShortfall =
-              proteinNeeded - (f.proteinPerUnit * amount);
-          final kcalMiss = (f.kcalPerUnit * amount - kcalBudget).abs();
-          final fatOver = (f.fatPerUnit * amount) - fatBudget;
-          // ~9 kcal/g of fat, doubled so an overshoot outweighs the calorie
-          // term it hides inside.
-          final fatPenalty = fatOver > 0 ? fatOver * 18 : 0;
-          // ~4 kcal/g of protein, weighted so missing protein outranks a
-          // calorie miss -- protein is the target users actually track.
-          final shortfallPenalty =
-              proteinShortfall > 0 ? proteinShortfall * 30 : 0;
-          return kcalMiss + fatPenalty + shortfallPenalty;
-        }
-
-        return cost(a).compareTo(cost(b));
-      });
-
-    // Rotate within the best-fitting few rather than the whole list, so
-    // variety never costs macro accuracy much.
-    final pool = ranked.take(4).toList();
-    return pool[rotation % pool.length];
-  }
-
-  T? _rotate<T>(List<T> options, int rotation) =>
-      options.isEmpty ? null : options[rotation % options.length];
-
-  bool _isCarbSource(FoodItemData f) =>
-      f.carbsPerUnit >= 15 && f.proteinPerUnit < 15;
-
-  /// Calorie-dense fat sources (oils, butter, nut butters). Excludes the
-  /// protein-dense ones so seeds aren't picked as both anchor and fat.
-  bool _isFatSource(FoodItemData f) =>
-      f.fatPerUnit > 0 && f.proteinPerUnit < 5 && f.carbsPerUnit < 10;
-
-  bool _isVegetable(FoodItemData f) =>
-      f.kcalPerUnit <= 60 && f.carbsPerUnit < 15 && f.proteinPerUnit < 5;
-
   /// How the day's calories split across meals, and what each is called.
   List<_MealSlot> _mealPlan() {
     switch (_profile.mealCountPerDay) {
       case '2':
         return const [
-          _MealSlot('Brunch', 'Generated from your targets', 0.45),
-          _MealSlot('Dinner', 'Generated from your targets', 0.55),
+          _MealSlot('Brunch', MealSlotKind.breakfast, 0.45),
+          _MealSlot('Dinner', MealSlotKind.main, 0.55),
         ];
       case '4':
         return const [
-          _MealSlot('Breakfast', 'Generated from your targets', 0.25),
-          _MealSlot('Lunch', 'Generated from your targets', 0.30),
-          _MealSlot('Snack', 'Generated from your targets', 0.20),
-          _MealSlot('Dinner', 'Generated from your targets', 0.25),
+          _MealSlot('Breakfast', MealSlotKind.breakfast, 0.25),
+          _MealSlot('Lunch', MealSlotKind.main, 0.30),
+          _MealSlot('Snack', MealSlotKind.snack, 0.20),
+          _MealSlot('Dinner', MealSlotKind.main, 0.25),
         ];
       case 'intermittent_fasting_16_8':
         return const [
-          _MealSlot('First Meal', 'Generated for a 16:8 eating window', 0.40),
-          _MealSlot('Second Meal', 'Generated for a 16:8 eating window', 0.35),
-          _MealSlot('Final Meal', 'Generated for a 16:8 eating window', 0.25),
+          _MealSlot('First Meal', MealSlotKind.breakfast, 0.40),
+          _MealSlot('Second Meal', MealSlotKind.main, 0.35),
+          _MealSlot('Final Meal', MealSlotKind.main, 0.25),
         ];
       case '3':
       default:
         return const [
-          _MealSlot('Breakfast', 'Generated from your targets', 0.30),
-          _MealSlot('Lunch', 'Generated from your targets', 0.40),
-          _MealSlot('Dinner', 'Generated from your targets', 0.30),
+          _MealSlot('Breakfast', MealSlotKind.breakfast, 0.30),
+          _MealSlot('Lunch', MealSlotKind.main, 0.40),
+          _MealSlot('Dinner', MealSlotKind.main, 0.30),
         ];
     }
   }
 }
 
 class _MealSlot {
-  const _MealSlot(this.name, this.description, this.fraction);
+  const _MealSlot(this.name, this.kind, this.fraction);
   final String name;
-  final String description;
+  final MealSlotKind kind;
 
   /// Share of the day's calorie and protein targets this meal carries.
   final double fraction;

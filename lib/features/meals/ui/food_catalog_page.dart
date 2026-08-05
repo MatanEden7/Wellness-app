@@ -54,7 +54,7 @@ class FoodCatalogPage extends HookConsumerWidget {
       ),
       body: TabBarView(
         controller: tabController,
-        children: [
+        children: const [
           _FoodList(isStarter: false),
           _FoodList(isStarter: true),
         ],
@@ -66,7 +66,7 @@ class FoodCatalogPage extends HookConsumerWidget {
     await showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => _AddFoodDialog(),
+      builder: (context) => const _AddFoodDialog(),
     );
   }
 }
@@ -163,7 +163,7 @@ class _FoodList extends ConsumerWidget {
     await showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => _AddFoodDialog(),
+      builder: (context) => const _AddFoodDialog(),
     );
   }
 
@@ -269,7 +269,7 @@ class _FoodCard extends StatelessWidget {
               PopupMenuButton(
                 icon: Icon(
                   Icons.more_vert,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 itemBuilder: (context) => [
                   PopupMenuItem(
@@ -608,11 +608,11 @@ class _HiddenBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
-      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       child: Row(
         children: [
           Icon(Icons.filter_alt_outlined,
-              size: 18, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -638,11 +638,11 @@ class _ShowingAllBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
-      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       child: Row(
         children: [
           Icon(Icons.visibility_outlined,
-              size: 18, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 8),
           Expanded(
             child: Text('Showing everything',

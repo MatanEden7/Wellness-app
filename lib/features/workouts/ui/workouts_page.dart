@@ -265,7 +265,7 @@ class _WorkoutTemplateCard extends StatelessWidget {
                 PopupMenuButton(
                   icon: Icon(
                     Icons.more_vert,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   itemBuilder: (context) => [
                   PopupMenuItem(

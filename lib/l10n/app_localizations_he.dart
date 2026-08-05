@@ -1599,6 +1599,14 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onboardingGoalLabel => 'מטרה';
 
   @override
+  String get restTimerCompleteTitle => '!המנוחה הסתיימה';
+
+  @override
+  String restTimerCompleteBody(String exercise) {
+    return 'אפשר להמשיך עם $exercise';
+  }
+
+  @override
   String get sleepGoalReachedTitle => '!יעד השינה הושג';
 
   @override

@@ -187,13 +187,13 @@ class EmptyState extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   icon,
                   size: 32,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -211,7 +211,7 @@ class EmptyState extends StatelessWidget {
                 Text(
                   subtitle!,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -373,8 +373,8 @@ class _NutritionChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isPrimary 
-            ? color.withOpacity(0.2)
-            : color.withOpacity(0.1),
+            ? color.withValues(alpha: 0.2)
+            : color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: isPrimary 
             ? Border.all(color: color, width: 1.5)
@@ -440,7 +440,7 @@ class PrimaryMetricCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -485,7 +485,7 @@ class PrimaryMetricCard extends StatelessWidget {
           Text(
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+              color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -524,10 +524,10 @@ class NutritionProgressBar extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -573,7 +573,7 @@ class NutritionProgressBar extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -619,7 +619,7 @@ class NutritionProgressBar extends StatelessWidget {
               Container(
                 height: 6,
                 decoration: BoxDecoration(
-                  color: progressColor.withOpacity(0.2),
+                  color: progressColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -774,7 +774,7 @@ class SettingsIconBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: tint.withOpacity(0.12),
+        color: tint.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, color: tint, size: size),

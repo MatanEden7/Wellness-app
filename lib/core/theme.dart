@@ -127,7 +127,6 @@ class AppTheme {
           surface: customSurface ?? _lightSurface,
         );
       case AppThemeKind.light:
-      default:
         return _lightTheme;
     }
   }
@@ -146,16 +145,16 @@ class AppTheme {
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.disabled)) {
-            return scheme.onSurface.withOpacity(0.4);
+            return scheme.onSurface.withValues(alpha: 0.4);
           }
           return Colors.white;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.disabled)) {
-            return scheme.onSurface.withOpacity(0.12);
+            return scheme.onSurface.withValues(alpha: 0.12);
           }
           if (states.contains(WidgetState.selected)) return scheme.primary;
-          return scheme.onSurface.withOpacity(0.22);
+          return scheme.onSurface.withValues(alpha: 0.22);
         }),
         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
         trackOutlineWidth: WidgetStateProperty.all(0),
@@ -164,7 +163,7 @@ class AppTheme {
       sliderTheme: base.sliderTheme.copyWith(
         trackHeight: 4,
         activeTrackColor: scheme.primary,
-        inactiveTrackColor: scheme.onSurface.withOpacity(0.16),
+        inactiveTrackColor: scheme.onSurface.withValues(alpha: 0.16),
         thumbColor: Colors.white,
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
@@ -173,7 +172,7 @@ class AppTheme {
       dividerTheme: DividerThemeData(
         space: 1,
         thickness: 0.5,
-        color: scheme.onSurface.withOpacity(0.12),
+        color: scheme.onSurface.withValues(alpha: 0.12),
       ),
       // iOS sheets and dialogs are noticeably more rounded than Material's.
       dialogTheme: base.dialogTheme.copyWith(
@@ -219,7 +218,7 @@ class AppTheme {
       // 44pt is Apple's minimum comfortable hit target.
       listTileTheme: base.listTileTheme.copyWith(
         minVerticalPadding: 10,
-        iconColor: scheme.onSurface.withOpacity(0.55),
+        iconColor: scheme.onSurface.withValues(alpha: 0.55),
       ),
     );
   }
@@ -234,8 +233,10 @@ class AppTheme {
     final isDark = background.computeLuminance() < 0.5;
     final onPrimary = primary.computeLuminance() > 0.5 ? Colors.black : Colors.white;
     final onSurface = surface.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-    final onBackground = background.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-    
+    // No `onBackground` counterpart: Material 3 folded ColorScheme.background
+    // and onBackground into surface/onSurface, and the argument no longer
+    // exists. `background` is still applied below via scaffoldBackgroundColor.
+
     final colorScheme = ColorScheme(
       brightness: isDark ? Brightness.dark : Brightness.light,
       primary: primary,
@@ -244,8 +245,6 @@ class AppTheme {
       onSecondary: onPrimary,
       error: Colors.red,
       onError: Colors.white,
-      background: background,
-      onBackground: onBackground,
       surface: surface,
       onSurface: onSurface,
     );
@@ -288,7 +287,7 @@ class AppTheme {
         fillColor: surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: onSurface.withOpacity(0.2)),
+          borderSide: BorderSide(color: onSurface.withValues(alpha: 0.2)),
         ),
       ),
     );
@@ -395,7 +394,7 @@ class AppTheme {
       dividerColor: Colors.grey.shade200,
       iconTheme: const IconThemeData(color: _lightTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _lightSurface,
         selectedItemColor: _primaryIndigo,
         unselectedItemColor: _lightTextSecondary,
@@ -406,14 +405,12 @@ class AppTheme {
 
   // ===== DARK THEME (black & white) =====
   static ThemeData get _darkTheme {
-    final colorScheme = const ColorScheme(
+    const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: _darkPrimary,
       onPrimary: Colors.black,
       secondary: _darkPrimary,
       onSecondary: Colors.black,
-      background: _darkBg,
-      onBackground: _darkTextPrimary,
       surface: _darkSurface,
       onSurface: _darkTextPrimary,
       onSurfaceVariant: _darkTextSecondary, // 60% opacity for secondary text
@@ -454,7 +451,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.white.withOpacity(0.06)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -484,11 +481,11 @@ class AppTheme {
         hintStyle: const TextStyle(color: _darkTextSecondary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.12)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.12)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -508,10 +505,10 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _darkTextSecondary),
       ),
 
-      dividerColor: Colors.white.withOpacity(0.06),
+      dividerColor: Colors.white.withValues(alpha: 0.06),
       iconTheme: const IconThemeData(color: _darkTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _darkSurface,
         selectedItemColor: Colors.white,
         unselectedItemColor: _darkTextSecondary,
@@ -522,14 +519,12 @@ class AppTheme {
 
   // ===== GOLD THEME (luxury) =====
   static ThemeData get _goldTheme {
-    final colorScheme = const ColorScheme(
+    const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: _goldPrimary,
       onPrimary: Color(0xFF121212), // Dark text on gold
       secondary: _goldPrimary,
       onSecondary: Color(0xFF121212),
-      background: _goldBg,
-      onBackground: _goldTextPrimary,
       surface: _goldSurface,
       onSurface: _goldTextPrimary,
       onSurfaceVariant: _goldTextSecondary, // Brighter gold for secondary text
@@ -571,7 +566,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _goldPrimary.withOpacity(0.25)),
+          side: BorderSide(color: _goldPrimary.withValues(alpha: 0.25)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -601,11 +596,11 @@ class AppTheme {
         hintStyle: const TextStyle(color: _goldTextSecondary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: _goldPrimary.withOpacity(0.35)),
+          borderSide: BorderSide(color: _goldPrimary.withValues(alpha: 0.35)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: _goldPrimary.withOpacity(0.35)),
+          borderSide: BorderSide(color: _goldPrimary.withValues(alpha: 0.35)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -625,14 +620,14 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _goldTextSecondary),
       ),
 
-      dividerColor: _goldPrimary.withOpacity(0.18),
+      dividerColor: _goldPrimary.withValues(alpha: 0.18),
       iconTheme: const IconThemeData(color: _goldTextPrimary),
-      snackBarTheme: SnackBarThemeData(
+      snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: _goldSurface,
-        contentTextStyle: const TextStyle(color: _goldTextPrimary),
+        contentTextStyle: TextStyle(color: _goldTextPrimary),
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _goldSurface,
         selectedItemColor: _goldPrimary,
         unselectedItemColor: _goldTextSecondary,
@@ -673,7 +668,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _oceanPrimary.withOpacity(0.2)),
+          side: BorderSide(color: _oceanPrimary.withValues(alpha: 0.2)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -702,11 +697,11 @@ class AppTheme {
         fillColor: _oceanSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _oceanSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _oceanSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _oceanSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _oceanSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -726,10 +721,10 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _oceanTextSecondary),
       ),
 
-      dividerColor: _oceanSecondary.withOpacity(0.2),
+      dividerColor: _oceanSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _oceanTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _oceanSurface,
         selectedItemColor: _oceanPrimary,
         unselectedItemColor: _oceanTextSecondary,
@@ -770,7 +765,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _forestPrimary.withOpacity(0.2)),
+          side: BorderSide(color: _forestPrimary.withValues(alpha: 0.2)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -799,11 +794,11 @@ class AppTheme {
         fillColor: _forestSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _forestSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _forestSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _forestSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _forestSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -823,10 +818,10 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _forestTextSecondary),
       ),
 
-      dividerColor: _forestSecondary.withOpacity(0.2),
+      dividerColor: _forestSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _forestTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _forestSurface,
         selectedItemColor: _forestPrimary,
         unselectedItemColor: _forestTextSecondary,
@@ -867,7 +862,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _sunsetPrimary.withOpacity(0.2)),
+          side: BorderSide(color: _sunsetPrimary.withValues(alpha: 0.2)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -896,11 +891,11 @@ class AppTheme {
         fillColor: _sunsetSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _sunsetSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _sunsetSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _sunsetSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _sunsetSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -920,10 +915,10 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _sunsetTextSecondary),
       ),
 
-      dividerColor: _sunsetSecondary.withOpacity(0.2),
+      dividerColor: _sunsetSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _sunsetTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _sunsetSurface,
         selectedItemColor: _sunsetPrimary,
         unselectedItemColor: _sunsetTextSecondary,
@@ -964,7 +959,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _lavenderPrimary.withOpacity(0.2)),
+          side: BorderSide(color: _lavenderPrimary.withValues(alpha: 0.2)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -993,11 +988,11 @@ class AppTheme {
         fillColor: _lavenderSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _lavenderSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _lavenderSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _lavenderSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _lavenderSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -1017,10 +1012,10 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _lavenderTextSecondary),
       ),
 
-      dividerColor: _lavenderSecondary.withOpacity(0.2),
+      dividerColor: _lavenderSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _lavenderTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _lavenderSurface,
         selectedItemColor: _lavenderPrimary,
         unselectedItemColor: _lavenderTextSecondary,
@@ -1031,14 +1026,12 @@ class AppTheme {
 
   // ===== MIDNIGHT THEME (Sophisticated dark blue) =====
   static ThemeData get _midnightTheme {
-    final colorScheme = const ColorScheme(
+    const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: _midnightPrimary,
       onPrimary: _midnightBg,
       secondary: _midnightSecondary,
       onSecondary: Colors.white,
-      background: _midnightBg,
-      onBackground: _midnightTextPrimary,
       surface: _midnightSurface,
       onSurface: _midnightTextPrimary,
       onSurfaceVariant: _midnightTextSecondary,
@@ -1069,7 +1062,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _midnightPrimary.withOpacity(0.2)),
+          side: BorderSide(color: _midnightPrimary.withValues(alpha: 0.2)),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -1099,11 +1092,11 @@ class AppTheme {
         hintStyle: const TextStyle(color: _midnightTextSecondary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _midnightSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _midnightSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _midnightSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(color: _midnightSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -1123,10 +1116,10 @@ class AppTheme {
         bodySmall: TextStyle(fontSize: 12, color: _midnightTextSecondary),
       ),
 
-      dividerColor: _midnightSecondary.withOpacity(0.2),
+      dividerColor: _midnightSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _midnightTextPrimary),
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _midnightSurface,
         selectedItemColor: _midnightPrimary,
         unselectedItemColor: _midnightTextSecondary,

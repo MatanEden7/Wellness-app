@@ -69,7 +69,7 @@ abstract final class MealPortionSolver {
       case FoodServingKind.perOz:
         return (min: 0.5, max: 12);
       case FoodServingKind.perCount:
-        return (min: 0.5, max: 4); // pieces / tbsp / slices
+        return (min: 1, max: 4); // pieces / tbsp / slices, whole units
     }
   }
 
@@ -114,8 +114,13 @@ abstract final class MealPortionSolver {
     // Deduplicate: a food can classify into more than one slot (kale reads as
     // both a carb source and a vegetable), and the same food twice would make
     // the system singular as well as looking silly in the UI.
+    // Produce is deliberately NOT in the optimisation. It is near-zero
+    // calorie, so the solver happily inflates it to the bound chasing a
+    // target -- which is how 400g of spinach ended up in a breakfast. It is
+    // added afterwards at a fixed sensible serving, because it is there for
+    // volume and micronutrients, not macros.
     final basket = <FoodItemData>[];
-    for (final food in [protein, carb, fat, veg, ...extras]) {
+    for (final food in [protein, carb, fat, ...extras]) {
       if (food == null) continue;
       if (basket.any((f) => f.id == food.id)) continue;
       basket.add(food);
@@ -137,7 +142,10 @@ abstract final class MealPortionSolver {
       4.0 / (kcalTarget * kcalTarget),
       2.5 / (proteinTarget * proteinTarget),
       1.0 / (carbsTarget * carbsTarget),
-      0.7 / (fatTarget * fatTarget),
+      // Raised after removing produce from the basket: with one fewer
+      // knob the solver leaned on added fat (oil, avocado) to absorb
+      // calories, overshooting the fat target ~30%.
+      1.3 / (fatTarget * fatTarget),
     ];
 
     List<double> macrosOf(FoodItemData f) =>
@@ -189,7 +197,26 @@ abstract final class MealPortionSolver {
       for (var i = 0; i < basket.length; i++)
         // Round to a portion a human would actually measure.
         Portion(basket[i], _round(basket[i], x[i])),
+      // One normal serving of vegetables -- ~100g, or one piece of fruit.
+      if (veg != null) Portion(veg, _produceServing(veg)),
     ];
+  }
+
+  /// A normal serving of a vegetable or piece of fruit, independent of the
+  /// macro targets.
+  static double _produceServing(FoodItemData food) {
+    switch (FoodServingKindParser.fromLegacyUnit(food.unit)) {
+      case FoodServingKind.per100g:
+        return 1.0; // 100g
+      case FoodServingKind.perGram:
+        return 100;
+      case FoodServingKind.perMl:
+        return 200;
+      case FoodServingKind.perOz:
+        return 3;
+      case FoodServingKind.perCount:
+        return 1; // one banana, one apple
+    }
   }
 
   /// Rounds to a granularity that matches how the food is served, so the UI
@@ -204,7 +231,11 @@ abstract final class MealPortionSolver {
       case FoodServingKind.perOz:
         return (amount * 2).round() / 2;
       case FoodServingKind.perCount:
-        return (amount * 2).round() / 2; // half pieces
+        // Whole units. Eggs, slices and tablespoons are not halved in
+        // practice, and "Eggs 0.5 piece" reads as a bug even when the maths
+        // is right.
+        final whole = amount.round().toDouble();
+        return whole < 1 ? 1 : whole;
     }
   }
 

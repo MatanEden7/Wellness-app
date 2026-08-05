@@ -40,20 +40,20 @@ class SettingsRow extends StatelessWidget {
           Text(
             value!,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.45),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
             ),
           ),
           if (onTap != null && showChevron) ...[
             const SizedBox(width: 4),
             Icon(Icons.chevron_right,
                 size: 18,
-                color: theme.colorScheme.onSurface.withOpacity(0.3)),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
           ],
         ],
       );
     } else if (onTap != null && showChevron) {
       trailing = Icon(Icons.chevron_right,
-          size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3));
+          size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.3));
     }
 
     return ListTile(
@@ -70,7 +70,7 @@ class SettingsRow extends StatelessWidget {
               subtitle!,
               maxLines: 2,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             )
           : null,
@@ -110,7 +110,7 @@ class SettingsSwitch extends StatelessWidget {
           ? Text(
               subtitle!,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             )
           : null,
@@ -131,7 +131,7 @@ class _IconBox extends StatelessWidget {
       width: 34,
       height: 34,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(icon, color: color, size: 19),

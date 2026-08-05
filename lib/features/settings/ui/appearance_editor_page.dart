@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -306,7 +305,7 @@ class _ColorPickerTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -338,7 +337,7 @@ class _ColorPickerTile extends StatelessWidget {
             Icon(
               Icons.edit,
               size: 18,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -373,7 +372,7 @@ class _PreviewPanel extends ConsumerWidget {
         color: prefs.customSurfaceColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -409,17 +408,17 @@ class _PreviewPanel extends ConsumerWidget {
             children: [
               Chip(
                 label: Text(AppLocalizations.of(context)!.meals),
-                backgroundColor: prefs.mealsColor.withOpacity(0.2),
+                backgroundColor: prefs.mealsColor.withValues(alpha: 0.2),
                 side: BorderSide(color: prefs.mealsColor),
               ),
               Chip(
                 label: Text(AppLocalizations.of(context)!.workouts),
-                backgroundColor: prefs.workoutsColor.withOpacity(0.2),
+                backgroundColor: prefs.workoutsColor.withValues(alpha: 0.2),
                 side: BorderSide(color: prefs.workoutsColor),
               ),
               Chip(
                 label: Text(AppLocalizations.of(context)!.sleep),
-                backgroundColor: prefs.sleepColor.withOpacity(0.2),
+                backgroundColor: prefs.sleepColor.withValues(alpha: 0.2),
                 side: BorderSide(color: prefs.sleepColor),
               ),
             ],
@@ -451,7 +450,7 @@ class _PreviewPanel extends ConsumerWidget {
         const SizedBox(height: 4),
         LinearProgressIndicator(
           value: progress,
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           valueColor: AlwaysStoppedAnimation<Color>(color),
         ),
       ],

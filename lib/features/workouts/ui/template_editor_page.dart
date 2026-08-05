@@ -338,7 +338,6 @@ class _TemplateExerciseCard extends ConsumerWidget {
   final VoidCallback onDelete;
 
   const _TemplateExerciseCard({
-    super.key,
     required this.exercise,
     required this.index,
     required this.onEdit,

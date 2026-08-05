@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'core/date_utils.dart';
 import 'core/theme.dart';
+import 'features/calendar/data/calendar_service.dart';
 import 'routing/routes.dart';
 import 'services/background_refresh_service.dart';
 import 'services/theme_service.dart';
@@ -36,6 +37,11 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
     // the handler has a context it can actually push routes onto.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _wireNotificationHandling();
+      // Re-syncs the OS queue with the stored events on every launch. Without
+      // it the queue only ever changed when an event was edited, so it drifted
+      // out of date after a reboot, a timezone change, or simply time passing
+      // (the recurrence horizon is 30 days and was never re-anchored).
+      ref.read(calendarStateProvider.notifier).rescheduleAllNotifications();
     });
 
     // BackgroundRefreshService.onAppResumed()/onDateChanged() were fully
@@ -110,6 +116,13 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
     final router = ref.watch(routerProvider);
     final currentTheme = ref.watch(currentThemeProvider);
     final currentLanguage = ref.watch(currentLanguageProvider);
+
+    // Notification title/body text is baked in at schedule time, so a pending
+    // reminder keeps whatever language it was scheduled in until it's rebuilt.
+    ref.listen<AppLanguage>(currentLanguageProvider, (previous, next) {
+      if (previous == next) return;
+      ref.read(calendarStateProvider.notifier).rescheduleAllNotifications();
+    });
     final prefs = ref.watch(preferencesServiceProvider);
     
     return MaterialApp.router(
@@ -122,8 +135,8 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
       ).copyWith(
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
-            TargetPlatform.iOS: const CupertinoPageTransitionsBuilder(),
-            TargetPlatform.macOS: const CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
             TargetPlatform.android: ZoomPageTransitionsBuilder(),
             TargetPlatform.linux: ZoomPageTransitionsBuilder(),
             TargetPlatform.windows: ZoomPageTransitionsBuilder(),

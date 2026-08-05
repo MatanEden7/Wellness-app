@@ -61,7 +61,7 @@ class DashboardPage extends HookConsumerWidget {
               type: BottomNavigationBarType.fixed,
               currentIndex: selectedIndex,
               selectedItemColor: Theme.of(context).colorScheme.primary,
-              unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              unselectedItemColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               elevation: 8,
               onTap: (index) {
                 _navigateToPage(context, index);
@@ -110,28 +110,28 @@ class DashboardPage extends HookConsumerWidget {
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   destinations: [
                     NavigationRailDestination(
-                      icon: Icon(Icons.dashboard_outlined),
-                      selectedIcon: Icon(Icons.dashboard),
+                      icon: const Icon(Icons.dashboard_outlined),
+                      selectedIcon: const Icon(Icons.dashboard),
                       label: Text(l10n.dashboardTab),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.restaurant_outlined),
-                      selectedIcon: Icon(Icons.restaurant),
+                      icon: const Icon(Icons.restaurant_outlined),
+                      selectedIcon: const Icon(Icons.restaurant),
                       label: Text(l10n.mealsTab),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.fitness_center_outlined),
-                      selectedIcon: Icon(Icons.fitness_center),
+                      icon: const Icon(Icons.fitness_center_outlined),
+                      selectedIcon: const Icon(Icons.fitness_center),
                       label: Text(l10n.workoutsTab),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.bedtime_outlined),
-                      selectedIcon: Icon(Icons.bedtime),
+                      icon: const Icon(Icons.bedtime_outlined),
+                      selectedIcon: const Icon(Icons.bedtime),
                       label: Text(l10n.sleepTab),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.settings_outlined),
-                      selectedIcon: Icon(Icons.settings),
+                      icon: const Icon(Icons.settings_outlined),
+                      selectedIcon: const Icon(Icons.settings),
                       label: Text(l10n.settingsTab),
                     ),
                   ],
@@ -303,7 +303,7 @@ class _DashboardContent extends HookConsumerWidget {
                             SnackBar(
                               content: Text(AppLocalizations.of(context)!.resetAllDataDone),
                               backgroundColor: Colors.orange,
-                              duration: Duration(seconds: 2),
+                              duration: const Duration(seconds: 2),
                             ),
                           );
                           
@@ -348,7 +348,7 @@ class _DashboardContent extends HookConsumerWidget {
           Text(
             AppLocalizations.of(context)!.yourWellnessOverview,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               fontSize: 15,
             ),
           ),
@@ -517,7 +517,7 @@ class _DashboardContent extends HookConsumerWidget {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  theme.colorScheme.primary.withOpacity(0.6),
+                                  theme.colorScheme.primary.withValues(alpha: 0.6),
                                 ),
                               ),
                             ),
@@ -590,9 +590,9 @@ class _DashboardContent extends HookConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -691,7 +691,7 @@ class _DashboardContent extends HookConsumerWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -724,7 +724,7 @@ class _DashboardContent extends HookConsumerWidget {
                   Text(
                     _getWorkoutMeta(session, isActive, isPlanned),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -737,7 +737,7 @@ class _DashboardContent extends HookConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -761,10 +761,10 @@ class _DashboardContent extends HookConsumerWidget {
       height: 68, // Step 5: Height 64-72
       margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.blue.withOpacity(0.3),
+          color: Colors.blue.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -773,14 +773,14 @@ class _DashboardContent extends HookConsumerWidget {
         child: InkWell(
           onTap: () => context.push(Routes.workouts),
           borderRadius: BorderRadius.circular(16),
-          splashColor: Colors.blue.withOpacity(0.2),
-          highlightColor: Colors.blue.withOpacity(0.1),
+          splashColor: Colors.blue.withValues(alpha: 0.2),
+          highlightColor: Colors.blue.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.fitness_center, // Step 5: dumbbell icon
                   color: Colors.blue,
                   size: 24,
@@ -903,7 +903,7 @@ class _DashboardContent extends HookConsumerWidget {
         if (totals != null) {
           switch (primaryMetric) {
             case NutritionMetric.calories:
-              primaryValue = '${Formatters.formatCalories(totals.kcal)}';
+              primaryValue = Formatters.formatCalories(totals.kcal);
               title = l10n.calories;
               break;
             case NutritionMetric.protein:
@@ -927,11 +927,11 @@ class _DashboardContent extends HookConsumerWidget {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
             ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -1027,7 +1027,7 @@ class _DashboardContent extends HookConsumerWidget {
                 Text(
                   l10n.noDataAvailable,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -1054,11 +1054,11 @@ class _DashboardContent extends HookConsumerWidget {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
             ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -1106,7 +1106,7 @@ class _DashboardContent extends HookConsumerWidget {
               Text(
                 count > 0 ? l10n.great : l10n.getMovingQuestion,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1134,11 +1134,11 @@ class _DashboardContent extends HookConsumerWidget {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
             ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -1188,7 +1188,7 @@ class _DashboardContent extends HookConsumerWidget {
                     ? (hours >= 7 ? l10n.wellRested : l10n.needMore)
                     : l10n.noDataAvailable,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1229,10 +1229,10 @@ class _QuickActionButton extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: color.withOpacity(0.25),
+                  color: color.withValues(alpha: 0.25),
                   width: 1.5,
                 ),
               ),
@@ -1250,7 +1250,7 @@ class _QuickActionButton extends StatelessWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
               fontWeight: FontWeight.w500,
               fontSize: 12,
             ),
@@ -1355,7 +1355,7 @@ class _TestDataDialogState extends State<_TestDataDialog> {
                 child: Switch(
                   value: _useHebrew,
                   onChanged: (value) => setState(() => _useHebrew = value),
-                  activeColor: theme.colorScheme.primary,
+                  activeThumbColor: theme.colorScheme.primary,
                 ),
               ),
               Text('HE', style: TextStyle(fontSize: 10, fontWeight: _useHebrew ? FontWeight.bold : FontWeight.normal)),
@@ -1457,8 +1457,8 @@ class _ProfileCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: color.withValues(alpha: 0.1),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -1466,7 +1466,7 @@ class _ProfileCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 28),

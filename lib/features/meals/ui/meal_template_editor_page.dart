@@ -477,7 +477,7 @@ class _TemplateItemDialog extends HookConsumerWidget {
             if (selectedFoodState.value != null) ...[
               const Divider(),
               Text(
-                '${selectedFoodState.value!.name}',
+                selectedFoodState.value!.name,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppSpacing.sm),

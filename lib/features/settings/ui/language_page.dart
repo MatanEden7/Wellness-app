@@ -49,7 +49,7 @@ class LanguagePage extends ConsumerWidget {
                     color: Theme.of(context)
                         .colorScheme
                         .primary
-                        .withOpacity(isSelected ? 0.15 : 0.05),
+                        .withValues(alpha: isSelected ? 0.15 : 0.05),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(

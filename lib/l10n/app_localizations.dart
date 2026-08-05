@@ -3212,6 +3212,18 @@ abstract class AppLocalizations {
   /// **'Goal'**
   String get onboardingGoalLabel;
 
+  /// No description provided for @restTimerCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest Complete!'**
+  String get restTimerCompleteTitle;
+
+  /// No description provided for @restTimerCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to continue with {exercise}'**
+  String restTimerCompleteBody(String exercise);
+
   /// No description provided for @sleepGoalReachedTitle.
   ///
   /// In en, this message translates to:

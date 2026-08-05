@@ -64,6 +64,9 @@ than X" option in Settings before it becomes a slow cold start a year from now.
 Added last pass, compiles, but nothing has watched it actually fire — no automated
 test can, since it needs `showImmediate()` to hit the real plugin. One manual check:
 start a sleep timer, stop it past the goal hours, confirm the notification appears.
+Since the #69 pass it should show **no action buttons** — it was attaching the sleep
+category, so it offered "Start Sleep" and "Snooze 30m" on an alert saying the sleep
+had just ended. Confirm that too while you're there.
 
 **B2. Badge count is a documented no-op.** — P2, S — **[DONE]**
 Turned out already resolved: `updateBadgeCount()` no longer exists in the code and no
@@ -73,6 +76,17 @@ settings copy references it — nothing dead to remove or wire.
 Fixed in code (per-combination Android channels, `presentSound` on iOS) but I only
 verified via `flutter analyze` + unit tests, not by hearing/feeling a real
 notification. Same category as B1 — quick manual pass, not a code question.
+Scope grew with #69, so check three things now: (1) toggling sound off changes
+reminders that were *already* scheduled, not just new ones; (2) the rest timer emits
+an audible beep at the configured volume (it was silent — the player never had an
+audio source); (3) Snooze and meal Remove do something when pressed from the
+notification, which they never did before.
+
+**B4. Verify notification actions end-to-end on a device.** — P1, S — **[NEW, #69]**
+`test/regression/notification_delivery_test.dart` asserts every action is declared
+`foreground`, which is what makes it reach the handler at all — but only a real
+device proves the OS honours it. Schedule a meal reminder a minute out, then press
+each of Approve / Remove / Snooze from the notification and confirm all three act.
 
 ---
 
@@ -265,8 +279,9 @@ capacity allows.
 **Still open, needs you:**
 - **A3** — stale-nutrition product decision (this doc proposes an answer; confirm
   before implementing).
-- **B1 / B3** — five-minute manual device checks (sleep-goal notification; sound/
-  vibration).
+- **B1 / B3 / B4** — manual device checks on the notification system (sleep-goal
+  alert; sound/vibration incl. the new rest-timer beep; the action buttons that
+  #69 unblocked). ~10 minutes total now, not five.
 - **C5** — remaining Hebrew strings need a real translator pass, not more code.
 - **F2** — second opinion on the weight-unit icon (design call, not urgent).
 

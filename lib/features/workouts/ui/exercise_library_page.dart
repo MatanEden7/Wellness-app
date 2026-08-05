@@ -202,7 +202,7 @@ class _ExerciseCard extends StatelessWidget {
               PopupMenuButton(
                 icon: Icon(
                   Icons.more_vert,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 itemBuilder: (context) {
                   final l10n = AppLocalizations.of(context)!;
@@ -357,7 +357,7 @@ class _AddExerciseDialog extends HookConsumerWidget {
 
               // Unit
               DropdownButtonFormField<String>(
-                value: unitController.text.isEmpty ? 'kg' : unitController.text,
+                initialValue: unitController.text.isEmpty ? 'kg' : unitController.text,
                 decoration: InputDecoration(labelText: l10n.weightUnit),
                 items: [
                   DropdownMenuItem(value: 'kg', child: Text(l10n.kilogramsKg)),
@@ -517,11 +517,11 @@ class _ExerciseHiddenBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
-      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       child: Row(
         children: [
           Icon(Icons.filter_alt_outlined,
-              size: 18, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 8),
           Expanded(
             child: Text('$count hidden by your profile',

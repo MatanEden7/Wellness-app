@@ -4,6 +4,47 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-05 — Notification audit
+
+**Current task:** None. Filed and fixed as `ISSUES.md` #69.
+
+**Last completed:** a full pass over the notification path, asked for as "make
+sure we can interact and it really plays sounds whenever needed". Dispatch was
+already fixed in earlier passes (#4/#58/#59) and was fine; what was broken sat
+underneath it.
+
+- **Snooze (×3) and meal Remove were unreachable.** iOS decides which isolate
+  gets an action purely from whether it is declared `foreground` — not from
+  whether the app is running. Those four weren't, so every press went to the
+  background isolate and its `debugPrint`-only handler. The handler code for
+  them had been written, reviewed and tested, and could never run.
+- **One completed rest timer disabled every notification button** for the rest
+  of the session. A duplicate `NotificationService` in `lib/core/notifications.
+  dart` re-initialized the singleton plugin without a response callback. File
+  deleted.
+- **The rest timer was silent** — its `AudioPlayer` was given a volume and
+  never a source. Generated `assets/audio/rest_timer_beep.wav` and wired it up.
+- **No notification preference reached the existing OS queue.** Added
+  `CalendarNotifier.rescheduleAllNotifications()`, called from every
+  schedule-affecting setter, plus on app start and language change.
+- Sleep goal-reached alert no longer shows "Start Sleep"/"Snooze 30m"; the
+  rest-timer notification is localized and honours the sound prefs; the unused,
+  preference-bypassing `NotificationService.rescheduleAll()` is gone.
+
+New `test/regression/notification_delivery_test.dart` (9 tests). 351 → 360
+fast tests, all green; `flutter analyze lib/` clean.
+
+**Method note worth keeping:** the three worst findings were all invisible from
+Dart alone — they came from reading `FlutterLocalNotificationsPlugin.m`'s
+delivery routing and the plugin's Dart `initialize()`. Auditing our own code
+against the plugin's *documented* behaviour would have found none of them.
+
+**Next task:** the device pass (ROADMAP B1/B3/B4). Everything here changed real
+runtime behaviour and the fast suite cannot observe the OS side. The device
+suite also has not run since these changes.
+
+---
+
 ## 2026-08-05 (final) — Epic H complete + perf
 
 **Current task:** None. Everything not needing the user is done.

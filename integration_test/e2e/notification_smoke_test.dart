@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:wellness_app/features/calendar/data/calendar_service.dart';
 import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/features/settings/ui/settings_stub.dart';
 import 'package:wellness_app/services/language_service.dart';
