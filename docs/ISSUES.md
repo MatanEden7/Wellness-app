@@ -90,7 +90,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 71 | The user profile and all settings were in no backup at all | High | Fixed | ~2h |
 | 69 | Notification audit: snooze/remove unreachable, rest timer killed all buttons, no sound, prefs never re-applied | Critical | Fixed | ~3h |
 
-**Totals:** 64 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --
+**Totals:** 66 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --
 a keystore (#49), a bundle-ID decision (#51), a product decision (#14), a
 translator (#31), and one 15-minute device check (#9). No engineering work is
 blocked on anything but those.
@@ -739,3 +739,92 @@ in `pubspec.yaml`. Fast suite is **360 green**; `flutter analyze lib/` clean.
 
 Not covered, unchanged from before: real OS delivery, which needs an attended
 device session.
+
+### 70. Generated workouts were a placeholder, not a program  **[FIXED]**
+
+Every generated template was `3 sets x 10 reps, no weight, no rest` --
+identical for every goal, every experience level and every person.
+`_write()` hardcoded `sets: 3, reps: 10`, `defaultWeight` was never set, and
+the source carried a comment stating that goal deliberately did not influence
+template selection. It looked like a plan and contained no programming.
+
+**What replaced it.** A pure `WorkoutProgramming` module (no I/O, 25 unit
+tests) supplying four things:
+
+- **Scheme by goal** -- `muscle_gain` 4x8, `fat_loss` 3x14, `maintenance`
+  3x10, `mobility_rehab` 2x12, with rest split by *mechanic*: compounds rest
+  120-150s, accessories 45-75s. One rest value per session is wrong in both
+  directions -- three minutes on cable curls wastes a third of the session,
+  sixty on squats degrades every set after.
+- **Exercise count derived from a time budget**, not fixed. 45-minute target,
+  60-minute ceiling, warm-up ramps counted. This is the piece that makes the
+  rest of it honest: a fixed six exercises is ~45 minutes at 3x10 and ~75 at
+  4x8 once real compound rest exists.
+- **Starting weight** from bodyweight-relative strength standards, adjusted
+  for sex, experience and age, converted to the rep range via Epley and
+  rounded to 2.5kg.
+- **Volume landmarks** -- 10/14/18 weekly sets per muscle for muscle gain by
+  experience.
+
+**Two safety properties, asserted as such.** A load is prescribed only for
+`kg`-based exercises, so bodyweight/band/timed work never receives one; and
+every missing or unrecognised tag resolves to `LoadClass.none`, which
+prescribes nothing. A tagging mistake can therefore make a program *worse*,
+never dangerous. Sex is a real term rather than a nicety -- female upper-body
+standards run ~60-65% of male at equal bodyweight, and ignoring it would
+over-prescribe for half of all users.
+
+**Selection was rebuilt too**, because `primaryMuscle` alone cannot program a
+session: Bench Press and Dumbbell Fly are both "Chest" and are not
+interchangeable. Exercises gained `movementPattern`, `mechanic` and
+`loadClass` (all 58 tagged). Compounds are chosen by *pattern*, isolation by
+*muscle* -- a curl and a lateral raise are both `MovementPattern.isolation`
+and only the muscle says which belongs on a pull day.
+
+Three quality bugs were found by printing an actual plan and reading it as a
+coach would, with the test suite green at the time:
+
+1. Bench Press *and* Push-ups in one session (also Squats + Bodyweight Squat,
+   Deadlift + RDL) -- depth-first selection doubling up within a pattern.
+2. Zero isolation work anywhere; the arms were unreachable.
+3. Push-ups prescribed to someone who owns a barbell, when the progression
+   rule on the template says "add 2.5kg".
+
+**Backward compatibility.** `_applySnapshot` *replaces* the exercise list
+rather than merging, so an upgrading user would have kept 58 untagged
+exercises forever and generated empty sessions in silence. A field-level
+backfill fills only nulls (never overwriting an edit) and walks the restored
+list rather than the seed (so a deleted exercise stays deleted).
+
+Also fixed here: the schedule capped at 5 training days, so asking for 6
+silently gave 5; the onboarding slider capped at 6; and generated templates
+never filled `nameHe`, so Hebrew users got an English plan.
+
+New coverage: `workout_programming_test` (25), `generated_program_quality_test`
+(16), `exercise_metadata_test` (10), `rest_prescription_test` (7),
+`training_experience_test` (6), `programming_end_to_end_test` (3). Each
+behaviour was verified by reverting it and confirming the tests fail.
+
+### 71. The profile and every setting were in no backup at all  **[FIXED]**
+
+`exportToJson` carried the twelve database collections and the calendar.
+It did not carry the user profile or any preference. Restoring a backup on a
+new phone brought back every meal and workout and dropped the goal, calorie
+and macro targets, equipment and injuries that give them meaning -- and every
+setting. A regeneration afterwards would build against a default profile the
+user never entered.
+
+Fixed by adding `profile` and `preferences` sections. Preferences are captured
+by **walking the store** rather than from a list of known keys: a
+hand-maintained list would rebuild exactly the drift problem the export key
+set already had -- add a setting, forget the list, lose it silently. A test
+asserts an arbitrary unknown key round-trips, which is what makes that
+property real.
+
+Values carry a type tag, because JSON cannot distinguish a whole double from
+an int: `sleepGoalHours` is a double, and restoring `8.0` as `8` makes
+`getDouble` return null and the setting silently revert to its default.
+
+Both sections are absent from every backup written before this, and import
+tolerates that -- leaving whatever is on the device alone rather than clearing
+a profile the payload cannot replace.

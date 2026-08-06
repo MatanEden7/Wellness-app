@@ -222,6 +222,8 @@ lib/features/{meals|workouts|sleep|calendar}/
 - **[`lib/services/export_import_service.dart`](lib/services/export_import_service.dart)** - JSON backup/restore
 - **[`lib/services/notification_service.dart`](lib/services/notification_service.dart)** - Local notifications: iOS action categories, scheduling, immediate alerts, the rest-timer alert. The **only** `NotificationService` — a duplicate in `lib/core/notifications.dart` was removed in #69, because its separate `initialize()` on the singleton plugin silently nulled this one's tap handler.
 - **[`lib/services/notification_action_handler.dart`](lib/services/notification_action_handler.dart)** - What each notification tap and action button does. Reached only for actions declared `foreground` in `NotificationService.notificationCategories`; anything else is delivered by iOS to a background isolate that cannot act.
+- **[`lib/services/workout_programming.dart`](lib/services/workout_programming.dart)** - How a session is programmed: rep scheme by goal, rest by mechanic (compound vs isolation), bodyweight-relative starting loads adjusted for sex/experience/age, weekly volume landmarks, and the duration estimator that *derives* how many exercises fit a 45-minute session. Pure functions, no I/O — this is where the domain judgement lives and it is verifiable without constructing an app.
+- **[`lib/services/workout_template_generator.dart`](lib/services/workout_template_generator.dart)** - Applies the above to the seeded catalog. Compounds are selected by `movementPattern`, isolation by `primaryMuscle` — a curl and a lateral raise are both `MovementPattern.isolation` and only the muscle says which belongs on a pull day. Loaded lifts sort ahead of bodyweight ones, because the progression rule on every template is "add 2.5kg".
 - **[`lib/services/notification_preferences_service.dart`](lib/services/notification_preferences_service.dart)** - Per-category switches, lead times, quiet hours, sound/vibration. Every schedule-affecting setter fires `onScheduleAffectingChange`, wired in `main.dart` to `CalendarNotifier.rescheduleAllNotifications()` so a toggle also re-issues reminders already sitting in the OS queue.
 
 ### Unused/Dead Code
@@ -503,6 +505,21 @@ System" above), which treats `100g`-unit amounts as portions (not grams) and tre
 numbers again, check that the screen in question is calling into `FoodNutritionMath`
 instead of doing its own `unit.contains(...)` math.
 
+### "The generated workout looks wrong"
+
+Three rules decide what lands in a session, and each has its own failure look:
+
+1. **Two near-duplicate lifts** (Bench Press *and* Push-ups) means selection
+   went depth-first within a pattern instead of breadth-first across patterns.
+2. **No isolation work at all** means accessories were selected by pattern;
+   they must be selected by muscle.
+3. **A session over an hour** means exercise count was fixed rather than
+   derived from `WorkoutProgramming.exerciseBudget`, or rest is not being
+   counted.
+
+A prescribed weight of `null` is usually correct: load is only ever given to
+`kg`-based exercises, and any untagged exercise resolves to `LoadClass.none`.
+
 ### "Notifications don't work"
 
 Scheduling and the action handler both work as of #69. Two things to check first,
@@ -520,7 +537,10 @@ because both were real bugs and both are silent:
 
 ### "My changes disappeared after restarting"
 
-Expected behavior - use Export Data before closing the app.
+Stale — persistence has worked since ISSUES #1. The snapshot is written
+debounced and flushed when the app backgrounds. If data really is lost, check
+`AppDatabase.load()` and the `_backfillExerciseMetadata` path, since
+`_applySnapshot` *replaces* rather than merges.
 
 ---
 

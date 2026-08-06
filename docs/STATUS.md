@@ -4,25 +4,29 @@ Snapshot only — update when overall project status changes, not on every commi
 See `CLAUDE.md` for the doc-tracking rules and `.claude/commands/status.md` /
 `big-status.md` / `my-status.md` for how to regenerate this.
 
-Last updated: 2026-08-05 (notification audit)
+Last updated: 2026-08-06 (workout programming)
 
 ## Current task
 
-None. The notification audit (ISSUES.md #69) is complete: snooze/remove now
-reach their handler, the rest timer no longer disables every notification
-button, it plays an actual sound, and preference changes re-apply to reminders
-already scheduled. Fast suite green. Everything still open needs you — including
-one new device check (ROADMAP B4) to confirm the OS honours the action routing.
+None. Workout programming (ISSUES.md #70) is complete: sessions are programmed
+from the goal with real sets, reps, rest and starting weights, sized to a
+45-minute budget. The profile and every setting are now in the backup (#71) —
+they were in none. Fast suite green at 531.
+
+Nothing in the last two days has been seen on hardware. The new programming
+only appears after Settings → Reset all data and a fresh onboarding, which is
+the agreed rollout.
 
 ## Snapshot
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 360/360 |
+| Fast unit suite | ✅ Green | 531/531 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
 | Device suite | ⏳ Not re-run | 12/12 on 2026-08-05, before the #69 changes |
 | `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |
 | `docs/ROADMAP.md` Epic B (notifications) | B1/B3/B4 open | all three are device checks — **me** |
+| Exercise catalog depth | ⚠️ Binding constraint | Calves ×1, Glutes ×2, Biceps ×2 — Leg Day A/B identical at 6 days |
 | `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |
 | `docs/ROADMAP.md` Epic H | ✅ Complete | tagging, filtering, regeneration all shipped |
 | `docs/ROADMAP.md` Epic G (perf) | 2 of 6 done | G1/G2/G3/G5 remain — real but low-urgency |

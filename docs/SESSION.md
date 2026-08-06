@@ -4,6 +4,49 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-06 — Workout programming
+
+**Current task:** None. Filed and fixed as `ISSUES.md` #70 and #71.
+
+**Last completed:** replaced the generated-workout placeholder with real
+programming, asked for as "build it according to goals using real data, how
+many reps, how much weight, workout strategy... a workout can be up to 1 hour
+tops, usually 45 minutes".
+
+- `WorkoutProgramming` (new, pure, no I/O): scheme by goal, rest by mechanic,
+  bodyweight-relative load standards adjusted for sex/experience/age, volume
+  landmarks, and a duration estimator. Exercise count is *derived* from the
+  45-minute target rather than fixed -- the piece that makes the rest honest.
+- Exercises gained `movementPattern` / `mechanic` / `loadClass`; all 58
+  tagged. Compounds selected by pattern, isolation by muscle.
+- `trainingExperience` on the profile, collected in onboarding's Goals step.
+  Deliberately not an 8th step -- it belongs with the other training
+  questions and avoids disturbing step indices the sanity suite walks.
+- `defaultRestSeconds` per template exercise, driving the in-session timer and
+  editable in the template editor.
+- Profile + all preferences added to the backup; they were in none.
+- Schedule supports 1-7 training days (capped at 5); slider capped at 6.
+- 351 -> 531 fast tests across the day.
+
+**Method note worth keeping:** the three best fixes in this pass came from
+*printing a generated plan and reading it as a coach would*, with the suite
+green at the time -- Bench Press paired with Push-ups, no isolation work
+anywhere, and push-ups prescribed to a barbell owner. Property tests confirmed
+the arithmetic; only looking at the output caught that the arithmetic was
+being applied to the wrong exercises.
+
+**Second note:** every behaviour in this pass was verified by reverting it and
+confirming the tests fail. That caught one test of my own that passed with and
+without the fix.
+
+**Next task:** the device pass. Nothing here has been seen on hardware, and
+the new programming only appears after Settings -> Reset all data and a fresh
+onboarding (the agreed rollout). The catalog is now the binding constraint --
+Calves x1, Glutes x2, Biceps x2 means Leg Day A and B are identical at 6 days,
+and no algorithm fixes that.
+
+---
+
 ## 2026-08-05 — Notification audit
 
 **Current task:** None. Filed and fixed as `ISSUES.md` #69.

@@ -88,6 +88,31 @@ notification, which they never did before.
 device proves the OS honours it. Schedule a meal reminder a minute out, then press
 each of Approve / Remove / Snooze from the notification and confirm all three act.
 
+**B5. Verify the generated program on a device.** — P1, S — **[NEW, #70]**
+Nothing in the programming work has been seen on hardware. Needs Settings →
+Reset all data then a fresh onboarding (the agreed rollout), then: a template
+shows sets × reps @ weight and a rest interval; picking `fat_loss` instead of
+`muscle_gain` visibly changes all four; and finishing a set starts a rest
+timer of the prescribed length rather than the flat 90s.
+
+---
+
+## Epic I — Exercise catalog depth  — **P1**
+
+**I1. Seed 15-20 more exercises.** — P1, M
+The catalog is now the binding constraint on program quality, not the
+algorithm. Calves ×1, Glutes ×2 and Biceps ×2 mean Leg Day A and B come out
+identical at 6 days a week, and no amount of selection logic fixes that.
+Needed most: calves, glutes, biceps, triceps, and a second vertical pull.
+Each must carry `movementPattern`, `mechanic`, `loadClass`, equipment and
+contraindications — `exercise_metadata_test` fails on any that does not.
+
+**I2. Deloads and periodization.** — P3, L
+Templates are static; progression is the double-progression rule printed on
+each one. Real block periodization needs the app to read logged performance
+and mutate templates over weeks. Deliberately out of scope for the first
+version.
+
 ---
 
 ## Epic C — Visual & UX consistency pass
