@@ -230,6 +230,7 @@
   "amount": "כמות",
   "defaultSets": "סטים ברירת מחדל",
   "defaultRepsOptional": "חזרות ברירת מחדל (אופציונלי)",
+  "defaultRestOptional": "מנוחה בין סטים (שניות)",
   "defaultWeightOptional": "משקל ברירת מחדל (אופציונלי)",
   "sleepStartTime": "שעת תחילת שינה",
   "@_DIALOG_TITLES": {},

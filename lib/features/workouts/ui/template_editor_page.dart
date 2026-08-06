@@ -400,6 +400,17 @@ class _TemplateExerciseCard extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
+              // Rest is part of the prescription, not a detail: it is what
+              // separates a heavy compound from an accessory, and it drives
+              // the in-session timer. Showing sets and reps but hiding rest
+              // makes the generated plan look like it has no opinion on it.
+              if (exercise.defaultRestSeconds != null) ...[
+                const Text(' • '),
+                Text(
+                  '${exercise.defaultRestSeconds}s rest',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
             ],
           ),
         ],
@@ -494,6 +505,9 @@ class _TemplateExerciseEditorDialog extends HookWidget {
     final weightController = useTextEditingController(
       text: templateExercise.defaultWeight?.toString() ?? '',
     );
+    final restController = useTextEditingController(
+      text: templateExercise.defaultRestSeconds?.toString() ?? '',
+    );
 
     return Dialog(
       child: Container(
@@ -534,6 +548,16 @@ class _TemplateExerciseEditorDialog extends HookWidget {
               ),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: AppSpacing.md),
+
+            TextFormField(
+              controller: restController,
+              decoration: InputDecoration(
+                labelText: l10n.defaultRestOptional,
+                hintText: 'Leave empty to use the rep-based default',
+              ),
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: AppSpacing.lg),
 
             Row(
@@ -550,11 +574,13 @@ class _TemplateExerciseEditorDialog extends HookWidget {
                     final sets = int.tryParse(setsController.text) ?? 3;
                     final reps = int.tryParse(repsController.text);
                     final weight = double.tryParse(weightController.text);
+                    final rest = int.tryParse(restController.text);
 
                     final updatedExercise = templateExercise.copyWith(
                       defaultSets: sets,
                       defaultReps: reps,
                       defaultWeight: weight,
+                      defaultRestSeconds: rest,
                     );
 
                     Navigator.of(context).pop(updatedExercise);

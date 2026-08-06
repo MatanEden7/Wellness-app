@@ -4,7 +4,7 @@ Audit of the code as found on branch `rc`, with **fix status** as of the repair 
 
 Legend: **[FIXED]** — fixed and covered by a regression test · **[OPEN]** — still outstanding.
 
-Fast suite: `flutter test test/` (360 tests). Device suite: `integration_test/sanity/` and
+Fast suite: `flutter test test/` (531 tests). Device suite: `integration_test/sanity/` and
 `integration_test/regression/` on a booted simulator — this is what CI runs.
 `flutter analyze lib/` is clean of warnings and errors.
 
@@ -86,6 +86,8 @@ remaining work is a translator/designer decision, not engineering effort.
 | 66 | `deleteWorkoutSession`/`deleteSleepEntry` left a stale id-cache entry (deleted rows still resolvable by id) | Medium | Fixed | ~15min |
 | 67 | Share sheet crashed on iPad (no `sharePositionOrigin`) | Medium | Fixed | ~10min |
 | 68 | Device suite hung after the Epic H work (silent regeneration on profile save) | High | Fixed | ~2h |
+| 70 | Generated workouts were a placeholder: 3x10, no weight, no rest, identical for every goal | High | Fixed | ~6h |
+| 71 | The user profile and all settings were in no backup at all | High | Fixed | ~2h |
 | 69 | Notification audit: snooze/remove unreachable, rest timer killed all buttons, no sound, prefs never re-applied | Critical | Fixed | ~3h |
 
 **Totals:** 64 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --

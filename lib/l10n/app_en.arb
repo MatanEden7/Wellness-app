@@ -233,6 +233,7 @@
   "amount": "Amount",
   "defaultSets": "Default Sets",
   "defaultRepsOptional": "Default Reps (optional)",
+  "defaultRestOptional": "Rest between sets (seconds)",
   "defaultWeightOptional": "Default Weight (optional)",
   "sleepStartTime": "Sleep Start Time",
   "@_DIALOG_TITLES": {},

@@ -9,6 +9,7 @@ import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/calendar/data/calendar_service.dart';
 import 'package:wellness_app/features/calendar/domain/models.dart';
+import 'package:wellness_app/features/workouts/domain/exercise_tags.dart';
 import 'package:wellness_app/services/export_import_service.dart';
 
 /// Does a backup actually contain *everything*, and does a restore put all of
@@ -54,7 +55,13 @@ void main() {
         isStarter: false,
         createdAt: now,
         updatedAt: now));
-    await database.insertExercise(ExerciseData(id: 'E', name: 'Probe ex', unit: 'kg'));
+    await database.insertExercise(ExerciseData(
+        id: 'E',
+        name: 'Probe ex',
+        unit: 'kg',
+        movementPattern: MovementPattern.hinge,
+        mechanic: Mechanic.compound,
+        loadClass: LoadClass.deadliftPattern));
     await database.insertMeal(MealData(
         id: 'M',
         date: 20260805,
@@ -166,6 +173,17 @@ void main() {
 
   group('every row survives a full round trip', () {
     setUp(seedOneOfEverything);
+
+    test('exercises, with the metadata programming depends on', () async {
+      await roundTrip();
+      final exercise = await database.getExerciseById('E');
+
+      // Losing these does not lose an exercise -- it silently downgrades it to
+      // filler that is never chosen to open a session and never given a load.
+      expect(exercise!.movementPattern, MovementPattern.hinge);
+      expect(exercise.mechanic, Mechanic.compound);
+      expect(exercise.loadClass, LoadClass.deadliftPattern);
+    });
 
     test('foods, with their unit and per-unit macros', () async {
       await roundTrip();

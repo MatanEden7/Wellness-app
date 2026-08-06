@@ -1436,6 +1436,12 @@ abstract class AppLocalizations {
   /// **'Default Reps (optional)'**
   String get defaultRepsOptional;
 
+  /// No description provided for @defaultRestOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest between sets (seconds)'**
+  String get defaultRestOptional;
+
   /// No description provided for @defaultWeightOptional.
   ///
   /// In en, this message translates to:

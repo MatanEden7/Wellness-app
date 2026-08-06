@@ -5,6 +5,46 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Goal-driven workout programming (2026-08-06)
+
+Generated workouts were `3 sets x 10 reps, no weight, no rest` for every goal
+and every person -- a placeholder that looked like a program. Filed as
+`ISSUES.md` #70.
+
+- **Sessions are programmed from the goal.** Sets, reps and rest now come from
+  the goal (`muscle_gain` 4x8, `fat_loss` 3x14, `maintenance` 3x10,
+  `mobility_rehab` 2x12), with rest split by mechanic -- compounds rest two to
+  three times as long as accessories.
+- **Exercise count is derived from a time budget**, not fixed. Sessions target
+  45 minutes and are capped at 60, warm-up ramps included. A fixed six
+  exercises is ~45 minutes at 3x10 and ~75 at 4x8 once real compound rest is
+  counted.
+- **Starting weights are prescribed**, from bodyweight-relative strength
+  standards adjusted for sex, training experience and age, converted to the
+  rep range via Epley and rounded to 2.5kg. Only ever for `kg`-based
+  exercises; bodyweight, band and timed work get none.
+- **New onboarding question: training experience.** Activity level is a
+  calorie input and a poor strength proxy -- an active postman is not an
+  experienced lifter.
+- **Splits target training each muscle twice a week** and support 1-7 days.
+  The schedule capped at 5, so asking for 6 silently gave 5; the training-days
+  slider capped at 6.
+- **Selection is by movement pattern, not muscle name.** Fixes sessions that
+  paired Bench Press with Push-ups, or Squats with Bodyweight Squat, while
+  never reaching the arms at all. Loaded lifts are preferred over bodyweight
+  ones when the user owns the kit, because the progression rule is "add
+  2.5kg".
+- **Per-exercise rest drives the in-session timer**, replacing one global 90s
+  value used for heavy squats and cable curls alike. Visible and editable in
+  the template editor.
+- **The profile and every setting are now in the backup.** They were in no
+  backup at all: restoring on a new phone brought back the meals and workouts
+  and dropped the goal, targets, equipment and injuries that give them
+  meaning. Preferences are captured by walking the store, so a new setting
+  cannot be forgotten.
+- Generated templates carry Hebrew names, which `WorkoutTemplateData` has
+  supported all along and the generator never filled.
+
 ### Notification audit (2026-08-05)
 
 Full pass over the notification path. Dispatch was already fixed (#4/#58/#59);

@@ -132,6 +132,7 @@ class TemplateExercise with _$TemplateExercise {
     int defaultSets = 3,
     int? defaultReps,
     double? defaultWeight,
+    int? defaultRestSeconds,
   }) {
     return TemplateExercise(
       id: _uuid.v4(),
@@ -141,6 +142,7 @@ class TemplateExercise with _$TemplateExercise {
       defaultSets: defaultSets,
       defaultReps: defaultReps,
       defaultWeight: defaultWeight,
+      defaultRestSeconds: defaultRestSeconds,
     );
   }
 

@@ -691,6 +691,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get defaultRepsOptional => 'חזרות ברירת מחדל (אופציונלי)';
 
   @override
+  String get defaultRestOptional => 'מנוחה בין סטים (שניות)';
+
+  @override
   String get defaultWeightOptional => 'משקל ברירת מחדל (אופציונלי)';
 
   @override

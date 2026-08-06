@@ -694,6 +694,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultRepsOptional => 'Default Reps (optional)';
 
   @override
+  String get defaultRestOptional => 'Rest between sets (seconds)';
+
+  @override
   String get defaultWeightOptional => 'Default Weight (optional)';
 
   @override
