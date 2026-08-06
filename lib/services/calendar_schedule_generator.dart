@@ -156,24 +156,48 @@ class CalendarScheduleGenerator {
 
   /// Training days as `DateTime.weekday` numbers (1 = Monday .. 7 = Sunday).
   ///
-  /// Avoids Friday and Saturday: the app follows the Israeli convention and
-  /// marks those as the weekend everywhere else, but the 5-day plan used to
-  /// schedule a session on Saturday.
+  /// Filled Sunday through Thursday first, then Friday, then Saturday. The
+  /// app follows the Israeli convention and treats Fri/Sat as the weekend
+  /// everywhere else, so those are used only when the requested frequency
+  /// leaves no choice -- which it does at 6 and 7 days.
+  ///
+  /// This used to cap at 5 no matter what was asked: someone who said "I
+  /// train 6 days a week" silently got 5, and 0-1 days got 2. The answer was
+  /// collected and then partly ignored, which is the same complaint ISSUES #7
+  /// records against the template side.
+  static const List<int> _weekdayFillOrder = [
+    DateTime.sunday,
+    DateTime.monday,
+    DateTime.tuesday,
+    DateTime.wednesday,
+    DateTime.thursday,
+    DateTime.friday,
+    DateTime.saturday,
+  ];
+
   List<int> _getScheduleDays() {
-    if (_profile.trainingDaysPerWeek >= 5) {
-      // Sun, Mon, Tue, Wed, Thu
-      return [7, 1, 2, 3, 4];
-    } else if (_profile.trainingDaysPerWeek >= 4) {
-      // Sun, Mon, Tue, Thu
-      return [7, 1, 2, 4];
-    } else if (_profile.trainingDaysPerWeek >= 3) {
-      // Sun, Tue, Thu
-      return [7, 2, 4];
-    } else {
-      // Sun, Wed
-      return [7, 3];
+    final count = _profile.trainingDaysPerWeek.clamp(1, 7);
+
+    // Spread the week evenly for the low frequencies rather than stacking
+    // consecutive days: three sessions belong on Sun/Tue/Thu, not Sun/Mon/Tue.
+    switch (count) {
+      case 1:
+        return const [DateTime.sunday];
+      case 2:
+        return const [DateTime.sunday, DateTime.wednesday];
+      case 3:
+        return const [DateTime.sunday, DateTime.tuesday, DateTime.thursday];
+      case 4:
+        return const [
+          DateTime.sunday,
+          DateTime.monday,
+          DateTime.wednesday,
+          DateTime.thursday,
+        ];
+      default:
+        // 5, 6 and 7 take the fill order directly, so Friday and Saturday are
+        // only ever reached once the working week is full.
+        return _weekdayFillOrder.take(count).toList();
     }
   }
-
 }
-

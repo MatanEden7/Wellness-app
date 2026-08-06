@@ -1572,6 +1572,22 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onboardingActivityTitle => 'מה רמת הפעילות שלך?';
 
   @override
+  String get onboardingExperienceTitle => 'ניסיון באימוני כוח';
+
+  @override
+  String get onboardingExperienceSubtitle =>
+      'כמה זמן את/ה מתאמן/ת — זה קובע את המשקלים ההתחלתיים.';
+
+  @override
+  String get onboardingExperienceBeginner => 'מתחיל/ה';
+
+  @override
+  String get onboardingExperienceIntermediate => 'שנה-שנתיים';
+
+  @override
+  String get onboardingExperienceAdvanced => 'כמה שנים';
+
+  @override
   String get onboardingTrainingTitle => 'כמה ימי אימון בשבוע?';
 
   @override

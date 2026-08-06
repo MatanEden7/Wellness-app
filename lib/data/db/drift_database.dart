@@ -240,6 +240,49 @@ class AppDatabase {
       ..clear()
       ..addAll(setEntries);
     _replaceAll(_sleepEntries, sleepEntries, _sleepEntriesById, (s) => s.id);
+
+    _backfillExerciseMetadata();
+  }
+
+  /// Fills movement/mechanic/load metadata on seeded exercises restored from a
+  /// snapshot written before those fields existed.
+  ///
+  /// [_applySnapshot] *replaces* the exercise list rather than merging it, so
+  /// without this an upgrading user keeps 58 untagged exercises forever and
+  /// the generator has nothing to program from -- it would produce empty
+  /// sessions silently, which is the same shape of failure as a reset leaving
+  /// an empty catalog.
+  ///
+  /// Two rules make this safe to run on every load:
+  ///
+  ///   * **Field-level.** Only fields that are null are filled, via
+  ///     [ExerciseData.withMetadataDefaults]. An exercise the user edited, or
+  ///     one a future seed tags differently, is never overwritten.
+  ///   * **Never resurrects.** It walks the *restored* list, not the seed, so
+  ///     a seeded exercise the user deleted stays deleted -- the same contract
+  ///     `persistence_test` pins for starter foods.
+  void _backfillExerciseMetadata() {
+    final seeded = {for (final e in _getSampleExercises()) e.id: e};
+    if (seeded.isEmpty) return;
+
+    for (var i = 0; i < _exercises.length; i++) {
+      final restored = _exercises[i];
+      final template = seeded[restored.id];
+      if (template == null) continue; // user-created; nothing to backfill from
+      if (restored.movementPattern != null &&
+          restored.mechanic != null &&
+          restored.loadClass != null) {
+        continue; // already tagged
+      }
+
+      final filled = restored.withMetadataDefaults(
+        movementPattern: template.movementPattern,
+        mechanic: template.mechanic,
+        loadClass: template.loadClass,
+      );
+      _exercises[i] = filled;
+      _exercisesById[filled.id] = filled;
+    }
   }
 
   static void _replaceAll<T>(
@@ -1268,6 +1311,11 @@ class AppDatabase {
       Set<Equipment> equipment = const {Equipment.bodyweight},
       Set<BodyPart> contraindicatedFor = const <BodyPart>{},
       Set<BodyPart> rehabFor = const <BodyPart>{},
+      // Defaults describe the rehab pool, which is every row that does not
+      // override them: single-joint, accessory, never load-prescribed.
+      MovementPattern pattern = MovementPattern.isolation,
+      Mechanic mechanic = Mechanic.isolation,
+      LoadClass loadClass = LoadClass.none,
     }) {
       return ExerciseData(
         id: id,
@@ -1278,37 +1326,40 @@ class AppDatabase {
         equipment: equipment,
         contraindicatedFor: contraindicatedFor,
         rehabFor: rehabFor,
+        movementPattern: pattern,
+        mechanic: mechanic,
+        loadClass: loadClass,
       );
     }
 
     return [
       // Chest
-      ex(id: '1', name: 'Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Start in plank position, lower body to ground, push back up', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
-      ex(id: '2', name: 'Bench Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Keep your back flat and feet on the ground', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.shoulder}),
-      ex(id: '3', name: 'Dumbbell Chest Fly', primaryMuscle: 'Chest', unit: 'kg', notes: 'Slight bend in elbows, lower until a stretch is felt across the chest', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder}),
+      ex(id: '1', name: 'Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Start in plank position, lower body to ground, push back up', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}, pattern: MovementPattern.horizontalPush, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '2', name: 'Bench Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Keep your back flat and feet on the ground', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.shoulder}, pattern: MovementPattern.horizontalPush, mechanic: Mechanic.compound, loadClass: LoadClass.benchPattern),
+      ex(id: '3', name: 'Dumbbell Chest Fly', primaryMuscle: 'Chest', unit: 'kg', notes: 'Slight bend in elbows, lower until a stretch is felt across the chest', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.accessory),
 
       // Back
-      ex(id: '4', name: 'Pull-ups', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Full range of motion, chin over bar', equipment: const {Equipment.pullupBar}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
-      ex(id: '5', name: 'Deadlift', primaryMuscle: 'Back', unit: 'kg', notes: 'Keep your back straight and core engaged', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.back, BodyPart.hip, BodyPart.neck}),
-      ex(id: '6', name: 'Barbell Rows', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull to your lower chest, squeeze shoulder blades', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.back}),
-      ex(id: '7', name: 'Lat Pulldown', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull the bar to your upper chest, avoid leaning back excessively', equipment: const {Equipment.machines, Equipment.cable}, contraindicatedFor: const {BodyPart.shoulder}),
+      ex(id: '4', name: 'Pull-ups', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Full range of motion, chin over bar', equipment: const {Equipment.pullupBar}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}, pattern: MovementPattern.verticalPull, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '5', name: 'Deadlift', primaryMuscle: 'Back', unit: 'kg', notes: 'Keep your back straight and core engaged', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.back, BodyPart.hip, BodyPart.neck}, pattern: MovementPattern.hinge, mechanic: Mechanic.compound, loadClass: LoadClass.deadliftPattern),
+      ex(id: '6', name: 'Barbell Rows', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull to your lower chest, squeeze shoulder blades', equipment: const {Equipment.barbellRack}, contraindicatedFor: const {BodyPart.back}, pattern: MovementPattern.horizontalPull, mechanic: Mechanic.compound, loadClass: LoadClass.benchPattern),
+      ex(id: '7', name: 'Lat Pulldown', primaryMuscle: 'Back', unit: 'kg', notes: 'Pull the bar to your upper chest, avoid leaning back excessively', equipment: const {Equipment.machines, Equipment.cable}, contraindicatedFor: const {BodyPart.shoulder}, pattern: MovementPattern.verticalPull, mechanic: Mechanic.compound, loadClass: LoadClass.benchPattern),
 
       // Legs
-      ex(id: '8', name: 'Squats', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Stand with feet shoulder-width apart, lower body as if sitting back into a chair', equipment: const {Equipment.barbellRack, Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip, BodyPart.back, BodyPart.neck}),
-      ex(id: '9', name: 'Romanian Deadlift', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hinge at the hips, keep the bar close to your legs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}),
-      ex(id: '10', name: 'Walking Lunges', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Step forward, lower back knee toward the ground, alternate legs', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee, BodyPart.ankle, BodyPart.hip}),
-      ex(id: '11', name: 'Calf Raises', primaryMuscle: 'Calves', unit: 'bodyweight', notes: 'Rise onto your toes, pause, lower slowly', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.ankle}),
+      ex(id: '8', name: 'Squats', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Stand with feet shoulder-width apart, lower body as if sitting back into a chair', equipment: const {Equipment.barbellRack, Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip, BodyPart.back, BodyPart.neck}, pattern: MovementPattern.squat, mechanic: Mechanic.compound, loadClass: LoadClass.squatPattern),
+      ex(id: '9', name: 'Romanian Deadlift', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hinge at the hips, keep the bar close to your legs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}, pattern: MovementPattern.hinge, mechanic: Mechanic.compound, loadClass: LoadClass.deadliftPattern),
+      ex(id: '10', name: 'Walking Lunges', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Step forward, lower back knee toward the ground, alternate legs', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee, BodyPart.ankle, BodyPart.hip}, pattern: MovementPattern.lunge, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '11', name: 'Calf Raises', primaryMuscle: 'Calves', unit: 'bodyweight', notes: 'Rise onto your toes, pause, lower slowly', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.ankle}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
 
       // Shoulders
-      ex(id: '12', name: 'Overhead Press', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Press straight up, keep core tight', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.neck}),
-      ex(id: '13', name: 'Lateral Raises', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Raise dumbbells to the sides until arms are parallel to the floor', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder}),
+      ex(id: '12', name: 'Overhead Press', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Press straight up, keep core tight', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.neck}, pattern: MovementPattern.verticalPush, mechanic: Mechanic.compound, loadClass: LoadClass.pressPattern),
+      ex(id: '13', name: 'Lateral Raises', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Raise dumbbells to the sides until arms are parallel to the floor', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.shoulder}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.accessory),
 
       // Arms
-      ex(id: '14', name: 'Bicep Curls', primaryMuscle: 'Biceps', unit: 'kg', notes: 'Keep elbows pinned to your sides, curl with control', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.elbow}),
-      ex(id: '15', name: 'Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Lower until shoulders are below elbows', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
+      ex(id: '14', name: 'Bicep Curls', primaryMuscle: 'Biceps', unit: 'kg', notes: 'Keep elbows pinned to your sides, curl with control', equipment: const {Equipment.dumbbells}, contraindicatedFor: const {BodyPart.elbow}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.accessory),
+      ex(id: '15', name: 'Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Lower until shoulders are below elbows', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}, pattern: MovementPattern.verticalPush, mechanic: Mechanic.compound, loadClass: LoadClass.none),
 
       // Core
-      ex(id: '16', name: 'Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulders to ankles; reps field tracks seconds held', equipment: const {Equipment.bodyweight}),
+      ex(id: '16', name: 'Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulders to ankles; reps field tracks seconds held', equipment: const {Equipment.bodyweight}, pattern: MovementPattern.coreBrace, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
 
       // ---------------------------------------------------------------
       // Coverage additions.
@@ -1327,42 +1378,42 @@ class AppDatabase {
       // ---------------------------------------------------------------
 
       // Chest -- no-equipment and band options
-      ex(id: '17', name: 'Incline Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Hands elevated on a bench or step; easier than a floor push-up', equipment: const {Equipment.bodyweight}),
-      ex(id: '18', name: 'Band Chest Press', primaryMuscle: 'Chest', unit: 'band', notes: 'Anchor the band behind you and press forward at chest height', equipment: const {Equipment.bands}),
-      ex(id: '19', name: 'Landmine Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Press at roughly 45 degrees -- avoids the neck extension a strict overhead press needs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}),
+      ex(id: '17', name: 'Incline Push-ups', primaryMuscle: 'Chest', unit: 'bodyweight', notes: 'Hands elevated on a bench or step; easier than a floor push-up', equipment: const {Equipment.bodyweight}, pattern: MovementPattern.horizontalPush, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '18', name: 'Band Chest Press', primaryMuscle: 'Chest', unit: 'band', notes: 'Anchor the band behind you and press forward at chest height', equipment: const {Equipment.bands}, pattern: MovementPattern.horizontalPush, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '19', name: 'Landmine Press', primaryMuscle: 'Chest', unit: 'kg', notes: 'Press at roughly 45 degrees -- avoids the neck extension a strict overhead press needs', equipment: const {Equipment.barbellRack, Equipment.dumbbells}, pattern: MovementPattern.verticalPush, mechanic: Mechanic.compound, loadClass: LoadClass.pressPattern),
 
       // Back -- horizontal pulling, neck- and shoulder-friendly
-      ex(id: '20', name: 'Band Row', primaryMuscle: 'Back', unit: 'band', notes: 'Anchor at waist height, pull elbows past your ribs', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.neck, BodyPart.shoulder}),
-      ex(id: '21', name: 'Inverted Row', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Body under a bar or sturdy table, pull chest to the bar', equipment: const {Equipment.bodyweight, Equipment.barbellRack}),
-      ex(id: '22', name: 'Seated Cable Row', primaryMuscle: 'Back', unit: 'kg', notes: 'Chest tall, pull to the navel without leaning back', equipment: const {Equipment.cable, Equipment.machines}),
-      ex(id: '23', name: 'Superman Hold', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Face down, lift chest and thighs; reps field tracks seconds held', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back}),
+      ex(id: '20', name: 'Band Row', primaryMuscle: 'Back', unit: 'band', notes: 'Anchor at waist height, pull elbows past your ribs', equipment: const {Equipment.bands}, rehabFor: const {BodyPart.neck, BodyPart.shoulder}, pattern: MovementPattern.horizontalPull, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '21', name: 'Inverted Row', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Body under a bar or sturdy table, pull chest to the bar', equipment: const {Equipment.bodyweight, Equipment.barbellRack}, pattern: MovementPattern.horizontalPull, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '22', name: 'Seated Cable Row', primaryMuscle: 'Back', unit: 'kg', notes: 'Chest tall, pull to the navel without leaning back', equipment: const {Equipment.cable, Equipment.machines}, pattern: MovementPattern.horizontalPull, mechanic: Mechanic.compound, loadClass: LoadClass.benchPattern),
+      ex(id: '23', name: 'Superman Hold', primaryMuscle: 'Back', unit: 'bodyweight', notes: 'Face down, lift chest and thighs; reps field tracks seconds held', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back}, pattern: MovementPattern.coreBrace, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
 
       // Legs -- knee- and back-sparing options
-      ex(id: '24', name: 'Bodyweight Squat', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'No load on the spine, unlike a barbell back squat', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee}),
-      ex(id: '25', name: 'Glute Bridge', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Drive through the heels; loads the hips with the spine supported', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip, BodyPart.knee}),
-      ex(id: '26', name: 'Step-ups', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Step onto a knee-height box, control the way down', equipment: const {Equipment.bodyweight, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.knee}),
-      ex(id: '27', name: 'Wall Sit', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Isometric hold -- quad work without knee travel; reps field tracks seconds', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.knee}),
-      ex(id: '28', name: 'Leg Press', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Back supported throughout', equipment: const {Equipment.machines}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip}),
-      ex(id: '29', name: 'Kettlebell Swing', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hip hinge, not a squat -- power comes from the glutes', equipment: const {Equipment.kettlebells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}),
-      ex(id: '30', name: 'Seated Leg Curl', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Isolates the hamstrings with no spinal load', equipment: const {Equipment.machines}),
+      ex(id: '24', name: 'Bodyweight Squat', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'No load on the spine, unlike a barbell back squat', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.knee}, pattern: MovementPattern.squat, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '25', name: 'Glute Bridge', primaryMuscle: 'Glutes', unit: 'bodyweight', notes: 'Drive through the heels; loads the hips with the spine supported', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip, BodyPart.knee}, pattern: MovementPattern.hinge, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '26', name: 'Step-ups', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Step onto a knee-height box, control the way down', equipment: const {Equipment.bodyweight, Equipment.dumbbells}, contraindicatedFor: const {BodyPart.knee}, pattern: MovementPattern.lunge, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '27', name: 'Wall Sit', primaryMuscle: 'Quadriceps', unit: 'bodyweight', notes: 'Isometric hold -- quad work without knee travel; reps field tracks seconds', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.knee}, pattern: MovementPattern.squat, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
+      ex(id: '28', name: 'Leg Press', primaryMuscle: 'Quadriceps', unit: 'kg', notes: 'Back supported throughout', equipment: const {Equipment.machines}, contraindicatedFor: const {BodyPart.knee, BodyPart.hip}, pattern: MovementPattern.squat, mechanic: Mechanic.compound, loadClass: LoadClass.squatPattern),
+      ex(id: '29', name: 'Kettlebell Swing', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Hip hinge, not a squat -- power comes from the glutes', equipment: const {Equipment.kettlebells}, contraindicatedFor: const {BodyPart.back, BodyPart.hip}, pattern: MovementPattern.hinge, mechanic: Mechanic.compound, loadClass: LoadClass.accessory),
+      ex(id: '30', name: 'Seated Leg Curl', primaryMuscle: 'Hamstrings', unit: 'kg', notes: 'Isolates the hamstrings with no spinal load', equipment: const {Equipment.machines}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.accessory),
 
       // Shoulders -- options that avoid overhead pressing
-      ex(id: '31', name: 'Band Lateral Raise', primaryMuscle: 'Shoulders', unit: 'band', notes: 'Stand on the band, raise to shoulder height', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.shoulder}),
-      ex(id: '32', name: 'Face Pull', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Pull to the forehead with elbows high; a rear-delt and posture staple', equipment: const {Equipment.cable, Equipment.bands}, rehabFor: const {BodyPart.shoulder, BodyPart.neck}),
+      ex(id: '31', name: 'Band Lateral Raise', primaryMuscle: 'Shoulders', unit: 'band', notes: 'Stand on the band, raise to shoulder height', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.shoulder}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
+      ex(id: '32', name: 'Face Pull', primaryMuscle: 'Shoulders', unit: 'kg', notes: 'Pull to the forehead with elbows high; a rear-delt and posture staple', equipment: const {Equipment.cable, Equipment.bands}, rehabFor: const {BodyPart.shoulder, BodyPart.neck}, pattern: MovementPattern.horizontalPull, mechanic: Mechanic.isolation, loadClass: LoadClass.accessory),
 
       // Arms
-      ex(id: '33', name: 'Band Bicep Curl', primaryMuscle: 'Biceps', unit: 'band', notes: 'Stand on the band, curl with elbows pinned', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.elbow}),
-      ex(id: '34', name: 'Bench Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Hands on a bench behind you, feet forward', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}),
-      ex(id: '35', name: 'Band Triceps Pushdown', primaryMuscle: 'Triceps', unit: 'band', notes: 'Anchor high, extend the elbows fully', equipment: const {Equipment.bands, Equipment.cable}, contraindicatedFor: const {BodyPart.elbow}),
+      ex(id: '33', name: 'Band Bicep Curl', primaryMuscle: 'Biceps', unit: 'band', notes: 'Stand on the band, curl with elbows pinned', equipment: const {Equipment.bands}, contraindicatedFor: const {BodyPart.elbow}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
+      ex(id: '34', name: 'Bench Dips', primaryMuscle: 'Triceps', unit: 'bodyweight', notes: 'Hands on a bench behind you, feet forward', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder, BodyPart.elbow}, pattern: MovementPattern.verticalPush, mechanic: Mechanic.compound, loadClass: LoadClass.none),
+      ex(id: '35', name: 'Band Triceps Pushdown', primaryMuscle: 'Triceps', unit: 'band', notes: 'Anchor high, extend the elbows fully', equipment: const {Equipment.bands, Equipment.cable}, contraindicatedFor: const {BodyPart.elbow}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
 
       // Core -- neck-safe (no repeated cervical flexion, unlike sit-ups)
-      ex(id: '36', name: 'Dead Bug', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Lower opposite arm and leg with the low back flat; head stays down', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back}),
-      ex(id: '37', name: 'Side Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulder to ankle; reps field tracks seconds', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder}),
-      ex(id: '38', name: 'Bird Dog', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Opposite arm and leg extended, spine neutral -- a common low-back rehab staple', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip}),
+      ex(id: '36', name: 'Dead Bug', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Lower opposite arm and leg with the low back flat; head stays down', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back}, pattern: MovementPattern.coreBrace, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
+      ex(id: '37', name: 'Side Plank', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Hold a straight line from shoulder to ankle; reps field tracks seconds', equipment: const {Equipment.bodyweight}, contraindicatedFor: const {BodyPart.shoulder}, pattern: MovementPattern.coreBrace, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
+      ex(id: '38', name: 'Bird Dog', primaryMuscle: 'Core', unit: 'bodyweight', notes: 'Opposite arm and leg extended, spine neutral -- a common low-back rehab staple', equipment: const {Equipment.bodyweight}, rehabFor: const {BodyPart.back, BodyPart.hip}, pattern: MovementPattern.coreBrace, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
 
       // Conditioning / low-impact
-      ex(id: '39', name: 'Brisk Walk', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact; reps field tracks minutes', equipment: const {Equipment.bodyweight}),
-      ex(id: '40', name: 'Stationary Bike', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact on the ankles and spine; reps field tracks minutes', equipment: const {Equipment.machines}),
+      ex(id: '39', name: 'Brisk Walk', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact; reps field tracks minutes', equipment: const {Equipment.bodyweight}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
+      ex(id: '40', name: 'Stationary Bike', primaryMuscle: 'Cardio', unit: 'min', notes: 'Low impact on the ankles and spine; reps field tracks minutes', equipment: const {Equipment.machines}, pattern: MovementPattern.isolation, mechanic: Mechanic.isolation, loadClass: LoadClass.none),
 
       // ---------------------------------------------------------------
       // Physiotherapy / rehab movements.
@@ -1817,6 +1868,26 @@ class ExerciseData {
   /// sessions are built from.
   final Set<BodyPart> rehabFor;
 
+  /// How this exercise loads the body. `primaryMuscle` alone cannot program a
+  /// session -- see the enum docs in `exercise_tags.dart`.
+  ///
+  /// All three are nullable rather than defaulted so that "never tagged" is
+  /// distinguishable from "deliberately tagged as the default value". The
+  /// backfill on snapshot load depends on telling those apart: it fills only
+  /// what is genuinely absent and never overwrites a real value.
+  final MovementPattern? movementPattern;
+  final Mechanic? mechanic;
+  final LoadClass? loadClass;
+
+  /// Reading accessors, applying the safe fallbacks. Callers use these; the
+  /// nullable fields above exist for the backfill and for serialization.
+  MovementPattern get pattern => movementPattern ?? MovementPattern.isolation;
+  Mechanic get mechanicOrDefault => mechanic ?? Mechanic.isolation;
+
+  /// An untagged exercise gets no prescribed load at all. Every default in
+  /// this feature fails toward less weight, never more.
+  LoadClass get loadClassOrDefault => loadClass ?? LoadClass.none;
+
   ExerciseData({
     required this.id,
     required this.name,
@@ -1828,6 +1899,9 @@ class ExerciseData {
     this.equipment = const <Equipment>{},
     this.contraindicatedFor = const <BodyPart>{},
     this.rehabFor = const <BodyPart>{},
+    this.movementPattern,
+    this.mechanic,
+    this.loadClass,
   });
 
   Map<String, dynamic> toJson() => {
@@ -1841,6 +1915,9 @@ class ExerciseData {
     'equipment': EquipmentCodec.encode(equipment),
     'contraindicatedFor': BodyPartCodec.encode(contraindicatedFor),
     'rehabFor': BodyPartCodec.encode(rehabFor),
+    'movementPattern': MovementPatternCodec.encode(movementPattern),
+    'mechanic': MechanicCodec.encode(mechanic),
+    'loadClass': LoadClassCodec.encode(loadClass),
   };
 
   factory ExerciseData.fromJson(Map<String, dynamic> json) => ExerciseData(
@@ -1855,7 +1932,36 @@ class ExerciseData {
     equipment: EquipmentCodec.decode(json['equipment']),
     contraindicatedFor: BodyPartCodec.decode(json['contraindicatedFor']),
     rehabFor: BodyPartCodec.decode(json['rehabFor']),
+    // Null on rows written before these existed. Left null rather than
+    // defaulted so `_backfillExerciseMetadata` can tell "never tagged" from
+    // "tagged as the default", and only fill the former.
+    movementPattern: MovementPatternCodec.decode(json['movementPattern']),
+    mechanic: MechanicCodec.decode(json['mechanic']),
+    loadClass: LoadClassCodec.decode(json['loadClass']),
   );
+
+  /// A copy with only the metadata fields that are currently null filled in.
+  /// Never overwrites a value the user or a newer seed already set.
+  ExerciseData withMetadataDefaults({
+    MovementPattern? movementPattern,
+    Mechanic? mechanic,
+    LoadClass? loadClass,
+  }) =>
+      ExerciseData(
+        id: id,
+        name: name,
+        nameHe: nameHe,
+        primaryMuscle: primaryMuscle,
+        primaryMuscleHe: primaryMuscleHe,
+        unit: unit,
+        notes: notes,
+        equipment: equipment,
+        contraindicatedFor: contraindicatedFor,
+        rehabFor: rehabFor,
+        movementPattern: this.movementPattern ?? movementPattern,
+        mechanic: this.mechanic ?? mechanic,
+        loadClass: this.loadClass ?? loadClass,
+      );
 }
 
 class WorkoutTemplateData {
@@ -1906,6 +2012,28 @@ class TemplateExerciseData {
   final int? defaultReps;
   final double? defaultWeight;
 
+  /// Rest between sets, in seconds.
+  ///
+  /// Nullable on purpose: rows written before this existed have no answer,
+  /// and the honest fallback is derived from the rep count rather than
+  /// invented. Rest is not cosmetic -- it is the difference between a session
+  /// that fits in 45 minutes and one that runs to 75, and between a heavy
+  /// compound and an accessory. The app previously applied one global 90s
+  /// preference to every exercise alike.
+  final int? defaultRestSeconds;
+
+  /// Rest to actually use: the prescribed value, or a sane default for the
+  /// prescribed rep count. Higher reps mean lighter work and shorter rest.
+  int get restSeconds {
+    final explicit = defaultRestSeconds;
+    if (explicit != null) return explicit;
+    final reps = defaultReps ?? 10;
+    if (reps <= 5) return 180;
+    if (reps <= 8) return 120;
+    if (reps <= 12) return 90;
+    return 60;
+  }
+
   TemplateExerciseData({
     required this.id,
     required this.templateId,
@@ -1914,6 +2042,7 @@ class TemplateExerciseData {
     required this.defaultSets,
     this.defaultReps,
     this.defaultWeight,
+    this.defaultRestSeconds,
   });
 
   Map<String, dynamic> toJson() => {
@@ -1924,6 +2053,7 @@ class TemplateExerciseData {
     'defaultSets': defaultSets,
     'defaultReps': defaultReps,
     'defaultWeight': defaultWeight,
+    'defaultRestSeconds': defaultRestSeconds,
   };
 
   factory TemplateExerciseData.fromJson(Map<String, dynamic> json) => TemplateExerciseData(
@@ -1934,6 +2064,9 @@ class TemplateExerciseData {
     defaultSets: json['defaultSets'] as int,
     defaultReps: json['defaultReps'] as int?,
     defaultWeight: (json['defaultWeight'] as num?)?.toDouble(),
+    // Absent on rows written before this field existed; `restSeconds` derives
+    // a value from the rep count in that case.
+    defaultRestSeconds: (json['defaultRestSeconds'] as num?)?.toInt(),
   );
 }
 

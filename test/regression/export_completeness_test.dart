@@ -37,7 +37,8 @@ void main() {
     database = AppDatabase();
     calendarService =
         CalendarService(await SharedPreferences.getInstance(), database);
-    service = ExportImportService(database, calendarService);
+    service = ExportImportService(
+        database, calendarService, await SharedPreferences.getInstance());
   });
 
   /// One row of every type, every nullable field filled in.
@@ -88,7 +89,8 @@ void main() {
         orderIndex: 0,
         defaultSets: 3,
         defaultReps: 10,
-        defaultWeight: 40));
+        defaultWeight: 40,
+        defaultRestSeconds: 135));
     await database.insertWorkoutSession(WorkoutSessionData(
         id: 'WS',
         startedAt: now,
@@ -146,9 +148,17 @@ void main() {
       'setEntries',
       'sleepEntries',
       'scheduledEvents',
+      // Added in 1.3.0. Before this, restoring a backup on a new phone lost
+      // the profile and every setting -- everything that drives generation
+      // lived outside the thing meant to preserve it.
+      'profile',
+      'preferences',
     });
 
+    // 'profile' is a single JSON string and 'preferences' a map; every other
+    // key is a non-empty collection.
     for (final key in data.keys) {
+      if (key == 'profile' || key == 'preferences') continue;
       expect(data[key], isA<List<dynamic>>().having((l) => l.length, key, greaterThan(0)),
           reason: '"$key" exported empty even though a row was seeded');
     }
@@ -210,6 +220,9 @@ void main() {
       expect(rows.single.defaultReps, 10,
           reason: 'a prescription that loses its reps is not a prescription');
       expect(rows.single.defaultWeight, 40);
+      expect(rows.single.defaultRestSeconds, 135,
+          reason: 'rest is what keeps a restored session inside its time '
+              'budget; losing it silently reverts to the global default');
     });
 
     test('workout sessions and their logged sets, down to rest seconds',

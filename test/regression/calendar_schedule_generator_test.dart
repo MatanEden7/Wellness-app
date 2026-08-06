@@ -59,19 +59,59 @@ void main() {
     expect(events.where((e) => e.type == EventType.sleep), hasLength(1));
   });
 
-  test('workout events never fall on Friday or Saturday, at any training-day count', () async {
-    for (final days in [2, 3, 4, 5, 6]) {
-      final generator = CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: days));
+  test('the working week is filled before the weekend is touched', () async {
+    // The app treats Friday and Saturday as the weekend (Israeli convention),
+    // so training lands Sunday-Thursday first. That used to be stated as
+    // "never Friday or Saturday", which quietly required capping the week at
+    // five -- someone who asked for six days silently got five. The real rule
+    // is that the weekend is only used once the working week is full.
+    for (final days in [1, 2, 3, 4, 5, 6, 7]) {
+      final generator = CalendarScheduleGenerator(
+          AppDatabase(), _profile(trainingDaysPerWeek: days));
       final events = await generator.buildSchedule();
-      final workouts = events.where((e) => e.type == EventType.workout);
+      final weekdays = events
+          .where((e) => e.type == EventType.workout)
+          .map((e) => e.scheduledAt.weekday)
+          .toSet();
 
-      for (final w in workouts) {
-        final scheduledWeekday = w.scheduledAt.weekday; // 1=Mon..7=Sun
-        expect(scheduledWeekday, isNot(5), reason: 'Friday, for $days days/week');
-        expect(scheduledWeekday, isNot(6), reason: 'Saturday, for $days days/week');
-        // recurrenceDays should agree with the actual scheduled weekday.
-        expect(w.recurrenceDays, [scheduledWeekday]);
+      if (days <= 5) {
+        expect(weekdays, isNot(contains(DateTime.friday)),
+            reason: '$days days/week does not need the weekend');
+        expect(weekdays, isNot(contains(DateTime.saturday)),
+            reason: '$days days/week does not need the weekend');
       }
+      if (days == 6) {
+        expect(weekdays, contains(DateTime.friday));
+        expect(weekdays, isNot(contains(DateTime.saturday)),
+            reason: 'Friday is used before Saturday');
+      }
+      if (days == 7) {
+        expect(weekdays, contains(DateTime.saturday),
+            reason: 'seven days a week has nowhere else to go');
+      }
+
+      for (final event
+          in events.where((e) => e.type == EventType.workout)) {
+        expect(event.recurrenceDays, [event.scheduledAt.weekday],
+            reason: 'the recurrence rule must agree with the day it starts '
+                'on, or the series drifts off its own schedule');
+      }
+    }
+  });
+
+  test('every requested training day gets its own session', () async {
+    // The count used to be capped at 5, so 6 and 7 silently became 5.
+    for (final days in [1, 2, 3, 4, 5, 6, 7]) {
+      final generator = CalendarScheduleGenerator(
+          AppDatabase(), _profile(trainingDaysPerWeek: days));
+      final events = await generator.buildSchedule();
+      final weekdays = events
+          .where((e) => e.type == EventType.workout)
+          .map((e) => e.scheduledAt.weekday)
+          .toSet();
+
+      expect(weekdays, hasLength(days),
+          reason: 'asked for $days training days, got ${weekdays.length}');
     }
   });
 

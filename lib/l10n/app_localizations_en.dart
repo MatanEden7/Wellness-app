@@ -1579,6 +1579,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingActivityTitle => 'What\'s your activity level?';
 
   @override
+  String get onboardingExperienceTitle => 'Training experience';
+
+  @override
+  String get onboardingExperienceSubtitle =>
+      'How long you\'ve been lifting — this sets your starting weights.';
+
+  @override
+  String get onboardingExperienceBeginner => 'New to lifting';
+
+  @override
+  String get onboardingExperienceIntermediate => 'A year or two';
+
+  @override
+  String get onboardingExperienceAdvanced => 'Several years';
+
+  @override
   String get onboardingTrainingTitle => 'How many training days per week?';
 
   @override

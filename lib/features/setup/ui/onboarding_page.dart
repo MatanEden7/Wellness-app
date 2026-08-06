@@ -31,6 +31,7 @@ class OnboardingPage extends HookConsumerWidget {
     final goal = useState<String>('maintenance');
     final activityLevel = useState<String>('moderate');
     final trainingDays = useState<int>(3);
+    final trainingExperience = useState<String>('beginner');
     final equipment = useState<Set<String>>({'none'});
     final dietType = useState<String>('omnivore');
     final mealCount = useState<String>('3');
@@ -93,6 +94,7 @@ class OnboardingPage extends HookConsumerWidget {
           goal: goal.value,
           activityLevel: activityLevel.value,
           trainingDaysPerWeek: trainingDays.value,
+          trainingExperience: trainingExperience.value,
           equipment: equipment.value.toList(),
           dietType: dietType.value,
           mealCountPerDay: mealCount.value,
@@ -215,6 +217,7 @@ class OnboardingPage extends HookConsumerWidget {
                     goal: goal,
                     activityLevel: activityLevel,
                     trainingDays: trainingDays,
+                    trainingExperience: trainingExperience,
                     onNext: nextStep,
                   ),
                   
@@ -652,12 +655,14 @@ class _GoalsStep extends StatelessWidget {
   final ValueNotifier<String> goal;
   final ValueNotifier<String> activityLevel;
   final ValueNotifier<int> trainingDays;
+  final ValueNotifier<String> trainingExperience;
   final VoidCallback onNext;
 
   const _GoalsStep({
     required this.goal,
     required this.activityLevel,
     required this.trainingDays,
+    required this.trainingExperience,
     required this.onNext,
   });
 
@@ -754,8 +759,8 @@ class _GoalsStep extends StatelessWidget {
                 child: Slider(
                   value: trainingDays.value.toDouble(),
                   min: 2,
-                  max: 6,
-                  divisions: 4,
+                  max: 7,
+                  divisions: 5,
                   label: '${trainingDays.value} days',
                   onChanged: (value) => trainingDays.value = value.toInt(),
                 ),
@@ -767,6 +772,44 @@ class _GoalsStep extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.end,
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Training experience.
+          //
+          // Deliberately a separate question from activity level, which is a
+          // calorie input: an active postman is not an experienced lifter.
+          // This is the only thing that turns a rep range into a starting
+          // weight, so it belongs beside the training questions rather than
+          // being inferred from something that does not measure strength.
+          Text(l10n.onboardingExperienceTitle,
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            l10n.onboardingExperienceSubtitle,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                label: Text(l10n.onboardingExperienceBeginner),
+                selected: trainingExperience.value == 'beginner',
+                onSelected: (_) => trainingExperience.value = 'beginner',
+              ),
+              ChoiceChip(
+                label: Text(l10n.onboardingExperienceIntermediate),
+                selected: trainingExperience.value == 'intermediate',
+                onSelected: (_) => trainingExperience.value = 'intermediate',
+              ),
+              ChoiceChip(
+                label: Text(l10n.onboardingExperienceAdvanced),
+                selected: trainingExperience.value == 'advanced',
+                onSelected: (_) => trainingExperience.value = 'advanced',
               ),
             ],
           ),

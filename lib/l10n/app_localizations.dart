@@ -3158,6 +3158,36 @@ abstract class AppLocalizations {
   /// **'What\'s your activity level?'**
   String get onboardingActivityTitle;
 
+  /// No description provided for @onboardingExperienceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Training experience'**
+  String get onboardingExperienceTitle;
+
+  /// No description provided for @onboardingExperienceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How long you\'ve been lifting — this sets your starting weights.'**
+  String get onboardingExperienceSubtitle;
+
+  /// No description provided for @onboardingExperienceBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'New to lifting'**
+  String get onboardingExperienceBeginner;
+
+  /// No description provided for @onboardingExperienceIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'A year or two'**
+  String get onboardingExperienceIntermediate;
+
+  /// No description provided for @onboardingExperienceAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Several years'**
+  String get onboardingExperienceAdvanced;
+
   /// No description provided for @onboardingTrainingTitle.
   ///
   /// In en, this message translates to:

@@ -71,6 +71,8 @@ void main() async {
         databaseProvider.overrideWithValue(database),
         backupLocationServiceProvider.overrideWithValue(backupLocationService),
         preferencesServiceProvider.overrideWithValue(preferencesService),
+        // Backed up wholesale, so a new setting is never forgotten.
+        sharedPreferencesProvider.overrideWithValue(prefs),
         userProfileServiceProvider.overrideWithValue(userProfileService),
         themeServiceProvider.overrideWithValue(themeService),
         languageServiceProvider.overrideWithValue(languageService),

@@ -9,6 +9,16 @@ final userProfileServiceProvider = Provider<UserProfileService>((ref) {
   throw UnimplementedError('UserProfileService must be overridden');
 });
 
+/// The raw preference store.
+///
+/// Exposed as a provider so the backup can capture *every* key the app owns
+/// rather than a hand-maintained list of them. Enumerating keys would rebuild
+/// the same drift problem the export key set already suffers from: add a
+/// preference, forget the list, lose it silently on restore.
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('SharedPreferences must be overridden');
+});
+
 
 // User profile data model
 class UserProfile {
@@ -22,6 +32,18 @@ class UserProfile {
   final String goal; // fat_loss, muscle_gain, maintenance, mobility_rehab
   final String activityLevel; // sedentary, light, moderate, active, very_active
   final int trainingDaysPerWeek;
+
+  /// beginner, intermediate, advanced.
+  ///
+  /// Strength, not daily movement -- `activityLevel` is a calorie input and a
+  /// poor proxy for it, because an active postman is not an experienced
+  /// lifter. This is what turns a rep range into an actual starting weight,
+  /// so guessing it wrong prescribes a load someone cannot safely handle.
+  ///
+  /// Defaults to `beginner` when absent, which is every profile saved before
+  /// this field existed. That default is deliberate: it produces the lightest
+  /// prescriptions, so an unknown user is never over-loaded.
+  final String trainingExperience;
   
   // Equipment & preferences
   final List<String> equipment;
@@ -50,6 +72,7 @@ class UserProfile {
     required this.goal,
     required this.activityLevel,
     required this.trainingDaysPerWeek,
+    this.trainingExperience = 'beginner',
     required this.equipment,
     required this.dietType,
     required this.mealCountPerDay,
@@ -73,6 +96,7 @@ class UserProfile {
     'goal': goal,
     'activityLevel': activityLevel,
     'trainingDaysPerWeek': trainingDaysPerWeek,
+    'trainingExperience': trainingExperience,
     'equipment': equipment,
     'dietType': dietType,
     'mealCountPerDay': mealCountPerDay,
@@ -96,6 +120,8 @@ class UserProfile {
     goal: json['goal'] as String,
     activityLevel: json['activityLevel'] as String,
     trainingDaysPerWeek: json['trainingDaysPerWeek'] as int,
+    // Absent on every profile saved before this field existed.
+    trainingExperience: json['trainingExperience'] as String? ?? 'beginner',
     equipment: List<String>.from(json['equipment'] as List),
     dietType: json['dietType'] as String,
     mealCountPerDay: json['mealCountPerDay'] as String,
@@ -119,6 +145,7 @@ class UserProfile {
     String? goal,
     String? activityLevel,
     int? trainingDaysPerWeek,
+    String? trainingExperience,
     List<String>? equipment,
     String? dietType,
     String? mealCountPerDay,
@@ -141,6 +168,7 @@ class UserProfile {
       goal: goal ?? this.goal,
       activityLevel: activityLevel ?? this.activityLevel,
       trainingDaysPerWeek: trainingDaysPerWeek ?? this.trainingDaysPerWeek,
+      trainingExperience: trainingExperience ?? this.trainingExperience,
       equipment: equipment ?? this.equipment,
       dietType: dietType ?? this.dietType,
       mealCountPerDay: mealCountPerDay ?? this.mealCountPerDay,

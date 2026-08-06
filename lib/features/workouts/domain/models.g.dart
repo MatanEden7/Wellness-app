@@ -111,6 +111,7 @@ _$TemplateExerciseImpl _$$TemplateExerciseImplFromJson(
       defaultSets: json['defaultSets'] as int? ?? 3,
       defaultReps: json['defaultReps'] as int?,
       defaultWeight: (json['defaultWeight'] as num?)?.toDouble(),
+      defaultRestSeconds: json['defaultRestSeconds'] as int?,
     );
 
 Map<String, dynamic> _$$TemplateExerciseImplToJson(
@@ -123,6 +124,7 @@ Map<String, dynamic> _$$TemplateExerciseImplToJson(
       'defaultSets': instance.defaultSets,
       'defaultReps': instance.defaultReps,
       'defaultWeight': instance.defaultWeight,
+      'defaultRestSeconds': instance.defaultRestSeconds,
     };
 
 _$WorkoutSessionImpl _$$WorkoutSessionImplFromJson(Map<String, dynamic> json) =>

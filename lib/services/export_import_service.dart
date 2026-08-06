@@ -3,22 +3,95 @@ import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/db/drift_database.dart';
+import 'user_profile_service.dart';
 import '../features/calendar/data/calendar_service.dart';
 import '../features/calendar/domain/models.dart';
 
 final exportImportServiceProvider = Provider<ExportImportService>((ref) {
   final database = ref.read(databaseProvider);
   final calendarService = ref.read(calendarServiceProvider);
-  return ExportImportService(database, calendarService);
+  return ExportImportService(
+    database,
+    calendarService,
+    ref.read(sharedPreferencesProvider),
+  );
 });
 
 class ExportImportService {
   final AppDatabase _database;
   final CalendarService _calendarService;
 
-  ExportImportService(this._database, this._calendarService);
+  /// Optional so tests that only care about database round-tripping can leave
+  /// it out. When absent, the profile and preference sections are simply
+  /// omitted -- and import tolerates their absence anyway, because every
+  /// backup written before 1.3.0 lacks them.
+  final SharedPreferences? _prefs;
+
+  ExportImportService(this._database, this._calendarService, [this._prefs]);
+
+  /// Preference keys that are already exported through a richer path and must
+  /// not be duplicated here. The calendar is stored in SharedPreferences but
+  /// round-trips as `scheduledEvents`, decoded into real objects.
+  static const Set<String> _preferenceKeysOwnedElsewhere = {
+    'scheduled_events',
+    'user_profile',
+  };
+
+  /// Every preference the app owns, with its type preserved.
+  ///
+  /// Captured by walking the store rather than from a list of known keys. A
+  /// hand-maintained list is the same trap as the export key set: add a
+  /// setting, forget the list, lose it on restore with nothing to notice.
+  ///
+  /// The type tag matters. JSON cannot tell a whole double from an int, and
+  /// `sleepGoalHours` is a double -- restoring 8.0 as 8 makes
+  /// `getDouble` return null and the setting silently reverts to its default.
+  Map<String, dynamic> _encodePreferences(SharedPreferences prefs) {
+    final out = <String, dynamic>{};
+    for (final key in prefs.getKeys()) {
+      if (_preferenceKeysOwnedElsewhere.contains(key)) continue;
+      final value = prefs.get(key);
+      if (value == null) continue;
+      final tag = switch (value) {
+        bool _ => 'b',
+        int _ => 'i',
+        double _ => 'd',
+        String _ => 's',
+        List<String> _ => 'l',
+        _ => null,
+      };
+      if (tag == null) continue;
+      out[key] = {'t': tag, 'v': value};
+    }
+    return out;
+  }
+
+  Future<void> _restorePreferences(
+      SharedPreferences prefs, Map<String, dynamic> encoded) async {
+    for (final entry in encoded.entries) {
+      final wrapper = entry.value;
+      if (wrapper is! Map) continue;
+      final value = wrapper['v'];
+      switch (wrapper['t']) {
+        case 'b':
+          if (value is bool) await prefs.setBool(entry.key, value);
+        case 'i':
+          if (value is num) await prefs.setInt(entry.key, value.toInt());
+        case 'd':
+          if (value is num) await prefs.setDouble(entry.key, value.toDouble());
+        case 's':
+          if (value is String) await prefs.setString(entry.key, value);
+        case 'l':
+          if (value is List) {
+            await prefs.setStringList(
+                entry.key, value.whereType<String>().toList());
+          }
+      }
+    }
+  }
 
   Future<String> exportToJson() async {
     // Get all data from database
@@ -56,6 +129,12 @@ class ExportImportService {
         'sleepEntries': sleepEntries.map((se) => se.toJson()).toList(),
         // Added in 1.2.0.
         'scheduledEvents': scheduledEvents.map((e) => e.toJson()).toList(),
+        // Added in 1.3.0. Neither was in any earlier backup, so restoring on
+        // a new phone lost the profile entirely -- goal, targets, equipment
+        // and injuries -- along with every setting. Everything that drives
+        // generation lived outside the thing meant to preserve it.
+        if (_prefs != null) 'profile': _prefs.getString('user_profile'),
+        if (_prefs != null) 'preferences': _encodePreferences(_prefs),
       },
     };
 
@@ -105,6 +184,12 @@ class ExportImportService {
             .toList() ??
         <ScheduledEvent>[];
 
+    // Decoded up front with the rest, so a malformed profile or preference
+    // block aborts before anything is destroyed. Both are absent on every
+    // backup written before 1.3.0.
+    final profileJson = importData['profile'] as String?;
+    final preferences = importData['preferences'] as Map<String, dynamic>?;
+
     // Replace, don't merge: the payload contains the starter catalog too, so
     // anything left behind would come back as a duplicate.
     await _database.clearAllData();
@@ -145,6 +230,19 @@ class ExportImportService {
     // Replace, matching clearAllData() above: an import replaces the whole
     // schedule rather than merging alongside whatever was already there.
     await _calendarService.replaceAllEvents(scheduledEvents);
+
+    // Profile and settings last, and only when this backup carried them.
+    // An older payload leaves whatever is already on the device alone, which
+    // is strictly better than clearing a profile the backup cannot replace.
+    final prefs = _prefs;
+    if (prefs != null) {
+      if (profileJson != null) {
+        await prefs.setString('user_profile', profileJson);
+      }
+      if (preferences != null) {
+        await _restorePreferences(prefs, preferences);
+      }
+    }
 
     // Persist the imported state immediately rather than waiting on the
     // debounce -- an import is exactly when a user might force-quit.

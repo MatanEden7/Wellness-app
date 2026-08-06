@@ -210,6 +210,7 @@ class WorkoutTemplatesRepository {
       defaultSets: data.defaultSets,
       defaultReps: data.defaultReps,
       defaultWeight: data.defaultWeight,
+      defaultRestSeconds: data.defaultRestSeconds,
     );
   }
 
@@ -222,6 +223,7 @@ class WorkoutTemplatesRepository {
       defaultSets: model.defaultSets,
       defaultReps: model.defaultReps,
       defaultWeight: model.defaultWeight,
+      defaultRestSeconds: model.defaultRestSeconds,
     );
   }
 }

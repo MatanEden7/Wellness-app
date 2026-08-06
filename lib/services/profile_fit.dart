@@ -217,6 +217,10 @@ abstract final class ProfileFit {
       !_sameSet(before.equipment, after.equipment) ||
       !_sameSet(before.injuries, after.injuries) ||
       before.trainingDaysPerWeek != after.trainingDaysPerWeek ||
+      // Experience sets every prescribed load and the volume a plan targets,
+      // so changing it makes the existing templates wrong in a way the user
+      // can feel on the first set.
+      before.trainingExperience != after.trainingExperience ||
       before.mealCountPerDay != after.mealCountPerDay;
 
   static bool _sameSet(List<String> a, List<String> b) =>

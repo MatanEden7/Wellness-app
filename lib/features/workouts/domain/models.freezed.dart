@@ -690,6 +690,12 @@ mixin _$TemplateExercise {
   int? get defaultReps => throw _privateConstructorUsedError;
   double? get defaultWeight => throw _privateConstructorUsedError;
 
+  /// Rest between sets. Null falls back to a value derived from the rep
+  /// count -- see `TemplateExerciseData.restSeconds`. Carried on the domain
+  /// model as well as the row because `updateTemplate` rebuilds every child
+  /// from the model, so a field missing here is silently wiped on any edit.
+  int? get defaultRestSeconds => throw _privateConstructorUsedError;
+
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $TemplateExerciseCopyWith<TemplateExercise> get copyWith =>
@@ -709,7 +715,8 @@ abstract class $TemplateExerciseCopyWith<$Res> {
       int orderIndex,
       int defaultSets,
       int? defaultReps,
-      double? defaultWeight});
+      double? defaultWeight,
+      int? defaultRestSeconds});
 }
 
 /// @nodoc
@@ -732,6 +739,7 @@ class _$TemplateExerciseCopyWithImpl<$Res, $Val extends TemplateExercise>
     Object? defaultSets = null,
     Object? defaultReps = freezed,
     Object? defaultWeight = freezed,
+    Object? defaultRestSeconds = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -762,6 +770,10 @@ class _$TemplateExerciseCopyWithImpl<$Res, $Val extends TemplateExercise>
           ? _value.defaultWeight
           : defaultWeight // ignore: cast_nullable_to_non_nullable
               as double?,
+      defaultRestSeconds: freezed == defaultRestSeconds
+          ? _value.defaultRestSeconds
+          : defaultRestSeconds // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -781,7 +793,8 @@ abstract class _$$TemplateExerciseImplCopyWith<$Res>
       int orderIndex,
       int defaultSets,
       int? defaultReps,
-      double? defaultWeight});
+      double? defaultWeight,
+      int? defaultRestSeconds});
 }
 
 /// @nodoc
@@ -802,6 +815,7 @@ class __$$TemplateExerciseImplCopyWithImpl<$Res>
     Object? defaultSets = null,
     Object? defaultReps = freezed,
     Object? defaultWeight = freezed,
+    Object? defaultRestSeconds = freezed,
   }) {
     return _then(_$TemplateExerciseImpl(
       id: null == id
@@ -832,6 +846,10 @@ class __$$TemplateExerciseImplCopyWithImpl<$Res>
           ? _value.defaultWeight
           : defaultWeight // ignore: cast_nullable_to_non_nullable
               as double?,
+      defaultRestSeconds: freezed == defaultRestSeconds
+          ? _value.defaultRestSeconds
+          : defaultRestSeconds // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -846,7 +864,8 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
       required this.orderIndex,
       this.defaultSets = 3,
       this.defaultReps,
-      this.defaultWeight});
+      this.defaultWeight,
+      this.defaultRestSeconds});
 
   factory _$TemplateExerciseImpl.fromJson(Map<String, dynamic> json) =>
       _$$TemplateExerciseImplFromJson(json);
@@ -867,9 +886,16 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
   @override
   final double? defaultWeight;
 
+  /// Rest between sets. Null falls back to a value derived from the rep
+  /// count -- see `TemplateExerciseData.restSeconds`. Carried on the domain
+  /// model as well as the row because `updateTemplate` rebuilds every child
+  /// from the model, so a field missing here is silently wiped on any edit.
+  @override
+  final int? defaultRestSeconds;
+
   @override
   String toString() {
-    return 'TemplateExercise(id: $id, templateId: $templateId, exerciseId: $exerciseId, orderIndex: $orderIndex, defaultSets: $defaultSets, defaultReps: $defaultReps, defaultWeight: $defaultWeight)';
+    return 'TemplateExercise(id: $id, templateId: $templateId, exerciseId: $exerciseId, orderIndex: $orderIndex, defaultSets: $defaultSets, defaultReps: $defaultReps, defaultWeight: $defaultWeight, defaultRestSeconds: $defaultRestSeconds)';
   }
 
   @override
@@ -889,13 +915,15 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
             (identical(other.defaultReps, defaultReps) ||
                 other.defaultReps == defaultReps) &&
             (identical(other.defaultWeight, defaultWeight) ||
-                other.defaultWeight == defaultWeight));
+                other.defaultWeight == defaultWeight) &&
+            (identical(other.defaultRestSeconds, defaultRestSeconds) ||
+                other.defaultRestSeconds == defaultRestSeconds));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, templateId, exerciseId,
-      orderIndex, defaultSets, defaultReps, defaultWeight);
+      orderIndex, defaultSets, defaultReps, defaultWeight, defaultRestSeconds);
 
   @JsonKey(ignore: true)
   @override
@@ -920,7 +948,8 @@ abstract class _TemplateExercise implements TemplateExercise {
       required final int orderIndex,
       final int defaultSets,
       final int? defaultReps,
-      final double? defaultWeight}) = _$TemplateExerciseImpl;
+      final double? defaultWeight,
+      final int? defaultRestSeconds}) = _$TemplateExerciseImpl;
 
   factory _TemplateExercise.fromJson(Map<String, dynamic> json) =
       _$TemplateExerciseImpl.fromJson;
@@ -939,6 +968,13 @@ abstract class _TemplateExercise implements TemplateExercise {
   int? get defaultReps;
   @override
   double? get defaultWeight;
+  @override
+
+  /// Rest between sets. Null falls back to a value derived from the rep
+  /// count -- see `TemplateExerciseData.restSeconds`. Carried on the domain
+  /// model as well as the row because `updateTemplate` rebuilds every child
+  /// from the model, so a field missing here is silently wiped on any edit.
+  int? get defaultRestSeconds;
   @override
   @JsonKey(ignore: true)
   _$$TemplateExerciseImplCopyWith<_$TemplateExerciseImpl> get copyWith =>

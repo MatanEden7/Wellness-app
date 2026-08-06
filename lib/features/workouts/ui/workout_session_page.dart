@@ -775,7 +775,15 @@ class _ExerciseSetsView extends HookConsumerWidget {
                               .where((set) => set.exerciseId == exercise.id)
                               .length;
                           if (updatedCompletedSets < targetSets) {
-                            showRestTimer.value = prefs.defaultRestTime;
+                            // Per-exercise rest when the template prescribes
+                            // it, falling back to the global preference.
+                            // One 90s value for both a heavy squat and a
+                            // cable curl is wrong in both directions: it
+                            // wastes a third of the session on the isolation
+                            // work and under-recovers the compound.
+                            showRestTimer.value =
+                                templateExercise?.defaultRestSeconds ??
+                                    prefs.defaultRestTime;
                           }
                         } finally {
                           isLoading.value = false;

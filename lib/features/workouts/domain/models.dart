@@ -118,6 +118,11 @@ class TemplateExercise with _$TemplateExercise {
     @Default(3) int defaultSets,
     int? defaultReps,
     double? defaultWeight,
+    /// Rest between sets. Null falls back to a value derived from the rep
+    /// count -- see `TemplateExerciseData.restSeconds`. Carried on the domain
+    /// model as well as the row because `updateTemplate` rebuilds every child
+    /// from the model, so a field missing here is silently wiped on any edit.
+    int? defaultRestSeconds,
   }) = _TemplateExercise;
 
   factory TemplateExercise.create({

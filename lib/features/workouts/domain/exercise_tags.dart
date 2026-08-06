@@ -179,3 +179,105 @@ extension BodyPartLabel on BodyPart {
     }
   }
 }
+
+/// How an exercise loads the body, as data.
+///
+/// `primaryMuscle` alone cannot program a session. Bench Press and Dumbbell
+/// Fly are both "Chest" and are not interchangeable: one is a compound you
+/// open the session with, the other an accessory you finish with. The three
+/// enums below are what let the generator order a session, choose a rest
+/// interval, and decide whether prescribing a load is even meaningful.
+///
+/// All three follow the same absent-value contract as [Equipment]: an old
+/// snapshot or backup written before these existed decodes to the safest
+/// value, never an exception. See the codecs at the bottom of this file.
+
+/// The movement pattern an exercise trains.
+///
+/// Programming covers *patterns*, not muscle names -- a plan with three
+/// horizontal pushes and no hinge is badly balanced however the muscle
+/// column reads.
+enum MovementPattern {
+  squat,
+  hinge,
+  lunge,
+  horizontalPush,
+  verticalPush,
+  horizontalPull,
+  verticalPull,
+  carry,
+  coreBrace,
+  /// Single-joint accessory work, and the safe default for anything
+  /// untagged: an isolation movement is never chosen to open a session.
+  isolation;
+
+  String get key => name;
+
+  static MovementPattern? fromKey(String key) {
+    for (final p in MovementPattern.values) {
+      if (p.name == key) return p;
+    }
+    return null;
+  }
+}
+
+/// Whether an exercise is multi-joint. Drives rest length and session order.
+enum Mechanic {
+  compound,
+  isolation;
+
+  String get key => name;
+
+  static Mechanic? fromKey(String key) {
+    for (final m in Mechanic.values) {
+      if (m.name == key) return m;
+    }
+    return null;
+  }
+}
+
+/// Which strength standard a starting load is derived from.
+///
+/// [none] means no load is prescribed at all -- bodyweight, band and
+/// time-based work, and anything untagged. Failing to [none] is the reason a
+/// missing tag can never produce a dangerous prescription.
+enum LoadClass {
+  squatPattern,
+  deadliftPattern,
+  benchPattern,
+  pressPattern,
+  accessory,
+  none;
+
+  String get key => name;
+
+  static LoadClass? fromKey(String key) {
+    for (final c in LoadClass.values) {
+      if (c.name == key) return c;
+    }
+    return null;
+  }
+}
+
+abstract final class MovementPatternCodec {
+  static String? encode(MovementPattern? value) => value?.key;
+
+  /// Absent or unrecognised decodes to null, which callers read as
+  /// [MovementPattern.isolation]. Never throws on an old payload.
+  static MovementPattern? decode(Object? raw) =>
+      raw is String ? MovementPattern.fromKey(raw) : null;
+}
+
+abstract final class MechanicCodec {
+  static String? encode(Mechanic? value) => value?.key;
+
+  static Mechanic? decode(Object? raw) =>
+      raw is String ? Mechanic.fromKey(raw) : null;
+}
+
+abstract final class LoadClassCodec {
+  static String? encode(LoadClass? value) => value?.key;
+
+  static LoadClass? decode(Object? raw) =>
+      raw is String ? LoadClass.fromKey(raw) : null;
+}
