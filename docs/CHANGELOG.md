@@ -5,6 +5,43 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Nutrition targets were not a coherent plan (2026-08-09)
+
+The per-food macro math (`FoodNutritionMath`) checked out — the problem was the
+engine that produces the daily targets those numbers are measured against.
+`SetupEngineService` had four separate defects:
+
+* **Fat was never a target.** `calculateFatTarget` returned the 0.6 g/kg
+  essential-fat *minimum* and ignored its own `calorieTarget` and `proteinG`
+  parameters entirely. Fat landed at 13–16% of intake and every calorie it did
+  not claim was dumped into carbs — an 80 kg maintenance profile got 48 g fat
+  and ~370 g carbs. Fat is now a share of the calorie budget (25–30% by goal),
+  floored at the essential minimum.
+* **A flat ±kcal adjustment.** `-400` for fat loss is ~13% for a 3000 kcal
+  athlete and ~30% for a 1350 kcal sedentary user. Now 20% down / 10% up,
+  capped in absolute terms, and floored at 1200 kcal (women) / 1500 kcal (men)
+  — the old formula handed a 50 kg sedentary woman a **922 kcal** target.
+* **Protein scaled off total body weight.** 2.2 g/kg at a high BMI prescribed
+  264 g/day for a 120 kg user, over half their calories. Now scaled against
+  adjusted body weight above BMI 27.5, and capped at 40% of intake.
+* **The four numbers did not have to agree.** Carbs silently clamped to 0 when
+  protein and fat overran the budget, leaving a target set where 4P + 4C + 9F
+  did not reconstruct the calorie target. `calculateTargets` now solves all
+  four together, walking fat and then protein back toward their floors instead,
+  and rounds so the grams still reconcile.
+
+`getMacroPercentages` is gone: dead code that documented splits (fat 25–35%)
+the engine never actually produced.
+
+Onboarding and the Profile page's recompute had each open-coded the same four
+calls; both now go through the single `calculateTargets`, so which screen you
+edit from can no longer change your targets. Generated meal templates improve
+for free — `MealTemplateGenerator` sizes every meal against these targets.
+
+Covered by 72 new fast tests in `test/regression/setup_engine_test.dart`,
+including a sweep of all 72 profile shapes the onboarding form can produce,
+each asserting the target set reconciles and sits in a defensible range.
+
 ### Custom foods and exercises could not be saved on a phone (2026-08-07)
 
 `ISSUES.md` #77. Both the add/edit food dialog and the add/edit exercise dialog

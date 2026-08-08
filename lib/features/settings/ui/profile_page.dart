@@ -118,26 +118,24 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   /// Recomputes BMR/TDEE/targets when any input field changes and saves.
   Future<void> _recomputeAndSave(UserProfile base) async {
-    final engine = SetupEngineService();
-    final bmr = engine.calculateBMR(
+    // Same solver onboarding uses -- the targets must not depend on which
+    // screen recomputed them.
+    final targets = SetupEngineService().calculateTargets(
       sex: base.sex,
       weightKg: base.weightKg,
       heightCm: base.heightCm,
       ageYears: base.ageYears,
+      goal: base.goal,
+      activityLevel: base.activityLevel,
     );
-    final tdee = engine.calculateTDEE(bmr, base.activityLevel);
-    final cal = engine.calculateCalorieTarget(tdee, base.goal);
-    final pro = engine.calculateProteinTarget(base.weightKg, base.goal);
-    final fat = engine.calculateFatTarget(base.weightKg, cal, pro);
-    final carbs = engine.calculateCarbsTarget(cal, pro, fat);
 
     final updated = base.copyWith(
-      bmr: bmr,
-      tdee: tdee,
-      calorieTarget: cal,
-      proteinTargetG: pro,
-      fatTargetG: fat,
-      carbsTargetG: carbs,
+      bmr: targets.bmr,
+      tdee: targets.tdee,
+      calorieTarget: targets.calories,
+      proteinTargetG: targets.proteinG,
+      fatTargetG: targets.fatG,
+      carbsTargetG: targets.carbsG,
     );
     await _saveProfile(updated);
     if (mounted) {

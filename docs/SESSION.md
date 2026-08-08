@@ -4,6 +4,48 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-09 — Nutrition targets rebuilt
+
+**Current task:** None.
+
+**Last completed:** `ISSUES.md` #78. Reported as "the nutrition calculator
+looks fishy — maybe the amount per food, maybe the goal amount". Checked the
+per-food side first and it was clean: `FoodNutritionMath` is the single source
+of truth for display↔stored quantity, `MealItem.create` snapshots macros
+through it, and the seeded catalog's per-100g values reconcile with 4/4/9. The
+fault was `SetupEngineService`, which produces the *targets*.
+
+- The tell was `calculateFatTarget(weightKg, calorieTarget, proteinG)` ignoring
+  two of its three parameters. It returned the 0.6 g/kg essential-fat minimum
+  as if it were a target, so fat sat at 13–16% of intake and carbs — computed
+  as the remainder — absorbed everything else. 80 kg maintenance: 48 g fat,
+  ~370 g carbs.
+- Three more in the same block: flat ±400/250 kcal regardless of body size and
+  with no floor (a 50 kg sedentary woman cutting got 922 kcal/day), protein at
+  2.2 g/kg of *scale* weight (264 g/day at 120 kg), and carbs clamping to 0 so
+  the stored four numbers need not add up to their own calorie target.
+- Replaced with one `calculateTargets()` that solves all four together. The
+  reconciliation step is the part worth remembering: when protein + fat overrun
+  the budget it walks fat back to its floor, then protein, instead of letting
+  carbs go negative-then-zero. Rounding is applied last with carbs absorbing it,
+  so `4P + 4C + 9F` still reconstructs the calorie target within ~12 kcal.
+- Deleted `getMacroPercentages` — dead code that documented splits the engine
+  never produced, which is exactly the kind of thing that makes a number look
+  fishy when you go reading.
+- Onboarding and the Profile page had each open-coded the same four calls. Both
+  now call the one method, so the screen you edit from can't change your targets.
+- Test approach: rather than pinning formula outputs (which is what the old
+  tests did, and why a wrong formula stayed green for months), the new sweep
+  runs all 72 profile shapes the onboarding form can produce and asserts
+  *properties* — reconciles, clears the safety floor, macro shares defensible.
+  Two of my first bounds were wrong, not the code: a 45 kg very active bulker
+  legitimately eats 62% carbs, and 1.8 g/kg protein is only 13% of intake for a
+  light person eating 2750 kcal.
+
+**Next task:** nothing queued from this work. Full fast suite green (705).
+
+---
+
 ## 2026-08-07 — Analytics screen
 
 **Current task:** None. Shipped end to end.

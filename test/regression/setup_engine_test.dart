@@ -51,12 +51,18 @@ void main() {
   group('calculateCalorieTarget', () {
     const tdee = 2500.0;
 
-    test('fat_loss is a 400 kcal deficit', () {
-      expect(engine.calculateCalorieTarget(tdee, 'fat_loss'), tdee - 400);
+    test('fat_loss is a 20% deficit, not a flat 400 kcal', () {
+      expect(engine.calculateCalorieTarget(tdee, 'fat_loss'), tdee * 0.8);
     });
 
-    test('muscle_gain is a 250 kcal surplus', () {
+    test('the fat_loss deficit is capped at 750 kcal for very high TDEEs', () {
+      expect(engine.calculateCalorieTarget(5000, 'fat_loss'), 5000 - 750);
+    });
+
+    test('muscle_gain is a 10% surplus, floored at 150 and capped at 400', () {
       expect(engine.calculateCalorieTarget(tdee, 'muscle_gain'), tdee + 250);
+      expect(engine.calculateCalorieTarget(1200, 'muscle_gain'), 1200 + 150);
+      expect(engine.calculateCalorieTarget(5000, 'muscle_gain'), 5000 + 400);
     });
 
     test('maintenance and mobility_rehab hold at TDEE', () {
@@ -67,6 +73,17 @@ void main() {
     test('an unrecognized goal defaults to TDEE, not a crash', () {
       expect(engine.calculateCalorieTarget(tdee, 'nonsense'), tdee);
     });
+
+    test('never prescribes below the safe floor for the sex', () {
+      // 1350 TDEE - 20% = 1080, under the 1200 kcal floor for women.
+      expect(engine.calculateCalorieTarget(1350, 'fat_loss', sex: 'female'), 1200);
+      // 1700 - 20% = 1360, under the 1500 kcal floor for men.
+      expect(engine.calculateCalorieTarget(1700, 'fat_loss', sex: 'male'), 1500);
+    });
+
+    test('a TDEE already under the floor is not inflated up to it', () {
+      expect(engine.calculateCalorieTarget(1100, 'fat_loss', sex: 'female'), 1100);
+    });
   });
 
   group('calculateProteinTarget', () {
@@ -74,17 +91,47 @@ void main() {
       expect(engine.calculateProteinTarget(80, 'fat_loss'), 80 * 2.2);
       expect(engine.calculateProteinTarget(80, 'muscle_gain'), 80 * 2.0);
       expect(engine.calculateProteinTarget(80, 'maintenance'), 80 * 1.8);
-      expect(engine.calculateProteinTarget(80, 'mobility_rehab'), 80 * 1.6);
+      expect(engine.calculateProteinTarget(80, 'mobility_rehab'), 80 * 1.8);
     });
 
     test('an unrecognized goal defaults to the maintenance ratio', () {
       expect(engine.calculateProteinTarget(80, 'nonsense'), 80 * 1.8);
     });
+
+    test('scales against adjusted body weight above BMI 27.5', () {
+      // 175cm -> BMI 27.5 is 84.2kg. A 120kg user counts only a quarter of
+      // the 35.8kg excess, so ~93.1kg, not 120kg.
+      final reference = SetupEngineService.proteinReferenceWeight(120, 175);
+      expect(reference, closeTo(84.2 + 0.25 * (120 - 84.2), 0.1));
+      expect(engine.calculateProteinTarget(120, 'fat_loss', heightCm: 175),
+          closeTo(reference * 2.2, 0.1));
+    });
+
+    test('a healthy-BMI weight is used as-is', () {
+      expect(SetupEngineService.proteinReferenceWeight(75, 180), 75);
+    });
+
+    test('caps at 40% of the calorie target when one is given', () {
+      // 2.2 x 100kg = 220g = 880 kcal, over 40% of a 1800 kcal target.
+      expect(
+        engine.calculateProteinTarget(100, 'fat_loss', calorieTarget: 1800),
+        1800 * 0.4 / 4,
+      );
+    });
   });
 
-  test('calculateFatTarget is a flat 0.6g/kg floor regardless of calories/protein', () {
-    expect(engine.calculateFatTarget(80, 1000, 999), 80 * 0.6);
-    expect(engine.calculateFatTarget(80, 5000, 1), 80 * 0.6);
+  group('calculateFatTarget', () {
+    test('is a share of the calorie target, not a flat gram floor', () {
+      expect(engine.calculateFatTarget(80, 2500, 'maintenance'),
+          closeTo(2500 * 0.28 / 9, 0.01));
+      expect(engine.calculateFatTarget(80, 2500, 'muscle_gain'),
+          closeTo(2500 * 0.25 / 9, 0.01));
+    });
+
+    test('floors at the 0.6g/kg essential-fat minimum on very low budgets', () {
+      // 0.28 x 1200 / 9 = 37g, under the 0.6 x 100 = 60g minimum.
+      expect(engine.calculateFatTarget(100, 1200, 'fat_loss'), 60);
+    });
   });
 
   group('calculateCarbsTarget', () {
@@ -101,21 +148,110 @@ void main() {
     });
   });
 
-  group('getMacroPercentages', () {
-    test('each goal has its own documented split', () {
-      expect(SetupEngineService.getMacroPercentages('fat_loss'),
-          {'protein': 35, 'fat': 30, 'carbs': 35});
-      expect(SetupEngineService.getMacroPercentages('muscle_gain'),
-          {'protein': 30, 'fat': 25, 'carbs': 45});
+  group('calculateTargets', () {
+    /// Every profile shape the onboarding form can actually produce.
+    final profiles = [
+      for (final sex in ['male', 'female'])
+        for (final goal in ['fat_loss', 'muscle_gain', 'maintenance', 'mobility_rehab'])
+          for (final activity in ['sedentary', 'moderate', 'very_active'])
+            for (final body in [
+              (age: 22, height: 155, weight: 45.0), // small and light
+              (age: 35, height: 175, weight: 78.0), // mid
+              (age: 60, height: 190, weight: 130.0), // large and heavy
+            ])
+              (sex: sex, goal: goal, activity: activity, body: body),
+    ];
+
+    for (final p in profiles) {
+      final label = '${p.sex}/${p.goal}/${p.activity}/'
+          '${p.body.weight.toInt()}kg@${p.body.height}cm';
+
+      test('$label produces a coherent, safe target set', () {
+        final t = engine.calculateTargets(
+          sex: p.sex,
+          weightKg: p.body.weight,
+          heightCm: p.body.height,
+          ageYears: p.body.age,
+          goal: p.goal,
+          activityLevel: p.activity,
+        );
+
+        // The four numbers agree with each other: this is what silently broke
+        // before, when carbs clamped to 0 and nothing reconciled.
+        expect(t.kcalFromMacros, closeTo(t.calories, 12),
+            reason: '4P + 4C + 9F should reconstruct the calorie target');
+
+        // Nothing is starvation-level or absurd.
+        expect(t.calories, greaterThanOrEqualTo(1100));
+        expect(t.calories, lessThan(6000));
+
+        // Macros sit inside defensible ranges. Protein is checked per kg as
+        // well as a share: a light, very active profile eats a lot of food
+        // for its body weight, so an adequate 1.8 g/kg is legitimately only
+        // ~13% of intake there.
+        final proteinPct = t.proteinG * 4 / t.calories;
+        final fatPct = t.fatG * 9 / t.calories;
+        final carbsPct = t.carbsG * 4 / t.calories;
+        expect(t.proteinG / p.body.weight, greaterThanOrEqualTo(1.2),
+            reason: 'protein g/kg');
+        expect(proteinPct, lessThanOrEqualTo(0.42), reason: 'protein share');
+        expect(fatPct, inInclusiveRange(0.20, 0.45), reason: 'fat share');
+        // Carbs are the remainder, so their share is widest: a 45kg very
+        // active profile bulking needs ~2750 kcal but only ~80g of protein,
+        // and the surplus has nowhere else to go.
+        expect(carbsPct, inInclusiveRange(0.10, 0.65), reason: 'carb share');
+
+        // Essential minimums are respected.
+        expect(t.fatG, greaterThanOrEqualTo(p.body.weight * 0.6 - 1));
+        expect(t.carbsG, greaterThan(0));
+      });
+    }
+
+    test('the fat share is no longer a flat 0.6g/kg afterthought', () {
+      final t = engine.calculateTargets(
+        sex: 'male',
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        goal: 'maintenance',
+        activityLevel: 'moderate',
+      );
+      // The old engine gave this profile a flat 48g of fat -- ~15% of intake,
+      // with every calorie it did not claim dumped into carbs.
+      expect(t.fatG, greaterThan(60));
+      expect(t.fatG * 9 / t.calories, closeTo(0.28, 0.02));
     });
 
-    test('an unrecognized goal falls back to maintenance', () {
-      expect(SetupEngineService.getMacroPercentages('nonsense'),
-          SetupEngineService.getMacroPercentages('maintenance'));
+    test('a small sedentary woman cutting is not put under 1200 kcal', () {
+      final t = engine.calculateTargets(
+        sex: 'female',
+        weightKg: 50,
+        heightCm: 158,
+        ageYears: 45,
+        goal: 'fat_loss',
+        activityLevel: 'sedentary',
+      );
+      // Old engine: TDEE 1322 - 400 = 922 kcal.
+      expect(t.calories, greaterThanOrEqualTo(1200));
+    });
+
+    test('targets round to numbers a person can act on', () {
+      final t = engine.calculateTargets(
+        sex: 'male',
+        weightKg: 90,
+        heightCm: 178,
+        ageYears: 30,
+        goal: 'fat_loss',
+        activityLevel: 'moderate',
+      );
+      expect(t.calories % 10, 0);
+      expect(t.proteinG, t.proteinG.roundToDouble());
+      expect(t.carbsG, t.carbsG.roundToDouble());
+      expect(t.fatG, t.fatG.roundToDouble());
     });
   });
 
-  test('createUserProfile assembles a profile whose fields match the individual calculators', () {
+  test('createUserProfile assembles a profile whose fields match calculateTargets', () {
     final profile = engine.createUserProfile(
       sex: 'male',
       ageYears: 30,
@@ -131,19 +267,21 @@ void main() {
       injuries: const [],
     );
 
-    final bmr = engine.calculateBMR(sex: 'male', weightKg: 90, heightCm: 178, ageYears: 30);
-    final tdee = engine.calculateTDEE(bmr, 'moderate');
-    final cal = engine.calculateCalorieTarget(tdee, 'fat_loss');
-    final pro = engine.calculateProteinTarget(90, 'fat_loss');
-    final fat = engine.calculateFatTarget(90, cal, pro);
-    final carbs = engine.calculateCarbsTarget(cal, pro, fat);
+    final targets = engine.calculateTargets(
+      sex: 'male',
+      weightKg: 90,
+      heightCm: 178,
+      ageYears: 30,
+      goal: 'fat_loss',
+      activityLevel: 'moderate',
+    );
 
-    expect(profile.bmr, bmr);
-    expect(profile.tdee, tdee);
-    expect(profile.calorieTarget, cal);
-    expect(profile.proteinTargetG, pro);
-    expect(profile.fatTargetG, fat);
-    expect(profile.carbsTargetG, carbs);
+    expect(profile.bmr, targets.bmr);
+    expect(profile.tdee, targets.tdee);
+    expect(profile.calorieTarget, targets.calories);
+    expect(profile.proteinTargetG, targets.proteinG);
+    expect(profile.fatTargetG, targets.fatG);
+    expect(profile.carbsTargetG, targets.carbsG);
     // Defaults not passed explicitly.
     expect(profile.energyUnit, 'kcal');
     expect(profile.weightUnit, 'g');

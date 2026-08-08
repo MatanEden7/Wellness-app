@@ -99,13 +99,20 @@ void main() {
 
     // Expected values recomputed the same way profile_page.dart does, so
     // this pins the wiring rather than re-deriving the formulas.
-    final engine = SetupEngineService();
-    final bmr = engine.calculateBMR(sex: 'male', weightKg: 90, heightCm: 178, ageYears: 30);
-    final tdee = engine.calculateTDEE(bmr, 'moderate');
-    final cal = engine.calculateCalorieTarget(tdee, 'fat_loss');
-    final pro = engine.calculateProteinTarget(90, 'fat_loss');
-    final fat = engine.calculateFatTarget(90, cal, pro);
-    final carbs = engine.calculateCarbsTarget(cal, pro, fat);
+    final targets = SetupEngineService().calculateTargets(
+      sex: 'male',
+      weightKg: 90,
+      heightCm: 178,
+      ageYears: 30,
+      goal: 'fat_loss',
+      activityLevel: 'moderate',
+    );
+    final bmr = targets.bmr;
+    final tdee = targets.tdee;
+    final cal = targets.calories;
+    final pro = targets.proteinG;
+    final fat = targets.fatG;
+    final carbs = targets.carbsG;
 
     expect(find.text('90.0 kg'), findsOneWidget);
 

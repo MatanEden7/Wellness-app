@@ -95,6 +95,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 75 | Scheduling a workout for *now* shows it twice (plan + unlinked session) | Medium | Fixed | ~1h |
 | 76 | Every multi-placeholder ARB string passed its arguments in the wrong order | High | Fixed | ~30min |
 | 77 | Add/edit food and exercise dialogs overflowed; their save button was off-screen and untappable | High | Fixed | ~45min |
+| 78 | Daily nutrition targets incoherent: fat never targeted, flat kcal adjustment with no safety floor, protein off scale weight, macros not reconciled | High | Fixed | ~2h |
 
 **Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
@@ -1003,3 +1004,53 @@ is what made this look like test rot rather than an app bug.
 `ensureVisible` + `tap`, and every onboarding/form button goes through it. Worth
 knowing generally: **a `warnIfMissed` warning in an integration run is a failure,
 not a warning.**
+
+### 78. The daily nutrition targets were not a coherent plan  **[FIXED]**
+
+Reported as "the nutrition numbers look fishy". The per-food math was fine --
+`FoodNutritionMath` is the single source of truth for display/stored quantity
+and macro multiplication, and the seeded catalog's per-100g values check out
+against the 4/4/9 identity. The fault was entirely in `SetupEngineService`,
+which produces the *targets* those numbers are measured against.
+
+Four defects, all in the same ~40 lines:
+
+1. **Fat was never actually targeted.** `calculateFatTarget(weightKg,
+   calorieTarget, proteinG)` returned `weightKg * 0.6` and used neither of its
+   other two parameters -- an unfinished function whose comment even said "can
+   be higher based on remaining calories" and then never was. Fat came out at
+   13-16% of intake against a 20-35% norm, and because carbs were computed as
+   "whatever is left", every calorie fat did not claim became carbohydrate. An
+   80 kg maintenance profile: 48 g fat, ~370 g carbs.
+2. **A flat calorie adjustment.** `-400` / `+250` regardless of body size. The
+   same 400 kcal is a 13% cut for a 3000 kcal athlete and a 30% cut for a
+   1350 kcal sedentary user. With no floor, a 50 kg / 158 cm / 45 y sedentary
+   woman choosing fat loss was prescribed **922 kcal/day**.
+3. **Protein scaled off scale weight.** 2.2 g/kg of *total* body weight gives a
+   120 kg user 264 g/day -- over half their calorie target, and more than their
+   lean mass needs.
+4. **The four numbers were free to disagree.** `calculateCarbsTarget` clamped
+   to 0 when protein and fat overran the budget, so the stored target set could
+   claim 1800 kcal while its own macros summed to 1350. Nothing reconciled it,
+   and `MealTemplateGenerator` then sized every generated meal against those
+   inconsistent numbers.
+
+Fixed by replacing the four independent calculators with a single
+`calculateTargets()` that solves them together: deficit/surplus as a fraction of
+TDEE (20%/10%, absolutely capped, floored at 1200/1500 kcal by sex), protein
+against adjusted body weight above BMI 27.5 and capped at 40% of intake, fat as
+a 25-30% share of calories floored at the 0.6 g/kg essential minimum, carbs as
+the remainder -- and when protein plus fat still overrun, fat is walked back to
+its floor and protein after it, rather than the carbs clamping silently.
+Everything is rounded to numbers a person can act on, with carbs absorbing the
+rounding so `4P + 4C + 9F` still reconstructs the calorie target.
+
+`getMacroPercentages` was deleted: dead code, never called, and it documented
+splits (fat 25-35%) the engine did not produce.
+
+Onboarding and the Profile page had each open-coded the same four-call sequence,
+so the formulas had two homes and could drift; both now call `calculateTargets`.
+
+Covered by a sweep over all 72 profile shapes the onboarding form can produce
+(sex x goal x activity x three body types), each asserting the set reconciles,
+clears the safety floor, and sits in a defensible macro range.
