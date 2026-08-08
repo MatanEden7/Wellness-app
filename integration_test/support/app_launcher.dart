@@ -65,10 +65,19 @@ UserProfile testProfile() => const UserProfile(
 /// via `prefs.setString` after `setMockInitialValues`, not folded into that
 /// map, because [UserProfile] isn't a primitive `setMockInitialValues` can
 /// hold directly.
+/// [seed] runs against the freshly-constructed [AppDatabase] *before* the
+/// widget tree is built, so a flow can start from a user who already has
+/// history rather than from an empty install. Use it for anything that has to
+/// exist at first frame -- logged meals, finished sessions, weigh-ins.
+///
+/// The collections are static, so [pumpApp] resets them first. Without that a
+/// flow inherits whatever the previous one left behind, and the failure looks
+/// like a bug in the screen under test rather than in the harness.
 Future<Widget> buildTestApp({
   AppLanguage language = AppLanguage.english,
   bool setupCompleted = true,
   UserProfile? profile,
+  Future<void> Function(AppDatabase db)? seed,
 }) async {
   SharedPreferences.setMockInitialValues({
     'setup_completed': setupCompleted,
@@ -79,7 +88,9 @@ Future<Widget> buildTestApp({
   if (profile != null) {
     await prefs.setString('user_profile', jsonEncode(profile.toJson()));
   }
+  AppDatabase.resetForTesting();
   final database = AppDatabase();
+  if (seed != null) await seed(database);
   final preferencesService = PreferencesService(prefs);
   final userProfileService = UserProfileService(prefs);
   final themeService = ThemeService(prefs);
@@ -126,11 +137,13 @@ Future<void> pumpApp(
   AppLanguage language = AppLanguage.english,
   bool setupCompleted = true,
   UserProfile? profile,
+  Future<void> Function(AppDatabase db)? seed,
 }) async {
   final app = await buildTestApp(
     language: language,
     setupCompleted: setupCompleted,
     profile: profile,
+    seed: seed,
   );
   await tester.pumpWidget(app);
   await settle(tester);
@@ -171,6 +184,23 @@ Future<void> waitFor(WidgetTester tester, Finder finder, {int maxAttempts = 10})
   // Final check so the caller gets a real assertion failure with a useful
   // message rather than silently proceeding.
   expect(finder, findsWidgets, reason: 'timed out waiting for $finder');
+}
+
+/// Scrolls [finder] into view, then taps it.
+///
+/// A bare `tester.tap()` does **not** fail when the target is off-screen -- it
+/// dispatches the hit test at the widget's real coordinates, misses whatever is
+/// actually on screen there, and only prints a `warnIfMissed` warning. The test
+/// then carries on and fails several steps later at something unrelated, which
+/// is exactly how the onboarding flows failed: the Continue button sits below
+/// the fold on the taller steps, four taps silently did nothing, and the
+/// failure surfaced as "Complete Setup not found".
+Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+  final target = finder.first;
+  await tester.ensureVisible(target);
+  await tester.pump();
+  await tester.tap(target);
+  await settle(tester);
 }
 
 /// Scrolls the nearest `Scrollable` until [finder] is built and on-screen,

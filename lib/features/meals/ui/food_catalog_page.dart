@@ -22,7 +22,7 @@ class FoodCatalogPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final tabController = useTabController(initialLength: 2);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -87,27 +87,30 @@ class _FoodList extends ConsumerWidget {
     return StreamBuilder<List<FoodItem>>(
       stream: foodsStream,
       builder: (context, snapshot) {
-          // Only show loading on initial load (no data yet)
-          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-            return const LoadingIndicator();
-          }
+        // Only show loading on initial load (no data yet)
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const LoadingIndicator();
+        }
 
-          final all = snapshot.data ?? [];
+        final all = snapshot.data ?? [];
 
-          // Hide what clashes with the user's diet/exclusions, unless they
-          // asked to see everything. Nothing is deleted -- the toggle in the
-          // app bar brings it all back, with a badge naming the reason.
-          final profile = ref.watch(filterProfileProvider);
-          final showAll = ref.watch(showAllContentProvider);
-          final foods = (profile == null || showAll)
-              ? all
-              : all.where((f) => ProfileFit.foodFits(f, profile)).toList();
-          final hiddenCount = all.length - foods.length;
+        // Hide what clashes with the user's diet/exclusions, unless they
+        // asked to see everything. Nothing is deleted -- the toggle in the
+        // app bar brings it all back, with a badge naming the reason.
+        final profile = ref.watch(filterProfileProvider);
+        final showAll = ref.watch(showAllContentProvider);
+        final foods = (profile == null || showAll)
+            ? all
+            : all.where((f) => ProfileFit.foodFits(f, profile)).toList();
+        final hiddenCount = all.length - foods.length;
 
         if (foods.isEmpty) {
           return EmptyState(
-            title: isStarter ? l10n.noStarterFoodsAvailable : l10n.buildYourFoodLibrary,
-            subtitle: isStarter 
+            title: isStarter
+                ? l10n.noStarterFoodsAvailable
+                : l10n.buildYourFoodLibrary,
+            subtitle: isStarter
                 ? l10n.starterFoodsWillAppear
                 : l10n.createCustomFoods,
             icon: Icons.restaurant_menu,
@@ -146,8 +149,9 @@ class _FoodList extends ConsumerWidget {
                       language: language,
                       mismatchReason: reason,
                       onEdit: () => _showEditFoodDialog(context, ref, food),
-                      onDelete:
-                          isStarter ? null : () => _deleteFood(context, ref, food),
+                      onDelete: isStarter
+                          ? null
+                          : () => _deleteFood(context, ref, food),
                     ),
                   );
                 },
@@ -167,7 +171,8 @@ class _FoodList extends ConsumerWidget {
     );
   }
 
-  Future<void> _showEditFoodDialog(BuildContext context, WidgetRef ref, FoodItem food) async {
+  Future<void> _showEditFoodDialog(
+      BuildContext context, WidgetRef ref, FoodItem food) async {
     await showDialog(
       context: context,
       barrierDismissible: true,
@@ -175,26 +180,27 @@ class _FoodList extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteFood(BuildContext context, WidgetRef ref, FoodItem food) async {
+  Future<void> _deleteFood(
+      BuildContext context, WidgetRef ref, FoodItem food) async {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-        title: Text(l10n.deleteFood),
-        content: Text(l10n.deleteFoodConfirmation(food.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.delete),
-          ),
-        ],
-      );
+          title: Text(l10n.deleteFood),
+          content: Text(l10n.deleteFoodConfirmation(food.name)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
       },
     );
 
@@ -246,9 +252,9 @@ class _FoodCard extends StatelessWidget {
                     Text(
                       food.displayName(language),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -257,8 +263,8 @@ class _FoodCard extends StatelessWidget {
                       Text(
                         food.brand!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 14,
-                        ),
+                              fontSize: 14,
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -269,7 +275,10 @@ class _FoodCard extends StatelessWidget {
               PopupMenuButton(
                 icon: Icon(
                   Icons.more_vert,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
                 itemBuilder: (context) => [
                   PopupMenuItem(
@@ -358,167 +367,210 @@ class _AddFoodDialog extends HookConsumerWidget {
 
     final isEditing = food != null;
 
+    // The fields scroll; the title and the action row never do.
+    //
+    // This used to be a bare Column with no scroll view at all. On a 402x874
+    // phone the content is ~840pt tall inside a ~682pt dialog, so it
+    // overflowed by 159 and pushed the Add button off the bottom of the
+    // screen -- with nothing to scroll, adding or editing a custom food was
+    // simply impossible on a real device. Flexible (not Expanded) keeps the
+    // dialog only as tall as it needs to be on roomier screens.
     return Dialog(
-      child: Container(
-        width: 400,
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                isEditing ? l10n.editFood : l10n.addFood,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Name
-              TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.foodName,
-                  counterText: '${nameController.text.length}/${TextLimits.foodNameMaxLength}',
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 400,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isEditing ? l10n.editFood : l10n.addFood,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                maxLength: TextLimits.foodNameMaxLength,
-                validator: TextLimits.validateFoodName,
-              ),
-              const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.lg),
 
-              // Brand
-              TextFormField(
-                controller: brandController,
-                decoration: InputDecoration(
-                  labelText: l10n.brandOptional,
-                  hintText: 'e.g., Generic, Organic, etc.',
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Name
+                        TextFormField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            labelText: l10n.foodName,
+                            counterText:
+                                '${nameController.text.length}/${TextLimits.foodNameMaxLength}',
+                          ),
+                          maxLength: TextLimits.foodNameMaxLength,
+                          validator: TextLimits.validateFoodName,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Brand
+                        TextFormField(
+                          controller: brandController,
+                          decoration: InputDecoration(
+                            labelText: l10n.brandOptional,
+                            hintText: 'e.g., Generic, Organic, etc.',
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Unit
+                        TextFormField(
+                          controller: unitController,
+                          decoration: InputDecoration(
+                            labelText: l10n.unit,
+                            hintText: 'g, ml, piece, cup, etc.',
+                          ),
+                          validator: (value) =>
+                              Validators.required(value, l10n.unit),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Nutrition per unit
+                        Text(
+                          'Nutrition per ${unitController.text.isEmpty ? l10n.unitDefault : unitController.text}:',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: kcalController,
+                                decoration: InputDecoration(
+                                    labelText: l10n.caloriesLabel),
+                                keyboardType: TextInputType.number,
+                                validator: (value) =>
+                                    Validators.nonNegativeNumber(
+                                        value, l10n.caloriesLabel),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: TextFormField(
+                                controller: proteinController,
+                                decoration: InputDecoration(
+                                    labelText: l10n.proteinGrams),
+                                keyboardType: TextInputType.number,
+                                validator: (value) =>
+                                    Validators.nonNegativeNumber(
+                                        value, 'Protein'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: carbsController,
+                                decoration:
+                                    InputDecoration(labelText: l10n.carbsGrams),
+                                keyboardType: TextInputType.number,
+                                validator: (value) =>
+                                    Validators.nonNegativeNumber(
+                                        value, 'Carbs'),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: TextFormField(
+                                controller: fatController,
+                                decoration:
+                                    InputDecoration(labelText: l10n.fatGrams),
+                                keyboardType: TextInputType.number,
+                                validator: (value) =>
+                                    Validators.nonNegativeNumber(value, 'Fat'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+
+                        TagChips<FoodTag>(
+                          title: 'Contains',
+                          subtitle:
+                              'Used to hide this food when it clashes with your '
+                              'diet or exclusions. Leave blank if it contains none.',
+                          options: FoodTagLabel.allergens,
+                          selected: tags.value,
+                          labelOf: (t) => t.label,
+                          onChanged: (next) => tags.value = {
+                            ...next,
+                            // Preserve the animal-origin tags the other group owns.
+                            ...tags.value
+                                .where(FoodTagLabel.animalOrigin.contains),
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        TagChips<FoodTag>(
+                          title: 'Animal origin',
+                          subtitle: 'Used for plant-based diets.',
+                          options: FoodTagLabel.animalOrigin,
+                          selected: tags.value,
+                          labelOf: (t) => t.label,
+                          onChanged: (next) => tags.value = {
+                            ...next,
+                            ...tags.value
+                                .where(FoodTagLabel.allergens.contains),
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.lg),
 
-              // Unit
-              TextFormField(
-                controller: unitController,
-                decoration: InputDecoration(
-                  labelText: l10n.unit,
-                  hintText: 'g, ml, piece, cup, etc.',
+                // Actions
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: isLoading.value
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(l10n.cancel),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    AppButton(
+                      text: isEditing ? l10n.update : l10n.add,
+                      onPressed: isLoading.value
+                          ? null
+                          : () => _saveFood(
+                                context,
+                                ref,
+                                formKey,
+                                isEditing,
+                                food,
+                                nameController.text,
+                                brandController.text,
+                                unitController.text,
+                                kcalController.text,
+                                proteinController.text,
+                                carbsController.text,
+                                fatController.text,
+                                tags.value,
+                                isLoading,
+                              ),
+                      isLoading: isLoading.value,
+                    ),
+                  ],
                 ),
-                validator: (value) => Validators.required(value, l10n.unit),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Nutrition per unit
-              Text(
-                'Nutrition per ${unitController.text.isEmpty ? l10n.unitDefault : unitController.text}:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: kcalController,
-                      decoration: InputDecoration(labelText: l10n.caloriesLabel),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => Validators.nonNegativeNumber(value, l10n.caloriesLabel),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: TextFormField(
-                      controller: proteinController,
-                      decoration: InputDecoration(labelText: l10n.proteinGrams),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => Validators.nonNegativeNumber(value, 'Protein'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: carbsController,
-                      decoration: InputDecoration(labelText: l10n.carbsGrams),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => Validators.nonNegativeNumber(value, 'Carbs'),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: TextFormField(
-                      controller: fatController,
-                      decoration: InputDecoration(labelText: l10n.fatGrams),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => Validators.nonNegativeNumber(value, 'Fat'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              TagChips<FoodTag>(
-                title: 'Contains',
-                subtitle: 'Used to hide this food when it clashes with your '
-                    'diet or exclusions. Leave blank if it contains none.',
-                options: FoodTagLabel.allergens,
-                selected: tags.value,
-                labelOf: (t) => t.label,
-                onChanged: (next) => tags.value = {
-                  ...next,
-                  // Preserve the animal-origin tags the other group owns.
-                  ...tags.value.where(FoodTagLabel.animalOrigin.contains),
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TagChips<FoodTag>(
-                title: 'Animal origin',
-                subtitle: 'Used for plant-based diets.',
-                options: FoodTagLabel.animalOrigin,
-                selected: tags.value,
-                labelOf: (t) => t.label,
-                onChanged: (next) => tags.value = {
-                  ...next,
-                  ...tags.value.where(FoodTagLabel.allergens.contains),
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: isLoading.value ? null : () => Navigator.of(context).pop(),
-                    child: Text(l10n.cancel),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  AppButton(
-                    text: isEditing ? l10n.update : l10n.add,
-                    onPressed: isLoading.value ? null : () => _saveFood(
-                      context,
-                      ref,
-                      formKey,
-                      isEditing,
-                      food,
-                      nameController.text,
-                      brandController.text,
-                      unitController.text,
-                      kcalController.text,
-                      proteinController.text,
-                      carbsController.text,
-                      fatController.text,
-                      tags.value,
-                      isLoading,
-                    ),
-                    isLoading: isLoading.value,
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -592,7 +644,6 @@ class _AddFoodDialog extends HookConsumerWidget {
   }
 }
 
-
 /// Shown above a filtered list when items were hidden, with a one-tap
 /// escape hatch. Counting them is the point: silently showing a shorter
 /// list looks like missing data, which is what makes hiding feel broken.
@@ -612,7 +663,8 @@ class _HiddenBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.filter_alt_outlined,
-              size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+              size: 18,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -642,11 +694,11 @@ class _ShowingAllBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.visibility_outlined,
-              size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+              size: 18,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 8),
           Expanded(
-            child: Text('Showing everything',
-                style: theme.textTheme.bodySmall),
+            child: Text('Showing everything', style: theme.textTheme.bodySmall),
           ),
           TextButton(onPressed: onFilter, child: const Text('Filter')),
         ],

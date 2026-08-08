@@ -37,15 +37,18 @@ void main() {
     // use a hardcoded 'Continue' literal, but the text is identical either
     // way, and PageView only builds the current step so there's only ever
     // one match).
+    //
+    // Via tapVisible, because the button sits below the fold on the taller
+    // steps: a bare tap() there hits nothing, warns instead of failing, and
+    // the run dies several steps later at something unrelated.
     for (var step = 0; step < 6; step++) {
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
+      await tapVisible(tester, find.text('Continue'));
     }
 
     // Step 6 (summary) shows a spinner while it computes the profile
     // preview before "Complete Setup" exists -- wait it out.
     await waitFor(tester, find.text('Complete Setup'));
-    await tester.tap(find.text('Complete Setup'));
+    await tapVisible(tester, find.text('Complete Setup'));
     // Completion writes the profile/goals and runs the workout/meal/
     // calendar generators before navigating to the dashboard -- give it
     // extra time.
@@ -72,7 +75,7 @@ void main() {
     await tester.enterText(foodFields.at(5), '10'); // Carbs
     await tester.enterText(foodFields.at(6), '5'); // Fat
     await settle(tester);
-    await tester.tap(find.widgetWithText(AppButton, l10n.add));
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.add));
     await settle(tester);
 
     expect(find.text(foodName), findsOneWidget, reason: 'new food should appear in "Your Foods"');
@@ -95,7 +98,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, mealTemplateName);
     await settle(tester);
 
-    await tester.tap(find.widgetWithText(AppButton, l10n.add)); // "Add" next to Food Items
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.add)); // "Add" next to Food Items
     await settle(tester);
     // The underlying template editor's own "Template Name" field is still
     // mounted behind this dialog, so an unscoped find.byType(TextFormField)
@@ -120,7 +123,7 @@ void main() {
     ));
     await settle(tester);
 
-    await tester.tap(find.widgetWithText(AppButton, l10n.save)); // template editor's Save
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.save)); // template editor's Save
     await settle(tester);
     // Saving shows a "Meal template saved" SnackBar with the default 4s
     // duration, which floats at the bottom of the screen -- right where the
@@ -181,7 +184,7 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).first, exerciseName);
     await settle(tester);
-    await tester.tap(find.widgetWithText(AppButton, l10n.add));
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.add));
     await settle(tester);
 
     // Appended after the 16 built-in exercises in a ListView.builder, so it
@@ -202,7 +205,7 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).first, workoutTemplateName);
     await settle(tester);
-    await tester.tap(find.widgetWithText(AppButton, l10n.addExerciseTooltip)); // "Add Exercise"
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.addExerciseTooltip)); // "Add Exercise"
     await settle(tester);
     // 16 exercises + this new one in a plain ListView.builder inside the
     // dialog -- may need scrolling within the dialog specifically (not the
@@ -211,7 +214,7 @@ void main() {
     await scrollToFind(tester, find.text(exerciseName), scrollable: exerciseDialogList);
     await tester.tap(find.text(exerciseName));
     await settle(tester);
-    await tester.tap(find.widgetWithText(AppButton, l10n.save));
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.save));
     await settle(tester);
 
     // Same appended-at-the-end concern as the meal template list.
@@ -266,7 +269,7 @@ void main() {
     await tester.tap(find.text('OK'));
     await settle(tester);
 
-    await tester.tap(find.widgetWithText(AppButton, 'Add')); // sleep dialog's Add (hardcoded, not l10n)
+    await tapVisible(tester, find.widgetWithText(AppButton, 'Add')); // sleep dialog's Add (hardcoded, not l10n)
     await settle(tester);
 
     expect(find.byType(TextFormField), findsNothing, reason: 'sleep entry dialog should be closed after saving');
