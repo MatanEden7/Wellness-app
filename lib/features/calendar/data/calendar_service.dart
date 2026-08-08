@@ -561,47 +561,58 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     _loadEvents();
   }
 
+  /// Months already paged into [CalendarState.days], keyed by their first day,
+  /// in the order they were first loaded.
+  ///
+  /// [state.focusedDate] cannot stand in for this. `onMonthChanged` in
+  /// `calendar_page.dart` deliberately does **not** call `setFocusedDate` --
+  /// doing so re-animates the scroll list, which was its own bug (ISSUES #44)
+  /// -- so `focusedDate` stays on whichever month the page opened at however
+  /// far the user scrolls. Refreshing only that month is what made an event
+  /// scheduled in a scrolled-to month save correctly and never appear.
+  final Set<DateTime> _loadedMonths = <DateTime>{};
+
+  /// Enough scrolled-through months to cover any realistic session. Beyond
+  /// this the oldest stops being refreshed; its days stay on screen and are
+  /// reloaded the next time it scrolls back into view.
+  static const int _maxTrackedMonths = 12;
+
+  static DateTime _monthOf(DateTime date) => DateTime(date.year, date.month);
+
   Future<void> _loadEvents() async {
     // Load events for current month only (optimize initial load)
-    final now = DateTime.now();
-    final startDate = DateTime(now.year, now.month, 1);
-    final endDate = DateTime(now.year, now.month + 1, 0);
-    
-    final events = await _calendarService.getEventsForDateRange(startDate, endDate);
-    final daysMap = <DateTime, CalendarDay>{};
-
-    for (final event in events) {
-      final dateKey = DateTime(
-        event.scheduledAt.year,
-        event.scheduledAt.month,
-        event.scheduledAt.day,
-      );
-
-      if (daysMap.containsKey(dateKey)) {
-        final existingDay = daysMap[dateKey]!;
-        daysMap[dateKey] = existingDay.copyWith(
-          events: [...existingDay.events, event],
-        );
-      } else {
-        daysMap[dateKey] = CalendarDay(
-          date: dateKey,
-          events: [event],
-        );
-      }
-    }
-
-    state = state.copyWith(days: daysMap);
+    await loadEventsForMonth(DateTime.now());
   }
 
   Future<void> loadEventsForMonth(DateTime month) async {
+    _trackMonth(month);
+    state = state.copyWith(days: await _daysWithMonthReplaced(state.days, month));
+  }
+
+  void _trackMonth(DateTime month) {
+    _loadedMonths.add(_monthOf(month));
+    while (_loadedMonths.length > _maxTrackedMonths) {
+      _loadedMonths.remove(_loadedMonths.first);
+    }
+  }
+
+  /// [days] with every entry for [month] rebuilt from storage.
+  ///
+  /// Returns a new map rather than mutating, so a multi-month refresh can
+  /// build the whole result and assign `state` once.
+  Future<Map<DateTime, CalendarDay>> _daysWithMonthReplaced(
+    Map<DateTime, CalendarDay> days,
+    DateTime month,
+  ) async {
     final startDate = DateTime(month.year, month.month, 1);
     final endDate = DateTime(month.year, month.month + 1, 0);
-    
-    final events = await _calendarService.getEventsForDateRange(startDate, endDate);
-    final daysMap = Map<DateTime, CalendarDay>.from(state.days);
+
+    final events =
+        await _calendarService.getEventsForDateRange(startDate, endDate);
+    final daysMap = Map<DateTime, CalendarDay>.from(days);
 
     // Clear existing events for this month
-    daysMap.removeWhere((date, _) => 
+    daysMap.removeWhere((date, _) =>
         date.year == month.year && date.month == month.month);
 
     // Add new events
@@ -625,7 +636,7 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
       }
     }
 
-    state = state.copyWith(days: daysMap);
+    return daysMap;
   }
 
   void setViewMode(CalendarViewMode mode) {
@@ -644,9 +655,21 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     state = state.copyWith(selectedDate: date);
   }
   
-  Future<void> refresh() async {
-    // Reload events for the currently focused month
-    await loadEventsForMonth(state.focusedDate);
+  /// Reloads every month currently on screen, plus [including].
+  ///
+  /// Every month, not just the focused one: a recurring series added in August
+  /// also has occurrences in September, and the user may well be *looking* at
+  /// September. Pass [including] when acting on a specific event so a month
+  /// that has not been scrolled to yet is picked up too.
+  Future<void> refresh({DateTime? including}) async {
+    if (including != null) _trackMonth(including);
+    _trackMonth(state.focusedDate);
+
+    var days = state.days;
+    for (final month in _loadedMonths.toList()) {
+      days = await _daysWithMonthReplaced(days, month);
+    }
+    state = state.copyWith(days: days);
   }
 
   void toggleEventTypeVisibility(EventType type) {
@@ -670,8 +693,10 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   Future<void> addEvent(ScheduledEvent event) async {
     debugPrint('📅 Adding event: ${event.title} at ${event.scheduledAt}');
     await _calendarService.saveEvent(event);
-    await refresh();
-    
+    // `including` matters: the user can schedule into a month that has never
+    // been paged in, and without it the event saves and simply never appears.
+    await refresh(including: event.scheduledAt);
+
     // Schedule notification
     debugPrint('🔔 Attempting to schedule notification for event: ${event.id}');
     await _scheduleNotification(event);
@@ -688,6 +713,9 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     for (final event in events) {
       await _calendarService.saveEvent(event);
     }
+    for (final event in events) {
+      _trackMonth(event.scheduledAt);
+    }
     await refresh();
 
     for (final event in events) {
@@ -697,8 +725,10 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
 
   Future<void> updateEvent(ScheduledEvent event) async {
     await _calendarService.saveEvent(event);
-    await refresh();
-    
+    // Moving an event to another month has to repaint both -- the month it
+    // left (handled by the loaded-month sweep) and the one it landed in.
+    await refresh(including: event.scheduledAt);
+
     // Reschedule notification
     await _cancelNotification(event.id);
     if (event.status == EventStatus.planned && event.scheduledAt.isAfter(DateTime.now())) {

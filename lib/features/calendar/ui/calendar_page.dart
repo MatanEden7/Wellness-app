@@ -558,11 +558,14 @@ class CalendarPage extends ConsumerWidget {
                     await _completeScheduledEvent(ref, event);
                   }
                   await ref.read(calendarStateProvider.notifier).markEventCompleted(event.id, DateTime.now());
-                  // Refresh calendar and data providers to show new event
+                  // Refresh the data providers. The calendar itself no longer
+                  // needs a hand-rolled reload here: `markEventCompleted`
+                  // refreshes every month currently paged in. This call site
+                  // existed only to work around `refresh()` reloading the
+                  // focused month, which scrolling never updates.
                   ref.invalidate(mealsRepositoryProvider);
                   ref.invalidate(workoutSessionsRepositoryProvider);
                   ref.invalidate(sleepRepositoryProvider);
-                  await ref.read(calendarStateProvider.notifier).loadEventsForMonth(event.scheduledAt);
                 },
               ),
             ],
@@ -594,11 +597,12 @@ class CalendarPage extends ConsumerWidget {
               onTap: () async {
                 Navigator.of(context).pop();
                 await ref.read(calendarStateProvider.notifier).deleteEvent(event.id);
-                // Refresh calendar and data providers
+                // Data providers only -- see the note on "mark as completed"
+                // above for why the calendar reload that used to be here is
+                // now redundant.
                 ref.invalidate(mealsRepositoryProvider);
                 ref.invalidate(workoutSessionsRepositoryProvider);
                 ref.invalidate(sleepRepositoryProvider);
-                await ref.read(calendarStateProvider.notifier).loadEventsForMonth(event.scheduledAt);
               },
             ),
             ListTile(

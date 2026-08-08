@@ -315,26 +315,14 @@ class EventSchedulingDialog extends HookConsumerWidget {
                         selectedTime.value.minute,
                       );
                       
-                      // Create the underlying data entry if scheduling for immediate execution
-                      String? dataId;
-                      final isImmediate = scheduledDateTime.isBefore(DateTime.now().add(const Duration(minutes: 5)));
-                      
-                      if (isImmediate) {
-                        // For sleep, we don't need a template
-                        // For meals/workouts, we need a template to copy from
-                        if (selectedType.value == EventType.sleep || selectedTemplate.value != null) {
-                          dataId = await _createDataFromTemplate(
-                            ref,
-                            selectedType.value,
-                            selectedTemplate.value ?? 'no-template', // Sleep doesn't need template
-                            scheduledDateTime,
-                            titleController.text,
-                            descriptionController.text.isEmpty ? null : descriptionController.text,
-                          );
-                        }
-                      }
-                      
-                      final event = existingEvent != null
+                      // The event is built first and the data second, never the
+                      // other way round. The logged row has to carry the
+                      // event's id in `sourceEventId` -- that link is the only
+                      // thing stopping the calendar showing the plan and the
+                      // log as two rows for one activity (ISSUES #57, and
+                      // again as #75 when this block created the data first
+                      // and the event could not be referenced yet).
+                      final draft = existingEvent != null
                           ? existingEvent!.copyWith(
                               title: titleController.text,
                               description: descriptionController.text.isEmpty ? null : descriptionController.text,
@@ -349,7 +337,6 @@ class EventSchedulingDialog extends HookConsumerWidget {
                                   : null,
                               recurrenceEndDate: hasEndDate.value ? endDate.value : null,
                               templateId: selectedTemplate.value,
-                              metadata: dataId != null ? {'dataId': dataId} : null,
                             )
                           : ScheduledEvent.create(
                               title: titleController.text,
@@ -365,9 +352,45 @@ class EventSchedulingDialog extends HookConsumerWidget {
                                   : null,
                               recurrenceEndDate: hasEndDate.value ? endDate.value : null,
                               templateId: selectedTemplate.value,
-                              metadata: dataId != null ? {'dataId': dataId} : null,
                             );
-                      
+
+                      // Anything scheduled for (near enough) now is logged
+                      // straight away, linked back to the event above.
+                      String? dataId;
+                      final isImmediate = scheduledDateTime
+                          .isBefore(DateTime.now().add(const Duration(minutes: 5)));
+
+                      if (isImmediate) {
+                        // Sleep needs no template; meals and workouts copy from
+                        // one.
+                        if (selectedType.value == EventType.sleep ||
+                            selectedTemplate.value != null) {
+                          dataId = await _createDataFromTemplate(
+                            ref,
+                            selectedType.value,
+                            selectedTemplate.value ?? 'no-template',
+                            scheduledDateTime,
+                            titleController.text,
+                            descriptionController.text.isEmpty
+                                ? null
+                                : descriptionController.text,
+                            sourceEventId: draft.id,
+                          );
+                        }
+                      }
+
+                      // Existing metadata is merged rather than replaced: a
+                      // recurring event records its completed / missed /
+                      // skipped occurrence dates there, and overwriting the map
+                      // with a bare {'dataId': ...} would erase that history on
+                      // any edit.
+                      final event = dataId == null
+                          ? draft
+                          : draft.copyWith(metadata: {
+                              ...?draft.metadata,
+                              'dataId': dataId,
+                            });
+
                       if (existingEvent != null) {
                         await ref.read(calendarStateProvider.notifier).updateEvent(event);
                       } else {
@@ -790,14 +813,24 @@ class _WeekdaySelector extends StatelessWidget {
 }
 
 // Helper function to create actual data entries from templates or existing items
+/// Writes the real meal / session / sleep entry for an event being scheduled
+/// for right now.
+///
+/// [sourceEventId] is **required**, not optional: without it the created row
+/// has no link back to the event, and `CalendarService` renders both the plan
+/// and the log as separate rows -- the ISSUES #57 symptom, which reached
+/// production a second time through exactly this function (#75). Making it
+/// required also forces the caller to build the event *before* calling here,
+/// which is the ordering the bug came from.
 Future<String?> _createDataFromTemplate(
   WidgetRef ref,
   EventType type,
   String templateId,
   DateTime scheduledAt,
   String title,
-  String? description,
-) async {
+  String? description, {
+  required String sourceEventId,
+}) async {
   try {
     final database = ref.read(databaseProvider);
     final dateInt = AppDateUtils.dateToInt(scheduledAt);
@@ -830,7 +863,9 @@ Future<String?> _createDataFromTemplate(
             )).toList();
             
             final mealWithItems = newMeal.copyWith(items: items);
-            await ref.read(mealsRepositoryProvider).createMeal(mealWithItems);
+            await ref
+                .read(mealsRepositoryProvider)
+                .createMeal(mealWithItems, sourceEventId: sourceEventId);
             return newMeal.id;
           }
         } else {
@@ -873,7 +908,9 @@ Future<String?> _createDataFromTemplate(
           }
           
           final mealWithItems = meal.copyWith(items: items);
-          await ref.read(mealsRepositoryProvider).createMeal(mealWithItems);
+          await ref
+              .read(mealsRepositoryProvider)
+              .createMeal(mealWithItems, sourceEventId: sourceEventId);
           return meal.id;
         }
         break;
@@ -885,7 +922,9 @@ Future<String?> _createDataFromTemplate(
           note: description,
         );
         
-        await ref.read(workoutSessionsRepositoryProvider).createSession(session);
+        await ref
+            .read(workoutSessionsRepositoryProvider)
+            .createSession(session, sourceEventId: sourceEventId);
         return session.id;
         
       case EventType.sleep:
@@ -895,7 +934,9 @@ Future<String?> _createDataFromTemplate(
           note: description,
         );
         
-        await ref.read(sleepRepositoryProvider).createEntry(sleep);
+        await ref
+            .read(sleepRepositoryProvider)
+            .createEntry(sleep, sourceEventId: sourceEventId);
         return sleep.id;
     }
   } catch (e) {

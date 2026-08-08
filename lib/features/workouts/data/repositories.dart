@@ -268,8 +268,18 @@ class WorkoutSessionsRepository {
     );
   }
 
-  Future<void> createSession(WorkoutSession session) async {
-    await _database.insertWorkoutSession(_sessionModelToData(session));
+  /// Creates [session], optionally linked to the calendar event that produced
+  /// it.
+  ///
+  /// [sourceEventId] is what stops the calendar rendering the scheduled event
+  /// *and* the session it created as two separate rows -- see ISSUES #57 and
+  /// #75. It lives only on `WorkoutSessionData`, so it cannot ride in on the
+  /// domain model and has to be passed by whoever knows the event id.
+  Future<void> createSession(WorkoutSession session,
+      {String? sourceEventId}) async {
+    await _database.insertWorkoutSession(
+      _sessionModelToData(session, sourceEventId: sourceEventId),
+    );
   }
 
   Future<void> updateSession(WorkoutSession session) async {

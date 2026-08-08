@@ -154,9 +154,16 @@ class MealsRepository {
     );
   }
 
-  Future<void> createMeal(Meal meal) async {
+  /// Creates [meal], optionally linked to the calendar event that produced it.
+  ///
+  /// [sourceEventId] is what stops the calendar rendering the scheduled event
+  /// *and* the meal it created as two separate rows -- see ISSUES #57 and #75.
+  /// It lives only on `MealData`, so it cannot ride in on the domain model and
+  /// has to be passed by whoever knows the event id.
+  Future<void> createMeal(Meal meal, {String? sourceEventId}) async {
     await _database.transaction(() async {
-      await _database.insertMeal(_mealModelToData(meal));
+      await _database
+          .insertMeal(_mealModelToData(meal, sourceEventId: sourceEventId));
       for (final item in meal.items) {
         await _database.insertMealItem(_mealItemModelToData(item));
       }
@@ -346,7 +353,10 @@ class MealsRepository {
     );
   }
 
-  MealData _mealModelToData(Meal model) {
+  /// [sourceEventId] has no counterpart on the domain model, so callers that
+  /// know which calendar event produced this meal must pass it explicitly.
+  /// See [createMeal] and [updateMeal].
+  MealData _mealModelToData(Meal model, {String? sourceEventId}) {
     return MealData(
       id: model.id,
       date: model.date,
@@ -355,6 +365,7 @@ class MealsRepository {
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
       loggedAt: model.loggedAt,
+      sourceEventId: sourceEventId,
     );
   }
 

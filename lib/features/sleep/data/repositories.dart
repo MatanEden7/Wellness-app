@@ -43,8 +43,16 @@ class SleepRepository {
     return entry != null ? _sleepEntryDataToModel(entry) : null;
   }
 
-  Future<void> createEntry(SleepEntry entry) async {
-    await _database.insertSleepEntry(_sleepEntryModelToData(entry));
+  /// Creates [entry], optionally linked to the calendar event that produced it.
+  ///
+  /// [sourceEventId] is what stops the calendar rendering the scheduled event
+  /// *and* the sleep entry it created as two separate rows -- see ISSUES #57
+  /// and #75. It lives only on `SleepEntryData`, so it cannot ride in on the
+  /// domain model and has to be passed by whoever knows the event id.
+  Future<void> createEntry(SleepEntry entry, {String? sourceEventId}) async {
+    await _database.insertSleepEntry(
+      _sleepEntryModelToData(entry, sourceEventId: sourceEventId),
+    );
   }
 
   Future<void> updateEntry(SleepEntry entry) async {
