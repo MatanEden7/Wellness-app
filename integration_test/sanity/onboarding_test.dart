@@ -22,7 +22,7 @@ void main() {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester, language: AppLanguage.english, setupCompleted: false);
 
-    expect(find.text('Setup 1/7'), findsOneWidget);
+    expect(find.text('1/7'), findsOneWidget);
     expect(find.text(l10n.onboardingWelcome), findsOneWidget);
     expect(find.text(l10n.onboardingChooseLanguage), findsOneWidget);
     // "English" renders twice for the English option: its language name
@@ -36,7 +36,7 @@ void main() {
     final l10n = await loadL10n(AppLanguage.hebrew);
     await pumpApp(tester, language: AppLanguage.hebrew, setupCompleted: false);
 
-    expect(find.text('Setup 1/7'), findsOneWidget);
+    expect(find.text('1/7'), findsOneWidget);
     expect(find.text(l10n.onboardingWelcome), findsOneWidget);
     expect(find.text(l10n.onboardingChooseLanguage), findsOneWidget);
     // "English" renders twice for the English option: its language name

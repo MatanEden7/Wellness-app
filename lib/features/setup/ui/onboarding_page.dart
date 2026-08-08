@@ -170,7 +170,7 @@ class OnboardingPage extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Setup ${currentStep.value + 1}/$totalSteps',
+                        '${currentStep.value + 1}/$totalSteps',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       if (currentStep.value > 0)
