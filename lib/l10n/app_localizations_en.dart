@@ -1880,4 +1880,343 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workoutSettingsTitle => 'Workout Settings';
+
+  @override
+  String get analyticsTitle => 'Analytics';
+
+  @override
+  String get analyticsRangeWeek => 'W';
+
+  @override
+  String get analyticsRangeMonth => 'M';
+
+  @override
+  String get analyticsRangeSixMonths => '6M';
+
+  @override
+  String get analyticsRangeYear => 'Y';
+
+  @override
+  String get analyticsGoalsReached => 'Goals reached';
+
+  @override
+  String get analyticsInsights => 'Insights';
+
+  @override
+  String get analyticsTrainingVolume => 'Training volume';
+
+  @override
+  String get analyticsStrength => 'Strength';
+
+  @override
+  String get analyticsBodyWeight => 'Body weight';
+
+  @override
+  String get analyticsBodyWeightTrend => 'Body weight trend';
+
+  @override
+  String get analyticsSetsByMuscle => 'Sets by muscle';
+
+  @override
+  String get analyticsWorkingWeight => 'Working weight';
+
+  @override
+  String get analyticsGoalTraining => 'Training';
+
+  @override
+  String get analyticsGoalTrainingShort => 'training';
+
+  @override
+  String get analyticsGoalCaloriesShort => 'kcal';
+
+  @override
+  String get analyticsGoalProteinShort => 'protein';
+
+  @override
+  String get analyticsGoalSleepShort => 'sleep';
+
+  @override
+  String get analyticsAvgKcal => 'Avg kcal';
+
+  @override
+  String get analyticsAvgProtein => 'Avg protein';
+
+  @override
+  String get analyticsDaysLogged => 'Days logged';
+
+  @override
+  String get analyticsSessions => 'Sessions';
+
+  @override
+  String get analyticsPerWeek => 'Per week';
+
+  @override
+  String get analyticsTimeSpent => 'Time';
+
+  @override
+  String get analyticsNights => 'Nights';
+
+  @override
+  String get analyticsBedtimeSwing => 'Bedtime swing';
+
+  @override
+  String get analyticsLatest => 'Latest';
+
+  @override
+  String get analyticsChange => 'Change';
+
+  @override
+  String get analyticsLogWeight => 'Log weight';
+
+  @override
+  String get analyticsOtherMuscle => 'Other';
+
+  @override
+  String get analyticsBodyweightLabel => 'bodyweight';
+
+  @override
+  String get analyticsStrengthLegend =>
+      'Line: estimated 1RM · dots: heaviest set';
+
+  @override
+  String get analyticsStreakDay => '1 day streak';
+
+  @override
+  String analyticsStreakDays(String days) {
+    return '$days day streak';
+  }
+
+  @override
+  String analyticsBestStreak(String days) {
+    return 'best $days';
+  }
+
+  @override
+  String analyticsAvgValue(String value) {
+    return '$value avg';
+  }
+
+  @override
+  String analyticsBestE1rm(String value) {
+    return '$value best e1RM';
+  }
+
+  @override
+  String analyticsTotalVolume(String value) {
+    return '$value kg total';
+  }
+
+  @override
+  String analyticsVolumeValue(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String analyticsPerWeekOfTarget(String actual, String target) {
+    return '$actual / $target';
+  }
+
+  @override
+  String analyticsDaysLoggedValue(String logged, String total) {
+    return '$logged/$total';
+  }
+
+  @override
+  String analyticsTopSet(String weight, String reps) {
+    return '$weight × $reps';
+  }
+
+  @override
+  String analyticsSessionCount(String count) {
+    return '$count sessions';
+  }
+
+  @override
+  String analyticsWeekOf(String date) {
+    return 'Week of $date';
+  }
+
+  @override
+  String get analyticsEmptyAll =>
+      'Nothing logged in this range yet.\nLog a meal, a workout or a night of sleep and this fills in.';
+
+  @override
+  String get analyticsEmptyGoals =>
+      'Set a calorie or protein goal to start scoring your days.';
+
+  @override
+  String get analyticsEmptyMeals => 'No meals logged in this range.';
+
+  @override
+  String get analyticsEmptyWorkouts => 'No completed workouts in this range.';
+
+  @override
+  String get analyticsEmptySleep => 'No completed sleep entries in this range.';
+
+  @override
+  String get analyticsEmptyStrength =>
+      'Log a few sets to see your progression.';
+
+  @override
+  String get analyticsEmptyWeighIns =>
+      'No weigh-ins yet. One a week is enough to see a trend.';
+
+  @override
+  String get analyticsBodyweightOnlyExercise =>
+      'This exercise is bodyweight only — there is no load to chart.';
+
+  @override
+  String analyticsLoadError(String error) {
+    return 'Could not load your analytics.\n$error';
+  }
+
+  @override
+  String get analyticsWeightSheetTitle => 'Today\'s weight';
+
+  @override
+  String get analyticsWeightSheetSubtitle =>
+      'Replaces any earlier entry for today.';
+
+  @override
+  String get analyticsWeightSheetError =>
+      'Enter a weight between 20 and 400 kg';
+
+  @override
+  String analyticsPlateauNewBest(String weight) {
+    return '$weight · new best';
+  }
+
+  @override
+  String analyticsPlateauMovedUp(String weight) {
+    return '$weight · moved up';
+  }
+
+  @override
+  String analyticsPlateauStalled(String weight, String sessions, String days) {
+    return '$weight · $sessions sessions · ${days}d';
+  }
+
+  @override
+  String insightPlateau(String exercise, String weight, String sessions) {
+    return '$exercise has stayed at $weight for $sessions sessions — try adding 2.5 kg or one more rep.';
+  }
+
+  @override
+  String insightPersonalBest(String exercise, String value) {
+    return 'New best on $exercise: $value estimated 1RM.';
+  }
+
+  @override
+  String insightProteinShortfall(String actual, String goal) {
+    return 'Protein averaged $actual against your $goal goal.';
+  }
+
+  @override
+  String insightCalorieDriftHigh(String actual, String goal) {
+    return 'Calories are running $actual a day against a $goal goal.';
+  }
+
+  @override
+  String insightCalorieDriftLow(String actual, String goal) {
+    return 'Calories are running low: $actual a day against a $goal goal.';
+  }
+
+  @override
+  String insightVolumeDrop(String percent) {
+    return 'Training volume is down $percent on your recent average.';
+  }
+
+  @override
+  String insightSleepDebt(String nights, String hours) {
+    return '$nights of the last 7 nights came in under $hours.';
+  }
+
+  @override
+  String insightConsistencyWin(String days) {
+    return '$days days in a row hitting every goal.';
+  }
+
+  @override
+  String insightNeglectedMuscle(String sets, String muscle) {
+    return 'Only $sets sets for $muscle in this range.';
+  }
+
+  @override
+  String a11yChartNoData(String name) {
+    return '$name chart. No data in this range.';
+  }
+
+  @override
+  String a11yChartHeader(String name, String period) {
+    return '$name chart, by $period.';
+  }
+
+  @override
+  String a11yChartCoverage(String observed, String total, String period) {
+    return '$observed of $total $period with data.';
+  }
+
+  @override
+  String a11yChartAverage(String average, String min, String max) {
+    return 'Average $average, from $min to $max.';
+  }
+
+  @override
+  String a11yChartGoal(String goal) {
+    return 'Goal $goal.';
+  }
+
+  @override
+  String get a11yPeriodDay => 'day';
+
+  @override
+  String get a11yPeriodWeek => 'week';
+
+  @override
+  String get a11yPeriodMonth => 'month';
+
+  @override
+  String get a11yPeriodDays => 'days';
+
+  @override
+  String get a11yPeriodWeeks => 'weeks';
+
+  @override
+  String get a11yPeriodMonths => 'months';
+
+  @override
+  String get a11yTrendFlat => 'Flat across the range.';
+
+  @override
+  String get a11yTrendRoughlyFlat => 'Roughly flat across the range.';
+
+  @override
+  String a11yTrendRising(String amount) {
+    return 'Rising by about $amount across the range.';
+  }
+
+  @override
+  String a11yTrendFalling(String amount) {
+    return 'Falling by about $amount across the range.';
+  }
+
+  @override
+  String get a11yGoalChartNoData =>
+      'Goals reached chart. No data in this range.';
+
+  @override
+  String get a11yGoalChart => 'Goals reached chart.';
+
+  @override
+  String a11yGoalAverage(String percent) {
+    return 'Averaging $percent of your daily goals.';
+  }
+
+  @override
+  String get a11yGoalStreakDay => 'Current streak 1 day hitting every goal.';
+
+  @override
+  String a11yGoalStreakDays(String days) {
+    return 'Current streak $days days hitting every goal.';
+  }
 }

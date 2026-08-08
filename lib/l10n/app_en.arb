@@ -702,5 +702,379 @@
   "onboardingInjuriesHint": "We'll suggest appropriate rehab exercises",
   "onboardingGoalsTitle": "What are your goals?",
   "workoutComplete": "Workout Complete!",
-  "workoutSettingsTitle": "Workout Settings"
+  "workoutSettingsTitle": "Workout Settings",
+  "@_ANALYTICS_SCREEN": {},
+  "analyticsTitle": "Analytics",
+  "analyticsRangeWeek": "W",
+  "analyticsRangeMonth": "M",
+  "analyticsRangeSixMonths": "6M",
+  "analyticsRangeYear": "Y",
+  "analyticsGoalsReached": "Goals reached",
+  "analyticsInsights": "Insights",
+  "analyticsTrainingVolume": "Training volume",
+  "analyticsStrength": "Strength",
+  "analyticsBodyWeight": "Body weight",
+  "analyticsBodyWeightTrend": "Body weight trend",
+  "analyticsSetsByMuscle": "Sets by muscle",
+  "analyticsWorkingWeight": "Working weight",
+  "analyticsGoalTraining": "Training",
+  "analyticsGoalTrainingShort": "training",
+  "analyticsGoalCaloriesShort": "kcal",
+  "analyticsGoalProteinShort": "protein",
+  "analyticsGoalSleepShort": "sleep",
+  "analyticsAvgKcal": "Avg kcal",
+  "analyticsAvgProtein": "Avg protein",
+  "analyticsDaysLogged": "Days logged",
+  "analyticsSessions": "Sessions",
+  "analyticsPerWeek": "Per week",
+  "analyticsTimeSpent": "Time",
+  "analyticsNights": "Nights",
+  "analyticsBedtimeSwing": "Bedtime swing",
+  "analyticsLatest": "Latest",
+  "analyticsChange": "Change",
+  "analyticsLogWeight": "Log weight",
+  "analyticsOtherMuscle": "Other",
+  "analyticsBodyweightLabel": "bodyweight",
+  "analyticsStrengthLegend": "Line: estimated 1RM · dots: heaviest set",
+  "analyticsStreakDay": "1 day streak",
+  "analyticsStreakDays": "{days} day streak",
+  "@analyticsStreakDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsBestStreak": "best {days}",
+  "@analyticsBestStreak": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsAvgValue": "{value} avg",
+  "@analyticsAvgValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsBestE1rm": "{value} best e1RM",
+  "@analyticsBestE1rm": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsTotalVolume": "{value} kg total",
+  "@analyticsTotalVolume": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsVolumeValue": "{value} kg",
+  "@analyticsVolumeValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsPerWeekOfTarget": "{actual} / {target}",
+  "@analyticsPerWeekOfTarget": {
+    "placeholders": {
+      "actual": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsDaysLoggedValue": "{logged}/{total}",
+  "@analyticsDaysLoggedValue": {
+    "placeholders": {
+      "logged": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsTopSet": "{weight} × {reps}",
+  "@analyticsTopSet": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsSessionCount": "{count} sessions",
+  "@analyticsSessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsWeekOf": "Week of {date}",
+  "@analyticsWeekOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsEmptyAll": "Nothing logged in this range yet.\nLog a meal, a workout or a night of sleep and this fills in.",
+  "analyticsEmptyGoals": "Set a calorie or protein goal to start scoring your days.",
+  "analyticsEmptyMeals": "No meals logged in this range.",
+  "analyticsEmptyWorkouts": "No completed workouts in this range.",
+  "analyticsEmptySleep": "No completed sleep entries in this range.",
+  "analyticsEmptyStrength": "Log a few sets to see your progression.",
+  "analyticsEmptyWeighIns": "No weigh-ins yet. One a week is enough to see a trend.",
+  "analyticsBodyweightOnlyExercise": "This exercise is bodyweight only — there is no load to chart.",
+  "analyticsLoadError": "Could not load your analytics.\n{error}",
+  "@analyticsLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsWeightSheetTitle": "Today's weight",
+  "analyticsWeightSheetSubtitle": "Replaces any earlier entry for today.",
+  "analyticsWeightSheetError": "Enter a weight between 20 and 400 kg",
+  "analyticsPlateauNewBest": "{weight} · new best",
+  "@analyticsPlateauNewBest": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsPlateauMovedUp": "{weight} · moved up",
+  "@analyticsPlateauMovedUp": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsPlateauStalled": "{weight} · {sessions} sessions · {days}d",
+  "@analyticsPlateauStalled": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "sessions": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "insightPlateau": "{exercise} has stayed at {weight} for {sessions} sessions — try adding 2.5 kg or one more rep.",
+  "@insightPlateau": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "sessions": {
+        "type": "String"
+      }
+    }
+  },
+  "insightPersonalBest": "New best on {exercise}: {value} estimated 1RM.",
+  "@insightPersonalBest": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinShortfall": "Protein averaged {actual} against your {goal} goal.",
+  "@insightProteinShortfall": {
+    "placeholders": {
+      "actual": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightCalorieDriftHigh": "Calories are running {actual} a day against a {goal} goal.",
+  "@insightCalorieDriftHigh": {
+    "placeholders": {
+      "actual": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightCalorieDriftLow": "Calories are running low: {actual} a day against a {goal} goal.",
+  "@insightCalorieDriftLow": {
+    "placeholders": {
+      "actual": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightVolumeDrop": "Training volume is down {percent} on your recent average.",
+  "@insightVolumeDrop": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "insightSleepDebt": "{nights} of the last 7 nights came in under {hours}.",
+  "@insightSleepDebt": {
+    "placeholders": {
+      "nights": {
+        "type": "String"
+      },
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "insightConsistencyWin": "{days} days in a row hitting every goal.",
+  "@insightConsistencyWin": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "insightNeglectedMuscle": "Only {sets} sets for {muscle} in this range.",
+  "@insightNeglectedMuscle": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      },
+      "muscle": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yChartNoData": "{name} chart. No data in this range.",
+  "@a11yChartNoData": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yChartHeader": "{name} chart, by {period}.",
+  "@a11yChartHeader": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yChartCoverage": "{observed} of {total} {period} with data.",
+  "@a11yChartCoverage": {
+    "placeholders": {
+      "observed": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yChartAverage": "Average {average}, from {min} to {max}.",
+  "@a11yChartAverage": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yChartGoal": "Goal {goal}.",
+  "@a11yChartGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPeriodDay": "day",
+  "a11yPeriodWeek": "week",
+  "a11yPeriodMonth": "month",
+  "a11yPeriodDays": "days",
+  "a11yPeriodWeeks": "weeks",
+  "a11yPeriodMonths": "months",
+  "a11yTrendFlat": "Flat across the range.",
+  "a11yTrendRoughlyFlat": "Roughly flat across the range.",
+  "a11yTrendRising": "Rising by about {amount} across the range.",
+  "@a11yTrendRising": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yTrendFalling": "Falling by about {amount} across the range.",
+  "@a11yTrendFalling": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yGoalChartNoData": "Goals reached chart. No data in this range.",
+  "a11yGoalChart": "Goals reached chart.",
+  "a11yGoalAverage": "Averaging {percent} of your daily goals.",
+  "@a11yGoalAverage": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yGoalStreakDay": "Current streak 1 day hitting every goal.",
+  "a11yGoalStreakDays": "Current streak {days} days hitting every goal.",
+  "@a11yGoalStreakDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  }
 }

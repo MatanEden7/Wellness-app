@@ -20,7 +20,9 @@
 #   profile       lib/services/setup_engine_service.dart, lib/features/settings/**, onboarding
 #                 (BMR/TDEE/target formulas, profile/settings screens, profile<->preferences sync)
 #   ui            lib/core/theme.dart, shared widgets    (theming, contrast, visual consistency)
+#   analytics     lib/features/analytics/domain/**     (bucketing, goal scoring, e1RM, plateaus, insights)
 tags:
+  analytics:
   calendar:
   persistence:
   nutrition:

@@ -106,12 +106,13 @@ class ExportImportService {
     final sessions = await _database.getAllWorkoutSessions();
     final setEntries = await _database.getAllSetEntries();
     final sleepEntries = await _database.getAllSleepEntries();
+    final bodyWeightEntries = await _database.getAllBodyWeightEntries();
     // Scheduled/recurring calendar events live in SharedPreferences, not
     // AppDatabase -- previously entirely absent from the backup.
     final scheduledEvents = await _calendarService.getEvents();
 
     final exportData = {
-      'version': '1.2.0',
+      'version': '1.4.0',
       'exportedAt': DateTime.now().toIso8601String(),
       'data': {
         'foods': foods.map((f) => f.toJson()).toList(),
@@ -127,6 +128,12 @@ class ExportImportService {
         'workoutSessions': sessions.map((s) => s.toJson()).toList(),
         'setEntries': setEntries.map((se) => se.toJson()).toList(),
         'sleepEntries': sleepEntries.map((se) => se.toJson()).toList(),
+        // Added in 1.4.0, alongside the analytics screen that reads it. Wired
+        // in here at the same commit that introduced the entity on purpose --
+        // every collection previously bolted on later (meal templates,
+        // calendar events, the profile) spent a release missing from backups.
+        'bodyWeightEntries':
+            bodyWeightEntries.map((bw) => bw.toJson()).toList(),
         // Added in 1.2.0.
         'scheduledEvents': scheduledEvents.map((e) => e.toJson()).toList(),
         // Added in 1.3.0. Neither was in any earlier backup, so restoring on
@@ -176,6 +183,8 @@ class ExportImportService {
     final sessions = read('workoutSessions', WorkoutSessionData.fromJson);
     final setEntries = read('setEntries', SetEntryData.fromJson);
     final sleepEntries = read('sleepEntries', SleepEntryData.fromJson);
+    final bodyWeightEntries =
+        read('bodyWeightEntries', BodyWeightEntryData.fromJson);
     // Absent on exports written before 1.2.0 -- tolerate the missing key the
     // same way mealTemplates already tolerates pre-1.1.0 exports.
     final scheduledEventsJson = importData['scheduledEvents'] as List<dynamic>?;
@@ -226,6 +235,9 @@ class ExportImportService {
     }
     for (final sleepEntry in sleepEntries) {
       await _database.insertSleepEntry(sleepEntry);
+    }
+    for (final entry in bodyWeightEntries) {
+      await _database.insertBodyWeightEntry(entry);
     }
     // Replace, matching clearAllData() above: an import replaces the whole
     // schedule rather than merging alongside whatever was already there.

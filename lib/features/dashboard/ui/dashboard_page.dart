@@ -222,6 +222,14 @@ class _DashboardContent extends HookConsumerWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Analytics lives in the header rather than the bottom bar:
+                  // the bar already carries five destinations, and a sixth
+                  // pushes every label to two lines on a 393pt screen.
+                  IconButton(
+                    icon: const Icon(Icons.insights_outlined, size: 24),
+                    onPressed: () => context.push(Routes.analytics),
+                    tooltip: 'Analytics',
+                  ),
                   IconButton(
                     icon: const Icon(Icons.person_outline, size: 24),
                     onPressed: () => context.push(Routes.profile),

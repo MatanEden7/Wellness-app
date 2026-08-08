@@ -1871,4 +1871,339 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get workoutSettingsTitle => 'הגדרות אימון';
+
+  @override
+  String get analyticsTitle => 'ניתוח נתונים';
+
+  @override
+  String get analyticsRangeWeek => 'ש';
+
+  @override
+  String get analyticsRangeMonth => 'ח';
+
+  @override
+  String get analyticsRangeSixMonths => '6ח';
+
+  @override
+  String get analyticsRangeYear => 'שנה';
+
+  @override
+  String get analyticsGoalsReached => 'יעדים שהושגו';
+
+  @override
+  String get analyticsInsights => 'תובנות';
+
+  @override
+  String get analyticsTrainingVolume => 'נפח אימון';
+
+  @override
+  String get analyticsStrength => 'כוח';
+
+  @override
+  String get analyticsBodyWeight => 'משקל גוף';
+
+  @override
+  String get analyticsBodyWeightTrend => 'מגמת משקל גוף';
+
+  @override
+  String get analyticsSetsByMuscle => 'סטים לפי שריר';
+
+  @override
+  String get analyticsWorkingWeight => 'משקל עבודה';
+
+  @override
+  String get analyticsGoalTraining => 'אימון';
+
+  @override
+  String get analyticsGoalTrainingShort => 'אימון';
+
+  @override
+  String get analyticsGoalCaloriesShort => 'קלוריות';
+
+  @override
+  String get analyticsGoalProteinShort => 'חלבון';
+
+  @override
+  String get analyticsGoalSleepShort => 'שינה';
+
+  @override
+  String get analyticsAvgKcal => 'קלוריות בממוצע';
+
+  @override
+  String get analyticsAvgProtein => 'חלבון בממוצע';
+
+  @override
+  String get analyticsDaysLogged => 'ימים שנרשמו';
+
+  @override
+  String get analyticsSessions => 'אימונים';
+
+  @override
+  String get analyticsPerWeek => 'לשבוע';
+
+  @override
+  String get analyticsTimeSpent => 'זמן';
+
+  @override
+  String get analyticsNights => 'לילות';
+
+  @override
+  String get analyticsBedtimeSwing => 'פיזור שעת שינה';
+
+  @override
+  String get analyticsLatest => 'אחרון';
+
+  @override
+  String get analyticsChange => 'שינוי';
+
+  @override
+  String get analyticsLogWeight => 'רישום משקל';
+
+  @override
+  String get analyticsOtherMuscle => 'אחר';
+
+  @override
+  String get analyticsBodyweightLabel => 'משקל גוף';
+
+  @override
+  String get analyticsStrengthLegend =>
+      'קו: 1RM משוער · נקודות: הסט הכבד ביותר';
+
+  @override
+  String get analyticsStreakDay => 'רצף של יום אחד';
+
+  @override
+  String analyticsStreakDays(String days) {
+    return 'רצף של $days ימים';
+  }
+
+  @override
+  String analyticsBestStreak(String days) {
+    return 'שיא $days';
+  }
+
+  @override
+  String analyticsAvgValue(String value) {
+    return '$value בממוצע';
+  }
+
+  @override
+  String analyticsBestE1rm(String value) {
+    return '$value שיא 1RM משוער';
+  }
+
+  @override
+  String analyticsTotalVolume(String value) {
+    return '$value ק״ג סה״כ';
+  }
+
+  @override
+  String analyticsVolumeValue(String value) {
+    return '$value ק״ג';
+  }
+
+  @override
+  String analyticsPerWeekOfTarget(String actual, String target) {
+    return '$actual / $target';
+  }
+
+  @override
+  String analyticsDaysLoggedValue(String logged, String total) {
+    return '$logged/$total';
+  }
+
+  @override
+  String analyticsTopSet(String weight, String reps) {
+    return '$weight × $reps';
+  }
+
+  @override
+  String analyticsSessionCount(String count) {
+    return '$count אימונים';
+  }
+
+  @override
+  String analyticsWeekOf(String date) {
+    return 'שבוע של $date';
+  }
+
+  @override
+  String get analyticsEmptyAll =>
+      'עדיין לא נרשם דבר בטווח הזה.\nרישום ארוחה, אימון או לילת שינה ימלא את זה.';
+
+  @override
+  String get analyticsEmptyGoals =>
+      'הגדירו יעד קלוריות או חלבון כדי להתחיל לנקד את הימים.';
+
+  @override
+  String get analyticsEmptyMeals => 'לא נרשמו ארוחות בטווח הזה.';
+
+  @override
+  String get analyticsEmptyWorkouts => 'לא הושלמו אימונים בטווח הזה.';
+
+  @override
+  String get analyticsEmptySleep => 'לא נרשמו רשומות שינה מושלמות בטווח הזה.';
+
+  @override
+  String get analyticsEmptyStrength => 'רשמו כמה סטים כדי לראות את ההתקדמות.';
+
+  @override
+  String get analyticsEmptyWeighIns =>
+      'עדיין אין שקילות. אחת לשבוע מספיקה כדי לראות מגמה.';
+
+  @override
+  String get analyticsBodyweightOnlyExercise =>
+      'תרגיל זה במשקל גוף בלבד — אין משקל להציג.';
+
+  @override
+  String analyticsLoadError(String error) {
+    return 'לא ניתן לטעון את הנתונים.\n$error';
+  }
+
+  @override
+  String get analyticsWeightSheetTitle => 'המשקל היום';
+
+  @override
+  String get analyticsWeightSheetSubtitle => 'מחליף רשומה קודמת מהיום.';
+
+  @override
+  String get analyticsWeightSheetError => 'הזינו משקל בין 20 ל-400 ק״ג';
+
+  @override
+  String analyticsPlateauNewBest(String weight) {
+    return '$weight · שיא חדש';
+  }
+
+  @override
+  String analyticsPlateauMovedUp(String weight) {
+    return '$weight · עלה';
+  }
+
+  @override
+  String analyticsPlateauStalled(String weight, String sessions, String days) {
+    return '$weight · $sessions אימונים · $days ימים';
+  }
+
+  @override
+  String insightPlateau(String exercise, String weight, String sessions) {
+    return '$exercise נשאר על $weight במשך $sessions אימונים — נסו להוסיף 2.5 ק״ג או חזרה נוספת.';
+  }
+
+  @override
+  String insightPersonalBest(String exercise, String value) {
+    return 'שיא חדש ב$exercise: $value 1RM משוער.';
+  }
+
+  @override
+  String insightProteinShortfall(String actual, String goal) {
+    return 'החלבון הסתכם בממוצע על $actual מול יעד של $goal.';
+  }
+
+  @override
+  String insightCalorieDriftHigh(String actual, String goal) {
+    return 'הקלוריות עומדות על $actual ליום מול יעד של $goal.';
+  }
+
+  @override
+  String insightCalorieDriftLow(String actual, String goal) {
+    return 'הקלוריות נמוכות: $actual ליום מול יעד של $goal.';
+  }
+
+  @override
+  String insightVolumeDrop(String percent) {
+    return 'נפח האימון ירד ב-$percent מהממוצע האחרון.';
+  }
+
+  @override
+  String insightSleepDebt(String nights, String hours) {
+    return 'ב-$nights מ-7 הלילות האחרונים ישנתם פחות מ-$hours.';
+  }
+
+  @override
+  String insightConsistencyWin(String days) {
+    return '$days ימים ברצף עם כל היעדים.';
+  }
+
+  @override
+  String insightNeglectedMuscle(String sets, String muscle) {
+    return 'רק $sets סטים ל$muscle בטווח הזה.';
+  }
+
+  @override
+  String a11yChartNoData(String name) {
+    return 'תרשים $name. אין נתונים בטווח הזה.';
+  }
+
+  @override
+  String a11yChartHeader(String name, String period) {
+    return 'תרשים $name, לפי $period.';
+  }
+
+  @override
+  String a11yChartCoverage(String observed, String total, String period) {
+    return '$observed מתוך $total $period עם נתונים.';
+  }
+
+  @override
+  String a11yChartAverage(String average, String min, String max) {
+    return 'ממוצע $average, מ-$min עד $max.';
+  }
+
+  @override
+  String a11yChartGoal(String goal) {
+    return 'יעד $goal.';
+  }
+
+  @override
+  String get a11yPeriodDay => 'יום';
+
+  @override
+  String get a11yPeriodWeek => 'שבוע';
+
+  @override
+  String get a11yPeriodMonth => 'חודש';
+
+  @override
+  String get a11yPeriodDays => 'ימים';
+
+  @override
+  String get a11yPeriodWeeks => 'שבועות';
+
+  @override
+  String get a11yPeriodMonths => 'חודשים';
+
+  @override
+  String get a11yTrendFlat => 'יציב לאורך הטווח.';
+
+  @override
+  String get a11yTrendRoughlyFlat => 'יציב בערך לאורך הטווח.';
+
+  @override
+  String a11yTrendRising(String amount) {
+    return 'עולה בכ- $amount לאורך הטווח.';
+  }
+
+  @override
+  String a11yTrendFalling(String amount) {
+    return 'יורד בכ- $amount לאורך הטווח.';
+  }
+
+  @override
+  String get a11yGoalChartNoData => 'תרשים יעדים שהושגו. אין נתונים בטווח הזה.';
+
+  @override
+  String get a11yGoalChart => 'תרשים יעדים שהושגו.';
+
+  @override
+  String a11yGoalAverage(String percent) {
+    return 'בממוצע $percent מהיעדים היומיים.';
+  }
+
+  @override
+  String get a11yGoalStreakDay => 'רצף נוכחי: יום אחד עם כל היעדים.';
+
+  @override
+  String a11yGoalStreakDays(String days) {
+    return 'רצף נוכחי: $days ימים עם כל היעדים.';
+  }
 }

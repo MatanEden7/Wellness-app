@@ -120,6 +120,8 @@ void main() {
         quality: 5,
         note: 'sleep note',
         sourceEventId: 'EV'));
+    await database.insertBodyWeightEntry(BodyWeightEntryData(
+        id: 'BW', recordedAt: now, kg: 81.4, note: 'weigh-in note'));
     await calendarService.saveEvent(ScheduledEvent(
         id: 'EV',
         title: 'Probe event',
@@ -154,6 +156,9 @@ void main() {
       'workoutSessions',
       'setEntries',
       'sleepEntries',
+      // Added in 1.4.0 with the analytics screen. Wired into the backup in the
+      // same change that introduced the entity -- this list is exactly why.
+      'bodyWeightEntries',
       'scheduledEvents',
       // Added in 1.3.0. Before this, restoring a backup on a new phone lost
       // the profile and every setting -- everything that drives generation
@@ -267,6 +272,18 @@ void main() {
       expect(entry.quality, 5);
       expect(entry.note, 'sleep note');
       expect(entry.sourceEventId, 'EV');
+    });
+
+    test('body weight entries, at full precision', () async {
+      await roundTrip();
+      final entry = await database.getBodyWeightEntryById('BW');
+
+      expect(entry, isNotNull);
+      expect(entry!.recordedAt, now);
+      // Rounded on restore, the trend line is the one thing this entity
+      // exists for: a 0.4kg/week change disappears entirely into 81 vs 81.
+      expect(entry.kg, 81.4);
+      expect(entry.note, 'weigh-in note');
     });
 
     test('scheduled events, including recurrence and template pin', () async {

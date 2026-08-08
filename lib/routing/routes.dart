@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../features/analytics/ui/analytics_page.dart';
 import '../features/dashboard/ui/dashboard_page.dart';
 import '../features/meals/ui/meals_page.dart';
 import '../features/meals/ui/meal_editor_page.dart';
@@ -170,6 +171,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _platformPage(const CalendarPage()),
       ),
       GoRoute(
+        path: '/analytics',
+        name: 'analytics',
+        pageBuilder: (context, state) => _platformPage(const AnalyticsPage()),
+      ),
+      GoRoute(
         path: '/settings',
         name: 'settings',
         pageBuilder: (context, state) => _platformPage(const SettingsStub()),
@@ -231,6 +237,7 @@ class Routes {
   static const sleep = '/sleep';
   static const sleepTimer = '/sleep/timer';
   static const calendar = '/calendar';
+  static const analytics = '/analytics';
   static const settings = '/settings';
   static const appearanceEditor = '/settings/appearance';
   static const notificationSettings = '/settings/notifications';

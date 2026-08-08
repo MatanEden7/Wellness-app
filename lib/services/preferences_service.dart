@@ -30,7 +30,8 @@ class PreferencesService {
   static const String _proteinGoalKey = 'protein_goal';
   static const String _carbsGoalKey = 'carbs_goal';
   static const String _fatGoalKey = 'fat_goal';
-  
+  static const String _sleepGoalHoursKey = 'sleep_goal_hours';
+
   // Custom color keys
   static const String _calorieColorKey = 'calorie_color';
   static const String _proteinColorKey = 'protein_color';
@@ -211,6 +212,23 @@ class PreferencesService {
       await _prefs.remove(_fatGoalKey);
     }
   }
+
+  /// Hours of sleep a night that count as "goal met".
+  ///
+  /// Unlike the macro goals this always has a value: the analytics screen
+  /// scores sleep as one of four daily goals, and a null goal would silently
+  /// drop the whole day's score by 25% rather than showing anything wrong.
+  double get sleepGoalHours {
+    return _prefs.getDouble(_sleepGoalHoursKey) ?? defaultSleepGoalHours;
+  }
+
+  Future<void> setSleepGoalHours(double hours) async {
+    await _prefs.setDouble(_sleepGoalHoursKey, hours);
+  }
+
+  static const double defaultSleepGoalHours = 8.0;
+
+  bool isValidSleepGoal(double value) => value >= 4 && value <= 12;
 
   // Validation for nutrition goals
   bool isValidCalorieGoal(double value) {

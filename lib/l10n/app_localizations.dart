@@ -3721,6 +3721,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Workout Settings'**
   String get workoutSettingsTitle;
+
+  /// No description provided for @analyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsTitle;
+
+  /// No description provided for @analyticsRangeWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get analyticsRangeWeek;
+
+  /// No description provided for @analyticsRangeMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get analyticsRangeMonth;
+
+  /// No description provided for @analyticsRangeSixMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'6M'**
+  String get analyticsRangeSixMonths;
+
+  /// No description provided for @analyticsRangeYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Y'**
+  String get analyticsRangeYear;
+
+  /// No description provided for @analyticsGoalsReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals reached'**
+  String get analyticsGoalsReached;
+
+  /// No description provided for @analyticsInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get analyticsInsights;
+
+  /// No description provided for @analyticsTrainingVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Training volume'**
+  String get analyticsTrainingVolume;
+
+  /// No description provided for @analyticsStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get analyticsStrength;
+
+  /// No description provided for @analyticsBodyWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Body weight'**
+  String get analyticsBodyWeight;
+
+  /// No description provided for @analyticsBodyWeightTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Body weight trend'**
+  String get analyticsBodyWeightTrend;
+
+  /// No description provided for @analyticsSetsByMuscle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets by muscle'**
+  String get analyticsSetsByMuscle;
+
+  /// No description provided for @analyticsWorkingWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Working weight'**
+  String get analyticsWorkingWeight;
+
+  /// No description provided for @analyticsGoalTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get analyticsGoalTraining;
+
+  /// No description provided for @analyticsGoalTrainingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'training'**
+  String get analyticsGoalTrainingShort;
+
+  /// No description provided for @analyticsGoalCaloriesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get analyticsGoalCaloriesShort;
+
+  /// No description provided for @analyticsGoalProteinShort.
+  ///
+  /// In en, this message translates to:
+  /// **'protein'**
+  String get analyticsGoalProteinShort;
+
+  /// No description provided for @analyticsGoalSleepShort.
+  ///
+  /// In en, this message translates to:
+  /// **'sleep'**
+  String get analyticsGoalSleepShort;
+
+  /// No description provided for @analyticsAvgKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg kcal'**
+  String get analyticsAvgKcal;
+
+  /// No description provided for @analyticsAvgProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg protein'**
+  String get analyticsAvgProtein;
+
+  /// No description provided for @analyticsDaysLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Days logged'**
+  String get analyticsDaysLogged;
+
+  /// No description provided for @analyticsSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get analyticsSessions;
+
+  /// No description provided for @analyticsPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Per week'**
+  String get analyticsPerWeek;
+
+  /// No description provided for @analyticsTimeSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get analyticsTimeSpent;
+
+  /// No description provided for @analyticsNights.
+  ///
+  /// In en, this message translates to:
+  /// **'Nights'**
+  String get analyticsNights;
+
+  /// No description provided for @analyticsBedtimeSwing.
+  ///
+  /// In en, this message translates to:
+  /// **'Bedtime swing'**
+  String get analyticsBedtimeSwing;
+
+  /// No description provided for @analyticsLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest'**
+  String get analyticsLatest;
+
+  /// No description provided for @analyticsChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get analyticsChange;
+
+  /// No description provided for @analyticsLogWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Log weight'**
+  String get analyticsLogWeight;
+
+  /// No description provided for @analyticsOtherMuscle.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get analyticsOtherMuscle;
+
+  /// No description provided for @analyticsBodyweightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'bodyweight'**
+  String get analyticsBodyweightLabel;
+
+  /// No description provided for @analyticsStrengthLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Line: estimated 1RM · dots: heaviest set'**
+  String get analyticsStrengthLegend;
+
+  /// No description provided for @analyticsStreakDay.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day streak'**
+  String get analyticsStreakDay;
+
+  /// No description provided for @analyticsStreakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} day streak'**
+  String analyticsStreakDays(String days);
+
+  /// No description provided for @analyticsBestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'best {days}'**
+  String analyticsBestStreak(String days);
+
+  /// No description provided for @analyticsAvgValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} avg'**
+  String analyticsAvgValue(String value);
+
+  /// No description provided for @analyticsBestE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} best e1RM'**
+  String analyticsBestE1rm(String value);
+
+  /// No description provided for @analyticsTotalVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg total'**
+  String analyticsTotalVolume(String value);
+
+  /// No description provided for @analyticsVolumeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg'**
+  String analyticsVolumeValue(String value);
+
+  /// No description provided for @analyticsPerWeekOfTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{actual} / {target}'**
+  String analyticsPerWeekOfTarget(String actual, String target);
+
+  /// No description provided for @analyticsDaysLoggedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{logged}/{total}'**
+  String analyticsDaysLoggedValue(String logged, String total);
+
+  /// No description provided for @analyticsTopSet.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} × {reps}'**
+  String analyticsTopSet(String weight, String reps);
+
+  /// No description provided for @analyticsSessionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sessions'**
+  String analyticsSessionCount(String count);
+
+  /// No description provided for @analyticsWeekOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Week of {date}'**
+  String analyticsWeekOf(String date);
+
+  /// No description provided for @analyticsEmptyAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged in this range yet.\nLog a meal, a workout or a night of sleep and this fills in.'**
+  String get analyticsEmptyAll;
+
+  /// No description provided for @analyticsEmptyGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a calorie or protein goal to start scoring your days.'**
+  String get analyticsEmptyGoals;
+
+  /// No description provided for @analyticsEmptyMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'No meals logged in this range.'**
+  String get analyticsEmptyMeals;
+
+  /// No description provided for @analyticsEmptyWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed workouts in this range.'**
+  String get analyticsEmptyWorkouts;
+
+  /// No description provided for @analyticsEmptySleep.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed sleep entries in this range.'**
+  String get analyticsEmptySleep;
+
+  /// No description provided for @analyticsEmptyStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a few sets to see your progression.'**
+  String get analyticsEmptyStrength;
+
+  /// No description provided for @analyticsEmptyWeighIns.
+  ///
+  /// In en, this message translates to:
+  /// **'No weigh-ins yet. One a week is enough to see a trend.'**
+  String get analyticsEmptyWeighIns;
+
+  /// No description provided for @analyticsBodyweightOnlyExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'This exercise is bodyweight only — there is no load to chart.'**
+  String get analyticsBodyweightOnlyExercise;
+
+  /// No description provided for @analyticsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your analytics.\n{error}'**
+  String analyticsLoadError(String error);
+
+  /// No description provided for @analyticsWeightSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s weight'**
+  String get analyticsWeightSheetTitle;
+
+  /// No description provided for @analyticsWeightSheetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaces any earlier entry for today.'**
+  String get analyticsWeightSheetSubtitle;
+
+  /// No description provided for @analyticsWeightSheetError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a weight between 20 and 400 kg'**
+  String get analyticsWeightSheetError;
+
+  /// No description provided for @analyticsPlateauNewBest.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} · new best'**
+  String analyticsPlateauNewBest(String weight);
+
+  /// No description provided for @analyticsPlateauMovedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} · moved up'**
+  String analyticsPlateauMovedUp(String weight);
+
+  /// No description provided for @analyticsPlateauStalled.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} · {sessions} sessions · {days}d'**
+  String analyticsPlateauStalled(String weight, String sessions, String days);
+
+  /// No description provided for @insightPlateau.
+  ///
+  /// In en, this message translates to:
+  /// **'{exercise} has stayed at {weight} for {sessions} sessions — try adding 2.5 kg or one more rep.'**
+  String insightPlateau(String exercise, String weight, String sessions);
+
+  /// No description provided for @insightPersonalBest.
+  ///
+  /// In en, this message translates to:
+  /// **'New best on {exercise}: {value} estimated 1RM.'**
+  String insightPersonalBest(String exercise, String value);
+
+  /// No description provided for @insightProteinShortfall.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein averaged {actual} against your {goal} goal.'**
+  String insightProteinShortfall(String actual, String goal);
+
+  /// No description provided for @insightCalorieDriftHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories are running {actual} a day against a {goal} goal.'**
+  String insightCalorieDriftHigh(String actual, String goal);
+
+  /// No description provided for @insightCalorieDriftLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories are running low: {actual} a day against a {goal} goal.'**
+  String insightCalorieDriftLow(String actual, String goal);
+
+  /// No description provided for @insightVolumeDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Training volume is down {percent} on your recent average.'**
+  String insightVolumeDrop(String percent);
+
+  /// No description provided for @insightSleepDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'{nights} of the last 7 nights came in under {hours}.'**
+  String insightSleepDebt(String nights, String hours);
+
+  /// No description provided for @insightConsistencyWin.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days in a row hitting every goal.'**
+  String insightConsistencyWin(String days);
+
+  /// No description provided for @insightNeglectedMuscle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {sets} sets for {muscle} in this range.'**
+  String insightNeglectedMuscle(String sets, String muscle);
+
+  /// No description provided for @a11yChartNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} chart. No data in this range.'**
+  String a11yChartNoData(String name);
+
+  /// No description provided for @a11yChartHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} chart, by {period}.'**
+  String a11yChartHeader(String name, String period);
+
+  /// No description provided for @a11yChartCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'{observed} of {total} {period} with data.'**
+  String a11yChartCoverage(String observed, String total, String period);
+
+  /// No description provided for @a11yChartAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average {average}, from {min} to {max}.'**
+  String a11yChartAverage(String average, String min, String max);
+
+  /// No description provided for @a11yChartGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {goal}.'**
+  String a11yChartGoal(String goal);
+
+  /// No description provided for @a11yPeriodDay.
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get a11yPeriodDay;
+
+  /// No description provided for @a11yPeriodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'week'**
+  String get a11yPeriodWeek;
+
+  /// No description provided for @a11yPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get a11yPeriodMonth;
+
+  /// No description provided for @a11yPeriodDays.
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get a11yPeriodDays;
+
+  /// No description provided for @a11yPeriodWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'weeks'**
+  String get a11yPeriodWeeks;
+
+  /// No description provided for @a11yPeriodMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'months'**
+  String get a11yPeriodMonths;
+
+  /// No description provided for @a11yTrendFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Flat across the range.'**
+  String get a11yTrendFlat;
+
+  /// No description provided for @a11yTrendRoughlyFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Roughly flat across the range.'**
+  String get a11yTrendRoughlyFlat;
+
+  /// No description provided for @a11yTrendRising.
+  ///
+  /// In en, this message translates to:
+  /// **'Rising by about {amount} across the range.'**
+  String a11yTrendRising(String amount);
+
+  /// No description provided for @a11yTrendFalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Falling by about {amount} across the range.'**
+  String a11yTrendFalling(String amount);
+
+  /// No description provided for @a11yGoalChartNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals reached chart. No data in this range.'**
+  String get a11yGoalChartNoData;
+
+  /// No description provided for @a11yGoalChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals reached chart.'**
+  String get a11yGoalChart;
+
+  /// No description provided for @a11yGoalAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Averaging {percent} of your daily goals.'**
+  String a11yGoalAverage(String percent);
+
+  /// No description provided for @a11yGoalStreakDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak 1 day hitting every goal.'**
+  String get a11yGoalStreakDay;
+
+  /// No description provided for @a11yGoalStreakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak {days} days hitting every goal.'**
+  String a11yGoalStreakDays(String days);
 }
 
 class _AppLocalizationsDelegate

@@ -78,7 +78,8 @@ class AppDatabase {
   static final List<WorkoutSessionData> _workoutSessions = [];
   static final List<SetEntryData> _setEntries = [];
   static final List<SleepEntryData> _sleepEntries = [];
-  
+  static final List<BodyWeightEntryData> _bodyWeightEntries = [];
+
   // Cached maps for O(1) lookups
   static final Map<String, FoodItemData> _foodsById = {};
   static final Map<String, MealData> _mealsById = {};
@@ -87,13 +88,15 @@ class AppDatabase {
   static final Map<String, WorkoutTemplateData> _workoutTemplatesById = {};
   static final Map<String, WorkoutSessionData> _workoutSessionsById = {};
   static final Map<String, SleepEntryData> _sleepEntriesById = {};
-  
+  static final Map<String, BodyWeightEntryData> _bodyWeightEntriesById = {};
+
   // Stream controllers for reactive updates
   static final StreamController<void> _mealsController = StreamController<void>.broadcast();
   static final StreamController<void> _foodsController = StreamController<void>.broadcast();
   static final StreamController<void> _mealTemplatesController = StreamController<void>.broadcast();
   static final StreamController<void> _workoutsController = StreamController<void>.broadcast();
   static final StreamController<void> _sleepController = StreamController<void>.broadcast();
+  static final StreamController<void> _bodyWeightController = StreamController<void>.broadcast();
   
   // Expose streams for reactive updates with immediate initial event.
   // isBroadcast: true is required here: Stream.multi() re-invokes onListen
@@ -143,7 +146,15 @@ class AppDatabase {
       controller.onCancel = () => subscription.cancel();
     }, isBroadcast: true);
   }
-  
+
+  Stream<void> watchBodyWeightStream() {
+    return Stream.multi((controller) {
+      controller.add(null); // Emit immediately
+      final subscription = _bodyWeightController.stream.listen(controller.add);
+      controller.onCancel = () => subscription.cancel();
+    }, isBroadcast: true);
+  }
+
   /// Snapshot store backing [load]/[flush]. Null means "no persistence" --
   /// used by unit tests, which want the seeded in-memory catalog and nothing
   /// touching the filesystem.
@@ -218,6 +229,11 @@ class AppDatabase {
     final workoutSessions = decode('workoutSessions', WorkoutSessionData.fromJson);
     final setEntries = decode('setEntries', SetEntryData.fromJson);
     final sleepEntries = decode('sleepEntries', SleepEntryData.fromJson);
+    // Absent from every snapshot written before body-weight logging existed;
+    // `decode` returns an empty list for a missing key, so an upgrading user
+    // simply starts with no weigh-ins rather than failing to load.
+    final bodyWeightEntries =
+        decode('bodyWeightEntries', BodyWeightEntryData.fromJson);
 
     // Only mutate the live lists once every list has decoded successfully, so
     // a parse failure partway through leaves the seeded data untouched.
@@ -240,6 +256,8 @@ class AppDatabase {
       ..clear()
       ..addAll(setEntries);
     _replaceAll(_sleepEntries, sleepEntries, _sleepEntriesById, (s) => s.id);
+    _replaceAll(_bodyWeightEntries, bodyWeightEntries, _bodyWeightEntriesById,
+        (w) => w.id);
 
     _backfillExerciseMetadata();
   }
@@ -314,6 +332,8 @@ class AppDatabase {
         'workoutSessions': _workoutSessions.map((e) => e.toJson()).toList(),
         'setEntries': _setEntries.map((e) => e.toJson()).toList(),
         'sleepEntries': _sleepEntries.map((e) => e.toJson()).toList(),
+        'bodyWeightEntries':
+            _bodyWeightEntries.map((e) => e.toJson()).toList(),
       };
 
   /// Notifies listeners of a change and queues a debounced snapshot write.
@@ -394,6 +414,7 @@ class AppDatabase {
     _workoutSessions.clear();
     _setEntries.clear();
     _sleepEntries.clear();
+    _bodyWeightEntries.clear();
     _foodsById.clear();
     _mealsById.clear();
     _mealTemplatesById.clear();
@@ -401,6 +422,7 @@ class AppDatabase {
     _workoutTemplatesById.clear();
     _workoutSessionsById.clear();
     _sleepEntriesById.clear();
+    _bodyWeightEntriesById.clear();
   }
 
   void _initializeWithSampleData() {
@@ -834,6 +856,66 @@ class AppDatabase {
     return _sleepEntries.length < initialLength ? 1 : 0;
   }
 
+  // Body weight entries -- one weigh-in, kept as history.
+  //
+  // Distinct from `UserProfile.weightKg`, which is a single current value the
+  // calorie formulas read. That scalar cannot answer "am I trending down?",
+  // which is the whole point of the analytics screen, so the trend lives here
+  // and the profile keeps its own copy for the formulas.
+  Future<List<BodyWeightEntryData>> getAllBodyWeightEntries() async =>
+      List.from(_bodyWeightEntries);
+
+  /// Newest first.
+  Future<List<BodyWeightEntryData>> getRecentBodyWeightEntries({int limit = 90}) async {
+    final sorted = List<BodyWeightEntryData>.from(_bodyWeightEntries)
+      ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    return sorted.take(limit).toList();
+  }
+
+  Future<BodyWeightEntryData?> getBodyWeightEntryById(String id) async =>
+      _bodyWeightEntriesById[id];
+
+  /// The weigh-in already logged on the same calendar day as [at], if any.
+  ///
+  /// Weight is noisy enough that two readings on one day are a data-entry
+  /// mistake rather than two data points, so the UI upserts through this
+  /// instead of appending -- otherwise a day gets two dots and the daily
+  /// series has to pick one arbitrarily.
+  Future<BodyWeightEntryData?> getBodyWeightEntryOnDay(DateTime at) async {
+    final dayInt = _dateToInt(at);
+    for (final entry in _bodyWeightEntries) {
+      if (_dateToInt(entry.recordedAt) == dayInt) return entry;
+    }
+    return null;
+  }
+
+  Future<int> insertBodyWeightEntry(BodyWeightEntryData entry) async {
+    _bodyWeightEntries.add(entry);
+    _bodyWeightEntriesById[entry.id] = entry;
+    _touch(_bodyWeightController);
+    return 1;
+  }
+
+  Future<bool> updateBodyWeightEntry(BodyWeightEntryData entry) async {
+    final index = _bodyWeightEntries.indexWhere((e) => e.id == entry.id);
+    if (index == -1) return false;
+
+    _bodyWeightEntries[index] = entry;
+    _bodyWeightEntriesById[entry.id] = entry;
+    _touch(_bodyWeightController);
+    return true;
+  }
+
+  Future<int> deleteBodyWeightEntry(String id) async {
+    final initialLength = _bodyWeightEntries.length;
+    _bodyWeightEntries.removeWhere((e) => e.id == id);
+    _bodyWeightEntriesById.remove(id);
+    if (_bodyWeightEntries.length < initialLength) {
+      _touch(_bodyWeightController);
+    }
+    return _bodyWeightEntries.length < initialLength ? 1 : 0;
+  }
+
   // Clear all user data (keeps starter foods and exercises)
   Future<void> clearAllUserData() async {
     debugPrint('[DATABASE] 🗑️ Clearing all user data...');
@@ -865,12 +947,20 @@ class AppDatabase {
     
     // Clear sleep entries
     _sleepEntries.clear();
+    _sleepEntriesById.clear();
     debugPrint('[DATABASE] ✅ Cleared sleep entries');
-    
+
+    // Clear body-weight history
+    _bodyWeightEntries.clear();
+    _bodyWeightEntriesById.clear();
+    debugPrint('[DATABASE] ✅ Cleared body weight entries');
+
     // Trigger stream updates to refresh UI
     _touch(_mealsController);
     _touch(_foodsController);
-    
+    _touch(_sleepController);
+    _touch(_bodyWeightController);
+
     debugPrint('[DATABASE] ✅ All user data cleared successfully!');
   }
   
@@ -1090,6 +1180,7 @@ class AppDatabase {
     _workoutSessions.clear();
     _setEntries.clear();
     _sleepEntries.clear();
+    _bodyWeightEntries.clear();
 
     _foodsById.clear();
     _mealsById.clear();
@@ -1098,12 +1189,14 @@ class AppDatabase {
     _workoutTemplatesById.clear();
     _workoutSessionsById.clear();
     _sleepEntriesById.clear();
+    _bodyWeightEntriesById.clear();
 
     _touch(_foodsController);
     _touch(_mealsController);
     _touch(_mealTemplatesController);
     _touch(_workoutsController);
     _touch(_sleepController);
+    _touch(_bodyWeightController);
   }
 
   /// Wipes user data and puts the starter catalog back.
@@ -1127,6 +1220,7 @@ class AppDatabase {
     _touch(_mealTemplatesController);
     _touch(_workoutsController);
     _touch(_sleepController);
+    _touch(_bodyWeightController);
   }
 
   /// Deletes logged data (meals, workout sessions, sleep entries -- and
@@ -2194,4 +2288,51 @@ class SleepEntryData {
     note: json['note'] as String?,
     sourceEventId: json['sourceEventId'] as String?,
   );
+}
+
+/// One weigh-in.
+///
+/// [kg] is always kilograms regardless of the user's display unit -- storing
+/// the displayed unit would make the trend line meaningless the moment someone
+/// switches units, which is exactly the class of bug the oz double-conversion
+/// was. Conversion happens at the edges, on display and on entry.
+class BodyWeightEntryData {
+  final String id;
+  final DateTime recordedAt;
+  final double kg;
+  final String? note;
+
+  BodyWeightEntryData({
+    required this.id,
+    required this.recordedAt,
+    required this.kg,
+    this.note,
+  });
+
+  BodyWeightEntryData copyWith({
+    DateTime? recordedAt,
+    double? kg,
+    String? note,
+  }) =>
+      BodyWeightEntryData(
+        id: id,
+        recordedAt: recordedAt ?? this.recordedAt,
+        kg: kg ?? this.kg,
+        note: note ?? this.note,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'recordedAt': recordedAt.toIso8601String(),
+        'kg': kg,
+        'note': note,
+      };
+
+  factory BodyWeightEntryData.fromJson(Map<String, dynamic> json) =>
+      BodyWeightEntryData(
+        id: json['id'] as String,
+        recordedAt: DateTime.parse(json['recordedAt'] as String),
+        kg: (json['kg'] as num).toDouble(),
+        note: json['note'] as String?,
+      );
 }
