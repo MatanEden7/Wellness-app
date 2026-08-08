@@ -11,6 +11,7 @@ import '../../../services/notification_preferences_service.dart';
 import '../../../services/notification_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
+import 'sleep_page.dart' show qualityLabel;
 import 'package:wellness_app/l10n/app_localizations.dart';
 
 class SleepTimerPage extends HookConsumerWidget {
@@ -188,13 +189,18 @@ class SleepTimerPage extends HookConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'You slept for ${entry.durationInHours!.toStringAsFixed(1)} hours',
+              l10n.youSleptForHours(
+                entry.durationInHours!.toStringAsFixed(1),
+              ),
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'From ${AppDateUtils.formatTime(entry.startedAt)} to ${AppDateUtils.formatTime(entry.endedAt!)}',
+              l10n.fromTimeToTime(
+                AppDateUtils.formatTime(entry.startedAt),
+                AppDateUtils.formatTime(entry.endedAt!),
+              ),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -226,6 +232,7 @@ class _StartSleepView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -260,7 +267,7 @@ class _StartSleepView extends StatelessWidget {
           width: 220,
           height: 56,
           child: AppButton(
-            text: 'Start Sleep',
+            text: l10n.startSleepAction,
             onPressed: isLoading ? null : onStart,
             isLoading: isLoading,
             icon: Icons.bedtime,
@@ -269,7 +276,7 @@ class _StartSleepView extends StatelessWidget {
         const SizedBox(height: 32),
         
         Text(
-          'Current time: ${AppDateUtils.formatTime(DateTime.now())}',
+          l10n.currentTimeLabel(AppDateUtils.formatTime(DateTime.now())),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontSize: 15,
             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -295,6 +302,7 @@ class _ActiveSleepView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Update every second to show live duration
     final currentTime = useState(DateTime.now());
     
@@ -375,7 +383,7 @@ class _ActiveSleepView extends HookWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Started at ${AppDateUtils.formatTime(entry.startedAt)}',
+              l10n.startedAtLabel(AppDateUtils.formatTime(entry.startedAt)),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -391,7 +399,7 @@ class _ActiveSleepView extends HookWidget {
           children: [
             Expanded(
               child: AppButton(
-                text: 'Edit',
+                text: l10n.edit,
                 onPressed: isLoading ? null : onEdit,
                 isSecondary: true,
                 icon: Icons.edit,
@@ -403,7 +411,7 @@ class _ActiveSleepView extends HookWidget {
               child: SizedBox(
                 height: 56,
                 child: AppButton(
-                  text: 'Wake Up',
+                  text: l10n.wakeUpAction,
                   onPressed: isLoading ? null : onStop,
                   isLoading: isLoading,
                   icon: Icons.wb_sunny,
@@ -415,7 +423,7 @@ class _ActiveSleepView extends HookWidget {
         const SizedBox(height: 24),
         
         Text(
-          'Current time: ${AppDateUtils.formatTime(currentTime.value)}',
+          l10n.currentTimeLabel(AppDateUtils.formatTime(currentTime.value)),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
@@ -460,7 +468,7 @@ class _EditActiveSleepDialog extends HookWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Date: ${AppDateUtils.formatDate(selectedDate.value)}',
+                    '${l10n.date}: ${AppDateUtils.formatDate(selectedDate.value)}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -510,7 +518,7 @@ class _EditActiveSleepDialog extends HookWidget {
               const SizedBox(height: AppSpacing.xs),
               Center(
                 child: Text(
-                  _getQualityText(selectedQuality.value!),
+                  qualityLabel(l10n, selectedQuality.value!),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -522,7 +530,7 @@ class _EditActiveSleepDialog extends HookWidget {
               controller: noteController,
               decoration: InputDecoration(
                 labelText: l10n.notesOptional,
-                hintText: 'How are you feeling?',
+                hintText: l10n.howAreYouFeeling,
               ),
               maxLines: 2,
             ),
@@ -538,7 +546,7 @@ class _EditActiveSleepDialog extends HookWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 AppButton(
-                  text: 'Save',
+                  text: l10n.save,
                   onPressed: () => _saveSleepEntry(
                     context,
                     selectedDate.value,
@@ -578,22 +586,6 @@ class _EditActiveSleepDialog extends HookWidget {
     }
   }
 
-  String _getQualityText(int quality) {
-    switch (quality) {
-      case 1:
-        return 'Poor';
-      case 2:
-        return 'Fair';
-      case 3:
-        return 'Good';
-      case 4:
-        return 'Very Good';
-      case 5:
-        return 'Excellent';
-      default:
-        return '';
-    }
-  }
 
   void _saveSleepEntry(
     BuildContext context,

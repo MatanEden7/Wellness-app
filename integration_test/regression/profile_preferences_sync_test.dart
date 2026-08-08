@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:wellness_app/core/widgets.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -33,7 +34,7 @@ void main() {
     // row, not a progress ring, and Settings' summary reads "Not set".
     expect(find.byType(NutritionProgressGrid), findsNothing);
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.scrollUntilVisible(find.text('Not set'), 200,
         scrollable: find.byType(Scrollable).first);
     expect(find.text('Not set'), findsOneWidget);

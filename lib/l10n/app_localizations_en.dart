@@ -2219,4 +2219,147 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yGoalStreakDays(String days) {
     return 'Current streak $days days hitting every goal.';
   }
+
+  @override
+  String get editSleepEntry => 'Edit Sleep Entry';
+
+  @override
+  String get startSleepAction => 'Start Sleep';
+
+  @override
+  String get wakeUpAction => 'Wake Up';
+
+  @override
+  String currentTimeLabel(String time) {
+    return 'Current time: $time';
+  }
+
+  @override
+  String startedAtLabel(String time) {
+    return 'Started at $time';
+  }
+
+  @override
+  String get lastNightLabel => 'Last Night';
+
+  @override
+  String get sleepAvgSevenNights => '7-Night Avg';
+
+  @override
+  String get streakLabel => 'Streak';
+
+  @override
+  String get sleepHistory => 'Sleep History';
+
+  @override
+  String hoursShortValue(String hours) {
+    return '${hours}h';
+  }
+
+  @override
+  String youSleptForHours(String hours) {
+    return 'You slept for $hours hours';
+  }
+
+  @override
+  String fromTimeToTime(String start, String end) {
+    return 'From $start to $end';
+  }
+
+  @override
+  String get howDidYouSleep => 'How did you sleep?';
+
+  @override
+  String get howAreYouFeeling => 'How are you feeling?';
+
+  @override
+  String get quickAdd => 'Quick Add';
+
+  @override
+  String get quickAddMealSubtitle =>
+      'Name it and add foods without leaving this screen';
+
+  @override
+  String exercisesCount(int count) {
+    return '$count exercises';
+  }
+
+  @override
+  String setsCompletedCount(int count) {
+    return '$count sets completed';
+  }
+
+  @override
+  String get workoutSettingsTooltip => 'Workout Settings';
+
+  @override
+  String get mealNameHint => 'e.g., Breakfast, Lunch, Dinner';
+
+  @override
+  String itemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get searchExercises => 'Search exercises';
+
+  @override
+  String get noExercisesFound => 'No exercises match your search';
+
+  @override
+  String get primaryMuscle => 'Primary muscle';
+
+  @override
+  String get equipmentLabel => 'Equipment';
+
+  @override
+  String get targetSets => 'Target sets';
+
+  @override
+  String get targetReps => 'Target reps';
+
+  @override
+  String get restBetweenSets => 'Rest between sets';
+
+  @override
+  String restAutoLabel(String duration) {
+    return 'Auto ($duration)';
+  }
+
+  @override
+  String get restAutoExplainer =>
+      'Based on your rep count. Fewer reps means heavier work and longer rest.';
+
+  @override
+  String get addToWorkout => 'Add to workout';
+
+  @override
+  String get exerciseDetails => 'Exercise details';
+
+  @override
+  String get editPrescription => 'Edit sets & rest';
+
+  @override
+  String get removeFromWorkout => 'Remove from workout';
+
+  @override
+  String quickWorkoutNamed(String date) {
+    return 'Quick Workout $date';
+  }
+
+  @override
+  String exerciseAddedToWorkout(String name) {
+    return '$name added';
+  }
+
+  @override
+  String setsAndRestSummary(int sets, String rest) {
+    return '$sets sets · $rest rest';
+  }
+
+  @override
+  String get noExercisesYet => 'No exercises yet';
+
+  @override
+  String get workoutExercises => 'Workout exercises';
 }

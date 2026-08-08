@@ -2206,4 +2206,146 @@ class AppLocalizationsHe extends AppLocalizations {
   String a11yGoalStreakDays(String days) {
     return 'רצף נוכחי: $days ימים עם כל היעדים.';
   }
+
+  @override
+  String get editSleepEntry => 'עריכת רישום שינה';
+
+  @override
+  String get startSleepAction => 'התחלת שינה';
+
+  @override
+  String get wakeUpAction => 'השכמה';
+
+  @override
+  String currentTimeLabel(String time) {
+    return 'השעה כעת: $time';
+  }
+
+  @override
+  String startedAtLabel(String time) {
+    return 'התחיל ב-$time';
+  }
+
+  @override
+  String get lastNightLabel => 'הלילה האחרון';
+
+  @override
+  String get sleepAvgSevenNights => 'ממוצע 7 לילות';
+
+  @override
+  String get streakLabel => 'רצף';
+
+  @override
+  String get sleepHistory => 'היסטוריית שינה';
+
+  @override
+  String hoursShortValue(String hours) {
+    return '$hours ש\'';
+  }
+
+  @override
+  String youSleptForHours(String hours) {
+    return 'ישנת $hours שעות';
+  }
+
+  @override
+  String fromTimeToTime(String start, String end) {
+    return 'מ-$start עד $end';
+  }
+
+  @override
+  String get howDidYouSleep => 'איך ישנת?';
+
+  @override
+  String get howAreYouFeeling => 'איך אתה מרגיש?';
+
+  @override
+  String get quickAdd => 'הוספה מהירה';
+
+  @override
+  String get quickAddMealSubtitle => 'תן שם והוסף מאכלים בלי לצאת מהמסך';
+
+  @override
+  String exercisesCount(int count) {
+    return '$count תרגילים';
+  }
+
+  @override
+  String setsCompletedCount(int count) {
+    return '$count סטים הושלמו';
+  }
+
+  @override
+  String get workoutSettingsTooltip => 'הגדרות אימון';
+
+  @override
+  String get mealNameHint => 'לדוגמה: ארוחת בוקר, צהריים, ערב';
+
+  @override
+  String itemsCount(int count) {
+    return '$count פריטים';
+  }
+
+  @override
+  String get searchExercises => 'חיפוש תרגילים';
+
+  @override
+  String get noExercisesFound => 'לא נמצאו תרגילים תואמים';
+
+  @override
+  String get primaryMuscle => 'שריר עיקרי';
+
+  @override
+  String get equipmentLabel => 'ציוד';
+
+  @override
+  String get targetSets => 'מספר סטים';
+
+  @override
+  String get targetReps => 'חזרות בסט';
+
+  @override
+  String get restBetweenSets => 'מנוחה בין סטים';
+
+  @override
+  String restAutoLabel(String duration) {
+    return 'אוטומטי ($duration)';
+  }
+
+  @override
+  String get restAutoExplainer =>
+      'מבוסס על מספר החזרות. פחות חזרות = משקל כבד יותר ומנוחה ארוכה יותר.';
+
+  @override
+  String get addToWorkout => 'הוספה לאימון';
+
+  @override
+  String get exerciseDetails => 'פרטי התרגיל';
+
+  @override
+  String get editPrescription => 'עריכת סטים ומנוחה';
+
+  @override
+  String get removeFromWorkout => 'הסרה מהאימון';
+
+  @override
+  String quickWorkoutNamed(String date) {
+    return 'אימון מהיר $date';
+  }
+
+  @override
+  String exerciseAddedToWorkout(String name) {
+    return '$name נוסף';
+  }
+
+  @override
+  String setsAndRestSummary(int sets, String rest) {
+    return '$sets סטים · $rest מנוחה';
+  }
+
+  @override
+  String get noExercisesYet => 'אין עדיין תרגילים';
+
+  @override
+  String get workoutExercises => 'תרגילי האימון';
 }

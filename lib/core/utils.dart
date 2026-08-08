@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 // import 'package:vibration/vibration.dart';  // Temporarily disabled
@@ -13,7 +14,22 @@ class AppDateUtils {
   static String formatTime(DateTime time) => _timeFormat.format(time);
   
   static String formatDateTime(DateTime dateTime) => _dateTimeFormat.format(dateTime);
-  
+
+  /// Parses an `HH:mm` string as produced by [formatTime].
+  ///
+  /// Returns null for anything unparseable, so a caller seeding a time picker
+  /// from a possibly-empty text field can fall back without a try/catch.
+  static TimeOfDay? parseTimeOfDay(String value) {
+    final parts = value.split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
+
+
   static int dateToInt(DateTime date) {
     return int.parse(_dateFormat.format(date).replaceAll('-', ''));
   }

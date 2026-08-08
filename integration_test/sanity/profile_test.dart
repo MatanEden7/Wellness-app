@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:wellness_app/services/setup_engine_service.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -16,7 +17,7 @@ void main() {
   testWidgets('shows the complete-setup empty state when no profile is saved', (tester) async {
     await pumpApp(tester); // no profile seeded
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text('My Profile'));
     await settle(tester);
 
@@ -28,7 +29,7 @@ void main() {
   testWidgets('all sections render with the saved profile values', (tester) async {
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text('My Profile'));
     await settle(tester);
     final scrollable = find.byType(Scrollable).first;
@@ -76,7 +77,7 @@ void main() {
   testWidgets('editing weight recomputes BMR/TDEE/targets from the new value', (tester) async {
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text('My Profile'));
     await settle(tester);
 
@@ -122,7 +123,7 @@ void main() {
   testWidgets('editing a nutrition target directly does not touch BMR/TDEE', (tester) async {
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text('My Profile'));
     await settle(tester);
 
@@ -145,7 +146,7 @@ void main() {
   testWidgets('multi-picker: selecting an exclusion clears "None", re-picking "None" clears others', (tester) async {
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text('My Profile'));
     await settle(tester);
 

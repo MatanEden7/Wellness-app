@@ -4,6 +4,7 @@ import 'package:integration_test/integration_test.dart';
 
 import 'package:wellness_app/core/widgets.dart';
 import 'package:wellness_app/services/language_service.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -46,7 +47,7 @@ void main() {
     await pumpApp(tester);
 
     // Dashboard -> Meals -> "Log new meal" -> blank meal editor.
-    await tapBottomNavIcon(tester, Icons.restaurant_outlined);
+    await tapDashboardAction(tester, DashboardKeys.mealsAction);
     await tester.tap(find.byType(FloatingActionButton));
     await settle(tester);
     await tester.tap(find.text(l10n.logNewMeal));

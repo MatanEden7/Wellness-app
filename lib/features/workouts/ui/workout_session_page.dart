@@ -7,13 +7,16 @@ import 'package:just_audio/just_audio.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
-import '../../../routing/routes.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/notification_preferences_service.dart';
 import '../../../services/time_service.dart';
 import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
+import '../domain/rest_time.dart';
+import '../domain/session_actions.dart';
+import 'exercise_picker_sheet.dart';
+import 'workout_keys.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
 class WorkoutSessionPage extends HookConsumerWidget {
@@ -174,6 +177,19 @@ class WorkoutSessionPage extends HookConsumerWidget {
           ],
         ),
       ),
+      // The only way to add an exercise mid-session. Previously the sole
+      // "Add Exercise" affordance was the empty state's button, and it
+      // pushed the read-only Exercise Library, which cannot return anything
+      // to the session -- so a quick workout could never gain an exercise.
+      floatingActionButton: isCompleted
+          ? null
+          : FloatingActionButton.extended(
+              key: WorkoutKeys.addExerciseFab,
+              onPressed: () =>
+                  _addExercise(context, ref, session, template, exercises),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addExercise),
+            ),
     );
   }
 
@@ -227,6 +243,57 @@ class WorkoutSessionPage extends HookConsumerWidget {
     final updatedSession = await ref.read(workoutSessionsRepositoryProvider).getSessionById(sessionId);
     if (updatedSession != null) {
       session.value = updatedSession;
+    }
+  }
+
+  /// Adds an exercise to the running session.
+  ///
+  /// For a quick workout this is what brings the session's template into
+  /// existence -- see [addExerciseToSession]. The prescription (weight, sets,
+  /// reps, rest) is stored on that template, so it persists across app
+  /// restarts and the workout can be run again later.
+  Future<void> _addExercise(
+    BuildContext context,
+    WidgetRef ref,
+    ValueNotifier<WorkoutSession?> session,
+    ValueNotifier<WorkoutTemplate?> template,
+    ValueNotifier<List<Exercise>> exercises,
+  ) async {
+    final currentSession = session.value;
+    if (currentSession == null) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final adHocName =
+        l10n.quickWorkoutNamed(AppDateUtils.formatDate(currentSession.startedAt));
+
+    final prescription = await showExercisePicker(context);
+    if (prescription == null) return;
+
+    final result = await addExerciseToSession(
+      ref,
+      session: currentSession,
+      template: template.value,
+      exerciseId: prescription.exercise.id,
+      adHocName: adHocName,
+      sets: prescription.sets,
+      reps: prescription.reps,
+      weight: prescription.weight,
+      restSeconds: prescription.restSeconds,
+    );
+
+    session.value = result.session;
+    template.value = result.template;
+    exercises.value = [...exercises.value, prescription.exercise];
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.exerciseAddedToWorkout(prescription.exercise.name),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -309,13 +376,13 @@ class _ActiveWorkoutView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     if (exercises.isEmpty) {
+      // No action button: the FAB below is the add-exercise entry point, and
+      // this used to send people to the Exercise Library, which browses the
+      // catalog and cannot hand anything back to the session.
       return EmptyState(
-        title: 'Ready to work out?',
+        title: l10n.noExercisesYet,
         subtitle: l10n.addExercisesToGetStarted,
         icon: Icons.fitness_center,
-        actionText: l10n.addExerciseTooltip,
-        actionIcon: Icons.add,
-        onAction: () => context.push(Routes.exerciseLibrary),
       );
     }
 
@@ -338,8 +405,11 @@ class _ActiveWorkoutView extends HookConsumerWidget {
         if (showRestTimer.value == null)
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
+            // Tap, not long-press: expanding the details was previously
+            // bound to a long-press with no affordance for it, so the muscle
+            // and notes were effectively invisible.
             child: GestureDetector(
-              onLongPress: () {
+              onTap: () {
                 showExerciseDetails.value = !showExerciseDetails.value;
                 HapticsHelper.lightImpact();
               },
@@ -391,12 +461,34 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                         ),
                       ],
                     ),
+                    // The prescription itself, always visible -- it is what
+                    // the set counter and the rest timer are both driven by.
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.setsAndRestSummary(
+                        templateExercise?.defaultSets ?? 3,
+                        formatRest(
+                          resolveRestSeconds(
+                            explicitSeconds: templateExercise?.defaultRestSeconds,
+                            reps: templateExercise?.defaultReps,
+                            globalDefaultSeconds:
+                                ref.watch(preferencesServiceProvider).defaultRestTime,
+                          ),
+                        ),
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                          ),
+                    ),
                     // Show details only when expanded
                     if (showExerciseDetails.value) ...[
                       if (currentExercise.primaryMuscle != null) ...[
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          'Primary: ${currentExercise.primaryMuscle}',
+                          '${l10n.primaryMuscle}: ${currentExercise.primaryMuscle}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -471,6 +563,16 @@ class _ExerciseSetsView extends HookConsumerWidget {
     
     final reps = templateExercise?.defaultReps ?? 10;
     final weight = templateExercise?.defaultWeight;
+
+    // One answer for "how long is the rest here", used both to start the
+    // timer and to stamp the set that was just logged. An explicit value on
+    // the template wins; otherwise the rep count picks it, and only then does
+    // the global Workout Settings default apply.
+    final restForThisSet = resolveRestSeconds(
+      explicitSeconds: templateExercise?.defaultRestSeconds,
+      reps: templateExercise?.defaultReps,
+      globalDefaultSeconds: prefs.defaultRestTime,
+    );
 
     return Column(
       children: [
@@ -654,7 +756,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
               onFinishWorkout,
               reps,
               weight,
-              prefs,
+              restForThisSet,
               showRestTimer,
             ),
           ),
@@ -675,7 +777,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
     VoidCallback onFinishWorkout,
     int reps,
     double? weight,
-    PreferencesService prefs,
+    int restForThisSet,
     ValueNotifier<int?> showRestTimer,
   ) {
     if (isExerciseComplete) {
@@ -766,6 +868,10 @@ class _ExerciseSetsView extends HookConsumerWidget {
                             orderIndex: completedSets.length,
                             reps: reps,
                             weight: weight,
+                            // Was never written, so every logged set had a
+                            // null rest and history could not show what was
+                            // actually prescribed.
+                            restSeconds: restForThisSet,
                           );
                           await onSetCompleted(setEntry);
                           HapticsHelper.mediumImpact();
@@ -781,9 +887,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                             // cable curl is wrong in both directions: it
                             // wastes a third of the session on the isolation
                             // work and under-recovers the compound.
-                            showRestTimer.value =
-                                templateExercise?.defaultRestSeconds ??
-                                    prefs.defaultRestTime;
+                            showRestTimer.value = restForThisSet;
                           }
                         } finally {
                           isLoading.value = false;

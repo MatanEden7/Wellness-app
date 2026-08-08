@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:wellness_app/services/language_service.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -15,7 +16,7 @@ void main() {
   testWidgets('profile card prompts setup when no profile is saved', (tester) async {
     await pumpApp(tester); // setupCompleted: true, but no profile seeded.
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
 
     expect(find.text('My Profile'), findsOneWidget);
     expect(find.text('Tap to complete setup'), findsOneWidget);
@@ -24,7 +25,7 @@ void main() {
   testWidgets('profile card summarizes weight + goal when a profile is saved', (tester) async {
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
 
     expect(find.text('My Profile'), findsOneWidget);
     expect(find.text('82.0 kg  ·  Fat Loss'), findsOneWidget);
@@ -34,7 +35,7 @@ void main() {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     final scrollable = find.byType(Scrollable).first;
 
     // SettingsSection uppercases its title (see widgets/settings_section.dart).
@@ -70,7 +71,7 @@ void main() {
   testWidgets('nutrition goals summary reflects how many goals are set', (tester) async {
     await pumpApp(tester, profile: testProfile());
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.scrollUntilVisible(find.text('HEALTH'), 200,
         scrollable: find.byType(Scrollable).first);
 

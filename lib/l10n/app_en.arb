@@ -1076,5 +1076,227 @@
         "type": "String"
       }
     }
+  },
+  "editSleepEntry": "Edit Sleep Entry",
+  "@editSleepEntry": {
+    "description": "editSleepEntry"
+  },
+  "startSleepAction": "Start Sleep",
+  "@startSleepAction": {
+    "description": "startSleepAction"
+  },
+  "wakeUpAction": "Wake Up",
+  "@wakeUpAction": {
+    "description": "wakeUpAction"
+  },
+  "currentTimeLabel": "Current time: {time}",
+  "@currentTimeLabel": {
+    "description": "currentTimeLabel",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "startedAtLabel": "Started at {time}",
+  "@startedAtLabel": {
+    "description": "startedAtLabel",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lastNightLabel": "Last Night",
+  "@lastNightLabel": {
+    "description": "lastNightLabel"
+  },
+  "sleepAvgSevenNights": "7-Night Avg",
+  "@sleepAvgSevenNights": {
+    "description": "sleepAvgSevenNights"
+  },
+  "streakLabel": "Streak",
+  "@streakLabel": {
+    "description": "streakLabel"
+  },
+  "sleepHistory": "Sleep History",
+  "@sleepHistory": {
+    "description": "sleepHistory"
+  },
+  "hoursShortValue": "{hours}h",
+  "@hoursShortValue": {
+    "description": "hoursShortValue",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "youSleptForHours": "You slept for {hours} hours",
+  "@youSleptForHours": {
+    "description": "youSleptForHours",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "fromTimeToTime": "From {start} to {end}",
+  "@fromTimeToTime": {
+    "description": "fromTimeToTime",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "howDidYouSleep": "How did you sleep?",
+  "@howDidYouSleep": {
+    "description": "howDidYouSleep"
+  },
+  "howAreYouFeeling": "How are you feeling?",
+  "@howAreYouFeeling": {
+    "description": "howAreYouFeeling"
+  },
+  "quickAdd": "Quick Add",
+  "@quickAdd": {
+    "description": "quickAdd"
+  },
+  "quickAddMealSubtitle": "Name it and add foods without leaving this screen",
+  "@quickAddMealSubtitle": {
+    "description": "quickAddMealSubtitle"
+  },
+  "exercisesCount": "{count} exercises",
+  "@exercisesCount": {
+    "description": "exercisesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setsCompletedCount": "{count} sets completed",
+  "@setsCompletedCount": {
+    "description": "setsCompletedCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutSettingsTooltip": "Workout Settings",
+  "@workoutSettingsTooltip": {
+    "description": "workoutSettingsTooltip"
+  },
+  "mealNameHint": "e.g., Breakfast, Lunch, Dinner",
+  "@mealNameHint": {
+    "description": "mealNameHint"
+  },
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "description": "itemsCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchExercises": "Search exercises",
+  "@searchExercises": {
+    "description": "searchExercises"
+  },
+  "noExercisesFound": "No exercises match your search",
+  "@noExercisesFound": {
+    "description": "noExercisesFound"
+  },
+  "primaryMuscle": "Primary muscle",
+  "@primaryMuscle": {
+    "description": "primaryMuscle"
+  },
+  "equipmentLabel": "Equipment",
+  "@equipmentLabel": {
+    "description": "equipmentLabel"
+  },
+  "targetSets": "Target sets",
+  "@targetSets": {
+    "description": "targetSets"
+  },
+  "targetReps": "Target reps",
+  "@targetReps": {
+    "description": "targetReps"
+  },
+  "restBetweenSets": "Rest between sets",
+  "@restBetweenSets": {
+    "description": "restBetweenSets"
+  },
+  "restAutoLabel": "Auto ({duration})",
+  "@restAutoLabel": {
+    "description": "restAutoLabel",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "restAutoExplainer": "Based on your rep count. Fewer reps means heavier work and longer rest.",
+  "@restAutoExplainer": {
+    "description": "restAutoExplainer"
+  },
+  "addToWorkout": "Add to workout",
+  "@addToWorkout": {
+    "description": "addToWorkout"
+  },
+  "exerciseDetails": "Exercise details",
+  "@exerciseDetails": {
+    "description": "exerciseDetails"
+  },
+  "editPrescription": "Edit sets & rest",
+  "@editPrescription": {
+    "description": "editPrescription"
+  },
+  "removeFromWorkout": "Remove from workout",
+  "@removeFromWorkout": {
+    "description": "removeFromWorkout"
+  },
+  "quickWorkoutNamed": "Quick Workout {date}",
+  "@quickWorkoutNamed": {
+    "description": "quickWorkoutNamed",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exerciseAddedToWorkout": "{name} added",
+  "@exerciseAddedToWorkout": {
+    "description": "exerciseAddedToWorkout",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setsAndRestSummary": "{sets} sets · {rest} rest",
+  "@setsAndRestSummary": {
+    "description": "setsAndRestSummary",
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "rest": {
+        "type": "String"
+      }
+    }
+  },
+  "noExercisesYet": "No exercises yet",
+  "@noExercisesYet": {
+    "description": "noExercisesYet"
+  },
+  "workoutExercises": "Workout exercises",
+  "@workoutExercises": {
+    "description": "workoutExercises"
   }
 }

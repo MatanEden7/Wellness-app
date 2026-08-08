@@ -7,6 +7,8 @@ import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
 
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
+
 import '../support/app_launcher.dart';
 import '../support/seed_data.dart';
 
@@ -66,7 +68,9 @@ void main() {
 
     await completeOnboarding(tester);
 
-    expect(find.byIcon(Icons.calendar_month), findsOneWidget,
+    // By key: the dashboard's calendar shortcut is now an outlined grid
+    // button, so `find.byIcon(Icons.calendar_month)` matched nothing here.
+    expect(find.byKey(DashboardKeys.calendarAction), findsOneWidget,
         reason: 'should have landed on the dashboard');
 
     // --- the schedule itself -------------------------------------------
@@ -162,7 +166,7 @@ void main() {
     await pumpApp(tester, setupCompleted: false, seed: seedHistory);
     await completeOnboarding(tester);
 
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tapDashboardAction(tester, DashboardKeys.calendarAction);
     await settle(tester, frames: 20);
 
     final events = await readScheduledEvents(tester);

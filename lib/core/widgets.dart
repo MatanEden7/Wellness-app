@@ -781,3 +781,305 @@ class SettingsIconBadge extends StatelessWidget {
     );
   }
 }
+
+/// Opens a modal bottom sheet in the app's standard shape.
+///
+/// Every sheet in the app used to call `showModalBottomSheet` with its own
+/// copy of the radius/background/scroll settings, which is how the meals
+/// add-sheet ended up with a 20pt radius and a 0.3-alpha handle while the
+/// dashboard's used 24pt and 0.2. Route sheets through here instead so the
+/// corner radius is defined once.
+///
+/// [isScrollControlled] defaults to true because a sheet that hosts a text
+/// field must be able to grow past the default 50% height when the keyboard
+/// opens -- pair it with [AppSheet], which adds the `viewInsets` padding.
+Future<T?> showAppSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool isScrollControlled = true,
+}) {
+  return showModalBottomSheet<T>(
+    context: context,
+    isScrollControlled: isScrollControlled,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: builder,
+  );
+}
+
+/// Standard body for a sheet opened with [showAppSheet]: drag handle, an
+/// optional badged title, then [child].
+///
+/// Handles the two things every sheet has to get right and half of them
+/// previously didn't -- bottom inset for the keyboard, and staying scrollable
+/// so a tall form doesn't overflow on a short screen.
+class AppSheet extends StatelessWidget {
+  final Widget child;
+
+  /// Omit for a sheet that draws its own header (a plain list of choices).
+  final String? title;
+  final IconData? icon;
+  final Color? iconColor;
+
+  const AppSheet({
+    super.key,
+    required this.child,
+    this.title,
+    this.icon,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final header = title == null
+        ? null
+        : Row(
+            children: [
+              if (icon != null) ...[
+                SettingsIconBadge(icon!, color: iconColor),
+                const SizedBox(width: AppSpacing.sm),
+              ],
+              Expanded(
+                child: Text(
+                  title!,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+            ],
+          );
+
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SheetDragHandle(),
+        if (header != null) ...[header, const SizedBox(height: AppSpacing.md)],
+        child,
+      ],
+    );
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          24 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(child: content),
+      ),
+    );
+  }
+}
+
+/// Title row above a list section, with an optional trailing action.
+///
+/// Was a private `_SectionHeader` duplicated in the workouts page; sleep and
+/// meals need the same thing, so it lives here now.
+class SectionHeader extends StatelessWidget {
+  final String title;
+  final Widget? action;
+
+  const SectionHeader({super.key, required this.title, this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (action != null) ...[const SizedBox(width: 12), action!],
+      ],
+    );
+  }
+}
+
+/// One figure in a [SummaryStrip].
+class SummaryStat {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const SummaryStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+}
+
+/// Row of at-a-glance figures shown above a history list, so a page opens on
+/// "how am I doing" rather than straight into raw rows.
+class SummaryStrip extends StatelessWidget {
+  final List<SummaryStat> stats;
+
+  const SummaryStrip({super.key, required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AppCard(
+      child: Row(
+        children: [
+          for (var i = 0; i < stats.length; i++) ...[
+            if (i > 0)
+              Container(
+                width: 1,
+                height: 34,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+              ),
+            Expanded(
+              child: Column(
+                children: [
+                  Icon(stats[i].icon, size: 18, color: stats[i].color),
+                  const SizedBox(height: 6),
+                  Text(
+                    stats[i].value,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: stats[i].color,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    stats[i].label,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Small pill-shaped handle for the top of a modal bottom sheet.
+class SheetDragHandle extends StatelessWidget {
+  const SheetDragHandle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 36,
+        height: 4,
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+}
+
+/// Rounded, colored-icon row used across the quick-add sheets (dashboard "+"
+/// and its meal/workout dialogs) so they all share one look instead of each
+/// screen inventing its own tile style.
+class IconRowTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  final String? subtitle;
+
+  const IconRowTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
+                      ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.35),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

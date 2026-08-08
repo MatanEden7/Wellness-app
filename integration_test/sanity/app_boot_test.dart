@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -12,9 +13,14 @@ void main() {
   testWidgets('app boots past onboarding onto the dashboard', (tester) async {
     await pumpApp(tester);
 
-    // The calendar shortcut icon is always present on the dashboard,
-    // regardless of locale or bottom-nav selection state.
-    expect(find.byIcon(Icons.calendar_month), findsOneWidget);
-    expect(find.byType(BottomNavigationBar), findsOneWidget);
+    // Asserted by key against the quick-actions grid and the "+" button,
+    // which is what the mobile dashboard is now. This used to look for a
+    // `BottomNavigationBar` and a `calendar_month` icon; the tab bar was
+    // removed and the calendar shortcut became an outlined grid button, so
+    // both checks had quietly stopped describing the screen.
+    expect(find.byKey(DashboardKeys.mealsAction), findsOneWidget);
+    expect(find.byKey(DashboardKeys.workoutsAction), findsOneWidget);
+    expect(find.byKey(DashboardKeys.sleepAction), findsOneWidget);
+    expect(find.byKey(DashboardKeys.quickAddFab), findsOneWidget);
   });
 }

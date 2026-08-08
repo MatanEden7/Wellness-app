@@ -481,7 +481,7 @@ class MealEditorPage extends HookConsumerWidget {
   }) async {
     return showDialog<MealItem>(
       context: context,
-      builder: (context) => _FoodSelectorDialog(
+      builder: (context) => FoodSelectorDialog(
         selectedFood: food,
         currentAmount: currentAmount,
       ),
@@ -607,11 +607,14 @@ class _MealItemCard extends HookConsumerWidget {
   }
 }
 
-class _FoodSelectorDialog extends HookConsumerWidget {
+/// Search foods and pick one with a quantity, returning a [MealItem].
+/// Public so it can be reused by the dashboard's quick-add meal dialog.
+class FoodSelectorDialog extends HookConsumerWidget {
   final FoodItem? selectedFood;
   final double? currentAmount;
 
-  const _FoodSelectorDialog({
+  const FoodSelectorDialog({
+    super.key,
     this.selectedFood,
     this.currentAmount,
   });
@@ -635,6 +638,7 @@ class _FoodSelectorDialog extends HookConsumerWidget {
     final allFoods = ref.watch(allFoodsStreamProvider);
 
     return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         width: 400,
         height: 600,
@@ -642,9 +646,15 @@ class _FoodSelectorDialog extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppLocalizations.of(context)!.selectFoodItem,
-              style: Theme.of(context).textTheme.titleLarge,
+            Row(
+              children: [
+                const SettingsIconBadge(Icons.restaurant, color: Colors.orange),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  AppLocalizations.of(context)!.selectFoodItem,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             

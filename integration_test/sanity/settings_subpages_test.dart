@@ -6,6 +6,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:wellness_app/core/theme.dart';
 import 'package:wellness_app/services/language_service.dart';
 import 'package:wellness_app/services/theme_service.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -20,7 +21,7 @@ void main() {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester);
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text(l10n.theme));
     await settle(tester);
 
@@ -40,7 +41,7 @@ void main() {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester);
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text(l10n.language));
     await settle(tester);
 
@@ -58,7 +59,7 @@ void main() {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester);
 
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     // "Nutrition Goals" is in the Health section, off-screen in the single
     // ListView until scrolled into view.
     await tester.scrollUntilVisible(find.text(l10n.nutritionGoals), 200,

@@ -7,6 +7,7 @@ import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/features/settings/ui/settings_stub.dart';
 import 'package:wellness_app/services/language_service.dart';
 import 'package:wellness_app/services/notification_service.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -26,7 +27,7 @@ void main() {
   testWidgets('a real notification scheduled a few seconds out actually shows on screen', (tester) async {
     final ref = await () async {
       await pumpApp(tester);
-      await tapBottomNavIcon(tester, Icons.settings_outlined);
+      await tapDashboardAction(tester, DashboardKeys.settingsAction);
       return tester.element(find.byType(SettingsStub)) as WidgetRef;
     }();
 

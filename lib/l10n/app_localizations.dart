@@ -4249,6 +4249,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current streak {days} days hitting every goal.'**
   String a11yGoalStreakDays(String days);
+
+  /// editSleepEntry
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Sleep Entry'**
+  String get editSleepEntry;
+
+  /// startSleepAction
+  ///
+  /// In en, this message translates to:
+  /// **'Start Sleep'**
+  String get startSleepAction;
+
+  /// wakeUpAction
+  ///
+  /// In en, this message translates to:
+  /// **'Wake Up'**
+  String get wakeUpAction;
+
+  /// currentTimeLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Current time: {time}'**
+  String currentTimeLabel(String time);
+
+  /// startedAtLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Started at {time}'**
+  String startedAtLabel(String time);
+
+  /// lastNightLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Last Night'**
+  String get lastNightLabel;
+
+  /// sleepAvgSevenNights
+  ///
+  /// In en, this message translates to:
+  /// **'7-Night Avg'**
+  String get sleepAvgSevenNights;
+
+  /// streakLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get streakLabel;
+
+  /// sleepHistory
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep History'**
+  String get sleepHistory;
+
+  /// hoursShortValue
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h'**
+  String hoursShortValue(String hours);
+
+  /// youSleptForHours
+  ///
+  /// In en, this message translates to:
+  /// **'You slept for {hours} hours'**
+  String youSleptForHours(String hours);
+
+  /// fromTimeToTime
+  ///
+  /// In en, this message translates to:
+  /// **'From {start} to {end}'**
+  String fromTimeToTime(String start, String end);
+
+  /// howDidYouSleep
+  ///
+  /// In en, this message translates to:
+  /// **'How did you sleep?'**
+  String get howDidYouSleep;
+
+  /// howAreYouFeeling
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling?'**
+  String get howAreYouFeeling;
+
+  /// quickAdd
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Add'**
+  String get quickAdd;
+
+  /// quickAddMealSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Name it and add foods without leaving this screen'**
+  String get quickAddMealSubtitle;
+
+  /// exercisesCount
+  ///
+  /// In en, this message translates to:
+  /// **'{count} exercises'**
+  String exercisesCount(int count);
+
+  /// setsCompletedCount
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sets completed'**
+  String setsCompletedCount(int count);
+
+  /// workoutSettingsTooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Settings'**
+  String get workoutSettingsTooltip;
+
+  /// mealNameHint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Breakfast, Lunch, Dinner'**
+  String get mealNameHint;
+
+  /// itemsCount
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String itemsCount(int count);
+
+  /// searchExercises
+  ///
+  /// In en, this message translates to:
+  /// **'Search exercises'**
+  String get searchExercises;
+
+  /// noExercisesFound
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises match your search'**
+  String get noExercisesFound;
+
+  /// primaryMuscle
+  ///
+  /// In en, this message translates to:
+  /// **'Primary muscle'**
+  String get primaryMuscle;
+
+  /// equipmentLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get equipmentLabel;
+
+  /// targetSets
+  ///
+  /// In en, this message translates to:
+  /// **'Target sets'**
+  String get targetSets;
+
+  /// targetReps
+  ///
+  /// In en, this message translates to:
+  /// **'Target reps'**
+  String get targetReps;
+
+  /// restBetweenSets
+  ///
+  /// In en, this message translates to:
+  /// **'Rest between sets'**
+  String get restBetweenSets;
+
+  /// restAutoLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Auto ({duration})'**
+  String restAutoLabel(String duration);
+
+  /// restAutoExplainer
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your rep count. Fewer reps means heavier work and longer rest.'**
+  String get restAutoExplainer;
+
+  /// addToWorkout
+  ///
+  /// In en, this message translates to:
+  /// **'Add to workout'**
+  String get addToWorkout;
+
+  /// exerciseDetails
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise details'**
+  String get exerciseDetails;
+
+  /// editPrescription
+  ///
+  /// In en, this message translates to:
+  /// **'Edit sets & rest'**
+  String get editPrescription;
+
+  /// removeFromWorkout
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from workout'**
+  String get removeFromWorkout;
+
+  /// quickWorkoutNamed
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Workout {date}'**
+  String quickWorkoutNamed(String date);
+
+  /// exerciseAddedToWorkout
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added'**
+  String exerciseAddedToWorkout(String name);
+
+  /// setsAndRestSummary
+  ///
+  /// In en, this message translates to:
+  /// **'{sets} sets · {rest} rest'**
+  String setsAndRestSummary(int sets, String rest);
+
+  /// noExercisesYet
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises yet'**
+  String get noExercisesYet;
+
+  /// workoutExercises
+  ///
+  /// In en, this message translates to:
+  /// **'Workout exercises'**
+  String get workoutExercises;
 }
 
 class _AppLocalizationsDelegate

@@ -12,16 +12,33 @@ import '../../../routing/routes.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/background_refresh_service.dart';
 import '../../../services/dummy_data_service.dart';
-import '../../../services/user_profile_service.dart';
-import '../../../data/db/drift_database.dart';
 import '../../meals/data/repositories.dart';
+import '../../meals/ui/quick_add_meal_dialog.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../workouts/data/repositories.dart';
 import '../../workouts/data/daily_workouts_provider.dart';
 import '../../workouts/domain/models.dart';
+import '../../workouts/ui/quick_start_workout_dialog.dart';
 import '../../sleep/data/repositories.dart';
-import '../../calendar/data/calendar_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../sleep/ui/sleep_page.dart' show showAddSleepSheet;
+
+/// Keys for the dashboard's navigation affordances.
+///
+/// UI tests used to reach each area by tapping a `BottomNavigationBarItem`
+/// icon. With the tab bar gone that coupled them to whichever glyph a quick
+/// action happened to render -- and the sleep button swaps its icon while a
+/// session is running. Keys stay stable through both.
+class DashboardKeys {
+  const DashboardKeys._();
+
+  static const mealsAction = Key('dashboard_action_meals');
+  static const workoutsAction = Key('dashboard_action_workouts');
+  static const sleepAction = Key('dashboard_action_sleep');
+  static const analyticsAction = Key('dashboard_action_analytics');
+  static const calendarAction = Key('dashboard_action_calendar');
+  static const settingsAction = Key('dashboard_action_settings');
+  static const quickAddFab = Key('dashboard_quick_add_fab');
+}
 
 class DashboardPage extends HookConsumerWidget {
   const DashboardPage({super.key});
@@ -50,50 +67,19 @@ class DashboardPage extends HookConsumerWidget {
         final isMobile = constraints.maxWidth < 600;
         
         if (isMobile) {
-          // Mobile layout with bottom navigation
+          // Mobile layout: no bottom tab bar. Navigation lives in the quick
+          // actions grid and header icons instead; the "+" button is for
+          // instant data entry, not page redirection.
           return Scaffold(
             body: SafeArea(
               top: true,
               bottom: false,
-              child: _DashboardContent(),
+              // Extra bottom room so the quick-actions grid clears the
+              // floating "+" -- without it the FAB sits on top of the
+              // Calendar button and swallows its taps.
+              child: _DashboardContent(bottomInset: 96),
             ),
-            bottomNavigationBar: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: selectedIndex,
-              selectedItemColor: Theme.of(context).colorScheme.primary,
-              unselectedItemColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              elevation: 8,
-              onTap: (index) {
-                _navigateToPage(context, index);
-              },
-              items: [
-                BottomNavigationBarItem(
-                icon: const Icon(Icons.dashboard_outlined),
-                activeIcon: const Icon(Icons.dashboard),
-                label: AppLocalizations.of(context)!.dashboard,
-                ),
-                BottomNavigationBarItem(
-                icon: const Icon(Icons.restaurant_outlined),
-                activeIcon: const Icon(Icons.restaurant),
-                label: AppLocalizations.of(context)!.meals,
-                ),
-                BottomNavigationBarItem(
-                icon: const Icon(Icons.fitness_center_outlined),
-                activeIcon: const Icon(Icons.fitness_center),
-                label: AppLocalizations.of(context)!.workouts,
-                ),
-                BottomNavigationBarItem(
-                icon: const Icon(Icons.bedtime_outlined),
-                activeIcon: const Icon(Icons.bedtime),
-                label: AppLocalizations.of(context)!.sleep,
-                ),
-                BottomNavigationBarItem(
-                icon: const Icon(Icons.settings_outlined),
-                activeIcon: const Icon(Icons.settings),
-                label: AppLocalizations.of(context)!.settings,
-                ),
-              ],
-            ),
+            floatingActionButton: _QuickAddFab(key: DashboardKeys.quickAddFab),
           );
         } else {
           // Desktop layout with sidebar
@@ -139,6 +125,7 @@ class DashboardPage extends HookConsumerWidget {
                 const VerticalDivider(thickness: 1, width: 1),
                 // Main Content
                 Expanded(
+                  // Desktop has no FAB, so no extra inset needed.
                   child: _DashboardContent(),
                 ),
               ],
@@ -171,6 +158,12 @@ class DashboardPage extends HookConsumerWidget {
 }
 
 class _DashboardContent extends HookConsumerWidget {
+  /// Padding below the last row, reserved for the floating action button on
+  /// layouts that have one.
+  final double bottomInset;
+
+  const _DashboardContent({this.bottomInset = 16});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -199,7 +192,7 @@ class _DashboardContent extends HookConsumerWidget {
     return RTLHelper.withDirectionality(
       context,
       SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset),
         child: Column(
           crossAxisAlignment: RTLHelper.getStartCrossAxisAlignment(context),
           children: [
@@ -222,18 +215,15 @@ class _DashboardContent extends HookConsumerWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Analytics lives in the header rather than the bottom bar:
-                  // the bar already carries five destinations, and a sixth
-                  // pushes every label to two lines on a 393pt screen.
+                  // Analytics and Calendar moved into the quick actions grid
+                  // below alongside Meal/Workout/Sleep, now that the bottom
+                  // tab bar (which used to carry Settings) is gone. Settings
+                  // stays here since it doesn't fit the "log data" grid.
                   IconButton(
-                    icon: const Icon(Icons.insights_outlined, size: 24),
-                    onPressed: () => context.push(Routes.analytics),
-                    tooltip: 'Analytics',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.person_outline, size: 24),
-                    onPressed: () => context.push(Routes.profile),
-                    tooltip: AppLocalizations.of(context)!.profile,
+                    key: DashboardKeys.settingsAction,
+                    icon: const Icon(Icons.settings_outlined, size: 24),
+                    onPressed: () => context.push(Routes.settings),
+                    tooltip: AppLocalizations.of(context)!.settings,
                   ),
                   // Test Data button -- debug builds only. This used to be
                   // unconditionally visible, letting anyone running a
@@ -251,103 +241,10 @@ class _DashboardContent extends HookConsumerWidget {
                     },
                     tooltip: 'Generate Test Data',
                   ),
-                  // Reset Data button
-                  IconButton(
-                    icon: const Icon(Icons.delete_sweep, size: 24, color: Colors.red),
-                    onPressed: () async {
-                      // Show confirmation dialog
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(AppLocalizations.of(context)!.resetAllData),
-                          content: Text(
-                            AppLocalizations.of(context)!.resetDataWarningBody,
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: Text(AppLocalizations.of(context)!.cancel),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.red,
-                              ),
-                              child: Text(AppLocalizations.of(context)!.resetAllData),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirmed != true) return;
-
-                      // Show loading indicator
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                      
-                      try {
-                        final database = ref.read(databaseProvider);
-                        await database.clearAllUserData();
-                        
-                        // Clear user profile - router will auto-redirect to onboarding
-                        final profileService = ref.read(userProfileServiceProvider);
-                        await profileService.clearProfile();
-                        
-                        // Clear scheduled events from SharedPreferences
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.remove('scheduled_events');
-                        debugPrint('[RESET] ✅ Cleared all data, profile, and scheduled events');
-                        
-                        if (context.mounted) {
-                          Navigator.of(context).pop(); // Close loading
-                          
-                          // Show success message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(AppLocalizations.of(context)!.resetAllDataDone),
-                              backgroundColor: Colors.orange,
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                          
-                          // Invalidate all providers
-                          ref.invalidate(mealsRepositoryProvider);
-                          ref.invalidate(workoutTemplatesRepositoryProvider);
-                          ref.invalidate(workoutSessionsRepositoryProvider);
-                          ref.invalidate(exercisesRepositoryProvider);
-                          ref.invalidate(sleepRepositoryProvider);
-                          ref.invalidate(calendarStateProvider);
-                          
-                          // Router will automatically redirect to /onboarding
-                          // after profileService.clearProfile() triggers notifyListeners()
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          Navigator.of(context).pop(); // Close loading
-                          
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('❌ Error resetting data: $e'),
-                              backgroundColor: Colors.red,
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    tooltip: 'Reset All Data',
-                  ),
-                  // Calendar button
-                  IconButton(
-                    icon: const Icon(Icons.calendar_month, size: 24),
-                    onPressed: () => context.push(Routes.calendar),
-                    tooltip: l10n.calendarTooltip,
-                  ),
+                  // The destructive "reset all data" action lives in
+                  // Settings (see SettingsStub), behind the same confirm
+                  // dialog. A red one-tap wipe sitting next to the greeting
+                  // on the home screen is too easy to hit by accident.
                 ],
               ),
             ],
@@ -390,16 +287,6 @@ class _DashboardContent extends HookConsumerWidget {
                       },
                     ),
 
-          // Quick Actions
-          Text(
-            AppLocalizations.of(context)!.quickActions,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(height: 16),
-          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -407,10 +294,11 @@ class _DashboardContent extends HookConsumerWidget {
                 builder: (context, ref, child) {
                   final prefs = ref.watch(preferencesServiceProvider);
                   return _QuickActionButton(
+                    key: DashboardKeys.mealsAction,
                     icon: Icons.restaurant,
-                    label: AppLocalizations.of(context)!.logMeal,
+                    label: AppLocalizations.of(context)!.meal,
                     color: prefs.mealsColor,
-                    onPressed: () => context.push('/meals/edit'),
+                    onPressed: () => context.push(Routes.meals),
                   );
                 },
               ),
@@ -418,8 +306,9 @@ class _DashboardContent extends HookConsumerWidget {
                 builder: (context, ref, child) {
                   final prefs = ref.watch(preferencesServiceProvider);
                   return _QuickActionButton(
+                    key: DashboardKeys.workoutsAction,
                     icon: Icons.fitness_center,
-                    label: AppLocalizations.of(context)!.startWorkout,
+                    label: AppLocalizations.of(context)!.workout,
                     color: prefs.workoutsColor,
                     onPressed: () => context.push(Routes.workouts),
                   );
@@ -441,12 +330,21 @@ class _DashboardContent extends HookConsumerWidget {
                       final isSleeping =
                           active != null && !active.isCompleted;
                       return _QuickActionButton(
+                        key: DashboardKeys.sleepAction,
                         icon: isSleeping ? Icons.wb_sunny : Icons.bedtime,
                         label: isSleeping
                             ? AppLocalizations.of(context)!.sleepingEllipsis
-                            : AppLocalizations.of(context)!.sleepTimer,
+                            : AppLocalizations.of(context)!.sleep,
                         color: prefs.sleepColor,
-                        onPressed: () => context.push(Routes.sleepTimer),
+                        // Land on the sleep *history* -- it carries the entry
+                        // list, the summary and a link to the timer. Sending
+                        // this button straight to /sleep/timer left the
+                        // history with no route at all once the bottom tab
+                        // bar was removed, so logged nights looked lost.
+                        // Mid-session is the one case where the timer is what
+                        // you actually want, so jump straight to it then.
+                        onPressed: () => context
+                            .push(isSleeping ? Routes.sleepTimer : Routes.sleep),
                       );
                     },
                   );
@@ -454,6 +352,32 @@ class _DashboardContent extends HookConsumerWidget {
               ),
                       ],
                     ),
+                  const SizedBox(height: 16),
+
+                  // Analytics and Calendar joined the quick actions grid
+                  // when the bottom tab bar was removed -- they're still
+                  // page redirects, just grouped with the rest of the
+                  // navigation instead of living as small header icons.
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _QuickActionButton(
+                        key: DashboardKeys.analyticsAction,
+                        icon: Icons.insights_outlined,
+                        label: AppLocalizations.of(context)!.analyticsTitle,
+                        color: theme.colorScheme.primary,
+                        onPressed: () => context.push(Routes.analytics),
+                      ),
+                      const SizedBox(width: 48),
+                      _QuickActionButton(
+                        key: DashboardKeys.calendarAction,
+                        icon: Icons.calendar_month_outlined,
+                        label: l10n.calendarTooltip,
+                        color: theme.colorScheme.secondary,
+                        onPressed: () => context.push(Routes.calendar),
+                      ),
+                    ],
+                  ),
                   ],
       ),
     ),
@@ -1217,6 +1141,7 @@ class _QuickActionButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _QuickActionButton({
+    super.key,
     required this.icon,
     required this.label,
     required this.color,
@@ -1268,6 +1193,82 @@ class _QuickActionButton extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The "+" on the home screen: the actual quick-add entry point, opening a
+/// sheet to log a meal, workout, or sleep entry directly -- each tile then
+/// opens its own dialog rather than navigating away.
+class _QuickAddFab extends ConsumerWidget {
+  const _QuickAddFab({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FloatingActionButton(
+      onPressed: () => _showQuickAddSheet(context, ref),
+      tooltip: AppLocalizations.of(context)!.quickActions,
+      child: const Icon(Icons.add),
+    );
+  }
+
+  void _showQuickAddSheet(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final prefs = ref.read(preferencesServiceProvider);
+
+    // Close the picker first, then open the chosen form, so the two sheets
+    // never stack on top of each other.
+    void replaceWith(BuildContext sheetContext, VoidCallback open) {
+      Navigator.of(sheetContext).pop();
+      open();
+    }
+
+    showAppSheet<void>(
+      context: context,
+      builder: (sheetContext) => AppSheet(
+        title: l10n.quickActions,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            IconRowTile(
+              icon: Icons.restaurant,
+              label: l10n.meal,
+              color: prefs.mealsColor,
+              onTap: () => replaceWith(
+                sheetContext,
+                () => showAppSheet<void>(
+                  context: context,
+                  builder: (_) => const QuickAddMealDialog(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            IconRowTile(
+              icon: Icons.fitness_center,
+              label: l10n.workout,
+              color: prefs.workoutsColor,
+              onTap: () => replaceWith(
+                sheetContext,
+                () => showAppSheet<void>(
+                  context: context,
+                  builder: (_) => const QuickStartWorkoutDialog(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            IconRowTile(
+              icon: Icons.bedtime,
+              label: l10n.sleep,
+              color: prefs.sleepColor,
+              onTap: () => replaceWith(
+                sheetContext,
+                () => showAddSleepSheet(context),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

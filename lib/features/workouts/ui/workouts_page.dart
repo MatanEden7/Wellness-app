@@ -9,6 +9,9 @@ import '../../../routing/routes.dart';
 import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
+import '../domain/session_actions.dart';
+import 'quick_start_workout_dialog.dart';
+import 'workout_keys.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
 class WorkoutsPage extends ConsumerWidget {
@@ -34,58 +37,42 @@ class WorkoutsPage extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, size: 22),
-            onPressed: () => context.push(Routes.workoutSettings),
-            tooltip: 'Workout Settings',
-          ),
-          IconButton(
             icon: const Icon(Icons.calendar_month, size: 22),
             onPressed: () => context.push(Routes.calendar),
             tooltip: AppLocalizations.of(context)!.calendar,
           ),
+          // Two actions, not four: the title wrapped on a 393pt screen.
+          // Starting a workout is the FAB, the exercise library and template
+          // creation each have a labelled button in the page body, so only
+          // settings has nowhere else to live.
           IconButton(
-            icon: const Icon(Icons.fitness_center, size: 22),
-            onPressed: () => context.push(Routes.exerciseLibrary),
-            tooltip: AppLocalizations.of(context)!.exerciseLibrary,
-          ),
-          IconButton(
-            icon: const Icon(Icons.add, size: 22),
-            onPressed: () => context.push(Routes.templateEditor),
-            tooltip: AppLocalizations.of(context)!.createTemplate,
+            icon: const Icon(Icons.settings, size: 22),
+            onPressed: () => context.push(Routes.workoutSettings),
+            tooltip: AppLocalizations.of(context)!.workoutSettingsTooltip,
           ),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Quick Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton(
-                      text: AppLocalizations.of(context)!.quickWorkout,
-                      onPressed: () => _startQuickWorkout(context, ref),
-                      icon: Icons.fitness_center,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppButton(
-                      text: AppLocalizations.of(context)!.exerciseLibrary,
-                      onPressed: () => context.push(Routes.exerciseLibrary),
-                      isSecondary: true,
-                      icon: Icons.library_books,
-                    ),
-                  ),
-                ],
+              // Starting a workout is the FAB; this is the one shortcut it
+              // doesn't cover.
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  text: AppLocalizations.of(context)!.exerciseLibrary,
+                  onPressed: () => context.push(Routes.exerciseLibrary),
+                  isSecondary: true,
+                  icon: Icons.library_books,
+                ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.lg),
 
             // Workout Templates
-            _SectionHeader(
+            SectionHeader(
               title: AppLocalizations.of(context)!.workoutTemplates,
               action: AppButton(
                 text: AppLocalizations.of(context)!.createTemplate,
@@ -134,7 +121,7 @@ class WorkoutsPage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
 
             // Recent Workouts
-            _SectionHeader(
+            SectionHeader(
               title: AppLocalizations.of(context)!.recentWorkouts,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -174,24 +161,27 @@ class WorkoutsPage extends ConsumerWidget {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        key: WorkoutKeys.startWorkoutFab,
+        onPressed: () => showAppSheet<void>(
+          context: context,
+          builder: (_) => const QuickStartWorkoutDialog(),
+        ),
+        icon: const Icon(Icons.play_arrow),
+        label: Text(AppLocalizations.of(context)!.startWorkout),
+      ),
     );
   }
 
   Future<void> _startQuickWorkout(BuildContext context, WidgetRef ref) async {
-    final session = WorkoutSession.create();
-    await ref.read(workoutSessionsRepositoryProvider).createSession(session);
-    // Trigger refresh to update UI immediately
-    ref.invalidate(workoutSessionsRepositoryProvider);
+    final session = await startQuickWorkoutSession(ref);
     if (context.mounted) {
       context.push('/workouts/session/${session.id}');
     }
   }
 
   Future<void> _startWorkout(BuildContext context, WidgetRef ref, WorkoutTemplate template) async {
-    final session = WorkoutSession.create(templateId: template.id);
-    await ref.read(workoutSessionsRepositoryProvider).createSession(session);
-    // Trigger refresh to update UI immediately
-    ref.invalidate(workoutSessionsRepositoryProvider);
+    final session = await startWorkoutSessionFromTemplate(ref, template);
     if (context.mounted) {
       context.push('/workouts/session/${session.id}');
     }
@@ -335,7 +325,7 @@ class _WorkoutTemplateCard extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.xs),
               Text(
-                '${template.exercises.length} exercise${template.exercises.length == 1 ? '' : 's'}',
+                AppLocalizations.of(context)!.exercisesCount(template.exercises.length),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -415,7 +405,7 @@ class _WorkoutSessionCard extends StatelessWidget {
             if (session.sets.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(
-                '${session.sets.length} set${session.sets.length == 1 ? '' : 's'} completed',
+                AppLocalizations.of(context)!.setsCompletedCount(session.sets.length),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -426,41 +416,3 @@ class _WorkoutSessionCard extends StatelessWidget {
   }
 }
 
-// Shared section header widget with RTL support
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final Widget? action;
-
-  const _SectionHeader({
-    required this.title,
-    this.action,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (action != null) ...[
-          const SizedBox(width: 12),
-          action!,
-        ],
-      ],
-    );
-  }
-}

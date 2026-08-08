@@ -4,6 +4,7 @@ import 'package:integration_test/integration_test.dart';
 
 import 'package:wellness_app/core/widgets.dart';
 import 'package:wellness_app/services/language_service.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -54,14 +55,17 @@ void main() {
     // extra time.
     await settle(tester, frames: 30);
 
-    expect(find.byIcon(Icons.calendar_month), findsOneWidget, reason: 'should have landed on the dashboard');
+    // By key: the dashboard's calendar shortcut became an outlined grid
+    // button, so the filled-icon finder matched nothing here.
+    expect(find.byKey(DashboardKeys.calendarAction), findsOneWidget,
+        reason: 'should have landed on the dashboard');
 
     // ---------------------------------------------------------------
     // Phase 2: Add a custom food
     // ---------------------------------------------------------------
     const foodName = 'E2E Test Food';
 
-    await tapBottomNavIcon(tester, Icons.restaurant_outlined);
+    await tapDashboardAction(tester, DashboardKeys.mealsAction);
     await tester.tap(find.byIcon(Icons.restaurant_menu)); // Food Catalog
     await settle(tester);
     await tester.tap(find.byTooltip(l10n.addFood));
@@ -176,9 +180,11 @@ void main() {
     // ---------------------------------------------------------------
     const exerciseName = 'E2E Test Exercise';
 
-    await tapBottomNavIcon(tester, Icons.fitness_center_outlined);
-    await tester.tap(find.byTooltip(l10n.exerciseLibrary));
-    await settle(tester);
+    await tapDashboardAction(tester, DashboardKeys.workoutsAction);
+    // The library is a labelled button on the page now, not an app-bar icon
+    // with a tooltip -- the app bar was down to two actions to stop the
+    // title wrapping, and starting a workout moved to the FAB.
+    await tapVisible(tester, find.widgetWithText(AppButton, l10n.exerciseLibrary));
     await tester.tap(find.byTooltip(l10n.addExerciseTooltip));
     await settle(tester);
 
@@ -200,8 +206,12 @@ void main() {
 
     await tester.pageBack();
     await settle(tester); // back to Workouts
-    await tester.tap(find.byTooltip(l10n.createTemplate));
-    await settle(tester);
+    // The Workout Templates section header carries its own "Create Template"
+    // button, so go through that rather than the app-bar overflow: the same
+    // label appears in both places, and tapping it by text with the menu open
+    // hits the overlay instead and lands on Workout Settings.
+    await tapVisible(
+        tester, find.widgetWithText(AppButton, l10n.createTemplate));
 
     await tester.enterText(find.byType(TextFormField).first, workoutTemplateName);
     await settle(tester);
@@ -251,7 +261,7 @@ void main() {
     // ---------------------------------------------------------------
     // Phase 8: Log a sleep entry
     // ---------------------------------------------------------------
-    await tapBottomNavIcon(tester, Icons.bedtime_outlined);
+    await tapDashboardAction(tester, DashboardKeys.sleepAction);
     await tester.tap(find.byTooltip(l10n.addSleepEntryTooltip));
     await settle(tester);
 

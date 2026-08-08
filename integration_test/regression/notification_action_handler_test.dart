@@ -14,6 +14,7 @@ import 'package:wellness_app/features/sleep/ui/sleep_page.dart';
 import 'package:wellness_app/features/sleep/ui/sleep_timer_page.dart';
 import 'package:wellness_app/features/workouts/ui/workout_session_page.dart';
 import 'package:wellness_app/services/notification_action_handler.dart';
+import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
 
 import '../support/app_launcher.dart';
 
@@ -44,7 +45,7 @@ void main() {
 
   Future<WidgetRef> pumpToRef(WidgetTester tester) async {
     await pumpApp(tester, profile: testProfile());
-    await tapBottomNavIcon(tester, Icons.settings_outlined);
+    await tapDashboardAction(tester, DashboardKeys.settingsAction);
     return tester.element(find.byType(SettingsStub)) as WidgetRef;
   }
 

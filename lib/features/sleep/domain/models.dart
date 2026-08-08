@@ -46,22 +46,10 @@ class SleepEntry with _$SleepEntry {
     return dur.inMinutes / 60.0;
   }
 
-  String get qualityText {
-    switch (quality) {
-      case 1:
-        return 'Poor';
-      case 2:
-        return 'Fair';
-      case 3:
-        return 'Good';
-      case 4:
-        return 'Very Good';
-      case 5:
-        return 'Excellent';
-      default:
-        return 'Not Rated';
-    }
-  }
+  // No `qualityText` getter here. Wording for a 1-5 rating is a presentation
+  // concern and this getter hardcoded English, so a Hebrew user saw "Very
+  // Good" in the middle of an otherwise translated card. Use
+  // `qualityLabel(l10n, quality)` from `sleep/ui/sleep_page.dart` instead.
 
   factory SleepEntry.fromJson(Map<String, dynamic> json) => _$SleepEntryFromJson(json);
 }

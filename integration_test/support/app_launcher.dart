@@ -164,11 +164,21 @@ Future<AppLocalizations> loadL10n(AppLanguage language) {
   return AppLocalizations.delegate.load(language.locale);
 }
 
-/// Taps a real `BottomNavigationBarItem` icon on the dashboard and waits for
-/// the resulting navigation to settle.
-Future<void> tapBottomNavIcon(WidgetTester tester, IconData icon) async {
-  await tester.tap(find.byIcon(icon));
-  await settle(tester);
+/// Navigates from the dashboard into one of the main areas, then waits for the
+/// resulting navigation to settle.
+///
+/// Targets a [DashboardKeys] key rather than an icon. Tests used to tap the
+/// `BottomNavigationBarItem` glyphs (`Icons.bedtime_outlined` and friends);
+/// once the tab bar was replaced by the quick-actions grid those glyphs no
+/// longer existed, and the filled ones that replaced them are ambiguous --
+/// `Icons.bedtime` also appears on the dashboard's sleep stat card, and the
+/// sleep action swaps to `Icons.wb_sunny` mid-session.
+///
+/// Scrolls the target into view first: the quick actions sit below the stat
+/// cards, and a bare `tester.tap()` on an off-screen widget silently misses
+/// (see [tapVisible]).
+Future<void> tapDashboardAction(WidgetTester tester, Key key) async {
+  await tapVisible(tester, find.byKey(key));
 }
 
 /// Pumps repeatedly until [finder] matches at least one widget, or gives up
