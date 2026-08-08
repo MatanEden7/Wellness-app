@@ -5,6 +5,128 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Custom foods and exercises could not be saved on a phone (2026-08-07)
+
+`ISSUES.md` #77. Both the add/edit food dialog and the add/edit exercise dialog
+were a `Column` with no scroll view. On a 402x874 phone the content overflowed
+its dialog by 159pt and pushed the Add / Update button to y=926 — past the
+bottom of the render tree, with nothing to scroll. The button was unreachable,
+so adding a custom food or exercise was **impossible on a real device**.
+
+Each dialog now caps at 85% of screen height and scrolls only its fields, with
+the title and action row pinned.
+
+Found by running the full integration suite rather than by reading the code, and
+the reason it had gone unnoticed is worth recording: `tester.tap()` does not
+fail when its target is off-screen — it misses, prints a `warnIfMissed`
+*warning*, and carries on, so the run died several steps later at something
+unrelated and looked like test rot. `integration_test/support/app_launcher.dart`
+gained `tapVisible()` (ensureVisible + tap), and every form and onboarding
+button now goes through it.
+
+### New: onboarding → full schedule integration flows (2026-08-07)
+
+`integration_test/regression/onboarding_schedule_flow_test.dart` — four flows
+that all **start from a user who already has three weeks of history** (meals,
+progressive training, sleep, weigh-ins) via a new `seed` hook on the test
+harness. An empty install is the easy case; the interesting question is whether
+generation copes with, and does not destroy, data already there.
+
+They assert that completing the real wizard leaves: workouts, meals and one
+sleep event; every event recurring rather than one-off; every workout pinned to
+a template; counts matching the profile just saved; the schedule actually
+rendered on the calendar rather than merely stored; the analytics screen
+populated; and the pre-existing history intact.
+
+### Analytics: duplicate rows, accessibility, Hebrew (2026-08-07)
+
+Three follow-ups closed together — `ISSUES.md` #75, #73, #72, plus #76 which
+only surfaced because of them.
+
+- **#75 — scheduling something for *right now* showed it twice.** The dialog
+  wrote the real meal / session / sleep entry *before* constructing the event,
+  so the logged row had no `sourceEventId` and the calendar rendered the plan
+  and the log side by side: #57's symptom via a new path. The event is now
+  built first, `_createDataFromTemplate` takes the id as a **required**
+  argument (which is what makes the ordering un-reversible), and
+  `createMeal` / `createSession` / `createEntry` finally accept the link at all.
+  `metadata.dataId` is merged rather than replacing the map, so a recurring
+  event's occurrence history survives an edit.
+- **#73 — the charts were silent under VoiceOver.** Every chart is wrapped in a
+  `Semantics` node describing what a sighted user reads off the shape: measure,
+  bucket, coverage, average, range, direction, goal. Direction is only called a
+  trend when the drift covers at least half the series' own spread — that ratio
+  is what separates calorie noise from a real body-weight decline, where no
+  absolute threshold could.
+- **#72 — the screen is bilingual.** 77 new keys in both ARB files; not one
+  English literal remains in `lib/features/analytics/ui/`. The insight rules
+  still emit numbers rather than sentences, so all eight translate as ARB keys.
+  The Hebrew is not a translator's — #31 still covers that pass.
+- **#76 — every multi-placeholder ARB string had its arguments in the wrong
+  order.** `gen-l10n` orders parameters alphabetically by placeholder name
+  absent metadata, and no existing key had ever hit it. `"Average {average},
+  from {min} to {max}"` generated `(average, max, min)`, announcing the range
+  backwards. Seven keys were affected, silently. Metadata is now declared for
+  all 33 parameterised keys.
+
+581 → 606 fast tests.
+
+### A scheduled event could save without ever appearing (2026-08-07)
+
+`ISSUES.md` #74. Anything scheduled into a month the user had *scrolled to* was
+written to storage correctly and never rendered.
+
+`CalendarNotifier.refresh()` reloaded one month — `state.focusedDate`. But
+`onMonthChanged` deliberately never moves `focusedDate` (moving it re-animates
+the scroll list, which was #44), so it stays on whichever month the page opened
+at however far you scroll. Now the notifier tracks the months actually paged in
+and refreshes all of them, plus the month of the event being acted on — so
+scheduling into a month never yet visited works too. Two hand-rolled reloads in
+`calendar_page.dart` that had been working around this for the complete and
+delete paths were removed.
+
+The regression test asserts against `CalendarState.days`, not the service: the
+service was already correct in every case, so a service-level test would have
+stayed green through the whole bug.
+
+### Analytics screen (2026-08-07)
+
+A dated view of everything logged, at `/analytics` (dashboard header, not the
+bottom bar — five destinations already wrap their labels at 393pt). Planned in
+`docs/ANALYTICS_PLAN.md`.
+
+- **Goals-together hero chart.** One bar per bucket, split into equal segments
+  for calories / protein / training / sleep. A full-height bar means the whole
+  day was hit, which reads without a legend. Streak and best streak above it,
+  today's rings below.
+- **Calorie scoring follows the profile goal.** `fat_loss` counts comfortably
+  under target as a win (with a floor, so starving still fails), `muscle_gain`
+  wants the target met or beaten, everything else is a ±10% band. A flat band
+  for everyone marks a cutting user's best day as a failure.
+- **Rest days count once the week's target is met**, so a perfect week is
+  possible for someone who does not train daily.
+- **Strength: estimated 1RM, not raw load.** Adding a rep at the same weight is
+  progress and a raw-weight line hides it — the exact false "I'm stuck" reading
+  the plateau strip is supposed to be the only source of.
+- **Plateau strip** covers every loaded exercise at once, worst stall first:
+  last working weight, sessions at it, days since it moved. Fires only at ≥3
+  sessions *and* ≥14 days; a deload does not reset the clock, and bodyweight
+  exercises are never flagged.
+- **Body-weight history** is a new tracked entity (`BodyWeightEntryData`),
+  upserted per calendar day. Charted as a 7-ish-day EMA with the raw weigh-ins
+  as dots — daily weight moves a kilo on water alone. In the backup from the
+  same commit that introduced it (export `1.4.0`).
+- **Insight rules** — plateau, PR, protein shortfall, calorie drift, volume
+  drop, sleep debt, consistency win, neglected muscle. Pure functions over the
+  computed view, capped at three cards, emitting numbers rather than strings so
+  wording stays in one place.
+- **Charts are hand-painted**, no charting dependency: four `CustomPainter`
+  primitives that read the app's 9 themes and custom section colours directly.
+- **One provider, one pass.** Every section reads a slice of a single
+  `AnalyticsView`; nothing queries per-card. Sleep goal added to preferences
+  (default 8h); in-progress sessions are excluded from every aggregate.
+- 531 → 581 fast tests.
+
 ### Goal-driven workout programming (2026-08-06)
 
 Generated workouts were `3 sets x 10 reps, no weight, no rest` for every goal

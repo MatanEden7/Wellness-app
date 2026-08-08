@@ -4,27 +4,39 @@ Snapshot only — update when overall project status changes, not on every commi
 See `CLAUDE.md` for the doc-tracking rules and `.claude/commands/status.md` /
 `big-status.md` / `my-status.md` for how to regenerate this.
 
-Last updated: 2026-08-06 (workout programming)
+Last updated: 2026-08-07 (analytics screen)
 
 ## Current task
 
-None. Workout programming (ISSUES.md #70) is complete: sessions are programmed
-from the goal with real sets, reps, rest and starting weights, sized to a
-45-minute budget. The profile and every setting are now in the backup (#71) —
-they were in none. Fast suite green at 531.
+None. The analytics screen is complete, bilingual and VoiceOver-readable,
+reachable from the dashboard header (`/analytics`): goals-together hero chart,
+nutrition, training, strength with plateau detection, body weight, sleep, and
+generated insights. Body weight is a new tracked entity and is in the backup.
+Planned in `docs/ANALYTICS_PLAN.md`.
 
-Nothing in the last two days has been seen on hardware. The new programming
-only appears after Settings → Reset all data and a fresh onboarding, which is
-the agreed rollout.
+Five bugs closed the same day (ISSUES #73–#77), three of them found by *running*
+rather than by reading: #76 by testing against real generated localisations,
+and #77 — custom foods and exercises could not be saved on a phone at all — by
+running the full integration suite.
+
+Fast suite green at 606. Device suite green: 9/9 sanity, 4/4 regression
+(including four new onboarding→schedule flows), 3/3 e2e. `flutter analyze
+lib/ test/` clean.
+
+**The release build is installed on the iPhone** (`com.matan.wellnessx123`,
+via `xcrun devicectl` — `flutter install` cannot find its own bundle here).
+Everything above was verified on the simulator; the device itself has had the
+build put on it but has not been driven through a manual pass.
 
 ## Snapshot
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 531/531 |
+| Fast unit suite | ✅ Green | 606/606 |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
-| Device suite | ⏳ Not re-run | 12/12 on 2026-08-05, before the #69 changes |
-| `docs/ISSUES.md` open items | 8 remain | all 8 need the user — see below |
+| Device suite | ✅ Green | 16/16 sanity+regression, plus 3/3 e2e (2 need an attended permission tap) |
+| Analytics screen | ✅ Shipped | EN+HE, a11y labelled, exercised by an integration flow |
+| `docs/ISSUES.md` open items | 5 remain | all 5 need the user — see below |
 | `docs/ROADMAP.md` Epic B (notifications) | B1/B3/B4 open | all three are device checks — **me** |
 | Exercise catalog depth | ⚠️ Binding constraint | Calves ×1, Glutes ×2, Biceps ×2 — Leg Day A/B identical at 6 days |
 | `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |

@@ -4,7 +4,7 @@ Audit of the code as found on branch `rc`, with **fix status** as of the repair 
 
 Legend: **[FIXED]** — fixed and covered by a regression test · **[OPEN]** — still outstanding.
 
-Fast suite: `flutter test test/` (531 tests). Device suite: `integration_test/sanity/` and
+Fast suite: `flutter test test/` (606 tests). Device suite: `integration_test/sanity/` and
 `integration_test/regression/` on a booted simulator — this is what CI runs.
 `flutter analyze lib/` is clean of warnings and errors.
 
@@ -89,11 +89,18 @@ remaining work is a translator/designer decision, not engineering effort.
 | 70 | Generated workouts were a placeholder: 3x10, no weight, no rest, identical for every goal | High | Fixed | ~6h |
 | 71 | The user profile and all settings were in no backup at all | High | Fixed | ~2h |
 | 69 | Notification audit: snooze/remove unreachable, rest timer killed all buttons, no sound, prefs never re-applied | Critical | Fixed | ~3h |
+| 72 | Analytics screen is English-only | Medium | Fixed (EN+HE; Hebrew wording needs a translator pass — see #31) | ~2h |
+| 73 | Analytics charts are invisible to VoiceOver | Medium | Fixed | ~1h |
+| 74 | A workout scheduled in a scrolled-to month saved but never appeared | High | Fixed | ~1h |
+| 75 | Scheduling a workout for *now* shows it twice (plan + unlinked session) | Medium | Fixed | ~1h |
+| 76 | Every multi-placeholder ARB string passed its arguments in the wrong order | High | Fixed | ~30min |
+| 77 | Add/edit food and exercise dialogs overflowed; their save button was off-screen and untappable | High | Fixed | ~45min |
 
-**Totals:** 66 fixed, 1 partly fixed, 4 open. **Every remaining item needs you** --
-a keystore (#49), a bundle-ID decision (#51), a product decision (#14), a
-translator (#31), and one 15-minute device check (#9). No engineering work is
-blocked on anything but those.
+**Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
+again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
+a translator (#31, which now also covers the Hebrew wording added by #72), and
+one 15-minute device check (#9). No engineering work is blocked on anything but
+those.
 
 ---
 
@@ -828,3 +835,171 @@ an int: `sleepGoalHours` is a double, and restoring `8.0` as `8` makes
 Both sections are absent from every backup written before this, and import
 tolerates that -- leaving whatever is on the device alone rather than clearing
 a profile the payload cannot replace.
+
+### 72. The analytics screen is English-only  **[FIXED]**
+
+Every string on `/analytics` is written inline in English rather than through
+`AppLocalizations` — card titles, stat labels, the eight insight sentences.
+Hebrew users get an English screen inside an otherwise RTL app.
+
+The structure is right, which is why this is an hour of code and not a rewrite:
+the insight *rules* emit `InsightKind` plus a map of numbers, never a sentence,
+so all the wording lives in one function (`insightText` in
+`lib/features/analytics/ui/analytics_format.dart`) plus the card labels. The
+Hebrew itself needs a translator — see #31.
+
+Fixed: 77 new keys in both ARB files, and not one English literal left in
+`lib/features/analytics/ui/`. The screen-reader sentences went with them, so a
+Hebrew user gets a Hebrew chart description too.
+
+The **Hebrew wording is mine, not a translator's** -- it is wired and coherent,
+but #31 should still cover it on the real translation pass.
+
+One deliberate non-change: the chart time axis stays left-to-right in both
+languages, matching the app's existing "numbers stay LTR" convention. Mirroring
+it for Hebrew is defensible but doubles the painter test matrix on a screen that
+is almost entirely numeric.
+
+### 73. Analytics charts are invisible to VoiceOver  **[FIXED]**
+
+A `CustomPainter` exposes nothing to the accessibility tree, so all four chart
+primitives in `lib/features/analytics/ui/charts/` are silent. Every other
+screen in the app is at least navigable.
+
+Fixed with `ChartSemantics` + `describeSeries` / `describeGoalScore`. Each chart
+is wrapped in a `Semantics` node whose label carries what a sighted user reads
+off the shape: what is measured, over what bucket, how many periods have data,
+the average and range, the direction, and the goal.
+
+The scrub gesture is a horizontal drag, which VoiceOver intercepts for
+navigation and never delivers -- so rather than bolting on a second interaction,
+the label carries the summary outright. Nobody reads 30 individual bars either.
+
+Direction is called a trend only when the net drift covers at least half the
+series' own spread. That ratio, not an absolute cutoff, is what separates
+calories bouncing 1950..2100 and ending 25 lower (noise) from body weight
+walking 85.0 down to 82.5 (real) -- any fixed threshold gets one of them wrong.
+
+### 74. A workout scheduled in a scrolled-to month saved but never appeared  **[FIXED]**
+
+Reported as "I scheduled a workout and I can't see it in the calendar yet".
+
+The service layer was never at fault -- `getEventsForDateRange` returns a newly
+saved workout for any range containing it, verified for plain, recurring,
+last-day-of-month and same-day cases. What the user sees is
+`CalendarState.days`, filled one month at a time by `loadEventsForMonth`.
+
+`CalendarNotifier.refresh()` reloaded exactly one month: `state.focusedDate`.
+But `onMonthChanged` in `calendar_page.dart` deliberately does **not** call
+`setFocusedDate` -- doing so re-animates the scroll list, which was #44. So
+`focusedDate` stays on whichever month the page opened at, however far the user
+scrolls. Schedule anything into a month you scrolled to, and it was written to
+storage correctly and simply never rendered. It appeared "later", once that
+month was paged in again -- hence "yet".
+
+Two call sites already worked around this by hand, calling
+`loadEventsForMonth(event.scheduledAt)` after completing and after deleting.
+The add path had no such workaround, which is why adding was the visible
+failure.
+
+Fixed by tracking the months actually paged in (`_loadedMonths`, capped at 12)
+and refreshing all of them, plus an `including:` month for the event being
+acted on -- so scheduling into a month never yet visited also works. The two
+hand-rolled reloads in `calendar_page.dart` were removed as redundant.
+
+Covered by `calendar_visibility_after_add_test.dart`, which fails on three
+cases before the fix. It asserts against `CalendarState.days` rather than the
+service, because the service was already correct and a service-level test would
+have stayed green through the entire bug.
+
+### 75. Scheduling a workout for *now* shows it twice  **[FIXED]**
+
+Found while reproducing #74, on the same flow. Distinct bug, not a regression
+of the fix.
+
+`event_scheduling_dialog.dart` treats anything within 5 minutes of now as
+"immediate" and calls `_createDataFromTemplate`, which writes a real
+`WorkoutSession` (or meal, or sleep entry). That happens **before** the
+`ScheduledEvent` is constructed, so the session cannot carry `sourceEventId` --
+the link the calendar folds on. The agenda then renders both the plan and the
+log: exactly the #57 symptom, reintroduced through a different path.
+
+Reproduced at the service level: one saved event plus one unlinked session for
+the same day yields two rows.
+
+Fixed with ordering plus plumbing. The event is now built first and the data
+second, with `sourceEventId: event.id`; `metadata.dataId` is merged onto the
+event afterwards rather than replacing the map, so a recurring event's
+completed / missed / skipped occurrence dates survive an edit.
+
+The plumbing was the real work: `MealsRepository.createMeal`,
+`WorkoutSessionsRepository.createSession` and `SleepRepository.createEntry` all
+dropped `sourceEventId`, because it exists only on the `*Data` row and the
+create paths never took it as a parameter. (`updateMeal` / `updateSession` /
+`updateEntry` already read it off the existing row and pass it back -- see #64.)
+All three now accept it.
+
+`_createDataFromTemplate` takes it as a **required** named argument, which is
+what makes the ordering un-reversible: the event has to exist before that
+function can be called at all.
+
+Covered by `scheduled_now_link_test.dart`, which goes through the repositories
+rather than the database -- inserting `*Data` rows directly, as
+`calendar_duplication_test` does, cannot catch a create path that never sets the
+field.
+
+### 76. Every multi-placeholder ARB string passed its arguments in the wrong order  **[FIXED]**
+
+Found by the #73 tests the moment they ran against real generated strings.
+
+`flutter gen-l10n` orders a message's parameters **alphabetically by
+placeholder name** when no `@key` metadata declares them. None of the ~700
+existing keys had metadata, and it had never mattered because no existing
+message had two placeholders whose names happened to sort against their
+position.
+
+Every multi-placeholder key added for #72 did. `"Average {average}, from {min}
+to {max}"` generated `(average, max, min)`, so a screen reader announced
+"from 2.4k to 1.8k" -- the range inverted. `"{observed} of {total} {period}"`
+generated `(observed, period, total)` and read "4 of days 4". Seven keys were
+affected in total, all of them silently: the strings compiled, the app ran, and
+the output was simply wrong.
+
+Fixed by declaring `@key.placeholders` explicitly, in intended order, for all
+33 parameterised analytics keys -- including the single-placeholder ones, so
+adding a second placeholder later cannot silently re-order the first.
+
+Worth knowing when adding any future ARB message with more than one
+placeholder: **declare the metadata, or check the generated signature.** Nothing
+warns you.
+
+### 77. The add/edit food and exercise dialogs could not be submitted on a phone  **[FIXED]**
+
+Found by running the full integration suite, not by reading the code.
+
+Both dialogs were `Dialog > Container(width: 400) > Form > Column` with **no
+scroll view anywhere**. On a 402x874 phone the content is ~840pt tall inside a
+~682pt dialog: it overflowed by 159pt, and the action row was pushed to y=926 --
+past the bottom of the render tree. There was nothing to scroll, so the Add /
+Update button was not merely awkward to reach, it was **unreachable**. Adding or
+editing a custom food or exercise was impossible on a real device.
+
+The exercise dialog was worse: it carries three tag groups (equipment,
+contraindications, rehab) on top of the same fields.
+
+Fixed by giving each dialog a `maxHeight` of 85% of the screen and putting only
+the fields inside a `SingleChildScrollView`, wrapped in `Flexible` so the dialog
+still shrinks to content on a roomy screen. The title and the action row stay
+pinned, which is the point -- the bug was that the button could scroll away.
+
+**Why no test caught it:** `integration_test/e2e/` is not run by CI, and the one
+test that exercises this path had been silently passing over it. `tester.tap()`
+does *not* fail when its target is off-screen -- it dispatches a hit test at the
+widget's real coordinates, misses, prints a `warnIfMissed` **warning**, and
+carries on. The run then died several steps later at an unrelated finder, which
+is what made this look like test rot rather than an app bug.
+
+`tapVisible()` in `integration_test/support/app_launcher.dart` now wraps
+`ensureVisible` + `tap`, and every onboarding/form button goes through it. Worth
+knowing generally: **a `warnIfMissed` warning in an integration run is a failure,
+not a warning.**

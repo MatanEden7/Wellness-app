@@ -81,6 +81,7 @@ Located in [`lib/data/db/drift_database.dart`](lib/data/db/drift_database.dart):
 | `_workoutSessions` | Completed/in-progress workouts |
 | `_setEntries` | Individual sets (reps/weight) |
 | `_sleepEntries` | Sleep tracking data |
+| `_bodyWeightEntries` | Weigh-ins, one per calendar day (upserted, not appended) |
 
 ### Reactive Updates
 
@@ -179,6 +180,59 @@ MealItem {
 
 ---
 
+## Analytics
+
+`lib/features/analytics/` is layered deliberately, and the layering is the part
+worth preserving:
+
+```
+domain/     pure Dart -- no Flutter, no DB. Ranges and bucketing, series maths,
+            goal scoring, e1RM + plateau detection, insight rules.
+data/       AnalyticsRepository (the ONLY thing here that touches AppDatabase)
+            and the providers.
+ui/         the page, seven section cards, and four CustomPainter primitives.
+```
+
+Four rules this feature holds to:
+
+1. **One provider, one pass.** Every section reads a slice of a single
+   `AnalyticsView` from `analyticsViewProvider(range)`. Sections must never
+   query anything themselves — seven per-section streams would re-run the whole
+   aggregation seven times a frame, which is the `build()`-time stream pattern
+   listed under Known Issues.
+2. **No per-day queries.** `watchMealsByDate` is one day and
+   `getMealItemsByMealId` is one meal; calling either in a loop over 365 days
+   re-scans the item list every iteration. `AnalyticsRepository` indexes once
+   and joins in memory.
+3. **In-progress sessions are excluded from every aggregate.**
+   `WorkoutSession.endedAt == null` means "still running". One that leaks
+   through logs as a zero-volume training day and hands out a free streak day.
+4. **Null in a series means *no data*, never zero.** An unlogged day must not
+   drag an average toward the floor, and a chart must draw a gap rather than a
+   line through the axis.
+
+Two domain decisions that look like bugs if you don't know them:
+
+- **Strength plots estimated 1RM (Epley), not the top-set weight.** Adding a rep
+  at the same load is progress, and a raw-weight line renders that flat — the
+  exact false "I'm stuck" reading the plateau strip is meant to be the only
+  source of.
+- **A night of sleep is attributed to the day it *ended* on.** Attributing by
+  start scores a 23:30 bedtime against the previous day.
+
+Body weight is a real collection (`_bodyWeightEntries`), distinct from
+`UserProfile.weightKg` — that scalar is an input to the calorie formulas and
+cannot answer "am I trending down?". Entries are **upserted per calendar day**:
+weight swings a kilo across a day on water, so two readings are a correction,
+not two data points.
+
+Charts are four hand-written `CustomPainter`s
+([`ui/charts/`](lib/features/analytics/ui/charts/)) rather than a package. The
+app has 9 user-selectable themes plus custom section colours, so a package's own
+theming layer would be a second source of truth for colour.
+
+---
+
 ## Key Files & Structure
 
 ### Entry Points
@@ -206,6 +260,9 @@ lib/features/{meals|workouts|sleep|calendar}/
 ```
 
 **Key domain models**:
+- Analytics: [`lib/features/analytics/domain/`](lib/features/analytics/domain/) — see
+  "Analytics" below. Its own plain value objects (`analytics_input.dart`), not the
+  freezed models, so the whole layer stays free of Flutter and the database
 - Meals: [`lib/features/meals/domain/models.dart`](lib/features/meals/domain/models.dart) - `FoodItem`, `Meal`, `MealItem`, `MealTemplate`
   - Unit/macro math lives separately in `domain/food_serving_kind.dart` and
     `domain/food_nutrition_math.dart` (see "Food Amount System" above) — not in `models.dart`

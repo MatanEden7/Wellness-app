@@ -313,7 +313,13 @@ capacity allows.
 ## Explicitly out of scope
 
 Cloud sync/backup, Apple Health / Google Fit integration, barcode scanning, social
-features, weight/body-measurement history as a new tracked entity, workout PR/
-progression analytics. All were out of scope in the original spec's "Phase 2" and
-stay there — this plan is about making the *current* feature set solid, not growing
-it.
+features, body-*measurement* history (waist, body fat). These were out of scope in
+the original spec's "Phase 2" and stay there — this plan is about making the
+*current* feature set solid, not growing it.
+
+**No longer out of scope**, as of 2026-08-07: **body-weight history** and
+**workout PR/progression analytics**, both shipped with the analytics screen. The
+screen was asked for directly, and it cannot answer "am I progressing?" without
+either — `UserProfile.weightKg` is a single scalar the calorie formula reads, and
+progression needs the set history queried by date. Body *measurements* (waist,
+body fat) remain out: one field and one chart became several of each.

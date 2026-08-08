@@ -4,6 +4,113 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-07 — Analytics screen
+
+**Current task:** None. Shipped end to end.
+
+**Last completed:** the analytics page, asked for as "graphs for all the
+important data according to dates... to know that I'm using the same weight for
+a while... and in the top graph put all the goals reached together", clean and
+simple in an iPhone idiom. Architecture written up first in
+`docs/ANALYTICS_PLAN.md`, then built to it.
+
+- `features/analytics/domain/` is pure Dart — ranges/bucketing, series maths,
+  goal scoring, e1RM + plateau detection, insight rules. No Flutter, no DB,
+  same shape as `WorkoutProgramming`, and where all 49 new tests point.
+- `AnalyticsRepository` is the only thing that touches `AppDatabase`; it
+  indexes once and joins in memory rather than calling the existing per-day
+  `watchMealsByDate` in a loop.
+- One `analyticsViewProvider(range)` feeds all seven cards. Deliberately not
+  per-section streams — that is the `build()`-time stream pattern the repo is
+  working its way out of, and it would have run the aggregation seven times a
+  frame.
+- Charts are four hand-written painters. `fl_chart`'s theming would have been a
+  second source of truth for colour next to 9 themes and custom section
+  colours, and its default look is Material rather than iOS.
+- Body weight became a real entity. It is the one thing the screen needed that
+  the app had no history for — `UserProfile.weightKg` is a scalar the calorie
+  formula reads. Wired into export/import in the same change, and into the
+  exact-key-set assertion in `export_completeness_test`, which is the test that
+  exists because meal templates, calendar events and the profile each spent a
+  release missing from backups.
+- Two behaviour notes worth remembering: in-progress sessions are filtered out
+  of every aggregate (otherwise an abandoned workout is a zero-volume training
+  day and a free streak day), and a night of sleep is attributed to the day it
+  *ended* on.
+- Reverses two "explicitly out of scope" lines in `ROADMAP.md` — weight history
+  and progression analytics — because the screen cannot answer "am I
+  progressing?" without them.
+- 531 → 581 fast tests. `flutter analyze` clean on everything new.
+
+**Then, same day — four bug fixes.** Reported as "I scheduled a workout and I
+can't see it in the calendar yet".
+
+- **#74** was not where it looked. The calendar *service* returned the event
+  correctly in all five shapes I probed (plain, same-day, recurring,
+  full-month, last-day-of-month). The state layer was the problem:
+  `refresh()` reloaded only `state.focusedDate`'s month, and `onMonthChanged`
+  deliberately never moves `focusedDate` (that re-animates the scroll list --
+  #44). Anything scheduled into a scrolled-to month saved and never rendered.
+  The notifier now tracks the months actually paged in and refreshes all of
+  them. Two hand-rolled reloads in `calendar_page.dart` that had been papering
+  over this for the complete and delete paths came out.
+- **#75** turned up while reproducing #74: scheduling for *now* wrote the data
+  before the event existed, so there was no id to link, and the three
+  `create*` repository methods had no parameter to accept one anyway. Fixed by
+  ordering plus plumbing; `_createDataFromTemplate` now takes the id as a
+  *required* argument, which is what stops the ordering regressing.
+- **#73** (a11y) and **#72** (bilingual) closed together on the analytics
+  screen. 77 ARB keys, no English literals left, screen-reader sentences
+  included.
+- **#76** only exists because #73's tests ran against real generated strings:
+  `gen-l10n` orders parameters alphabetically without metadata, so
+  `"from {min} to {max}"` generated `(max, min)` and announced ranges
+  backwards. Seven keys, silently wrong. Metadata now declared for all 33.
+
+Two lessons worth keeping. Test at the layer that can actually fail --
+`#74`'s regression test asserts on `CalendarState.days` because a
+service-level test stays green through the whole bug, and `#75`'s goes through
+the repositories because inserting `*Data` rows directly cannot catch a create
+path that never sets a field. And `#76` is the case for testing generated
+localisations against the real strings rather than a stub.
+
+581 -> 606 fast tests.
+
+**Then — install on the iPhone, and integration flows.**
+
+- **Installed on the device.** `flutter install` reports "Prebuilt binary ...
+  does not exist" for a bundle that is plainly there, on both relative and
+  absolute paths. `xcrun devicectl device install app` works. Worth remembering
+  rather than re-diagnosing: build with `flutter build ios --release`, install
+  with devicectl.
+- **New flows**: `integration_test/regression/onboarding_schedule_flow_test.dart`.
+  All four start from a user with three weeks of history, via a new `seed` hook
+  on `buildTestApp`/`pumpApp`. They assert the post-onboarding schedule is
+  complete, recurring, template-pinned, matches the profile just saved, is
+  actually *rendered* on the calendar, and left the pre-existing history alone.
+- **#77, found by running rather than reading.** The add/edit food and exercise
+  dialogs had no scroll view; on a phone the content overflowed by 159pt and
+  put the Add button at y=926 on an 874pt screen. Not awkward -- unreachable.
+  Adding a custom food or exercise was impossible on a real device.
+
+**The lesson that made #77 findable**, and it cost two wrong diagnoses first:
+`tester.tap()` does **not** fail on an off-screen target. It hit-tests at the
+widget's real coordinates, misses, prints `warnIfMissed` as a *warning*, and
+carries on -- so the run dies several steps later at an unrelated finder and
+reads as test rot. Three separate places were silently no-op'ing this way. There
+is now a `tapVisible()` helper and every form/onboarding button goes through it.
+Treat a `warnIfMissed` line in an integration log as a failure.
+
+**Full run:** fast 606/606. Device: sanity 9/9, regression 4/4, e2e 3/3. The two
+notification e2e tests need an attended session -- the iOS permission alert
+reappears per build and has to be tapped, which is why they stay out of CI.
+
+**Next:** the device has the build but has not been driven through a manual
+pass. The Hebrew wording on the analytics screen is mine, not a translator's --
+#31 still covers that.
+
+---
+
 ## 2026-08-06 — Workout programming
 
 **Current task:** None. Filed and fixed as `ISSUES.md` #70 and #71.
