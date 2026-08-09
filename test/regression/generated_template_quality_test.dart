@@ -74,27 +74,81 @@ void main() {
           }
         }
 
-        // Bounds sit just outside measured worst case, so a regression
-        // trips them but normal variation does not. Two are genuinely wide
-        // and it is worth saying why rather than pretending otherwise:
+        // Bounds sit just outside measured worst case, so a regression trips
+        // them but normal variation does not. The solver is deterministic, so
+        // there is no reason to leave slack "just in case" -- and leaving it
+        // is what hid a real bug: the previous carb bound of +/-42% passed
+        // happily while a 3000 kcal plan came in 37% short on carbohydrate
+        // and 14% short on calories, because every starch was pinned at its
+        // serving ceiling. See MealPortionSolver._bounds.
         //
-        //  * The 2-meal plan is the hardest case. Splitting 2500 kcal over
-        //    two sittings asks ~1250 kcal from four ingredients, and the
-        //    serving clamps (<=400g of a 100g-unit food) bind before the
-        //    target is reached. More meals means more room.
-        //  * A vegan reaching 150g protein from legumes necessarily
-        //    overshoots carbohydrate -- plant protein arrives bound to it.
-        //    Tightening carbs would force the solver to miss protein, which
-        //    is the worse trade for someone tracking protein.
-        expect(kcal, closeTo(2500, 2500 * 0.22),
+        // The two wide ones that remain are structural, not slack. A vegan
+        // reaching 150g protein from legumes necessarily overshoots
+        // carbohydrate, because plant protein arrives bound to it; tightening
+        // carbs from here forces the solver to miss protein instead, which is
+        // the worse trade for someone tracking protein (measured: carbs 34% ->
+        // 24% costs protein 24% -> 27%).
+        expect(kcal, closeTo(2500, 2500 * 0.08),
             reason: '$label daily calories were $kcal against a 2500 target');
-        expect(protein, closeTo(150, 150 * 0.30),
+        expect(protein, closeTo(150, 150 * 0.28),
             reason: '$label protein was $protein against 150');
-        expect(carbs, closeTo(280, 280 * 0.42),
+        expect(carbs, closeTo(280, 280 * 0.38),
             reason: '$label carbs were $carbs against 280');
-        expect(fat, closeTo(70, 70 * 0.30),
+        expect(fat, closeTo(70, 70 * 0.24),
             reason: '$label fat was $fat against 70');
       });
+    });
+
+    test('a high-calorie plan is not starved of carbohydrate by serving caps',
+        () async {
+      // The bug this pins, reported as "it's really hard to get to the carbs
+      // goal": every starch in the plan sat at its serving ceiling (rice
+      // 400g, sweet potato 400g, bread 4 slices) while the day came in 37%
+      // short on carbs. The solver then closed the calorie gap with fat,
+      // because fat was the only slot with headroom -- so the plan read as
+      // "short on everything except fat" and no amount of following it could
+      // reach the carb target.
+      //
+      // A bulking profile is the case that exposes it, because the carb
+      // target is the residual and therefore largest exactly when calories
+      // are highest.
+      AppDatabase.resetForTesting();
+      final db = AppDatabase();
+      final bulking = UserProfile(
+        sex: 'male', ageYears: 30, heightCm: 180, weightKg: 80,
+        goal: 'muscle_gain', activityLevel: 'moderate',
+        trainingDaysPerWeek: 4, equipment: const ['dumbbells'],
+        dietType: 'omnivore', mealCountPerDay: '3',
+        exclusions: const [], injuries: const [],
+        energyUnit: 'kcal', weightUnit: 'g',
+        bmr: 1780, tdee: 2759, calorieTarget: 3030,
+        proteinTargetG: 160, fatTargetG: 84, carbsTargetG: 409,
+      );
+
+      final created =
+          await MealTemplateGenerator(db, bulking).generateTemplates();
+      final foods = {for (final f in await db.getAllFoods()) f.id: f};
+      var kcal = 0.0, carbs = 0.0;
+      for (final t in created) {
+        for (final i in await db.getMealTemplateItemsByTemplateId(t.id)) {
+          final f = foods[i.foodId]!;
+          kcal += f.kcalPerUnit * i.amount;
+          carbs += f.carbsPerUnit * i.amount;
+        }
+      }
+
+      expect(carbs, greaterThan(409 * 0.85),
+          reason: 'a 3030 kcal plan delivered only ${carbs.round()}g of carbs '
+              'against a 409g target');
+      expect(kcal, closeTo(3030, 3030 * 0.08),
+          reason: 'plan calories were ${kcal.round()} against 3030');
+
+      // Deliberately not asserting that no starch sits at its ceiling. At this
+      // target two of them still do, and that is the recipe structure rather
+      // than the bound: one starch per meal, three meals, 409g of carbohydrate
+      // to place. Raising the ceiling further would buy the last 10% with 700g
+      // plates, which is the wrong trade. What matters is that the ceiling is
+      // no longer binding so early that the plan gives up on carbs entirely.
     });
 
     test('meal count always matches what the user asked for', () async {
@@ -134,8 +188,18 @@ void main() {
             expect(i.amount, greaterThanOrEqualTo(50),
                 reason: '${f.name}: ${i.amount}ml is not a serving');
           } else if (f.unit == '100g') {
-            expect(i.amount, inInclusiveRange(0.25, 4.0),
-                reason: '${f.name}: ${i.amount * 100}g is implausible');
+            // A dilute food -- boiled potato, cooked rice -- can reasonably
+            // run to a 600g plate. A dense one cannot: 600g of cheddar or of
+            // dry oats is not a portion at any calorie target. The rule is
+            // stated in energy-density terms rather than by naming foods, so
+            // it keeps holding as the catalog grows.
+            final ceiling = f.kcalPerUnit <= 150 ? 6.0 : 4.0;
+            expect(i.amount, inInclusiveRange(0.25, ceiling),
+                reason: '${f.name}: ${i.amount * 100}g at '
+                    '${f.kcalPerUnit} kcal/100g is implausible');
+            expect(i.amount * f.kcalPerUnit, lessThanOrEqualTo(800),
+                reason: '${f.name}: one portion is '
+                    '${i.amount * f.kcalPerUnit} kcal');
           } else {
             expect(i.amount, greaterThan(0));
             expect(i.amount, lessThanOrEqualTo(12));

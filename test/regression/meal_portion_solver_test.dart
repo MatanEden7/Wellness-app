@@ -101,7 +101,7 @@ void main() {
     // prescribe 2kg of rice to close a calorie gap.
     for (final portions in sweep()) {
       for (final p in portions) {
-        expect(p.amount, MealPortionSolver.clampFor(p.food, p.amount),
+        expect(p.amount, MealPortionSolver.clampFor(p.food, p.amount, p.role),
             reason: '"${p.food.name}" at ${p.amount} is outside its own '
                 'serving bounds');
       }

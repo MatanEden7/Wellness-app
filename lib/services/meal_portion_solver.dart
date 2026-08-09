@@ -4,9 +4,14 @@ import '../features/meals/domain/food_serving_kind.dart';
 /// One food and how much of it, in the stored-quantity units `MealItem.amount`
 /// uses (see `FoodNutritionMath`).
 class Portion {
-  const Portion(this.food, this.amount);
+  const Portion(this.food, this.amount, [this.role = PortionRole.other]);
   final FoodItemData food;
   final double amount;
+
+  /// What this food is doing in the meal. Carried out of the solver because
+  /// the serving bounds depend on it -- without it a caller cannot tell
+  /// whether 600g of rice is within contract or a runaway fit.
+  final PortionRole role;
 
   double get kcal => food.kcalPerUnit * amount;
   double get protein => food.proteinPerUnit * amount;
@@ -35,6 +40,17 @@ class MacroTotals {
   final double fat;
 }
 
+/// What a food is doing in a meal. Decides how large a portion of it is
+/// reasonable -- see [MealPortionSolver._bounds].
+enum PortionRole {
+  /// The starch the meal is built around: rice, potato, bread, pasta.
+  carb,
+
+  /// Everything else in the optimisation -- the protein anchor, added fats,
+  /// and recipe extras.
+  other,
+}
+
 /// Sizes a meal so it lands near *all four* targets, not just protein.
 ///
 /// The previous generator sized the protein anchor to hit the protein target
@@ -58,29 +74,77 @@ abstract final class MealPortionSolver {
   /// Without these the arithmetic happily returns "12 bananas" or "0.02 of a
   /// tablespoon". Expressed in stored-quantity units, matching
   /// `FoodNutritionMath.storedQuantity`.
-  static ({double min, double max}) _bounds(FoodItemData food) {
-    switch (FoodServingKindParser.fromLegacyUnit(food.unit)) {
+  ///
+  /// A single ceiling for every food is wrong in both directions: 400g is an
+  /// absurd amount of cheddar and a modest amount of boiled potato. Applying
+  /// the strict one to starches is what made the carbohydrate target
+  /// unreachable -- at a 3000 kcal plan every carb source pinned at its
+  /// maximum (rice 400g, sweet potato 400g, bread 4 slices) and the day still
+  /// came in 37% short on carbs and 14% short on calories, with the solver
+  /// making up the difference in fat because fat was the only slot left with
+  /// headroom.
+  ///
+  /// So the starch slot gets a larger ceiling -- but only when the food is
+  /// actually **dilute**. [role] alone is not enough: oats are a carb source
+  /// at 389 kcal/100g, and 600g of dry oats is 2,300 kcal, which is not a
+  /// portion. What makes a big plate of rice reasonable is that it is mostly
+  /// water. Energy density is the property that distinguishes the two, and it
+  /// is already in the data.
+  static const _diluteKcalPer100g = 150.0;
+
+  static ({double min, double max}) _bounds(
+    FoodItemData food, [
+    PortionRole role = PortionRole.other,
+  ]) {
+    final kind = FoodServingKindParser.fromLegacyUnit(food.unit);
+    final perHundredGrams = switch (kind) {
+      FoodServingKind.per100g => food.kcalPerUnit,
+      FoodServingKind.perGram => food.kcalPerUnit * 100,
+      _ => double.infinity,
+    };
+    final generous =
+        role == PortionRole.carb && perHundredGrams <= _diluteKcalPer100g;
+
+    switch (kind) {
       case FoodServingKind.per100g:
-        return (min: 0.25, max: 4.0); // 25g - 400g
+        // 600g of cooked rice or boiled potato is a large plate, not an
+        // impossible one, and only a plan that needs it will get one.
+        return (min: 0.25, max: generous ? 6.0 : 4.0);
       case FoodServingKind.perGram:
-        return (min: 20, max: 400);
+        return (min: 20, max: generous ? 600 : 400);
       case FoodServingKind.perMl:
         return (min: 50, max: 500);
       case FoodServingKind.perOz:
         return (min: 0.5, max: 12);
       case FoodServingKind.perCount:
-        return (min: 1, max: 4); // pieces / tbsp / slices, whole units
+        // Whole units. A count has no implied mass, so the dilution test
+        // cannot be applied to it -- an extra couple of slices of bread is
+        // reasonable where an extra couple of tablespoons of oil is not, and
+        // only the starch slot holds bread.
+        return (min: 1, max: role == PortionRole.carb ? 6 : 4);
     }
   }
 
-  /// The portion bounds, exposed so callers choosing *which* food to use can
-  /// score the amount that will actually be applied rather than an unclamped
-  /// ideal. See MealTemplateGenerator._bestAnchor.
-  static double clampFor(FoodItemData food, double amount) =>
-      _clampToBounds(food, amount);
+  /// [amount] clamped to what is reasonable for [food] in [role].
+  ///
+  /// Exposed so a caller can check a portion against the same contract the
+  /// solver applied, rather than against a duplicated magic number. The role
+  /// is required: the ceiling genuinely differs between a starch and
+  /// everything else, so answering without it would be answering a different
+  /// question.
+  static double clampFor(
+    FoodItemData food,
+    double amount,
+    PortionRole role,
+  ) =>
+      _clampToBounds(food, amount, role);
 
-  static double _clampToBounds(FoodItemData food, double amount) {
-    final bounds = _bounds(food);
+  static double _clampToBounds(
+    FoodItemData food,
+    double amount, [
+    PortionRole role = PortionRole.other,
+  ]) {
+    final bounds = _bounds(food, role);
     if (amount.isNaN || amount.isInfinite) return bounds.min;
     return amount.clamp(bounds.min, bounds.max).toDouble();
   }
@@ -120,10 +184,17 @@ abstract final class MealPortionSolver {
     // added afterwards at a fixed sensible serving, because it is there for
     // volume and micronutrients, not macros.
     final basket = <FoodItemData>[];
-    for (final food in [protein, carb, fat, ...extras]) {
+    final roles = <PortionRole>[];
+    for (final (food, role) in [
+      (protein, PortionRole.other),
+      (carb, PortionRole.carb),
+      (fat, PortionRole.other),
+      for (final extra in extras) (extra, PortionRole.other),
+    ]) {
       if (food == null) continue;
       if (basket.any((f) => f.id == food.id)) continue;
       basket.add(food);
+      roles.add(role);
     }
     if (basket.isEmpty) return const [];
 
@@ -152,7 +223,9 @@ abstract final class MealPortionSolver {
         [f.kcalPerUnit, f.proteinPerUnit, f.carbsPerUnit, f.fatPerUnit];
 
     final coeffs = basket.map(macrosOf).toList();
-    final bounds = basket.map(_bounds).toList();
+    final bounds = [
+      for (var i = 0; i < basket.length; i++) _bounds(basket[i], roles[i]),
+    ];
 
     // Start from the protein-anchored guess: a sensible basin, so descent
     // converges in few passes and never lands somewhere absurd.
@@ -161,6 +234,7 @@ abstract final class MealPortionSolver {
         _clampToBounds(
           basket[i],
           coeffs[i][1] > 0 ? (proteinTarget / basket.length) / coeffs[i][1] : 1.0,
+          roles[i],
         ),
     ];
 
@@ -196,7 +270,7 @@ abstract final class MealPortionSolver {
     return [
       for (var i = 0; i < basket.length; i++)
         // Round to a portion a human would actually measure.
-        Portion(basket[i], _round(basket[i], x[i])),
+        Portion(basket[i], _round(basket[i], x[i]), roles[i]),
       // One normal serving of vegetables -- ~100g, or one piece of fruit.
       if (veg != null) Portion(veg, _produceServing(veg)),
     ];

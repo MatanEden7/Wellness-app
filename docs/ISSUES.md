@@ -97,6 +97,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 77 | Add/edit food and exercise dialogs overflowed; their save button was off-screen and untappable | High | Fixed | ~45min |
 | 78 | Daily nutrition targets incoherent: fat never targeted, flat kcal adjustment with no safety floor, protein off scale weight, macros not reconciled | High | Fixed | ~2h |
 | 79 | Food catalog unvalidated, English-only, and structurally unable to reach existing installs | Medium | Fixed (fast-food values vs the Israeli menu: **me**) | ~3h |
+| 80 | Generated meal plans undershot carbs by up to 37% and calories by 14%: serving caps pinned every starch, fat absorbed the gap | High | Fixed | ~1h |
 
 **Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
@@ -1105,3 +1106,49 @@ Israeli foods undiscoverable to exactly the users they were added for.
 **Owner note:** the branded fast-food figures are McDonald's published US
 values. Israeli menu items differ. **me** -- worth a pass against the local
 menu if the numbers matter to you; every row is user-editable in the app.
+
+
+### 80. Generated meal plans could not reach their own carbohydrate target  **[FIXED]**
+
+Reported as "it's really hard to get to the carbs goal".
+
+`MealPortionSolver._bounds` applied one ceiling per serving kind -- 400g for any
+per-100g food, 4 units for anything countable -- with no regard for what the
+food was doing in the meal. That is wrong in both directions: 400g is an absurd
+amount of cheddar and a modest amount of boiled potato. Applied to starches it
+made the carb target physically unreachable. An 80 kg bulking profile
+(3030 kcal / 409g carbs) generated a day with rice at 400g, sweet potato at
+400g and bread at 4 slices -- every carb source pinned at its maximum -- and
+still landed 37% short on carbohydrate and 14% short on calories. The solver
+then closed the calorie gap using the only slot with headroom left, fat, which
+came in 22% over. So the plan looked short on everything except fat, and
+following it exactly could not reach the carb goal.
+
+Fixed by making the ceiling depend on the role *and* on energy density: the
+starch slot gets 600g, but only for foods at or under 150 kcal/100g. Role alone
+would have been wrong -- oats are a carb source at 389 kcal/100g, and 600g of
+dry oats is 2,300 kcal. What makes a large plate of rice reasonable is that it
+is mostly water, and that is measurable from data already in the catalog. The
+`portions are physically sensible` test now states the same rule in
+energy-density terms rather than naming foods, so it keeps holding as the
+catalog grows.
+
+Result across the seven profile shapes in `generated_template_quality_test`:
+worst-case calorie error 17.1% -> 3.9%, worst-case carb undershoot -36% -> -2%,
+with protein and fat equal or better everywhere.
+
+**Why it was not caught:** the quality test allowed carbs +/-42% and calories
++/-22%. A 37% miss passed as normal variation. Both are now pinned just outside
+measured worst case (38% / 8%) -- the solver is deterministic, so there was
+never a reason for that slack, and the slack is what hid the bug.
+
+Two notes recorded because they will come up again:
+
+  * Raising the carb weight in the solver's objective tightens carbs at the
+    direct expense of protein (measured: carbs 34% -> 24% costs protein
+    24% -> 27%). Left alone -- protein is the number users track, and this
+    codebase already made that trade once.
+  * A residual carb target is *supposed* to be the biggest number, and the
+    four targets are not independent. Hitting calories, protein and fat means
+    hitting carbs; missing carbs specifically means being under on calories or
+    over on fat. Worth saying to a user rather than treating as a defect.

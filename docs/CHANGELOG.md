@@ -5,6 +5,63 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Why the carbs goal was unreachable (2026-08-09)
+
+Reported as "it's really hard to get to the carbs goal". Measured rather than
+guessed at, and it turned out to be a real bug in the meal generator plus one
+piece of arithmetic worth understanding.
+
+**The bug.** `MealPortionSolver` capped every per-100g food at 400g and every
+countable food at 4 units, regardless of what the food was doing in the meal.
+At normal-to-high calorie targets that cap binds on the starch first, and a
+generated day for an 80 kg bulking profile came out:
+
+| | target | plan | |
+|---|---|---|---|
+| kcal | 3030 | 2594 | −14% |
+| protein | 160g | 173g | +9% |
+| **carbs** | **409g** | **256g** | **−37%** |
+| fat | 84g | 102g | +22% |
+
+Every carb source was pinned at its ceiling — rice 400g, sweet potato 400g,
+bread 4 slices — so the solver closed the remaining calorie gap with the only
+slot that had headroom left, which was fat. The plan read as "short on
+everything except fat", and no amount of following it could reach the carb
+target.
+
+Bounds are now role-aware: the starch slot gets a 600g ceiling, but **only when
+the food is actually dilute** (≤150 kcal/100g). Role alone is not enough — oats
+are a carb source at 389 kcal/100g, and 600g of dry oats is 2,300 kcal, which
+is not a portion. What makes a big plate of rice reasonable is that it is
+mostly water, and energy density is already in the data. Same profile now:
+
+| | target | plan | |
+|---|---|---|---|
+| kcal | 3030 | 2984 | −2% |
+| protein | 160g | 168g | +5% |
+| **carbs** | **409g** | **367g** | **−10%** |
+| fat | 84g | 98g | +18% |
+
+Across the seven profile shapes in the quality test, worst-case calorie error
+went from 17.1% to 3.9% and worst-case carb undershoot from −36% to −2%.
+Nothing regressed: protein and fat are equal or slightly better everywhere.
+
+**Why the tolerance hid it.** The quality test allowed carbs to be off by ±42%
+and calories by ±22%. Both are now set just outside measured worst case (38% /
+8%), because the solver is deterministic and slack "just in case" is what let a
+37% miss pass as normal. `Portion` now carries its `PortionRole` so the bound
+contract can be checked rather than restated as a magic number.
+
+**The arithmetic, which is not a bug.** Carbs are the residual: protein comes
+from body weight, fat takes a fixed share of calories, and carbohydrate is
+whatever is left. That makes it the largest number and the one that absorbs all
+the slack — at maintenance for an 80 kg male it is 353g, 51% of intake. It also
+means the four numbers are not independent. **If you hit calories and protein
+and fat, you have hit carbs**; missing carbs specifically means either coming
+in under on total calories, or going over on fat. Fat is the easy one to
+overshoot, since 20g of it — a splash of oil — is 180 kcal, which is 45g of
+carbohydrate off the budget.
+
 ### The food catalog: audited, doubled, bilingual (2026-08-09)
 
 **53 foods to 109**, every one of them checked as data rather than trusted.
