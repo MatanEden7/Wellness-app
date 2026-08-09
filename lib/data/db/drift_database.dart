@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/date_utils.dart';
 import '../../core/template_origin.dart';
+import '../../features/meals/domain/food_category.dart';
 import '../../features/meals/domain/food_tags.dart';
 import '../catalog/starter_foods.dart';
 import '../../features/workouts/domain/exercise_tags.dart';
@@ -267,7 +268,7 @@ class AppDatabase {
 
     _backfillExerciseMetadata();
     _mergeNewStarterFoods(json['introducedFoodIds']);
-    _backfillFoodHebrewNames();
+    _backfillSeededFoodMetadata();
   }
 
   /// Starter food ids that shipped before `introducedFoodIds` was recorded.
@@ -325,29 +326,40 @@ class AppDatabase {
         'existing catalog');
   }
 
-  /// Fills `nameHe` on seeded foods restored from a snapshot written before the
-  /// catalog had Hebrew names.
+  /// Fills fields added to the catalog after a snapshot was written, on the
+  /// seeded rows restored from it.
   ///
-  /// Same two rules as [_backfillExerciseMetadata]: field-level, so a name the
-  /// user set is never overwritten, and it walks the *restored* list, so
-  /// nothing deleted comes back.
-  void _backfillFoodHebrewNames() {
+  /// Same two rules as [_backfillExerciseMetadata], and they are what make it
+  /// safe to run on every load:
+  ///
+  ///   * **Field-level.** Only a field the row does not already have is
+  ///     filled. A Hebrew name or category the user set is never overwritten.
+  ///   * **Never resurrects.** It walks the *restored* list, not the seed, so
+  ///     a food the user deleted stays deleted.
+  ///
+  /// A renamed row is skipped entirely: if the user has turned "Chicken
+  /// Breast" into something else, the seed's Hebrew name and category no
+  /// longer describe it.
+  void _backfillSeededFoodMetadata() {
     final seeded = {for (final f in _getSampleFoods()) f.id: f};
     for (var i = 0; i < _foods.length; i++) {
       final restored = _foods[i];
-      if (restored.nameHe != null) continue;
+      final needsName = restored.nameHe == null;
+      final needsCategory = restored.category == FoodCategory.other;
+      if (!needsName && !needsCategory) continue;
+
       final template = seeded[restored.id];
-      // Only backfill a row that is still the food the seed thinks it is --
-      // a user who renamed a starter row should not get a mismatched Hebrew
-      // name attached to it.
       if (template == null || template.name != restored.name) continue;
-      final hebrew = template.nameHe;
-      if (hebrew == null) continue;
-      final filled = restored.withHebrewName(hebrew);
+
+      final filled = restored.withSeedDefaults(
+        nameHe: needsName ? template.nameHe : null,
+        category: needsCategory ? template.category : null,
+      );
       _foods[i] = filled;
       _foodsById[filled.id] = filled;
     }
   }
+
 
   /// Fills movement/mechanic/load metadata on seeded exercises restored from a
   /// snapshot written before those fields existed.
@@ -1380,6 +1392,7 @@ class AppDatabase {
           fatPerUnit: food.fat,
           isStarter: true,
           tags: food.tags,
+          category: food.category,
           createdAt: createdAt,
           updatedAt: createdAt,
         ),
@@ -1693,6 +1706,10 @@ class FoodItemData {
   /// What this food contains -- allergens and animal origin. Drives the
   /// diet/exclusion filtering in `ProfileFit`. Empty means untagged.
   final Set<FoodTag> tags;
+  /// Where a browsing user would look for this. A separate axis from [tags]:
+  /// see the note in `StarterFoodCatalog`. Defaults to `other`, which is what
+  /// a food the user added without choosing gets.
+  final FoodCategory category;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -1708,6 +1725,7 @@ class FoodItemData {
     required this.fatPerUnit,
     required this.isStarter,
     this.tags = const <FoodTag>{},
+    this.category = FoodCategory.other,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1724,6 +1742,7 @@ class FoodItemData {
     'fatPerUnit': fatPerUnit,
     'isStarter': isStarter,
     'tags': FoodTagCodec.encode(tags),
+    'category': category.key,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -1741,18 +1760,24 @@ class FoodItemData {
     isStarter: json['isStarter'] as bool,
     // Absent on rows written before tags existed -> decodes to empty.
     tags: FoodTagCodec.decode(json['tags']),
+    // Absent on rows written before categories existed -> `other`, then
+    // corrected for seeded rows by _backfillFoodCategories.
+    category: FoodCategory.fromKey(json['category']),
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
 
-  /// A copy carrying [nameHe], for backfilling a seeded row restored from a
-  /// snapshot written before the catalog had Hebrew names. Does not touch
-  /// `updatedAt`: nothing the user did changed, and bumping it would make a
-  /// pure migration look like an edit.
-  FoodItemData withHebrewName(String nameHe) => FoodItemData(
+  /// A copy carrying seed-provided values for fields this row is missing.
+  ///
+  /// Used only to migrate a seeded row restored from an older snapshot -- see
+  /// `AppDatabase._backfillSeededFoodMetadata`. A null argument leaves the
+  /// current value alone. Does not touch `updatedAt`: nothing the user did
+  /// changed, and bumping it would make a pure migration look like an edit.
+  FoodItemData withSeedDefaults({String? nameHe, FoodCategory? category}) =>
+      FoodItemData(
         id: id,
         name: name,
-        nameHe: nameHe,
+        nameHe: nameHe ?? this.nameHe,
         brand: brand,
         unit: unit,
         kcalPerUnit: kcalPerUnit,
@@ -1761,6 +1786,7 @@ class FoodItemData {
         fatPerUnit: fatPerUnit,
         isStarter: isStarter,
         tags: tags,
+        category: category ?? this.category,
         createdAt: createdAt,
         updatedAt: updatedAt,
       );

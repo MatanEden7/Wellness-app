@@ -11,6 +11,7 @@ import '../data/repositories.dart';
 import '../../../core/tag_chips.dart';
 import '../../../services/profile_filter_service.dart';
 import '../../../services/profile_fit.dart';
+import '../domain/food_category.dart';
 import '../domain/food_tags.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
@@ -71,7 +72,7 @@ class FoodCatalogPage extends HookConsumerWidget {
   }
 }
 
-class _FoodList extends ConsumerWidget {
+class _FoodList extends HookConsumerWidget {
   final bool isStarter;
 
   const _FoodList({required this.isStarter});
@@ -80,6 +81,16 @@ class _FoodList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final language = ref.watch(currentLanguageProvider);
+    // Browsing state, not app state: it should reset when the page closes.
+    final searchController = useTextEditingController();
+    final search = useState('');
+    useEffect(() {
+      void listener() => search.value = searchController.text;
+      searchController.addListener(listener);
+      return () => searchController.removeListener(listener);
+    }, [searchController]);
+    final selectedCategory = useState<FoodCategory?>(null);
+
     final foodsStream = isStarter
         ? ref.watch(starterFoodsStreamProvider)
         : ref.watch(userFoodsStreamProvider);
@@ -100,12 +111,32 @@ class _FoodList extends ConsumerWidget {
         // app bar brings it all back, with a badge naming the reason.
         final profile = ref.watch(filterProfileProvider);
         final showAll = ref.watch(showAllContentProvider);
-        final foods = (profile == null || showAll)
+        final fitting = (profile == null || showAll)
             ? all
             : all.where((f) => ProfileFit.foodFits(f, profile)).toList();
-        final hiddenCount = all.length - foods.length;
+        final hiddenCount = all.length - fitting.length;
 
-        if (foods.isEmpty) {
+        // Which categories to offer as chips: only those that actually have
+        // something in them after the diet filter, so a vegan is not shown an
+        // empty "Fast Food" tab.
+        final present = <FoodCategory>{for (final f in fitting) f.category};
+        final categories = [
+          for (final c in FoodCategoryLabel.displayOrder)
+            if (present.contains(c)) c,
+        ];
+        // A category that stops existing (the last item in it was deleted, or
+        // the diet filter was turned back on) must not leave the list stuck
+        // showing nothing.
+        final activeCategory = present.contains(selectedCategory.value)
+            ? selectedCategory.value
+            : null;
+
+        final foods = fitting
+            .where((f) => activeCategory == null || f.category == activeCategory)
+            .where((f) => f.matchesSearch(search.value))
+            .toList();
+
+        if (fitting.isEmpty) {
           return EmptyState(
             title: isStarter
                 ? l10n.noStarterFoodsAvailable
@@ -122,6 +153,49 @@ class _FoodList extends ConsumerWidget {
 
         return Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: l10n.searchFoods,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  suffixIcon: search.value.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: l10n.cancel,
+                          onPressed: searchController.clear,
+                        ),
+                ),
+              ),
+            ),
+            if (categories.length > 1)
+              SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    for (final category in [null, ...categories])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(category == null
+                              ? l10n.categoryAll
+                              : category.label(language)),
+                          selected: activeCategory == category,
+                          onSelected: (_) =>
+                              selectedCategory.value = category,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             if (hiddenCount > 0)
               _HiddenBanner(
                 count: hiddenCount,
@@ -133,7 +207,21 @@ class _FoodList extends ConsumerWidget {
                 onFilter: () =>
                     ref.read(showAllContentProvider.notifier).state = false,
               ),
-            Expanded(
+            if (foods.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      l10n.noFoodsAvailable,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 itemCount: foods.length,

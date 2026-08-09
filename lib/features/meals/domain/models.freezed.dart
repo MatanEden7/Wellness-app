@@ -37,7 +37,10 @@ mixin _$FoodItem {
 // treated as "fits everything" rather than "fits nothing": a user's own
 // food shouldn't vanish from their catalog just because they haven't
 // labelled it yet. See ProfileFit.foodFits.
-  Set<FoodTag> get tags => throw _privateConstructorUsedError;
+  Set<FoodTag> get tags =>
+      throw _privateConstructorUsedError; // Where a browsing user would look for this -- a separate axis from
+// [tags], which is about contents. See FoodCategory.
+  FoodCategory get category => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -64,6 +67,7 @@ abstract class $FoodItemCopyWith<$Res> {
       double fatPerUnit,
       bool isStarter,
       Set<FoodTag> tags,
+      FoodCategory category,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -92,6 +96,7 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
     Object? fatPerUnit = null,
     Object? isStarter = null,
     Object? tags = null,
+    Object? category = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -140,6 +145,10 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
           ? _value.tags
           : tags // ignore: cast_nullable_to_non_nullable
               as Set<FoodTag>,
+      category: null == category
+          ? _value.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as FoodCategory,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -172,6 +181,7 @@ abstract class _$$FoodItemImplCopyWith<$Res>
       double fatPerUnit,
       bool isStarter,
       Set<FoodTag> tags,
+      FoodCategory category,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -198,6 +208,7 @@ class __$$FoodItemImplCopyWithImpl<$Res>
     Object? fatPerUnit = null,
     Object? isStarter = null,
     Object? tags = null,
+    Object? category = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -246,6 +257,10 @@ class __$$FoodItemImplCopyWithImpl<$Res>
           ? _value._tags
           : tags // ignore: cast_nullable_to_non_nullable
               as Set<FoodTag>,
+      category: null == category
+          ? _value.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as FoodCategory,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -273,6 +288,7 @@ class _$FoodItemImpl implements _FoodItem {
       required this.fatPerUnit,
       this.isStarter = false,
       final Set<FoodTag> tags = const <FoodTag>{},
+      this.category = FoodCategory.other,
       required this.createdAt,
       required this.updatedAt})
       : _tags = tags;
@@ -322,6 +338,11 @@ class _$FoodItemImpl implements _FoodItem {
     return EqualUnmodifiableSetView(_tags);
   }
 
+// Where a browsing user would look for this -- a separate axis from
+// [tags], which is about contents. See FoodCategory.
+  @override
+  @JsonKey()
+  final FoodCategory category;
   @override
   final DateTime createdAt;
   @override
@@ -329,7 +350,7 @@ class _$FoodItemImpl implements _FoodItem {
 
   @override
   String toString() {
-    return 'FoodItem(id: $id, name: $name, nameHe: $nameHe, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, tags: $tags, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'FoodItem(id: $id, name: $name, nameHe: $nameHe, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, tags: $tags, category: $category, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -353,6 +374,8 @@ class _$FoodItemImpl implements _FoodItem {
             (identical(other.isStarter, isStarter) ||
                 other.isStarter == isStarter) &&
             const DeepCollectionEquality().equals(other._tags, _tags) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -374,6 +397,7 @@ class _$FoodItemImpl implements _FoodItem {
       fatPerUnit,
       isStarter,
       const DeepCollectionEquality().hash(_tags),
+      category,
       createdAt,
       updatedAt);
 
@@ -404,6 +428,7 @@ abstract class _FoodItem implements FoodItem {
       required final double fatPerUnit,
       final bool isStarter,
       final Set<FoodTag> tags,
+      final FoodCategory category,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$FoodItemImpl;
 
@@ -437,6 +462,9 @@ abstract class _FoodItem implements FoodItem {
 // food shouldn't vanish from their catalog just because they haven't
 // labelled it yet. See ProfileFit.foodFits.
   Set<FoodTag> get tags;
+  @override // Where a browsing user would look for this -- a separate axis from
+// [tags], which is about contents. See FoodCategory.
+  FoodCategory get category;
   @override
   DateTime get createdAt;
   @override

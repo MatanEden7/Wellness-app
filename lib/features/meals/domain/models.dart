@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/template_origin.dart';
 import '../../../services/language_service.dart';
+import 'food_category.dart';
 import 'food_nutrition_math.dart';
 import 'food_tags.dart';
 
@@ -32,6 +33,9 @@ class FoodItem with _$FoodItem {
     // food shouldn't vanish from their catalog just because they haven't
     // labelled it yet. See ProfileFit.foodFits.
     @Default(<FoodTag>{}) Set<FoodTag> tags,
+    // Where a browsing user would look for this -- a separate axis from
+    // [tags], which is about contents. See FoodCategory.
+    @Default(FoodCategory.other) FoodCategory category,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _FoodItem;

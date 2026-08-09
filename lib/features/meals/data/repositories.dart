@@ -66,6 +66,7 @@ FoodItem foodItemFromData(FoodItemData data) => FoodItem(
       fatPerUnit: data.fatPerUnit,
       isStarter: data.isStarter,
       tags: data.tags,
+      category: data.category,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     );
@@ -336,6 +337,7 @@ class MealsRepository {
       fatPerUnit: model.fatPerUnit,
       isStarter: model.isStarter,
       tags: model.tags,
+      category: model.category,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     );

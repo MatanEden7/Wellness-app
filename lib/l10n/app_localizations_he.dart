@@ -679,6 +679,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get mealName => 'שם הארוחה';
 
   @override
+  String get categoryAll => 'הכול';
+
+  @override
   String get searchFoods => 'חפש מזון';
 
   @override

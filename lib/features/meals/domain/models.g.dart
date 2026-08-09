@@ -22,6 +22,8 @@ _$FoodItemImpl _$$FoodItemImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => $enumDecode(_$FoodTagEnumMap, e))
               .toSet() ??
           const <FoodTag>{},
+      category: $enumDecodeNullable(_$FoodCategoryEnumMap, json['category']) ??
+          FoodCategory.other,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -39,6 +41,7 @@ Map<String, dynamic> _$$FoodItemImplToJson(_$FoodItemImpl instance) =>
       'fatPerUnit': instance.fatPerUnit,
       'isStarter': instance.isStarter,
       'tags': instance.tags.map((e) => _$FoodTagEnumMap[e]!).toList(),
+      'category': _$FoodCategoryEnumMap[instance.category]!,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
@@ -53,6 +56,24 @@ const _$FoodTagEnumMap = {
   FoodTag.meat: 'meat',
   FoodTag.fish: 'fish',
   FoodTag.animalProduct: 'animalProduct',
+};
+
+const _$FoodCategoryEnumMap = {
+  FoodCategory.protein: 'protein',
+  FoodCategory.dairy: 'dairy',
+  FoodCategory.grains: 'grains',
+  FoodCategory.legumes: 'legumes',
+  FoodCategory.vegetables: 'vegetables',
+  FoodCategory.fruit: 'fruit',
+  FoodCategory.nutsAndSeeds: 'nutsAndSeeds',
+  FoodCategory.fatsAndOils: 'fatsAndOils',
+  FoodCategory.beverages: 'beverages',
+  FoodCategory.condiments: 'condiments',
+  FoodCategory.snacksAndSweets: 'snacksAndSweets',
+  FoodCategory.preparedDishes: 'preparedDishes',
+  FoodCategory.supplements: 'supplements',
+  FoodCategory.fastFood: 'fastFood',
+  FoodCategory.other: 'other',
 };
 
 _$MealItemImpl _$$MealItemImplFromJson(Map<String, dynamic> json) =>

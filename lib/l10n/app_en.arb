@@ -229,6 +229,10 @@
   "exerciseName": "Exercise Name",
   "primaryMuscleOptional": "Primary Muscle (optional)",
   "mealName": "Meal Name",
+  "categoryAll": "All",
+  "@categoryAll": {
+    "description": "Filter chip showing every food category at once"
+  },
   "searchFoods": "Search foods",
   "amount": "Amount",
   "defaultSets": "Default Sets",

@@ -5,6 +5,66 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Catalog: 233 foods, and a real category axis (2026-08-09)
+
+**109 → 233 foods**, and categories are now a field rather than comment
+headers in a source file, so the app can actually group and filter by them.
+
+*Categorisation.* `FoodCategory` is a stored, bilingual, persisted field on
+every food — 14 categories in a deliberate display order (protein, dairy,
+grains, legumes, vegetables, fruit, nuts & seeds, fats & oils, sauces & spreads,
+drinks, snacks & sweets, prepared dishes, supplements, fast food) plus `other`
+for user-added foods, which the shipped catalog is forbidden to use.
+
+It is a **separate axis from `FoodTag`**, on purpose. Tags answer "what does
+this contain" and drive diet/allergen filtering; a category answers "where
+would I look for this in a shop". Broccoli has no tags at all and still needs
+to be findable under vegetables. `israeli` is a third, narrower axis — cuisine,
+not category — so shakshuka is a prepared dish *and* Israeli without one fact
+displacing the other. 39 items now carry it.
+
+*The catalog page got usable.* It had no search box and no grouping, which was
+survivable at 53 foods and absurd at 233. It now has a search field (matching
+both names, either language) and a row of category chips that only offers
+categories with something in them — a vegan is not shown an empty Fast Food tab.
+
+*What was added (123 rows):*
+
+| | |
+|---|---|
+| Protein | ground turkey, sardines, tilapia, cod, sea bass, lamb, liver, deli slices, hot dog, whole chicken, wings, tuna in oil |
+| Dairy | whole/skim milk, plain yogurt, mozzarella, parmesan, cream cheese, sour cream, heavy cream, kefir |
+| Grains | white bread, white pasta, bagel, tortilla, corn flakes, granola, rice cakes, bulgur, barley, matza, challah, instant noodles |
+| Vegetables | lettuce, cabbage, green beans, beetroot, garlic, celery, pumpkin, asparagus, brussels sprouts, okra, leek, radish, butternut |
+| Fruit | pear, peach, mango, pineapple, kiwi, melon, cherries, pomegranate, clementine, persimmon, fig, raisins, dried apricots |
+| Drinks | water, coffee, tea, juices, cola, diet cola, sports/energy drinks, coconut water, almond & oat milk, beer, wine, vodka |
+| Sauces | ketchup, mustard, soy sauce, sugar, jam, chocolate spread, maple syrup, BBQ, mayonnaise, almond butter, zhug, amba |
+| Snacks | dark/milk chocolate, cookies, crisps, Bamba, Bisli, popcorn, pretzels, croissant, sufganiyah, rugelach, ice cream |
+| Prepared | pizza, homemade burger, sushi, caesar salad, lentil soup, omelette, tuna sandwich |
+| Legumes / nuts | kidney & white beans, green peas, ful, split peas, pistachios, pecans, hazelnuts, pine nuts, sesame, flax, coconut |
+
+*Two fixes to the audit itself, found while extending it:*
+
+* **The energy check was vacuous for per-ml and per-gram foods.** The absolute
+  tolerance was a flat 15 kcal, but every value on a per-ml row is around 0.5 —
+  a milk row with **ten times** the correct fat passed. The tolerance is now
+  stated per 100g of serving basis and scaled by unit.
+* **Alcohol needed an honest exemption.** Ethanol is 7 kcal/g and is not
+  protein, carbohydrate or fat, so a beer's calories genuinely cannot be
+  reconstructed from its macros. `containsAlcohol` exempts a row from the
+  energy identity and nothing else — and the audit fails a row that sets the
+  flag without needing it, so it cannot be used to wave anything through.
+
+Every new row was validated against the audit rules before being written, and
+all 233 pass. The audit also now enforces that no shipped food is left
+unclassified, that a food sits in the block its category names, that both
+language labels exist, and that the basics a first-week user logs are present.
+
+Upgrading installs get categories backfilled onto rows they already had, with
+the same rules as the Hebrew-name backfill: field-level, never overwriting a
+user's value, never resurrecting a deleted food, and skipping a row the user
+renamed — a repurposed "Chicken Breast" does not get told it is protein.
+
 ### Why the carbs goal was unreachable (2026-08-09)
 
 Reported as "it's really hard to get to the carbs goal". Measured rather than

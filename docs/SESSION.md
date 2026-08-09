@@ -86,6 +86,41 @@ US-menu and tagged **me** in ISSUES for a local-menu pass if wanted.
 
 ---
 
+## 2026-08-09 (third) — Carbs diagnosis, then catalog categories
+
+**Current task:** None.
+
+**Last completed:** `ISSUES.md` #80 and #81.
+
+- "It's really hard to get to the carbs goal" turned out to be a real bug, and
+  the way to find it was to *print the generated portions* rather than reason
+  about the solver. Rice 400g, sweet potato 400g, bread 4 slices -- every carb
+  source pinned at its ceiling, so the plan closed the calorie gap with fat.
+  Worth remembering: when a solver's output looks biased, check whether it is
+  actually up against a constraint before touching the objective weights.
+- The fix needed two passes. Role-aware bounds alone were wrong: oats are a
+  carb source at 389 kcal/100g, and the existing "portions are physically
+  sensible" test caught 600g of dry oats. Energy density, not role, is what
+  makes a big plate reasonable. That test earned its keep.
+- Tightened the quality tolerances afterwards (carbs 42% -> 38%, calories
+  22% -> 8%). The loose bound is *why* a 37% miss survived. Deterministic code
+  does not need slack.
+- Then categories, which the catalog never actually had -- comment headers in a
+  source file are not a category axis. Kept it separate from `FoodTag` (what a
+  food contains) and added `israeli` as a third cuisine axis rather than
+  overloading either.
+- 109 -> 233 foods. Generated and validated the data in Python before emitting
+  Dart, which caught every macro error up front; the only bugs left were in the
+  emitter (apostrophe in "McDonald's" broke the quote-aware splitter twice).
+- Two genuine defects found in my *own* audit while extending it: the absolute
+  energy tolerance was a flat 15 kcal, which is vacuous for per-ml rows (a milk
+  row with 10x the fat passed -- demonstrated before fixing), and alcohol had
+  no honest representation. Both fixed properly rather than by loosening.
+
+**Next task:** none queued. Full fast suite green (977).
+
+---
+
 ## 2026-08-07 — Analytics screen
 
 **Current task:** None. Shipped end to end.

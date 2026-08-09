@@ -1412,6 +1412,12 @@ abstract class AppLocalizations {
   /// **'Meal Name'**
   String get mealName;
 
+  /// Filter chip showing every food category at once
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get categoryAll;
+
   /// No description provided for @searchFoods.
   ///
   /// In en, this message translates to:

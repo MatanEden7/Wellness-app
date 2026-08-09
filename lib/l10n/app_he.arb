@@ -226,6 +226,10 @@
   "exerciseName": "שם התרגיל",
   "primaryMuscleOptional": "שריר ראשי (אופציונלי)",
   "mealName": "שם הארוחה",
+  "categoryAll": "הכול",
+  "@categoryAll": {
+    "description": "Filter chip showing every food category at once"
+  },
   "searchFoods": "חפש מזון",
   "amount": "כמות",
   "defaultSets": "סטים ברירת מחדל",

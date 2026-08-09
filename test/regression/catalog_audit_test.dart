@@ -2,9 +2,11 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/services/language_service.dart';
 
 import 'package:wellness_app/data/catalog/starter_foods.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
+import 'package:wellness_app/features/meals/domain/food_category.dart';
 import 'package:wellness_app/features/meals/domain/food_macro_audit.dart';
 import 'package:wellness_app/features/meals/domain/food_serving_kind.dart';
 import 'package:wellness_app/features/meals/domain/food_tags.dart';
@@ -35,6 +37,7 @@ void main() {
           protein: food.protein,
           carbs: food.carbs,
           fat: food.fat,
+          containsAlcohol: food.containsAlcohol,
         );
         expect(problems, isEmpty, reason: problems.join('\n'));
       });
@@ -135,11 +138,105 @@ void main() {
     });
   });
 
+  group('categories', () {
+    test('every category except `other` is populated', () {
+      // `other` is the fallback for a food the user adds, so the shipped
+      // catalog must never use it -- a starter food in `other` is a row
+      // somebody forgot to classify.
+      for (final category in FoodCategory.values) {
+        final count = StarterFoodCatalog.byCategory(category).length;
+        if (category == FoodCategory.other) {
+          expect(count, 0, reason: 'a shipped food was left unclassified');
+        } else {
+          expect(count, greaterThan(0),
+              reason: '${category.name} has no foods');
+        }
+      }
+    });
+
+    test('a food is in exactly the block its category names', () {
+      // The two could drift: the blocks are hand-maintained lists and the
+      // category is a field on the row.
+      for (final category in FoodCategory.values) {
+        for (final food in StarterFoodCatalog.byCategory(category)) {
+          expect(food.category, category,
+              reason: '${food.name} is filed under ${category.name} but is '
+                  'tagged ${food.category.name}');
+        }
+      }
+    });
+
+    test('`all` is every category exactly once, in display order', () {
+      expect(StarterFoodCatalog.all.length,
+          FoodCategory.values.fold<int>(
+              0, (n, c) => n + StarterFoodCatalog.byCategory(c).length));
+      final ids = StarterFoodCatalog.all.map((f) => f.id).toList();
+      expect(ids.toSet().length, ids.length);
+    });
+
+    test('every category has a label in both languages', () {
+      for (final category in FoodCategory.values) {
+        expect(category.label(AppLanguage.english).trim(), isNotEmpty);
+        expect(category.label(AppLanguage.hebrew).trim(), isNotEmpty);
+        expect(category.label(AppLanguage.hebrew),
+            isNot(category.label(AppLanguage.english)));
+      }
+    });
+
+    test('displayOrder covers every category', () {
+      expect(FoodCategoryLabel.displayOrder.toSet(), FoodCategory.values.toSet());
+      expect(FoodCategoryLabel.displayOrder.length, FoodCategory.values.length);
+    });
+
+    test('an unknown category from a newer export decodes to `other`', () {
+      expect(FoodCategory.fromKey('bantha_milk'), FoodCategory.other);
+      expect(FoodCategory.fromKey(null), FoodCategory.other);
+      expect(FoodCategory.fromKey('dairy'), FoodCategory.dairy);
+    });
+  });
+
   group('what the catalog covers', () {
-    test('the requested categories are all present and populated', () {
+    test('the requested groups are all present and populated', () {
       expect(StarterFoodCatalog.israeli.length, greaterThanOrEqualTo(20));
       expect(StarterFoodCatalog.supplements.length, greaterThanOrEqualTo(5));
       expect(StarterFoodCatalog.fastFood.length, greaterThanOrEqualTo(8));
+    });
+
+    test('the basics a first-week user logs are all there', () {
+      // Not an arbitrary list: each of these was missing at some point and
+      // found by trying to log an ordinary day.
+      const basics = [
+        'Chicken Breast', 'Eggs', 'Whole Milk', 'White Bread', 'White Rice',
+        'Pasta', 'Potato', 'Onion', 'Tomato', 'Cucumber', 'Lettuce', 'Banana',
+        'Apple', 'Olive Oil', 'Butter', 'Sugar', 'Coffee, Black', 'Water',
+        'Beef Steak', 'Tuna', 'Cottage Cheese', 'Hummus', 'Pita Bread',
+        'Ketchup', 'Mayonnaise', 'Dark Chocolate', 'Orange Juice',
+      ];
+      final names = StarterFoodCatalog.all.map((f) => f.name).toSet();
+      for (final basic in basics) {
+        expect(names, contains(basic), reason: '\$basic is not in the catalog');
+      }
+    });
+
+    test('the catalog is big enough to log an ordinary day without adding '
+        'a custom food', () {
+      expect(StarterFoodCatalog.all.length, greaterThanOrEqualTo(200));
+    });
+
+    test('alcohol is flagged only where the macros cannot explain the energy',
+        () {
+      final flagged =
+          StarterFoodCatalog.all.where((f) => f.containsAlcohol).toList();
+      expect(flagged, isNotEmpty);
+      for (final drink in flagged) {
+        expect(drink.category, FoodCategory.beverages);
+        expect(
+          FoodMacroAudit.energyAgrees(drink.kcal, drink.protein, drink.carbs,
+              drink.fat, unit: drink.unit),
+          isFalse,
+          reason: '\${drink.name} does not need the alcohol exemption',
+        );
+      }
     });
 
     test('protein powder is measured in scoops, as the tub states it', () {
@@ -199,6 +296,7 @@ void main() {
         expect(row.carbsPerUnit, food.carbs);
         expect(row.fatPerUnit, food.fat);
         expect(row.tags, food.tags);
+        expect(row.category, food.category);
         expect(row.isStarter, isTrue);
       }
     });

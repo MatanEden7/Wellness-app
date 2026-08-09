@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/data/catalog/starter_foods.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
+import 'package:wellness_app/features/meals/domain/food_category.dart';
 
 /// Coverage for how a **catalog addition reaches someone who already has the
 /// app installed**.
@@ -56,6 +57,7 @@ String _legacySnapshot(Iterable<String> foodIds) {
           'fatPerUnit': food.fat,
           'isStarter': true,
           'tags': food.tags.map((t) => t.key).toList()..sort(),
+          // Legacy rows predate categories too.
           'createdAt': '2026-01-01T00:00:00.000',
           'updatedAt': '2026-01-01T00:00:00.000',
         },
@@ -96,6 +98,56 @@ void main() {
       // ...but the new ones still arrived.
       expect(ids, contains('54')); // Hummus
       expect(ids, contains('99')); // Big Mac
+    });
+
+    test('gets categories backfilled onto the rows it already had', () async {
+      // Without this every pre-existing food lands in `other`, and the
+      // category filter -- the whole point of adding categories to a
+      // 233-food catalog -- shows one useless bucket for anyone upgrading.
+      final store = FakeSnapshotStore(_legacySnapshot(_legacyIds));
+      final db = AppDatabase(store: store);
+      await db.load();
+
+      final foods = await db.getAllFoods();
+      expect(foods.firstWhere((f) => f.id == '1').category,
+          FoodCategory.protein);
+      expect(foods.firstWhere((f) => f.id == '23').category,
+          FoodCategory.vegetables);
+      expect(foods.firstWhere((f) => f.id == '32').category,
+          FoodCategory.fruit);
+      expect(foods.where((f) => f.category == FoodCategory.other), isEmpty,
+          reason: 'a seeded row was left unclassified after migration');
+    });
+
+    test('leaves a renamed starter row alone rather than mislabelling it',
+        () async {
+      final store = FakeSnapshotStore(_legacySnapshot(['1']));
+      final db = AppDatabase(store: store);
+      await db.load();
+      final chicken = (await db.getAllFoods()).firstWhere((f) => f.id == '1');
+      // The user repurposed the row. The seed's Hebrew name and category no
+      // longer describe what is in it.
+      await db.updateFood(FoodItemData(
+        id: chicken.id,
+        name: 'My protein shake',
+        brand: chicken.brand,
+        unit: chicken.unit,
+        kcalPerUnit: chicken.kcalPerUnit,
+        proteinPerUnit: chicken.proteinPerUnit,
+        carbsPerUnit: chicken.carbsPerUnit,
+        fatPerUnit: chicken.fatPerUnit,
+        isStarter: chicken.isStarter,
+        tags: chicken.tags,
+        createdAt: chicken.createdAt,
+        updatedAt: DateTime.now(),
+      ));
+      await db.flush();
+
+      final reloaded = AppDatabase(store: store);
+      await reloaded.load();
+      final row = (await reloaded.getAllFoods()).firstWhere((f) => f.id == '1');
+      expect(row.nameHe, isNull);
+      expect(row.category, FoodCategory.other);
     });
 
     test('gets Hebrew names backfilled onto the rows it already had', () async {

@@ -98,6 +98,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 78 | Daily nutrition targets incoherent: fat never targeted, flat kcal adjustment with no safety floor, protein off scale weight, macros not reconciled | High | Fixed | ~2h |
 | 79 | Food catalog unvalidated, English-only, and structurally unable to reach existing installs | Medium | Fixed (fast-food values vs the Israeli menu: **me**) | ~3h |
 | 80 | Generated meal plans undershot carbs by up to 37% and calories by 14%: serving caps pinned every starch, fat absorbed the gap | High | Fixed | ~1h |
+| 81 | Catalog had no category axis and missing basics; macro audit was vacuous for per-ml foods | Medium | Fixed | ~3h |
 
 **Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
@@ -1152,3 +1153,48 @@ Two notes recorded because they will come up again:
     four targets are not independent. Hitting calories, protein and fat means
     hitting carbs; missing carbs specifically means being under on calories or
     over on fat. Worth saying to a user rather than treating as a defect.
+
+
+### 81. The catalog had no categories, and the audit could not check per-ml foods  **[FIXED]**
+
+Asked for as "did you categorize it as needed... make sure you cover all the
+basic foods".
+
+**Categories did not exist.** What looked like categorisation was comment
+headers in `starter_foods.dart` -- invisible to the app, so nothing could group
+or filter by them, and at 109 foods the catalog page was already an
+undifferentiated list with no search box. `FoodCategory` is now a stored,
+persisted, bilingual field: 14 categories in a deliberate display order, plus
+`other`, which the shipped catalog is forbidden to use (a starter food in
+`other` is a row somebody forgot to classify, and the audit fails on it).
+
+Kept deliberately separate from `FoodTag`. Tags say what a food *contains* and
+drive diet/allergen filtering; categories say where a user would look for it.
+Broccoli has no tags and still belongs under vegetables. `israeli` is a third
+axis -- cuisine, not category -- so shakshuka is a prepared dish *and* Israeli.
+
+**Coverage.** 109 -> 233 foods. The gaps were basic: no water, no coffee, no
+white bread, no white pasta, no whole milk, no lettuce, no garlic, no sugar, no
+ketchup, no juice, no chocolate. All of them are things a user logs in their
+first week, and the audit now pins a list of them so they cannot quietly go
+missing again.
+
+**Two real defects in the audit itself,** both found by extending it rather
+than by using it:
+
+  1. *The energy check was vacuous for per-ml and per-gram foods.* The absolute
+     tolerance was a flat 15 kcal regardless of serving basis, but every value
+     on a per-ml row is about 0.5 -- so a milk row with ten times the correct
+     fat passed the check. Demonstrated before fixing. The tolerance is now
+     expressed per 100g of serving basis and scaled by unit.
+  2. *Alcohol had no honest representation.* Ethanol carries 7 kcal/g and is
+     none of the three macros, so a beer's stated calories cannot be
+     reconstructed from its macros -- the row is right and the identity does
+     not apply. Rather than omit drinks people log, or fudge the numbers,
+     `containsAlcohol` exempts a row from the energy identity and from nothing
+     else. The audit fails a row that sets the flag *without* needing it, so it
+     cannot be used to wave a bad row through.
+
+Upgrading installs get categories backfilled with the same rules as the Hebrew
+names: field-level, never overwriting a user's value, never resurrecting a
+deleted food, and skipping a row the user renamed.

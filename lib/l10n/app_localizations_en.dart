@@ -682,6 +682,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealName => 'Meal Name';
 
   @override
+  String get categoryAll => 'All';
+
+  @override
   String get searchFoods => 'Search foods';
 
   @override
