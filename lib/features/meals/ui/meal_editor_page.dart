@@ -91,7 +91,7 @@ class MealEditorPage extends HookConsumerWidget {
                 controller: nameController,
                 decoration: InputDecoration(
                   labelText: l10n.mealName,
-                  hintText: 'e.g., Breakfast, Lunch, Dinner',
+                  hintText: l10n.mealNameHint,
                   counterText: '${nameController.text.length}/${TextLimits.mealNameMaxLength}',
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),

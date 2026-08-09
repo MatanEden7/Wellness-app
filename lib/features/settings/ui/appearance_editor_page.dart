@@ -30,7 +30,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _showResetDialog(context, ref),
-            tooltip: 'Reset All Colors',
+            tooltip: AppLocalizations.of(context)!.resetAllColors,
           ),
         ],
       ),
@@ -119,7 +119,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
               _buildSectionHeader(context, 'Section Colors', Icons.category),
               const SizedBox(height: 12),
               _ColorPickerTile(
-                label: 'Meals',
+                label: AppLocalizations.of(context)!.meals,
                 icon: Icons.restaurant,
                 currentColor: prefs.mealsColor,
                 onColorChanged: (color) async {
@@ -129,7 +129,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
               ),
               const SizedBox(height: 8),
               _ColorPickerTile(
-                label: 'Workouts',
+                label: AppLocalizations.of(context)!.workouts,
                 icon: Icons.fitness_center,
                 currentColor: prefs.workoutsColor,
                 onColorChanged: (color) async {
@@ -139,7 +139,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
               ),
               const SizedBox(height: 8),
               _ColorPickerTile(
-                label: 'Sleep',
+                label: AppLocalizations.of(context)!.sleep,
                 icon: Icons.bedtime,
                 currentColor: prefs.sleepColor,
                 onColorChanged: (color) async {
@@ -174,7 +174,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
               if (!prefs.useThemeColors) ...[
                 const SizedBox(height: 8),
                 _ColorPickerTile(
-                  label: 'Calories',
+                  label: AppLocalizations.of(context)!.calories,
                   icon: Icons.local_fire_department,
                   currentColor: prefs.calorieColor,
                   onColorChanged: (color) async {
@@ -184,7 +184,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ColorPickerTile(
-                  label: 'Protein',
+                  label: AppLocalizations.of(context)!.protein,
                   icon: Icons.egg,
                   currentColor: prefs.proteinColor,
                   onColorChanged: (color) async {
@@ -194,7 +194,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ColorPickerTile(
-                  label: 'Carbs',
+                  label: AppLocalizations.of(context)!.carbs,
                   icon: Icons.grain,
                   currentColor: prefs.carbsColor,
                   onColorChanged: (color) async {
@@ -204,7 +204,7 @@ class AppearanceEditorPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 _ColorPickerTile(
-                  label: 'Fat',
+                  label: AppLocalizations.of(context)!.fat,
                   icon: Icons.water_drop,
                   currentColor: prefs.fatColor,
                   onColorChanged: (color) async {

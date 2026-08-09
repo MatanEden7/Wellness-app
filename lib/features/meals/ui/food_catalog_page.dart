@@ -788,7 +788,7 @@ class _ShowingAllBanner extends StatelessWidget {
           Expanded(
             child: Text('Showing everything', style: theme.textTheme.bodySmall),
           ),
-          TextButton(onPressed: onFilter, child: const Text('Filter')),
+          TextButton(onPressed: onFilter, child: Text(AppLocalizations.of(context)!.filter)),
         ],
       ),
     );

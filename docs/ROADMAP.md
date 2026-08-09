@@ -307,7 +307,10 @@ capacity allows.
 - **B1 / B3 / B4** — manual device checks on the notification system (sleep-goal
   alert; sound/vibration incl. the new rest-timer beep; the action buttons that
   #69 unblocked). ~10 minutes total now, not five.
-- **C5** — remaining Hebrew strings need a real translator pass, not more code.
+- **C5** — partly cleared 2026-08-09: the 17 strays that already had an l10n key
+  are wired. What remains genuinely needs new Hebrew copy. Note that the audit
+  under-counted — `profile_page.dart` is *entirely* unlocalised, tracked
+  separately as `ISSUES.md` #84.
 - **F2** — second opinion on the weight-unit icon (design call, not urgent).
 
 ## Explicitly out of scope

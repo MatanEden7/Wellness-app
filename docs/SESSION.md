@@ -154,6 +154,42 @@ measure-first habit paid off again.
 
 ---
 
+## 2026-08-09 (fifth) — Clearing the owner-tagged items
+
+**Current task:** None.
+
+**Last completed:** `ISSUES.md` #83, plus half of ROADMAP C5. Asked to go
+online and clear whatever was tagged **me**, leaving anything too complicated.
+
+- Five items were tagged. Three are genuinely not mine to do: B1/B3/B4 are
+  device notification checks, #9 is a device sleep-notification verify, A3 is a
+  product decision and F2 a design opinion. Two were actionable.
+- The McDonald's numbers took three attempts and the failures are the useful
+  part. A web search returned US values dressed as Israeli. Two Israeli
+  aggregators then disagreed, and one was internally impossible (99 kcal/100g
+  for a Big Mac against its own 400g serving). Only the official calculator was
+  usable, and it is JS behind an iframe so it needed the browser, not a fetch.
+  **Rule of thumb: for nutrition data, cross-check the source against 4/4/9
+  before believing it** -- that is what exposed the bad aggregator immediately.
+- Menu *identity* differs, not just numbers: no Quarter Pounder, no
+  Filet-O-Fish, no 6-piece nuggets in Israel. Resisted relabelling those rows,
+  because ids are permanent and logged meals point at them. Corrected the
+  numbers where the item is the same product; added new ids for the Israeli-only
+  ones; marked the rest "US menu" on their face.
+- C5's mechanical half: the naive "English value -> l10n key" mapping had two
+  traps that only reading the Hebrew caught. `onboardingInjuriesBack` is 'גב',
+  the body part -- wiring five navigation Back buttons to it would have put
+  *torso* on them. Worth remembering: an .arb value match is not a meaning
+  match.
+- Stopped short of `profile_page.dart`, which turned out to have zero
+  localisation at all -- a whole screen, not the strays C5 described. It needs
+  ~29 new Hebrew strings and ~140 edit sites in a file whose only coverage is a
+  simulator integration test. Filed as #84 rather than done blind.
+
+**Next task:** #84 if wanted. Full fast suite green (997).
+
+---
+
 ## 2026-08-07 — Analytics screen
 
 **Current task:** None. Shipped end to end.

@@ -889,51 +889,83 @@ abstract final class StarterFoodCatalog {
   ];
 
   // =========================================================================
-  // McDonald's -- the chain's published US figures; menus differ by country
+  // McDonald's.
+  //
+  // The Israeli rows are the chain's own published figures, read from the
+  // official nutrition calculator at order.mcdonalds.co.il (verified
+  // 2026-08-09). This matters more than it sounds: the US numbers previously
+  // used here overstated an Israeli Big Mac by 36% (590 kcal against 434) and
+  // nearly doubled its fat (34g against 18.8g).
+  //
+  // Rows still marked "US menu" are ones with **no Israeli equivalent** --
+  // Israel has no Quarter Pounder (it has the larger Mac Royal), no
+  // Filet-O-Fish (only the Double Mac Fish), and no 6-piece nuggets (4, 5, 9,
+  // 12, 24). They keep their US figures and say so, rather than being quietly
+  // relabelled: an id is permanent and a logged meal points at it, so
+  // correcting a number is right but changing what the row *is* would rewrite
+  // somebody's history.
+  //
+  // `israeli` stays false throughout. That flag means Israeli cuisine -- a Mac
+  // Royal is an Israeli-market menu item, which is a different claim.
   // =========================================================================
   static final List<StarterFood> fastFood = [
     _f('99', 'Big Mac', 'ביג מק', 'serving',
-        590, 25, 46, 34, FoodCategory.fastFood,
-        brand: "McDonald's",
+        434, 25, 40, 18.8, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 214g",
         tags: {FoodTag.meat, FoodTag.gluten, FoodTag.dairy, FoodTag.animalProduct}),
     _f('100', 'Quarter Pounder with Cheese', 'קוורטר פאונדר עם גבינה', 'serving',
         520, 30, 42, 26, FoodCategory.fastFood,
-        brand: "McDonald's",
+        brand: "McDonald's US menu",
         tags: {FoodTag.meat, FoodTag.gluten, FoodTag.dairy, FoodTag.animalProduct}),
     _f('101', 'McChicken', 'מקצ׳יקן', 'serving',
-        400, 14, 39, 21, FoodCategory.fastFood,
-        brand: "McDonald's",
+        340, 16, 38, 13.8, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 151g",
         tags: {FoodTag.meat, FoodTag.gluten}),
     _f('102', 'Cheeseburger', 'צ׳יזבורגר', 'serving',
-        300, 15, 32, 13, FoodCategory.fastFood,
-        brand: "McDonald's",
+        276, 16, 30, 10, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 118g",
         tags: {FoodTag.meat, FoodTag.gluten, FoodTag.dairy, FoodTag.animalProduct}),
     _f('103', 'Hamburger', 'המבורגר', 'serving',
-        250, 12, 31, 9, FoodCategory.fastFood,
-        brand: "McDonald's",
+        227, 14, 29, 5.9, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 104g",
         tags: {FoodTag.meat, FoodTag.gluten}),
     _f('104', 'Chicken McNuggets', 'מקנאגטס', 'serving',
         250, 14, 15, 15, FoodCategory.fastFood,
-        brand: "McDonald's, 6 pieces",
+        brand: "McDonald's US menu, 6 pieces",
         tags: {FoodTag.meat, FoodTag.gluten}),
     _f('105', 'French Fries', 'צ׳יפס', 'serving',
-        320, 4, 43, 15, FoodCategory.fastFood,
-        brand: "McDonald's, medium"),
+        294, 5, 34, 15.2, FoodCategory.fastFood,
+        brand: "McDonald's Israel, regular 100g"),
     _f('106', 'Egg McMuffin', 'אג מקמאפין', 'serving',
         310, 17, 30, 13, FoodCategory.fastFood,
-        brand: "McDonald's",
+        // Not listed in the Israeli calculator at all, so unverified there.
+        brand: "McDonald's US menu",
         tags: {FoodTag.meat, FoodTag.gluten, FoodTag.dairy, FoodTag.eggs,
                FoodTag.animalProduct}),
     _f('107', 'Filet-O-Fish', 'פילה או פיש', 'serving',
         390, 16, 39, 19, FoodCategory.fastFood,
-        brand: "McDonald's",
+        brand: "McDonald's US menu",
         tags: {FoodTag.fish, FoodTag.gluten, FoodTag.dairy, FoodTag.animalProduct}),
     _f('108', 'McFlurry Oreo', 'מקפלרי אוראו', 'serving',
-        510, 12, 80, 16, FoodCategory.fastFood,
-        brand: "McDonald's",
+        445, 10, 65, 15.6, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 233g",
         tags: {FoodTag.dairy, FoodTag.gluten, FoodTag.animalProduct}),
     _f('109', 'Coca-Cola', 'קוקה קולה', 'serving',
-        210, 0, 58, 0, FoodCategory.fastFood,
-        brand: "McDonald's, medium"),
+        169, 0, 42, 0, FoodCategory.fastFood,
+        brand: "McDonald's Israel, regular 400ml"),
+
+    // The Israeli-menu items that have no US counterpart in this list.
+    _f('233', 'Mac Royal', 'מק רויאל', 'serving',
+        584, 36, 62, 20.1, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 324g",
+        tags: {FoodTag.meat, FoodTag.gluten, FoodTag.dairy, FoodTag.animalProduct}),
+    _f('234', 'Chicken McNuggets', 'מק נאגטס', 'serving',
+        219, 17, 13, 10.6, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 5 pieces",
+        tags: {FoodTag.meat, FoodTag.gluten}),
+    _f('235', 'Double Mac Fish', 'דאבל מק דג', 'serving',
+        740, 33, 77, 32.3, FoodCategory.fastFood,
+        brand: "McDonald's Israel, 363g",
+        tags: {FoodTag.fish, FoodTag.gluten, FoodTag.dairy, FoodTag.animalProduct}),
   ];
 }

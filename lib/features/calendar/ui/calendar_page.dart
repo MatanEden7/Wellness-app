@@ -979,7 +979,7 @@ class CalendarPage extends ConsumerWidget {
                 builder: (context, snapshot) {
                   final count = snapshot.data ?? 0;
                   return StatTile(
-                    title: 'Workouts',
+                    title: AppLocalizations.of(context)!.workouts,
                     value: count.toString(),
                     subtitle: count > 0 ? 'Completed' : 'None',
                     icon: Icons.fitness_center,
@@ -996,7 +996,7 @@ class CalendarPage extends ConsumerWidget {
                 builder: (context, snapshot) {
                   final hours = snapshot.data;
                   return StatTile(
-                    title: 'Sleep',
+                    title: AppLocalizations.of(context)!.sleep,
                     value: hours != null ? '${hours.toStringAsFixed(1)}h' : 'N/A',
                     subtitle: hours != null 
                         ? (hours >= 7 ? 'Good rest' : 'Need more')

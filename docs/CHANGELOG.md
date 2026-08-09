@@ -5,6 +5,44 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Fast-food macros corrected against the Israeli menu (2026-08-09)
+
+`ISSUES.md` #83, closing the owner-action flagged in #79. Read from McDonald's
+Israel's own nutrition calculator rather than an aggregator — the first two
+attempts were both wrong, which is the point worth recording: a plain search
+returned US values presented as Israeli, and two Israeli aggregator sites
+disagreed with each other, one of them impossibly (99 kcal/100g for a Big Mac
+against its own stated serving total). Neither was used. The official
+calculator is JavaScript behind an iframe, so it needed a real browser. Every
+figure taken from it reconciles against 4/4/9 within 2% — that check is what
+made it trustworthy.
+
+| | was (US) | is (Israel) |
+|---|---|---|
+| Big Mac | 590 kcal, 34g fat | **434 kcal, 18.8g fat** |
+| McChicken | 400 | 340 |
+| Cheeseburger | 300 | 276 |
+| Hamburger | 250 | 227 |
+| Fries | 320 | 294 |
+| McFlurry Oreo | 510 | 445 |
+| Coca-Cola | 210 | 169 |
+
+The menu differs in *what exists*, too. Israel has no Quarter Pounder (it has
+the larger Mac Royal), no Filet-O-Fish (only the Double Mac Fish) and no
+6-piece nuggets. Those rows keep their US numbers and now say **"McDonald's US
+menu"**, with the three Israeli items added alongside under new ids — an id is
+permanent and a logged meal points at it, so correcting a number is right but
+changing what a row *is* would rewrite history.
+
+Also cleared the mechanical half of ROADMAP C5: 17 hardcoded strings that
+already had an l10n key are now wired. Two traps were caught by checking rather
+than trusting the value match — `onboardingInjuriesBack` is the body part
+("גב"), not the navigation "Back" ("חזור"), which would have put *torso* on
+five back buttons; and one "Sleep" was a stored event title, not a label.
+
+**Newly found and left open:** `profile_page.dart` has *zero* localisation —
+the whole screen, not the few strays C5 described. Tracked as `ISSUES.md` #84.
+
 ### Exercise library: 58 → 115, and rehab that actually fills a session (2026-08-09)
 
 Measured before touching anything, and the gaps were concrete.

@@ -173,7 +173,7 @@ class _GoalField extends StatelessWidget {
         labelText: label,
         suffixText: suffix,
         border: const OutlineInputBorder(),
-        hintText: 'Optional',
+        hintText: AppLocalizations.of(context)!.optional,
       ),
       validator: (val) {
         if (val == null || val.isEmpty) return null;

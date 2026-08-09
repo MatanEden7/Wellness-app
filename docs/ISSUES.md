@@ -96,10 +96,12 @@ remaining work is a translator/designer decision, not engineering effort.
 | 76 | Every multi-placeholder ARB string passed its arguments in the wrong order | High | Fixed | ~30min |
 | 77 | Add/edit food and exercise dialogs overflowed; their save button was off-screen and untappable | High | Fixed | ~45min |
 | 78 | Daily nutrition targets incoherent: fat never targeted, flat kcal adjustment with no safety floor, protein off scale weight, macros not reconciled | High | Fixed | ~2h |
-| 79 | Food catalog unvalidated, English-only, and structurally unable to reach existing installs | Medium | Fixed (fast-food values vs the Israeli menu: **me**) | ~3h |
+| 79 | Food catalog unvalidated, English-only, and structurally unable to reach existing installs | Medium | Fixed (fast-food values now verified against the Israeli menu) | ~3h |
 | 80 | Generated meal plans undershot carbs by up to 37% and calories by 14%: serving caps pinned every starch, fat absorbed the gap | High | Fixed | ~1h |
 | 81 | Catalog had no category axis and missing basics; macro audit was vacuous for per-ml foods | Medium | Fixed | ~3h |
 | 82 | Rehab pools too small to fill a physio session; no bodyweight hamstring/shoulder/biceps work; dead getRehabExercises; exercises never reached existing installs | High | Fixed | ~3h |
+| 83 | Fast-food macros were US figures on an Israeli menu | Medium | Fixed | ~1h |
+| 84 | The whole Profile page renders English in Hebrew mode | Medium | **Open** — needs ~29 new Hebrew strings — **me** | ~2h |
 
 **Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
@@ -1105,9 +1107,10 @@ brand only. Shipping Hebrew content without fixing that would have made the
 Israeli foods undiscoverable to exactly the users they were added for.
 `FoodItem.matchesSearch` now matches both names in either language mode.
 
-**Owner note:** the branded fast-food figures are McDonald's published US
-values. Israeli menu items differ. **me** -- worth a pass against the local
-menu if the numbers matter to you; every row is user-editable in the app.
+**Resolved 2026-08-09:** the fast-food figures were read from McDonald's
+Israel's own nutrition calculator (order.mcdonalds.co.il) and corrected. The
+US numbers had overstated an Israeli Big Mac by 36% -- 590 kcal against 434 --
+and nearly doubled its fat. See #83 for the detail.
 
 
 ### 80. Generated meal plans could not reach their own carbohydrate target  **[FIXED]**
@@ -1245,3 +1248,63 @@ to program a session:
 Also fixed in passing: `Brisk Walk` used the unit `min` while nothing else did,
 which the unit check caught; and Hebrew names now exist for all 115 exercises
 and are backfilled onto upgrading installs.
+
+
+### 83. Fast-food macros were US figures on an Israeli menu  **[FIXED]**
+
+Flagged as owner-action in #79 and resolved by reading McDonald's Israel's own
+nutrition calculator (`order.mcdonalds.co.il/nutrition-calculator`, verified
+2026-08-09) rather than trusting an aggregator. Worth recording *how*, because
+the first two attempts were wrong:
+
+  * A plain web search returned US values dressed up as Israeli ones.
+  * Two Israeli aggregator sites disagreed with each other, and one was
+    internally impossible -- 99 kcal/100g for a Big Mac, with a stated 400g
+    serving that did not match its own per-serving total. Neither was used.
+
+The official calculator is JavaScript behind an iframe, so it needed a real
+browser rather than a fetch. Every figure taken from it reconciles against
+4/4/9 to within 2%, which is the check that made it trustworthy.
+
+The corrections are not cosmetic:
+
+| | was (US) | is (Israel) |
+|---|---|---|
+| Big Mac | 590 kcal, 34g fat | **434 kcal, 18.8g fat** (214g) |
+| McChicken | 400 kcal | 340 kcal (151g) |
+| Cheeseburger | 300 kcal | 276 kcal (118g) |
+| Hamburger | 250 kcal | 227 kcal (104g) |
+| Fries | 320 kcal | 294 kcal (regular, 100g) |
+| McFlurry Oreo | 510 kcal | 445 kcal (233g) |
+| Coca-Cola | 210 kcal | 169 kcal (regular, 400ml) |
+
+The menu also differs in *what exists*, which matters more than the numbers.
+Israel has no Quarter Pounder (it has the larger Mac Royal, 584 kcal), no
+Filet-O-Fish (only the Double Mac Fish, 740 kcal) and no 6-piece nuggets
+(4/5/9/12/24). Those three rows keep their US figures and now say **"McDonald's
+US menu"** on their face, with the Israeli items added alongside as new ids --
+an id is permanent and a logged meal points at it, so correcting a number is
+right but changing what a row *is* would rewrite somebody's history. Egg
+McMuffin is not in the Israeli calculator at all and is likewise marked US.
+
+### 84. The whole Profile page renders English in Hebrew mode  **[OPEN]**
+
+Found while clearing the mechanical half of ROADMAP C5. `profile_page.dart`
+contains **zero** references to `AppLocalizations` -- not "a few strings left",
+the entire screen. C5 described ~20-30 strays in the appearance and calendar
+screens; this is a whole page and was not in that count.
+
+Sized rather than guessed: 218 string literals, of which ~100 already have an
+l10n key and would just need wiring, and ~29 are real UI copy needing new
+Hebrew (`My Profile`, `Nutrition Targets`, `Recalculate from Body & Goal`,
+`Update your templates?`, the unit pickers, and so on). The rest are import
+paths, route names and enum ids that must *not* be touched -- `'male'`,
+`'fat_loss'`, `'dumbbells'` are stored values, and translating one would
+silently corrupt a profile.
+
+**Left for you (**me**)** deliberately, for two reasons: it needs new Hebrew
+copy authored, which is exactly the half C5 says wants a person; and it is
+~140 edit sites in a 1,050-line file whose only coverage is an
+`integration_test` that cannot run here without a simulator. Doing it blind on
+a screen in daily use is the wrong trade. The mechanical wiring in the files
+that *were* already localised is done (17 strings).
