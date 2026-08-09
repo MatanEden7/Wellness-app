@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../core/date_utils.dart';
 import '../../core/template_origin.dart';
 import '../../features/meals/domain/food_tags.dart';
+import '../catalog/starter_foods.dart';
 import '../../features/workouts/domain/exercise_tags.dart';
 
 // Provider for the database
@@ -79,6 +80,11 @@ class AppDatabase {
   static final List<SetEntryData> _setEntries = [];
   static final List<SleepEntryData> _sleepEntries = [];
   static final List<BodyWeightEntryData> _bodyWeightEntries = [];
+
+  /// Every starter food id this install has ever been offered, whether or not
+  /// it still holds it. The high-water mark that lets a catalog addition reach
+  /// existing users exactly once -- see [_mergeNewStarterFoods].
+  static final Set<String> _introducedFoodIds = {};
 
   // Cached maps for O(1) lookups
   static final Map<String, FoodItemData> _foodsById = {};
@@ -260,6 +266,87 @@ class AppDatabase {
         (w) => w.id);
 
     _backfillExerciseMetadata();
+    _mergeNewStarterFoods(json['introducedFoodIds']);
+    _backfillFoodHebrewNames();
+  }
+
+  /// Starter food ids that shipped before `introducedFoodIds` was recorded.
+  ///
+  /// A snapshot written by an older build has no record of what it was ever
+  /// offered, so [_mergeNewStarterFoods] cannot tell "the user deleted this"
+  /// from "this did not exist yet" -- and guessing wrong resurrects a food
+  /// somebody deliberately removed. What *is* knowable is which ids existed at
+  /// the version the key was introduced: 1-53. Anything in this set is treated
+  /// as already offered to a legacy snapshot; anything outside it is new.
+  ///
+  /// Frozen on purpose. It describes history, so it must not grow when the
+  /// catalog does.
+  static final Set<String> _legacyStarterFoodIds = {
+    for (var i = 1; i <= 53; i++) '$i',
+  };
+
+  /// Adds starter foods this install has never been offered.
+  ///
+  /// [_applySnapshot] *replaces* the food list rather than merging it, which is
+  /// correct for everything else -- merging would duplicate the whole catalog
+  /// on every boot and resurrect starter rows the user deleted. The cost is
+  /// that a catalog addition only ever reached people installing fresh. Fifty
+  /// new foods that existing users could never see is not a shipped feature.
+  ///
+  /// The high-water mark makes both work at once: an id is added exactly once,
+  /// the first time a build that knows about it loads a snapshot that does not.
+  /// Delete it afterwards and it stays deleted, because its id remains in
+  /// [_introducedFoodIds].
+  void _mergeNewStarterFoods(Object? rawIntroduced) {
+    final recorded = rawIntroduced is List
+        ? rawIntroduced.whereType<String>().toSet()
+        : <String>{};
+
+    final alreadyOffered = recorded.isEmpty
+        ? {..._legacyStarterFoodIds, ..._foods.map((f) => f.id)}
+        : {...recorded, ..._foods.map((f) => f.id)};
+
+    final additions = [
+      for (final food in _getSampleFoods())
+        if (!alreadyOffered.contains(food.id)) food,
+    ];
+
+    _introducedFoodIds
+      ..addAll(alreadyOffered)
+      ..addAll(additions.map((f) => f.id));
+
+    if (additions.isEmpty) return;
+
+    for (final food in additions) {
+      _foods.add(food);
+      _foodsById[food.id] = food;
+    }
+    debugPrint('[DB] Added ${additions.length} new starter foods to an '
+        'existing catalog');
+  }
+
+  /// Fills `nameHe` on seeded foods restored from a snapshot written before the
+  /// catalog had Hebrew names.
+  ///
+  /// Same two rules as [_backfillExerciseMetadata]: field-level, so a name the
+  /// user set is never overwritten, and it walks the *restored* list, so
+  /// nothing deleted comes back.
+  void _backfillFoodHebrewNames() {
+    final seeded = {for (final f in _getSampleFoods()) f.id: f};
+    for (var i = 0; i < _foods.length; i++) {
+      final restored = _foods[i];
+      if (restored.nameHe != null) continue;
+      final template = seeded[restored.id];
+      // Only backfill a row that is still the food the seed thinks it is --
+      // a user who renamed a starter row should not get a mismatched Hebrew
+      // name attached to it.
+      if (template == null || template.name != restored.name) continue;
+      final hebrew = template.nameHe;
+      if (hebrew == null) continue;
+      final filled = restored.withHebrewName(hebrew);
+      _foods[i] = filled;
+      _foodsById[filled.id] = filled;
+    }
   }
 
   /// Fills movement/mechanic/load metadata on seeded exercises restored from a
@@ -334,6 +421,9 @@ class AppDatabase {
         'sleepEntries': _sleepEntries.map((e) => e.toJson()).toList(),
         'bodyWeightEntries':
             _bodyWeightEntries.map((e) => e.toJson()).toList(),
+        // Which starter foods this install has ever been offered. Not the same
+        // as which it currently holds -- see [_mergeNewStarterFoods].
+        'introducedFoodIds': _introducedFoodIds.toList()..sort(),
       };
 
   /// Notifies listeners of a change and queues a debounced snapshot write.
@@ -415,6 +505,7 @@ class AppDatabase {
     _setEntries.clear();
     _sleepEntries.clear();
     _bodyWeightEntries.clear();
+    _introducedFoodIds.clear();
     _foodsById.clear();
     _mealsById.clear();
     _mealTemplatesById.clear();
@@ -428,6 +519,9 @@ class AppDatabase {
   void _initializeWithSampleData() {
     if (_foods.isEmpty) {
       final sampleFoods = _getSampleFoods();
+      // A fresh install has been offered everything the current build ships,
+      // so nothing here is "new" to it on the next load.
+      _introducedFoodIds.addAll(sampleFoods.map((f) => f.id));
       _foods.addAll(sampleFoods);
       for (final food in sampleFoods) {
         _foodsById[food.id] = food;
@@ -458,6 +552,20 @@ class AppDatabase {
 
   // Foods methods - with local storage
   Future<List<FoodItemData>> getAllFoods() async => List.from(_foods);
+  /// Every starter food id this install has ever been offered.
+  ///
+  /// Exposed for the backup: a restore that did not carry this forward would
+  /// reset the high-water mark, and the next load would re-offer -- that is,
+  /// resurrect -- every catalog food the user had deleted.
+  Set<String> get introducedFoodIds => Set.unmodifiable(_introducedFoodIds);
+
+  /// Restores the high-water mark from a backup. See [introducedFoodIds].
+  ///
+  /// Additive: an id already recorded is never dropped, so importing an older
+  /// backup cannot un-introduce a food this install has already seen.
+  void restoreIntroducedFoodIds(Iterable<String> ids) =>
+      _introducedFoodIds.addAll(ids);
+
   Future<List<FoodItemData>> getStarterFoods() async => _foods.where((f) => f.isStarter).toList();
   Future<List<FoodItemData>> getUserFoods() async => _foods.where((f) => !f.isStarter).toList();
   Future<FoodItemData?> getFoodById(String id) async => _foodsById[id];
@@ -1252,140 +1360,29 @@ class AppDatabase {
   Future<T> transaction<T>(Future<T> Function() action) async => await action();
 
   // Sample data methods
-  // Starter food catalog: ~40 common foods with real per-unit macros
-  // (values approximate USDA FoodData Central references). "100g" units
-  // are per-100g portions (see FoodServingKind.per100g); "piece"/"slice"/
-  // "tbsp" units are per single item; "ml" is per single milliliter.
-  //
-  // IMPORTANT: Chicken Breast's values are relied on by
-  // test/regression/food_nutrition_math_test.dart and
-  // integration_test/regression/nutrition_math_ui_test.dart -- don't change
-  // them without updating those tests too.
-  //
-  // nameHe is intentionally left null throughout: English-only for now, but
-  // the field is wired end to end (model, storage, UI displayName()) so
-  // Hebrew names can be filled in later without further code changes.
+  /// The shipped food catalog, mapped from `StarterFoodCatalog`.
+  ///
+  /// The rows themselves live in `lib/data/catalog/starter_foods.dart` --
+  /// including where every number comes from, and why ids are append-only.
   List<FoodItemData> _getSampleFoods() {
     final createdAt = DateTime.now().subtract(const Duration(days: 1));
-    FoodItemData food({
-      required String id,
-      required String name,
-      String? brand,
-      required String unit,
-      required double kcal,
-      required double protein,
-      required double carbs,
-      required double fat,
-      Set<FoodTag> tags = const <FoodTag>{},
-    }) {
-      return FoodItemData(
-        id: id,
-        name: name,
-        brand: brand,
-        unit: unit,
-        kcalPerUnit: kcal,
-        proteinPerUnit: protein,
-        carbsPerUnit: carbs,
-        fatPerUnit: fat,
-        isStarter: true,
-        tags: tags,
-        createdAt: createdAt,
-        updatedAt: createdAt,
-      );
-    }
-
     return [
-      // Protein
-      food(id: '1', name: 'Chicken Breast', unit: '100g', kcal: 165, protein: 31, carbs: 0, fat: 3.6, tags: const {FoodTag.meat}),
-      food(id: '2', name: 'Salmon', unit: '100g', kcal: 208, protein: 25, carbs: 0, fat: 12, tags: const {FoodTag.fish}),
-      food(id: '3', name: 'Tuna', brand: 'Canned in Water', unit: '100g', kcal: 116, protein: 26, carbs: 0, fat: 0.8, tags: const {FoodTag.fish}),
-      food(id: '4', name: 'Turkey Breast', unit: '100g', kcal: 135, protein: 30, carbs: 0, fat: 1.7, tags: const {FoodTag.meat}),
-      food(id: '5', name: 'Eggs', unit: 'piece', kcal: 70, protein: 6, carbs: 0.6, fat: 5, tags: const {FoodTag.eggs, FoodTag.animalProduct}),
-      food(id: '6', name: 'Ground Beef', brand: '85% Lean', unit: '100g', kcal: 250, protein: 26, carbs: 0, fat: 17, tags: const {FoodTag.meat}),
-      food(id: '7', name: 'Shrimp', unit: '100g', kcal: 99, protein: 24, carbs: 0.2, fat: 0.3, tags: const {FoodTag.shellfish, FoodTag.fish}),
-      food(id: '8', name: 'Tofu', unit: '100g', kcal: 76, protein: 8, carbs: 1.9, fat: 4.8, tags: const {FoodTag.soy}),
-
-      // Dairy
-      food(id: '9', name: 'Greek Yogurt', unit: '100g', kcal: 59, protein: 10, carbs: 3.6, fat: 0.4, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
-      food(id: '10', name: 'Cottage Cheese', brand: 'Low Fat', unit: '100g', kcal: 72, protein: 12, carbs: 4.6, fat: 1, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
-      food(id: '11', name: 'Cheddar Cheese', unit: '100g', kcal: 403, protein: 25, carbs: 1.3, fat: 33, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
-      food(id: '12', name: 'Milk', brand: '2% Fat', unit: 'ml', kcal: 0.5, protein: 0.033, carbs: 0.047, fat: 0.02, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
-
-      // Grains & starches
-      food(id: '13', name: 'Brown Rice', unit: '100g', kcal: 111, protein: 2.3, carbs: 23, fat: 0.9),
-      food(id: '14', name: 'White Rice', unit: '100g', kcal: 130, protein: 2.7, carbs: 28, fat: 0.3),
-      food(id: '15', name: 'Oats', unit: '100g', kcal: 389, protein: 16.9, carbs: 66, fat: 6.9, tags: const {FoodTag.gluten}),
-      food(id: '16', name: 'Quinoa', unit: '100g', kcal: 122, protein: 4.4, carbs: 22, fat: 1.9),
-      food(id: '17', name: 'Pasta', brand: 'Whole Wheat', unit: '100g', kcal: 124, protein: 5, carbs: 25, fat: 1.1, tags: const {FoodTag.gluten}),
-      food(id: '18', name: 'Whole Wheat Bread', unit: 'slice', kcal: 80, protein: 4, carbs: 14, fat: 1, tags: const {FoodTag.gluten}),
-      food(id: '19', name: 'Sweet Potato', unit: '100g', kcal: 86, protein: 2, carbs: 20, fat: 0.1),
-
-      // Legumes
-      food(id: '20', name: 'Lentils', brand: 'Cooked', unit: '100g', kcal: 116, protein: 9, carbs: 20, fat: 0.4),
-      food(id: '21', name: 'Black Beans', brand: 'Cooked', unit: '100g', kcal: 132, protein: 8.9, carbs: 23, fat: 0.5),
-      food(id: '22', name: 'Chickpeas', brand: 'Cooked', unit: '100g', kcal: 164, protein: 8.9, carbs: 27, fat: 2.6),
-
-      // Vegetables
-      food(id: '23', name: 'Broccoli', unit: '100g', kcal: 34, protein: 2.8, carbs: 7, fat: 0.4),
-      food(id: '24', name: 'Spinach', unit: '100g', kcal: 23, protein: 2.9, carbs: 3.6, fat: 0.4),
-      food(id: '25', name: 'Kale', unit: '100g', kcal: 49, protein: 4.3, carbs: 9, fat: 0.9),
-      food(id: '26', name: 'Carrots', unit: '100g', kcal: 41, protein: 0.9, carbs: 9.6, fat: 0.2),
-      food(id: '27', name: 'Tomato', unit: '100g', kcal: 18, protein: 0.9, carbs: 3.9, fat: 0.2),
-      food(id: '28', name: 'Bell Pepper', unit: '100g', kcal: 31, protein: 1, carbs: 6, fat: 0.3),
-      food(id: '29', name: 'Cucumber', unit: '100g', kcal: 15, protein: 0.7, carbs: 3.6, fat: 0.1),
-      food(id: '30', name: 'Zucchini', unit: '100g', kcal: 17, protein: 1.2, carbs: 3.1, fat: 0.3),
-      food(id: '31', name: 'Mushrooms', unit: '100g', kcal: 22, protein: 3.1, carbs: 3.3, fat: 0.3),
-
-      // Fruits
-      food(id: '32', name: 'Banana', unit: 'piece', kcal: 105, protein: 1.3, carbs: 27, fat: 0.4),
-      food(id: '33', name: 'Apple', unit: 'piece', kcal: 95, protein: 0.5, carbs: 25, fat: 0.3),
-      food(id: '34', name: 'Orange', unit: 'piece', kcal: 62, protein: 1.2, carbs: 15.4, fat: 0.2),
-      food(id: '35', name: 'Blueberries', unit: '100g', kcal: 57, protein: 0.7, carbs: 14, fat: 0.3),
-      food(id: '36', name: 'Avocado', unit: '100g', kcal: 160, protein: 2, carbs: 8.5, fat: 14.7),
-
-      // Fats, nuts & extras
-      food(id: '37', name: 'Almonds', unit: '100g', kcal: 579, protein: 21, carbs: 22, fat: 50, tags: const {FoodTag.nuts}),
-      food(id: '38', name: 'Walnuts', unit: '100g', kcal: 654, protein: 15, carbs: 14, fat: 65, tags: const {FoodTag.nuts}),
-      food(id: '39', name: 'Peanut Butter', unit: 'tbsp', kcal: 95, protein: 4, carbs: 4, fat: 8, tags: const {FoodTag.nuts}),
-      food(id: '40', name: 'Olive Oil', brand: 'Extra Virgin', unit: 'tbsp', kcal: 120, protein: 0, carbs: 0, fat: 14),
-      food(id: '41', name: 'Butter', unit: 'tbsp', kcal: 102, protein: 0.1, carbs: 0, fat: 11.5, tags: const {FoodTag.dairy, FoodTag.animalProduct}),
-      food(id: '42', name: 'Honey', unit: 'tbsp', kcal: 64, protein: 0.1, carbs: 17, fat: 0, tags: const {FoodTag.animalProduct}),
-
-      // ---------------------------------------------------------------
-      // Coverage additions. Values are per-100g from USDA FoodData Central
-      // (SR Legacy / Foundation), not estimates.
-      //
-      // These exist so the harder profile combinations have something to
-      // eat -- a herbivore who also excludes soy, nuts and gluten had
-      // almost nothing in the original 42, and the catalog-coverage test
-      // enforces that this stays true as the catalog changes.
-      // ---------------------------------------------------------------
-
-      // Plant protein. Seitan is the soy-free option (but is pure gluten);
-      // the seeds are the nut-free AND soy-free options.
-      food(id: '43', name: 'Tempeh', unit: '100g', kcal: 192, protein: 20.3, carbs: 7.6, fat: 10.8, tags: const {FoodTag.soy}),
-      food(id: '44', name: 'Seitan', brand: 'Vital Wheat Gluten', unit: '100g', kcal: 370, protein: 75.2, carbs: 13.8, fat: 1.9, tags: const {FoodTag.gluten}),
-      food(id: '45', name: 'Edamame', unit: '100g', kcal: 121, protein: 11.9, carbs: 8.9, fat: 5.2, tags: const {FoodTag.soy}),
-      food(id: '46', name: 'Hemp Seeds', unit: '100g', kcal: 553, protein: 31.6, carbs: 8.7, fat: 48.8),
-      food(id: '47', name: 'Pumpkin Seeds', unit: '100g', kcal: 574, protein: 29.8, carbs: 14.7, fat: 49.0),
-      food(id: '48', name: 'Sunflower Seeds', unit: '100g', kcal: 584, protein: 20.8, carbs: 20.0, fat: 51.5),
-      food(id: '49', name: 'Chia Seeds', unit: '100g', kcal: 486, protein: 16.5, carbs: 42.1, fat: 30.7),
-
-      // Dairy alternatives, one per exclusion pattern: soy milk for those
-      // avoiding dairy only, rice milk for anyone also avoiding soy, nuts
-      // and gluten.
-      food(id: '50', name: 'Soy Milk', brand: 'Unsweetened', unit: 'ml', kcal: 0.385, protein: 0.0355, carbs: 0.0129, fat: 0.0212, tags: const {FoodTag.soy}),
-      food(id: '51', name: 'Rice Milk', brand: 'Unsweetened', unit: 'ml', kcal: 0.47, protein: 0.0028, carbs: 0.0917, fat: 0.0097),
-
-      // Gluten-free grain, so excluding gluten still leaves a grain that
-      // isn't rice.
-      food(id: '52', name: 'Buckwheat', brand: 'Cooked', unit: '100g', kcal: 92, protein: 3.4, carbs: 19.9, fat: 0.6),
-
-      // Egg whites: the calorie lever. 10.9g protein for 52 kcal and
-      // essentially no fat, so a recipe can hold its protein target while
-      // the calorie total comes down -- which is exactly how people actually
-      // adjust an egg breakfast. USDA SR Legacy 172183.
-      food(id: '53', name: 'Egg Whites', unit: '100g', kcal: 52, protein: 10.9, carbs: 0.7, fat: 0.2, tags: const {FoodTag.eggs, FoodTag.animalProduct}),
+      for (final food in StarterFoodCatalog.all)
+        FoodItemData(
+          id: food.id,
+          name: food.name,
+          nameHe: food.nameHe,
+          brand: food.brand,
+          unit: food.unit,
+          kcalPerUnit: food.kcal,
+          proteinPerUnit: food.protein,
+          carbsPerUnit: food.carbs,
+          fatPerUnit: food.fat,
+          isStarter: true,
+          tags: food.tags,
+          createdAt: createdAt,
+          updatedAt: createdAt,
+        ),
     ];
   }
 
@@ -1747,6 +1744,26 @@ class FoodItemData {
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
+
+  /// A copy carrying [nameHe], for backfilling a seeded row restored from a
+  /// snapshot written before the catalog had Hebrew names. Does not touch
+  /// `updatedAt`: nothing the user did changed, and bumping it would make a
+  /// pure migration look like an edit.
+  FoodItemData withHebrewName(String nameHe) => FoodItemData(
+        id: id,
+        name: name,
+        nameHe: nameHe,
+        brand: brand,
+        unit: unit,
+        kcalPerUnit: kcalPerUnit,
+        proteinPerUnit: proteinPerUnit,
+        carbsPerUnit: carbsPerUnit,
+        fatPerUnit: fatPerUnit,
+        isStarter: isStarter,
+        tags: tags,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 }
 
 class MealData {

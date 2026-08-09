@@ -46,6 +46,46 @@ fault was `SetupEngineService`, which produces the *targets*.
 
 ---
 
+## 2026-08-09 (later) — Food catalog rebuilt
+
+**Current task:** None.
+
+**Last completed:** `ISSUES.md` #79. Asked for as "make sure all the food types
+have the correct amounts and add more... but first build a solid base". Taking
+the base seriously is what made the rest cheap, and it changed the shape of the
+answer twice.
+
+- **The amounts were already right.** Auditing all 53 against 4/4/9 turned up
+  no errors. The scary-looking outliers (broccoli 34 vs 43, spinach 23 vs 30)
+  are fibre plus USDA's food-specific energy factors — correct as published.
+  Resisting the urge to "fix" them into agreement was the right call, and the
+  tolerance in `FoodMacroAudit` is shaped around that reality: pass if the miss
+  is under 15 kcal absolute *or* 12% relative, which forgives leafy veg (where
+  8 kcal is 25%) and nuts (where 8% is 45 kcal) without forgiving a misplaced
+  decimal point.
+- **The real defect was that nothing could check.** Wrong catalog numbers fail
+  silently forever. `FoodMacroAudit` + `catalog_audit_test.dart` now gate every
+  row. It earned its keep immediately, catching two tagging bugs in rows I was
+  writing at the time.
+- **The structural blocker, found before adding anything:** `_applySnapshot`
+  replaces the food list rather than merging, so a catalog addition could only
+  ever reach fresh installs. Adding 56 foods without noticing this would have
+  shipped nothing to the one user who has the app. Fixed with a high-water mark
+  of ids the install has been *offered* (≠ ids it holds), a frozen 1–53 legacy
+  set so upgrading snapshots are read rather than guessed, and the mark carried
+  in the backup so a restore cannot resurrect deletions either.
+- Then the content: 26 Israeli foods, 11 McDonald's, 7 protein supplements, a
+  `scoop` unit, and 12 everyday staples the audit exposed as missing — there was
+  no potato, no onion, no chicken thigh and no steak in a food catalog.
+- `nameHe` on all 109 rows. Which surfaced one more thing: search matched
+  English only, so shipping Hebrew content without fixing it would have made
+  the Israeli foods unfindable by the people they were for.
+
+**Next task:** none queued. Full fast suite green (842). Fast-food figures are
+US-menu and tagged **me** in ISSUES for a local-menu pass if wanted.
+
+---
+
 ## 2026-08-07 — Analytics screen
 
 **Current task:** None. Shipped end to end.

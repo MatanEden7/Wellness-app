@@ -73,6 +73,22 @@ extension FoodItemDisplayName on FoodItem {
   /// Hebrew names later without any further UI changes.
   String displayName(AppLanguage language) =>
       language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+
+  /// Whether this food should show up for [query] in a food picker.
+  ///
+  /// Matches **both** names regardless of the selected language, not just the
+  /// displayed one. The catalog is bilingual now, and the two habits that
+  /// follow from that are not hypothetical: an English-mode user hunting for
+  /// "חומוס" because that is what the tub says, and a Hebrew-mode user typing
+  /// "whey" because that is what the brand is called. Matching only the
+  /// displayed name makes half the catalog unreachable in each mode.
+  bool matchesSearch(String query) {
+    final needle = query.trim().toLowerCase();
+    if (needle.isEmpty) return true;
+    return name.toLowerCase().contains(needle) ||
+        (nameHe?.toLowerCase().contains(needle) ?? false) ||
+        (brand?.toLowerCase().contains(needle) ?? false);
+  }
 }
 
 @freezed

@@ -82,4 +82,52 @@ void main() {
       expect(template.displayDescription(AppLanguage.hebrew), 'שיבולת שועל, יוגורט, בננה.');
     });
   });
+
+  group('FoodItem.matchesSearch', () {
+    final hummus = FoodItem.create(
+      name: 'Hummus',
+      nameHe: 'חומוס',
+      unit: '100g',
+      kcalPerUnit: 166,
+      proteinPerUnit: 7.9,
+      carbsPerUnit: 14.3,
+      fatPerUnit: 9.6,
+    );
+    final whey = FoodItem.create(
+      name: 'Whey Protein',
+      nameHe: 'אבקת חלבון מי גבינה',
+      brand: 'Concentrate, per 30g scoop',
+      unit: 'scoop',
+      kcalPerUnit: 120,
+      proteinPerUnit: 24,
+      carbsPerUnit: 3,
+      fatPerUnit: 1.5,
+    );
+
+    test('matches the Hebrew name even in an English session', () {
+      // The picker is one list; search has no idea what language is selected,
+      // and it should not need to.
+      expect(hummus.matchesSearch('חומ'), isTrue);
+      expect(hummus.matchesSearch('humm'), isTrue);
+    });
+
+    test('matches the English name and brand for a Hebrew-named food', () {
+      expect(whey.matchesSearch('whey'), isTrue);
+      expect(whey.matchesSearch('scoop'), isTrue);
+      expect(whey.matchesSearch('חלבון'), isTrue);
+    });
+
+    test('is case insensitive and ignores surrounding whitespace', () {
+      expect(hummus.matchesSearch('  HUMMUS '), isTrue);
+    });
+
+    test('an empty query matches everything, so the list is not blank', () {
+      expect(hummus.matchesSearch(''), isTrue);
+      expect(hummus.matchesSearch('   '), isTrue);
+    });
+
+    test('does not match something absent from either name', () {
+      expect(hummus.matchesSearch('falafel'), isFalse);
+    });
+  });
 }

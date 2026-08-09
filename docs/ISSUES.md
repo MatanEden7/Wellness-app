@@ -96,6 +96,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 76 | Every multi-placeholder ARB string passed its arguments in the wrong order | High | Fixed | ~30min |
 | 77 | Add/edit food and exercise dialogs overflowed; their save button was off-screen and untappable | High | Fixed | ~45min |
 | 78 | Daily nutrition targets incoherent: fat never targeted, flat kcal adjustment with no safety floor, protein off scale weight, macros not reconciled | High | Fixed | ~2h |
+| 79 | Food catalog unvalidated, English-only, and structurally unable to reach existing installs | Medium | Fixed (fast-food values vs the Israeli menu: **me**) | ~3h |
 
 **Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
@@ -1054,3 +1055,53 @@ so the formulas had two homes and could drift; both now call `calculateTargets`.
 Covered by a sweep over all 72 profile shapes the onboarding form can produce
 (sex x goal x activity x three body types), each asserting the set reconciles,
 clears the safety floor, and sits in a defensible macro range.
+
+### 79. The food catalog was small, English-only, and could not grow for existing users  **[FIXED]**
+
+Asked for as "make sure all the food types have the correct amounts and add
+more". The audit came first, and it split into three separate problems.
+
+**The amounts were, in fact, right.** All 53 existing foods check out against
+the 4/4/9 energy identity once fibre is accounted for. The entries that look
+wrong at a glance -- broccoli 34 kcal against an Atwater 43, spinach 23 against
+30 -- are correct as USDA publishes them: catalog "carbs" is *total*
+carbohydrate including fibre, which yields ~2 kcal/g, and USDA uses
+food-specific energy factors rather than the general 4/4/9. Nothing was changed
+on that basis.
+
+**There was no way to check.** Nothing enforced that a food's numbers were
+even arithmetically possible, so a transposed digit or a value entered against
+the wrong serving size would have been invisible -- no crash, just wrong
+totals, forever. Now `FoodMacroAudit` + `catalog_audit_test.dart` assert energy
+agreement (fibre-aware tolerance: absolute miss under 15 kcal *or* relative
+under 12%), non-negativity, that a per-100g food holds under 100g of macros and
+under 900 kcal, unit validity, id and name uniqueness, tag coherence, and
+Hebrew coverage -- on every row, as a fast test. It caught two genuine tagging
+bugs in the new rows during authoring (chicken schnitzel tagged `eggs` without
+`animalProduct`, which would have offered it to a vegan).
+
+**A bigger catalog could not have reached anyone.** `_applySnapshot` replaces
+the food list rather than merging it. That is the correct behaviour -- merging
+duplicates all 53 foods on every boot and resurrects starter rows the user
+deleted -- but it also means every food added after a user's first launch is
+invisible to them permanently. Fixed with a high-water mark of starter ids the
+install has ever been *offered*, which is deliberately not the same as the ids
+it currently holds: a new id is added exactly once, and a deleted one stays
+deleted because its id remains recorded. Ids 1-53 are frozen as a legacy set so
+an upgrading snapshot that predates the key is read correctly rather than
+guessed at. The mark is carried in the backup payload too, since a restore
+would otherwise reset it and re-offer everything the user had removed.
+
+With the base in place: 56 foods added (26 Israeli, 12 everyday staples the
+catalog somehow lacked -- potato, onion, chicken thigh, steak -- 7 protein
+supplements, 11 McDonald's items), a `scoop` serving unit for protein powder,
+and `nameHe` on all 109 rows.
+
+One consequence worth calling out: food search matched the English name and
+brand only. Shipping Hebrew content without fixing that would have made the
+Israeli foods undiscoverable to exactly the users they were added for.
+`FoodItem.matchesSearch` now matches both names in either language mode.
+
+**Owner note:** the branded fast-food figures are McDonald's published US
+values. Israeli menu items differ. **me** -- worth a pass against the local
+menu if the numbers matter to you; every row is user-editable in the app.

@@ -5,6 +5,63 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### The food catalog: audited, doubled, bilingual (2026-08-09)
+
+**53 foods to 109**, every one of them checked as data rather than trusted.
+
+*The base, built first:*
+
+* The catalog moved out of a method body in the middle of `drift_database.dart`
+  and into `lib/data/catalog/starter_foods.dart`, where it is a table with its
+  sources written down.
+* `FoodMacroAudit` checks a food's numbers against physics and arithmetic:
+  energy agrees with 4/4/9 within a fibre-aware tolerance, nothing is negative,
+  and a per-100g food cannot contain more than 100g of macros or beat pure fat
+  for energy density. `catalog_audit_test.dart` runs it over every row, plus
+  unique ids, valid units, tag consistency (dairy implies animal-origin;
+  shellfish implies fish) and Hebrew coverage. **Adding a food means passing all
+  of it.** It caught two real tagging bugs in the new rows while they were being
+  written.
+* The audit of the existing 53 found no wrong numbers. The apparent outliers —
+  broccoli at 34 kcal against an Atwater 43 — are fibre and USDA's
+  food-specific energy factors, correct as published, and the tolerance is
+  shaped around that rather than around tidiness.
+
+*Reaching people who already have the app:*
+
+`_applySnapshot` **replaces** the seeded catalog rather than merging it, which
+is right (merging would duplicate all 53 foods every boot and resurrect deleted
+ones) but meant a catalog addition only ever reached fresh installs. Fifty-six
+new foods nobody could see is not a shipped feature. `AppDatabase` now keeps a
+high-water mark of starter ids it has *offered* — a different thing from the
+ids it holds — so a new food arrives exactly once and a deleted one stays
+deleted. Ids 1–53 are recorded as a frozen legacy set, which is what lets an
+upgrading snapshot with no record of its own history be read correctly. The
+mark travels in the backup too, so a restore cannot resurrect anything either.
+
+*What was added:*
+
+| Group | Count | Notes |
+|---|---|---|
+| Israeli | 26 | hummus, tahini (raw and prepared), falafel, pita/laffa, shakshuka, schnitzel, shawarma, sabich, couscous, ptitim, bourekas, malawach, jachnun, the dairy shelf by fat percentage, halva, medjool dates, olives |
+| Protein supplements | 7 | whey isolate/concentrate, casein, plant, mass gainer, bar, RTD shake |
+| McDonald's | 11 | Big Mac through McFlurry, each branded so it is never mistaken for a generic food |
+| Everyday staples | 12 | the audit found no potato, no onion, no chicken thigh, no steak — all things a user logs in week one |
+
+`scoop` is a new serving unit: protein powder is sold and measured that way,
+and converting to grams would invent precision the tub does not have.
+
+*Hebrew:* every one of the 109 rows now has `nameHe`. The bilingual plumbing
+already existed and was waiting on content; the Israeli foods made it
+unavoidable, since they have no natural English name. Food search now matches
+**both** names in either language mode — it previously matched English only, so
+adding Hebrew content without this would have made half the catalog
+undiscoverable to the people it was added for.
+
+*Caveat worth repeating from the source:* branded fast-food values are the
+chain's published US figures, and menus differ by country. Israeli McDonald's
+is not US McDonald's. They are close, not exact, and a user can edit any row.
+
 ### Nutrition targets were not a coherent plan (2026-08-09)
 
 The per-food macro math (`FoodNutritionMath`) checked out — the problem was the

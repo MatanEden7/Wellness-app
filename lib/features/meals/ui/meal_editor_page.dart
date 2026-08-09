@@ -683,9 +683,9 @@ class FoodSelectorDialog extends HookConsumerWidget {
                     builder: (context, snapshot) {
                       final foods = snapshot.data ?? [];
                       final filteredFoods = foods.where((food) {
-                        final query = searchController.text.toLowerCase();
-                        return food.name.toLowerCase().contains(query) ||
-                               (food.brand?.toLowerCase().contains(query) ?? false);
+                        // Matches the Hebrew name too -- see
+                        // FoodItemDisplayName.matchesSearch.
+                        return food.matchesSearch(searchController.text);
                       }).toList();
 
                       return ListView.builder(

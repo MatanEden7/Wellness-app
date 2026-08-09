@@ -116,6 +116,11 @@ class ExportImportService {
       'exportedAt': DateTime.now().toIso8601String(),
       'data': {
         'foods': foods.map((f) => f.toJson()).toList(),
+        // Which starter foods this install has ever been offered -- not the
+        // same as which it currently holds. Without it a restore resets the
+        // high-water mark and the next launch resurrects every catalog food
+        // the user deleted.
+        'introducedFoodIds': _database.introducedFoodIds.toList()..sort(),
         'meals': meals.map((m) => m.toJson()).toList(),
         'mealItems': mealItems.map((mi) => mi.toJson()).toList(),
         // Added in 1.1.0 -- meal templates were previously missing from the
@@ -206,6 +211,13 @@ class ExportImportService {
     for (final food in foods) {
       await _database.insertFood(food);
     }
+    // Absent from backups written before the catalog could grow. Falling back
+    // to what the payload holds is the safe reading: it cannot resurrect
+    // anything, and the load-time legacy path still covers ids 1-53.
+    final introduced = importData['introducedFoodIds'] as List<dynamic>?;
+    _database.restoreIntroducedFoodIds(
+      introduced?.whereType<String>() ?? foods.map((f) => f.id),
+    );
     for (final meal in meals) {
       await _database.insertMeal(meal);
     }

@@ -165,15 +165,41 @@ void main() {
       // lived outside the thing meant to preserve it.
       'profile',
       'preferences',
+      // Not a collection of rows: the high-water mark of starter foods this
+      // install has been offered. A restore that dropped it would resurrect
+      // every catalog food the user had deleted.
+      'introducedFoodIds',
     });
 
     // 'profile' is a single JSON string and 'preferences' a map; every other
     // key is a non-empty collection.
     for (final key in data.keys) {
       if (key == 'profile' || key == 'preferences') continue;
+      if (key == 'introducedFoodIds') {
+        expect(data[key], isA<List<dynamic>>().having((l) => l.length,
+            'introduced ids', greaterThan(0)));
+        continue;
+      }
       expect(data[key], isA<List<dynamic>>().having((l) => l.length, key, greaterThan(0)),
           reason: '"$key" exported empty even though a row was seeded');
     }
+  });
+
+  test('a restored backup does not resurrect a starter food the user deleted',
+      () async {
+    // The specific failure the high-water mark exists to prevent, on the one
+    // path that could still reset it: import replaces the whole catalog, so
+    // without the id set travelling in the payload the next load would treat
+    // the install as legacy and re-offer everything missing from it.
+    await database.deleteFood('99'); // Big Mac
+    expect(database.introducedFoodIds, contains('99'));
+
+    final backup = await service.exportToJson();
+    await service.importFromJson(backup);
+
+    expect((await database.getAllFoods()).any((f) => f.id == '99'), isFalse);
+    expect(database.introducedFoodIds, contains('99'),
+        reason: 'the high-water mark did not survive the round trip');
   });
 
   group('every row survives a full round trip', () {

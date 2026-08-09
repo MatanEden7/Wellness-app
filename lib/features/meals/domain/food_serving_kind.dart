@@ -12,7 +12,8 @@ enum FoodServingKind {
   /// Amount stored as ounces; nutrition is per oz.
   perOz,
 
-  /// Amount stored as a count (piece, slice, tbsp, serving, or labeled blocks like "30g").
+  /// Amount stored as a count (piece, slice, tbsp, scoop, serving, or labeled
+  /// blocks like "30g").
   perCount,
 }
 
@@ -27,6 +28,11 @@ class FoodServingUnits {
   static const piece = 'piece';
   static const slice = 'slice';
   static const tbsp = 'tbsp';
+
+  /// The measure protein powder actually ships with. Nutrition is stated per
+  /// scoop on the tub, and the gram weight of a scoop differs per product, so
+  /// converting to grams would invent precision the label does not have.
+  static const scoop = 'scoop';
   static const serving = 'serving';
 
   static const catalogUnits = [
@@ -37,6 +43,7 @@ class FoodServingUnits {
     piece,
     slice,
     tbsp,
+    scoop,
     serving,
   ];
 
@@ -53,6 +60,7 @@ class FoodServingUnits {
       case piece:
       case slice:
       case tbsp:
+      case scoop:
       case serving:
         return FoodServingKind.perCount;
       default:
@@ -108,6 +116,7 @@ class FoodServingKindParser {
     if (unitLower == 'piece' ||
         unitLower == 'slice' ||
         unitLower == 'tbsp' ||
+        unitLower == 'scoop' ||
         unitLower == 'serving' ||
         unitLower == 'item' ||
         unitLower == 'each') {
