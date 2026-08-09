@@ -169,13 +169,14 @@ void main() {
       // install has been offered. A restore that dropped it would resurrect
       // every catalog food the user had deleted.
       'introducedFoodIds',
+      'introducedExerciseIds',
     });
 
     // 'profile' is a single JSON string and 'preferences' a map; every other
     // key is a non-empty collection.
     for (final key in data.keys) {
       if (key == 'profile' || key == 'preferences') continue;
-      if (key == 'introducedFoodIds') {
+      if (key == 'introducedFoodIds' || key == 'introducedExerciseIds') {
         expect(data[key], isA<List<dynamic>>().having((l) => l.length,
             'introduced ids', greaterThan(0)));
         continue;

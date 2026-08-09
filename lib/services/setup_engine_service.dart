@@ -355,34 +355,14 @@ class SetupEngineService {
     ];
   }
   
-  // Get rehab exercises for injuries
-  List<Map<String, dynamic>> getRehabExercises(List<String> injuries) {
-    final rehabMap = {
-      'shoulder': [
-        {'name': 'External Rotation (band)', 'sets': 3, 'reps': 15},
-        {'name': 'YTWs (light DB)', 'sets': 3, 'reps': 12},
-        {'name': 'Face Pull (light)', 'sets': 3, 'reps': 15},
-      ],
-      'back': [
-        {'name': 'Bird Dog', 'sets': 3, 'reps': 12},
-        {'name': 'McGill Curl-Up', 'sets': 3, 'reps': '10-15'},
-        {'name': 'Hip Hinge PVC', 'sets': 3, 'reps': 12},
-      ],
-      'knee': [
-        {'name': 'Step-up (low box)', 'sets': 3, 'reps': 10},
-        {'name': 'Spanish Squat (band)', 'sets': 3, 'reps': 12},
-        {'name': 'Hamstring Curl (band)', 'sets': 3, 'reps': 12},
-      ],
-    };
-    
-    final exercises = <Map<String, dynamic>>[];
-    for (final injury in injuries) {
-      if (injury != 'none' && rehabMap.containsKey(injury)) {
-        exercises.addAll(rehabMap[injury]!);
-      }
-    }
-    return exercises;
-  }
+  // Rehab exercises used to be hardcoded here, as name strings with sets and
+  // reps, covering three of the seven body parts. Nothing ever called it. The
+  // real physiotherapy path is `rehabFor` on the exercise library, which
+  // WorkoutTemplateGenerator filters by the user's equipment -- and which
+  // covers all seven. Keeping a second, wronger answer next to it was an
+  // invitation to wire up the wrong one.
+
+
   
   // Get food suggestions based on diet type
   List<String> getFoodSuggestions(String dietType, List<String> exclusions) {

@@ -121,6 +121,7 @@ class ExportImportService {
         // high-water mark and the next launch resurrects every catalog food
         // the user deleted.
         'introducedFoodIds': _database.introducedFoodIds.toList()..sort(),
+        'introducedExerciseIds': _database.introducedExerciseIds.toList()..sort(),
         'meals': meals.map((m) => m.toJson()).toList(),
         'mealItems': mealItems.map((mi) => mi.toJson()).toList(),
         // Added in 1.1.0 -- meal templates were previously missing from the
@@ -217,6 +218,10 @@ class ExportImportService {
     final introduced = importData['introducedFoodIds'] as List<dynamic>?;
     _database.restoreIntroducedFoodIds(
       introduced?.whereType<String>() ?? foods.map((f) => f.id),
+    );
+    final introducedEx = importData['introducedExerciseIds'] as List<dynamic>?;
+    _database.restoreIntroducedExerciseIds(
+      introducedEx?.whereType<String>() ?? exercises.map((e) => e.id),
     );
     for (final meal in meals) {
       await _database.insertMeal(meal);

@@ -6,7 +6,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/data/catalog/starter_foods.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
+import 'package:wellness_app/data/catalog/starter_exercises.dart';
 import 'package:wellness_app/features/meals/domain/food_category.dart';
+import 'package:wellness_app/features/workouts/domain/exercise_tags.dart';
 
 /// Coverage for how a **catalog addition reaches someone who already has the
 /// app installed**.
@@ -67,6 +69,29 @@ String _legacySnapshot(Iterable<String> foodIds) {
 
 /// The ids that existed before the high-water mark was recorded.
 final _legacyIds = [for (var i = 1; i <= 53; i++) '$i'];
+
+/// A snapshot holding the exercise library as an older build shipped it: ids
+/// 1-59 (55 was never used), no `introducedExerciseIds` key.
+String _legacyExerciseSnapshot() {
+  final wanted = {for (var i = 1; i <= 59; i++) '$i'};
+  final rows = [
+    for (final e in StarterExerciseLibrary.all)
+      if (wanted.contains(e.id))
+        {
+          'id': e.id,
+          'name': e.name,
+          'nameHe': null,
+          'primaryMuscle': e.primaryMuscle,
+          'primaryMuscleHe': null,
+          'unit': e.unit,
+          'notes': e.notes,
+          'equipment': EquipmentCodec.encode(e.equipment),
+          'contraindicatedFor': BodyPartCodec.encode(e.contraindicatedFor),
+          'rehabFor': BodyPartCodec.encode(e.rehabFor),
+        },
+  ];
+  return jsonEncode({'version': 1, 'exercises': rows});
+}
 
 void main() {
   setUp(AppDatabase.resetForTesting);
@@ -202,6 +227,67 @@ void main() {
       final ids = (await second.getAllFoods()).map((f) => f.id).toList();
       expect(ids.length, ids.toSet().length, reason: 'duplicate food ids');
       expect(ids.length, StarterFoodCatalog.all.length);
+    });
+  });
+
+  group('the exercise library upgrades the same way', () {
+    test('receives the exercises added since its snapshot was written',
+        () async {
+      // The library had exactly the bug the food catalog did: _applySnapshot
+      // replaces the exercise list, so 57 new exercises -- including every
+      // bodyweight hamstring, shoulder and biceps movement, and the rehab
+      // options that let a physiotherapy session reach five -- would have
+      // reached nobody who already had the app.
+      final store = FakeSnapshotStore(_legacyExerciseSnapshot());
+      final db = AppDatabase(store: store);
+      await db.load();
+
+      final ids = (await db.getAllExercises()).map((e) => e.id).toSet();
+      for (final e in StarterExerciseLibrary.all) {
+        expect(ids, contains(e.id),
+            reason: '${e.name} (${e.id}) never reached the user');
+      }
+    });
+
+    test('can now fill a physiotherapy session it previously could not',
+        () async {
+      final store = FakeSnapshotStore(_legacyExerciseSnapshot());
+      final db = AppDatabase(store: store);
+      await db.load();
+
+      final all = await db.getAllExercises();
+      for (final part in BodyPart.values) {
+        final bodyweightOnly = all
+            .where((e) =>
+                e.rehabFor.contains(part) &&
+                (e.equipment.isEmpty ||
+                    e.equipment.contains(Equipment.bodyweight)))
+            .length;
+        expect(bodyweightOnly, greaterThanOrEqualTo(5),
+            reason: '${part.name} still cannot fill a session after upgrading');
+      }
+    });
+
+    test('does not resurrect an exercise the user deleted', () async {
+      final store = FakeSnapshotStore(_legacyExerciseSnapshot());
+      final first = AppDatabase(store: store);
+      await first.load();
+      await first.deleteExercise('60');
+      await first.flush();
+
+      final second = AppDatabase(store: store);
+      await second.load();
+      expect((await second.getAllExercises()).any((e) => e.id == '60'), isFalse);
+    });
+
+    test('backfills Hebrew names onto rows it already had', () async {
+      final store = FakeSnapshotStore(_legacyExerciseSnapshot());
+      final db = AppDatabase(store: store);
+      await db.load();
+      final squat =
+          (await db.getAllExercises()).firstWhere((e) => e.id == '8');
+      expect(squat.nameHe, isNotNull);
+      expect(squat.primaryMuscleHe, isNotNull);
     });
   });
 

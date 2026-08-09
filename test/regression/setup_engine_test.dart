@@ -326,20 +326,6 @@ void main() {
     });
   });
 
-  group('getRehabExercises', () {
-    test('returns exercises for every listed injury, concatenated', () {
-      final exercises = engine.getRehabExercises(['shoulder', 'knee']);
-      expect(exercises.any((e) => e['name'] == 'External Rotation (band)'), isTrue);
-      expect(exercises.any((e) => e['name'] == 'Step-up (low box)'), isTrue);
-      expect(exercises.length, 6); // 3 shoulder + 3 knee
-    });
-
-    test('"none" and unrecognized injuries contribute nothing', () {
-      expect(engine.getRehabExercises(['none']), isEmpty);
-      expect(engine.getRehabExercises(['elbow']), isEmpty); // not in rehabMap
-    });
-  });
-
   group('getFoodSuggestions', () {
     test('diet type picks the protein list; carnivore drops carbs/fats/veggies', () {
       final omni = engine.getFoodSuggestions('omnivore', []);

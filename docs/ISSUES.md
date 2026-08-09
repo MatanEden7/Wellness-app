@@ -99,6 +99,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 79 | Food catalog unvalidated, English-only, and structurally unable to reach existing installs | Medium | Fixed (fast-food values vs the Israeli menu: **me**) | ~3h |
 | 80 | Generated meal plans undershot carbs by up to 37% and calories by 14%: serving caps pinned every starch, fat absorbed the gap | High | Fixed | ~1h |
 | 81 | Catalog had no category axis and missing basics; macro audit was vacuous for per-ml foods | Medium | Fixed | ~3h |
+| 82 | Rehab pools too small to fill a physio session; no bodyweight hamstring/shoulder/biceps work; dead getRehabExercises; exercises never reached existing installs | High | Fixed | ~3h |
 
 **Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
@@ -1198,3 +1199,49 @@ than by using it:
 Upgrading installs get categories backfilled with the same rules as the Hebrew
 names: field-level, never overwriting a user's value, never resurrecting a
 deleted food, and skipping a row the user renamed.
+
+
+### 82. Rehab sessions could not be filled, and whole muscles had no bodyweight option  **[FIXED]**
+
+Asked for as "fix the workouts rehab exe and more exe for each body part".
+Measured first; every number below is from the library as it was.
+
+**Two rehab problems.** `SetupEngineService.getRehabExercises` was dead code
+with no production callers -- a hardcoded map of exercise *name strings*
+covering three of the seven body parts, whose own test asserted that an elbow
+injury correctly returns nothing. Deleted. The real path (`rehabFor` tags,
+filtered by equipment in `WorkoutTemplateGenerator`) was sound but underfed:
+the generator asks for five exercises and **silently skips the session** when
+the pool is empty, and the bodyweight-only pools were shoulder 2, elbow 2,
+knee 3, ankle 3. Ankle could not reach five with *any* equipment. All seven
+body parts now reach five with nothing but bodyweight, verified by driving the
+generator rather than by counting rows.
+
+**Training holes.** Zero bodyweight exercises for hamstrings, shoulders and
+biceps -- a user who owns nothing could not train them at all -- and zero
+`carry` exercises in the whole library, so no generated plan could contain one.
+57 exercises added (58 -> 115), closing every measured gap.
+
+**The same migration bug as the food catalog.** `_applySnapshot` replaces the
+exercise list, so all 57 additions would have reached only fresh installs. The
+high-water mark is now a single generic implementation shared by foods and
+exercises rather than a second copy of a subtle contract.
+
+**What the audit enforces now** (`exercise_audit_test.dart`) is *coverage*, not
+just field validity -- a library can be perfectly well-formed and still unable
+to program a session:
+
+  * five rehab options per body part, per equipment kit, bodyweight included;
+  * every muscle trainable with each kit (two options bare-bodyweight, three
+    otherwise), and at least three overall;
+  * two options per movement pattern;
+  * nothing both rehabilitates and endangers the same body part -- that row
+    would land in a physiotherapy session for the injury it aggravates;
+  * no injury silently wipes out a muscle group. One exception is clinically
+    correct and pinned by name rather than waved through: every way to train
+    the triceps loads the elbow extensors, so an elbow injury leaves no direct
+    triceps work. Any other pair joining that set is a real hole.
+
+Also fixed in passing: `Brisk Walk` used the unit `min` while nothing else did,
+which the unit check caught; and Hebrew names now exist for all 115 exercises
+and are backfilled onto upgrading installs.

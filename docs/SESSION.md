@@ -121,6 +121,39 @@ US-menu and tagged **me** in ISSUES for a local-menu pass if wanted.
 
 ---
 
+## 2026-08-09 (fourth) — Exercise library
+
+**Current task:** None.
+
+**Last completed:** `ISSUES.md` #82. Same shape as the food work, and the
+measure-first habit paid off again.
+
+- Probed the library by equipment kit before writing anything. That is what
+  turned "add more exercises" into a specific list: zero bodyweight hamstring,
+  shoulder and biceps exercises, zero `carry` exercises at all, and rehab pools
+  of 2-3 against a generator that asks for 5 and silently skips the session
+  when the pool is empty.
+- `getRehabExercises` was dead code with no callers, covering 3 of 7 body parts,
+  with a test asserting its own gap was correct. Second time this session that
+  a wrong-but-unused function was sitting next to the right one
+  (`getMacroPercentages` was the first). Worth checking callers before trusting
+  that a function is the implementation.
+- Validated the additions in Python against the coverage invariants *before*
+  emitting Dart -- caught 18 accidental duplicates of exercises that already
+  existed, which reading the file would not reliably have caught.
+- The audit found two things I had not thought about: a unit inconsistency
+  (`min` vs `minutes`) and, more interestingly, that every triceps exercise is
+  contraindicated for the elbow. That one is clinically correct, so it is
+  pinned by name as an expected exception rather than "fixed" by weakening the
+  invariant.
+- Third repetition of the same migration bug (foods, then exercises). Rather
+  than copy the fix again, generalised it into `_mergeNewSeededRows`. If a
+  third seeded collection appears, it should use that.
+
+**Next task:** none queued. Full fast suite green (994).
+
+---
+
 ## 2026-08-07 — Analytics screen
 
 **Current task:** None. Shipped end to end.

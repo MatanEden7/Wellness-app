@@ -5,6 +5,72 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Exercise library: 58 → 115, and rehab that actually fills a session (2026-08-09)
+
+Measured before touching anything, and the gaps were concrete.
+
+**Rehab was the reported problem, and there were two.**
+
+`SetupEngineService.getRehabExercises` was dead code with **no production
+callers** — a hardcoded map of exercise *name strings*, covering three of the
+seven body parts, sitting next to the real implementation. Its own test even
+asserted that an elbow injury returns nothing, as if that were correct.
+Deleted, the same way `getMacroPercentages` was.
+
+The real path — `rehabFor` tags filtered by the user's equipment — worked but
+could not fill a session. `WorkoutTemplateGenerator` asks for five exercises
+and **silently skips the session** when the pool is empty. Measured pool with
+no equipment: shoulder 2, elbow 2, knee 3, ankle 3. So a shoulder-injured user
+with no bands got a two-exercise physiotherapy session, and an ankle-injured
+one could not reach five *however well equipped*. Every body part now reaches
+five with nothing but bodyweight — verified end to end through the generator,
+not just by counting rows.
+
+**Training coverage had holes you could not work around.**
+
+| | bodyweight-only, before | after |
+|---|---|---|
+| Hamstrings | **0** | 3 |
+| Shoulders | **0** | 2 |
+| Biceps | **0** | 2 |
+| Calves | 1 | 2 |
+| `carry` pattern | **0 exercises, any kit** | 2 |
+
+A user who owned nothing simply could not train hamstrings, shoulders or
+biceps, and no generated plan could ever contain a carry.
+
+**57 exercises added**, filling every measured gap: Nordic curls and
+glute-ham walkouts, pike push-ups and wall handstands, chin-ups and towel
+curls, reverse and Bulgarian lunges, hip thrusts, farmer and suitcase carries,
+jump rope and burpees, and 17 rehab movements chosen so each joint has five
+equipment-free options.
+
+**The base, as with the food catalog:** the library moved into
+`lib/data/catalog/starter_exercises.dart`, every row got a Hebrew name and
+muscle label, and `exercise_audit_test.dart` now enforces the *coverage*
+invariants rather than just field validity — because a library where every row
+is perfectly tagged can still be unable to program a session, which is exactly
+what this one was.
+
+Two things the audit caught while being written:
+
+* **Nothing may both rehabilitate and endanger the same body part.** Such a row
+  would be put into a physiotherapy session for the exact injury it aggravates.
+* **An injury must not silently wipe out a muscle group.** One case is real
+  rather than a gap and is now pinned by name: every way to train the triceps
+  loads the elbow extensors, so an elbow injury correctly leaves no direct
+  triceps work. Any *other* pair joining that list is a coverage hole and the
+  test will say which.
+
+**The migration bug was here too.** `_applySnapshot` replaces the exercise list,
+so all 57 additions would have reached nobody who already had the app —
+identical to the food catalog. Rather than copy that fix, the high-water mark
+is now one generic implementation (`_mergeNewSeededRows`) shared by both; the
+contract is subtle enough that two copies would drift. Hebrew names are
+backfilled onto existing rows too, and a renamed row keeps its own name while
+still getting its movement tags — renaming changes what a row *is*, not how it
+loads the body.
+
 ### Catalog: 233 foods, and a real category axis (2026-08-09)
 
 **109 → 233 foods**, and categories are now a field rather than comment
