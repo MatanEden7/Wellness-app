@@ -4,9 +4,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/swipe_row.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -16,7 +16,6 @@ import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import '../../../core/ios/liquid_glass_tab_bar.dart';
 
 /// Sleep history -- every logged night, plus the entry points that produce
 /// them (the live timer, and manual entry for a night you forgot to time).
@@ -36,22 +35,25 @@ class SleepPage extends ConsumerWidget {
     final goalHours = ref.watch(notificationPreferencesProvider).sleepGoalHours;
     final streakAsync = ref.watch(sleepStreakProvider(goalHours));
 
-    return AppScaffold(
-      title: l10n.sleep,
-      backTooltip: l10n.backToDashboard,
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.calendar,
-          tooltip: l10n.calendar,
-          onPressed: () => context.push(Routes.calendar),
-        ),
-        NavBarAction(
-          icon: CupertinoIcons.add,
-          tooltip: l10n.addSleepEntryTooltip,
-          onPressed: () => showAddSleepSheet(context),
-        ),
-      ],
-      floatingTabBar: const LiquidGlassTabBar(currentIndex: 3),
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.sleep,
+        showBack: false,
+        backTooltip: l10n.backToDashboard,
+        tabIndex: 3,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.calendar,
+            tooltip: l10n.calendar,
+            onPressed: () => context.push(Routes.calendar),
+          ),
+          ChromeAction(
+            icon: CupertinoIcons.add,
+            tooltip: l10n.addSleepEntryTooltip,
+            onPressed: () => showAddSleepSheet(context),
+          ),
+        ],
+      ),
       slivers: [
         SliverToBoxAdapter(
           child: StreamBuilder<List<SleepEntry>>(

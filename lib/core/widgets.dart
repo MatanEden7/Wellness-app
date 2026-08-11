@@ -801,6 +801,9 @@ Future<T?> showAppSheet<T>({
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: isScrollControlled,
+    // Respect additionalSafeAreaInsets (set by native nav bar on iOS) so a
+    // tall sheet never renders behind the native chrome.
+    useSafeArea: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),

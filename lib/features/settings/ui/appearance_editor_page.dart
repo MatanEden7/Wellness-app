@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/theme_service.dart';
@@ -16,16 +16,18 @@ class AppearanceEditorPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(preferencesServiceProvider);
     final currentTheme = ref.watch(currentThemeProvider);
-    return AppScaffold.child(
-      title: AppLocalizations.of(context)!.appearance,
-      backTooltip: AppLocalizations.of(context)!.backToDashboard,
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.arrow_counterclockwise,
-          tooltip: AppLocalizations.of(context)!.resetAllColors,
-          onPressed: () => _showResetDialog(context, ref),
-        ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: AppLocalizations.of(context)!.appearance,
+        backTooltip: AppLocalizations.of(context)!.backToDashboard,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.arrow_counterclockwise,
+            tooltip: AppLocalizations.of(context)!.resetAllColors,
+            onPressed: () => _showResetDialog(context, ref),
+          ),
+        ],
+      ),
       child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

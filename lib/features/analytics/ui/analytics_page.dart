@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/controls.dart';
 import '../../../core/ui_constants.dart';
 import '../data/providers.dart';
@@ -34,23 +34,23 @@ class AnalyticsPage extends ConsumerWidget {
     final range = ref.watch(analyticsRangeProvider);
     final viewAsync = ref.watch(analyticsViewProvider(range));
 
-    return AppScaffold(
-      title: l10n.analyticsTitle,
-      pinnedHeaderHeight: 52,
-      // Was a hand-rolled sliding segmented control; it is now the same one
-      // the food catalog and the exercise editor use.
-      pinnedHeader: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: UIConstants.screenHorizontalPadding,
-          vertical: 8,
-        ),
-        child: AppSegmented<AnalyticsRange>(
-          value: range,
-          onChanged: (next) =>
-              ref.read(analyticsRangeProvider.notifier).state = next,
-          segments: {
-            for (final r in AnalyticsRange.values) r: r.shortLabelFor(l10n),
-          },
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.analyticsTitle,
+        pinnedHeaderHeight: 52,
+        pinnedHeader: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: UIConstants.screenHorizontalPadding,
+            vertical: 8,
+          ),
+          child: AppSegmented<AnalyticsRange>(
+            value: range,
+            onChanged: (next) =>
+                ref.read(analyticsRangeProvider.notifier).state = next,
+            segments: {
+              for (final r in AnalyticsRange.values) r: r.shortLabelFor(l10n),
+            },
+          ),
         ),
       ),
       slivers: [

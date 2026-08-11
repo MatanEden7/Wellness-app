@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
@@ -27,15 +27,17 @@ class MealTemplatesPage extends ConsumerWidget {
     final language = ref.watch(currentLanguageProvider);
     final templatesStream = ref.watch(allMealTemplatesStreamProvider);
 
-    return AppScaffold(
-      title: l10n.mealTemplates,
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.add,
-          tooltip: l10n.createMealTemplate,
-          onPressed: () => context.push(Routes.mealTemplateEditor),
-        ),
-      ],
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.mealTemplates,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.add,
+            tooltip: l10n.createMealTemplate,
+            onPressed: () => context.push(Routes.mealTemplateEditor),
+          ),
+        ],
+      ),
       slivers: [
         StreamBuilder<List<MealTemplate>>(
           stream: templatesStream,

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:flutter/cupertino.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/inset_list.dart';
 import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
@@ -42,28 +42,30 @@ class TemplateEditorPage extends HookConsumerWidget {
       return null;
     }, [templateId]);
 
-    return AppScaffold.child(
-      title: isEditing ? l10n.editTemplate : l10n.createTemplate,
-      actions: [
-        NavBarAction(
-          label: l10n.save,
-          tooltip: l10n.save,
-          isProminent: true,
-          onPressed: isLoading.value
-              ? null
-              : () => _saveTemplate(
-                    context,
-                    ref,
-                    isEditing,
-                    templateId,
-                    nameController.text,
-                    notesController.text,
-                    templateExercises.value,
-                    customRest.value,
-                    isLoading,
-                  ),
-        ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: isEditing ? l10n.editTemplate : l10n.createTemplate,
+        actions: [
+          ChromeAction(
+            label: l10n.save,
+            tooltip: l10n.save,
+            isProminent: true,
+            onPressed: isLoading.value
+                ? null
+                : () => _saveTemplate(
+                      context,
+                      ref,
+                      isEditing,
+                      templateId,
+                      nameController.text,
+                      notesController.text,
+                      templateExercises.value,
+                      customRest.value,
+                      isLoading,
+                    ),
+          ),
+        ],
+      ),
       child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

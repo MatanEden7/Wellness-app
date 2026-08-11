@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
@@ -34,15 +34,17 @@ class WorkoutTemplatesPage extends ConsumerWidget {
     final workoutsColor = ref.watch(preferencesServiceProvider).workoutsColor;
     final templatesStream = ref.watch(workoutTemplatesStreamProvider);
 
-    return AppScaffold(
-      title: l10n.workoutTemplates,
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.add,
-          tooltip: l10n.createTemplate,
-          onPressed: () => context.push(Routes.templateEditor),
-        ),
-      ],
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.workoutTemplates,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.add,
+            tooltip: l10n.createTemplate,
+            onPressed: () => context.push(Routes.templateEditor),
+          ),
+        ],
+      ),
       slivers: [
         StreamBuilder<List<WorkoutTemplate>>(
           stream: templatesStream,

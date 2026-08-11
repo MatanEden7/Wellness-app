@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../data/db/drift_database.dart';
@@ -37,9 +37,11 @@ class SettingsStub extends ConsumerWidget {
     final currentLanguage = ref.watch(currentLanguageProvider);
     final profile = ref.read(userProfileServiceProvider).loadProfile();
 
-    return AppScaffold.child(
-      title: l10n.settings,
-      backTooltip: l10n.backToDashboard,
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: l10n.settings,
+        backTooltip: l10n.backToDashboard,
+      ),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

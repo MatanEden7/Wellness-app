@@ -17,6 +17,14 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		BD61A7A2948FED7A5F852D27 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 382C3537C0DD9AEEE2AEC371 /* Pods_Runner.framework */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+		A1B2C3D4E5F60011A1B2C311 /* RootContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60001A1B2C301 /* RootContainerViewController.swift */; };
+		A1B2C3D4E5F60012A1B2C312 /* TabBarHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60002A1B2C302 /* TabBarHostController.swift */; };
+		A1B2C3D4E5F60013A1B2C313 /* ChromeHostApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60003A1B2C303 /* ChromeHostApiImpl.swift */; };
+		A1B2C3D4E5F60014A1B2C314 /* ChromeMessages.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60004A1B2C304 /* ChromeMessages.g.swift */; };
+		A1B2C3D4E5F60021A1B2C321 /* NavBarHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60007A1B2C307 /* NavBarHostController.swift */; };
+		A1B2C3D4E5F60022A1B2C322 /* CapabilityReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60008A1B2C308 /* CapabilityReporter.swift */; };
+		A1B2C3D4E5F60023A1B2C323 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60009A1B2C309 /* Haptics.swift */; };
+		A1B2C3D4E5F60024A1B2C324 /* PresentationHostApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60010A1B2C310 /* PresentationHostApiImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +62,14 @@
 		6F3D180A6DFDA0CF2696EBA3 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60001A1B2C301 /* RootContainerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootContainerViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60002A1B2C302 /* TabBarHostController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarHostController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60003A1B2C303 /* ChromeHostApiImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChromeHostApiImpl.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60004A1B2C304 /* ChromeMessages.g.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChromeMessages.g.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60007A1B2C307 /* NavBarHostController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavBarHostController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60008A1B2C308 /* CapabilityReporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityReporter.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60009A1B2C309 /* Haptics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60010A1B2C310 /* PresentationHostApiImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationHostApiImpl.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		8F74CF4DC21382D06F895692 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		93F0AC216C8D64EA4F3F6151 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
@@ -153,6 +169,42 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		A1B2C3D4E5F60005A1B2C305 /* Chrome */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60001A1B2C301 /* RootContainerViewController.swift */,
+				A1B2C3D4E5F60002A1B2C302 /* TabBarHostController.swift */,
+				A1B2C3D4E5F60007A1B2C307 /* NavBarHostController.swift */,
+			);
+			path = Chrome;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60006A1B2C306 /* Bridge */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60003A1B2C303 /* ChromeHostApiImpl.swift */,
+				A1B2C3D4E5F60004A1B2C304 /* ChromeMessages.g.swift */,
+			);
+			path = Bridge;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60015A1B2C315 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60008A1B2C308 /* CapabilityReporter.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60016A1B2C316 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60009A1B2C309 /* Haptics.swift */,
+				A1B2C3D4E5F60010A1B2C310 /* PresentationHostApiImpl.swift */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
@@ -164,6 +216,10 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				A1B2C3D4E5F60005A1B2C305 /* Chrome */,
+				A1B2C3D4E5F60006A1B2C306 /* Bridge */,
+				A1B2C3D4E5F60015A1B2C315 /* Support */,
+				A1B2C3D4E5F60016A1B2C316 /* Presentation */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -388,6 +444,14 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				A1B2C3D4E5F60011A1B2C311 /* RootContainerViewController.swift in Sources */,
+				A1B2C3D4E5F60012A1B2C312 /* TabBarHostController.swift in Sources */,
+				A1B2C3D4E5F60013A1B2C313 /* ChromeHostApiImpl.swift in Sources */,
+				A1B2C3D4E5F60014A1B2C314 /* ChromeMessages.g.swift in Sources */,
+				A1B2C3D4E5F60021A1B2C321 /* NavBarHostController.swift in Sources */,
+				A1B2C3D4E5F60022A1B2C322 /* CapabilityReporter.swift in Sources */,
+				A1B2C3D4E5F60023A1B2C323 /* Haptics.swift in Sources */,
+				A1B2C3D4E5F60024A1B2C324 /* PresentationHostApiImpl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,7 +528,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
@@ -594,7 +658,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -645,7 +709,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;

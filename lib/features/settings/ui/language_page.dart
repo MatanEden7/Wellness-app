@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/inset_list.dart';
 import '../../../services/language_service.dart';
 
@@ -18,9 +18,11 @@ class LanguagePage extends ConsumerWidget {
 
     // Same single-choice shape as the theme picker: one grouped section, a
     // checkmark on the selected row.
-    return AppScaffold.child(
-      title: l10n.language,
-      backTooltip: l10n.back,
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: l10n.language,
+        backTooltip: l10n.back,
+      ),
       child: InsetSection(
         children: [
           for (final lang in AppLanguage.values)

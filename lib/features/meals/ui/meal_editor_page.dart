@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -46,29 +46,31 @@ class MealEditorPage extends HookConsumerWidget {
 
     // The title used to read "Add Food"/"Edit Food" -- copy-pasted from the
     // food editor, on the screen that edits a *meal*.
-    return AppScaffold.child(
-      title: isEditing ? l10n.editMeal : l10n.logNewMeal,
-      actions: [
-        NavBarAction(
-          label: l10n.save,
-          tooltip: l10n.save,
-          isProminent: true,
-          onPressed: isLoading.value
-              ? null
-              : () => _saveMeal(
-                    context,
-                    ref,
-                    isEditing,
-                    mealId,
-                    nameController.text,
-                    noteController.text,
-                    selectedDate.value,
-                    selectedTime.value,
-                    mealItems.value,
-                    isLoading,
-                  ),
-        ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: isEditing ? l10n.editMeal : l10n.logNewMeal,
+        actions: [
+          ChromeAction(
+            label: l10n.save,
+            tooltip: l10n.save,
+            isProminent: true,
+            onPressed: isLoading.value
+                ? null
+                : () => _saveMeal(
+                      context,
+                      ref,
+                      isEditing,
+                      mealId,
+                      nameController.text,
+                      noteController.text,
+                      selectedDate.value,
+                      selectedTime.value,
+                      mealItems.value,
+                      isLoading,
+                    ),
+          ),
+        ],
+      ),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

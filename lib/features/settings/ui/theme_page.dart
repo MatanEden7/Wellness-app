@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/inset_list.dart';
 import '../../../core/theme.dart';
 import '../../../services/theme_service.dart';
@@ -16,12 +16,11 @@ class ThemePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final currentTheme = ref.watch(currentThemeProvider);
 
-    return AppScaffold.child(
-      title: l10n.theme,
-      backTooltip: l10n.back,
-      // An iOS single-choice list: one grouped section, a checkmark on the
-      // selected row. Each option used to be its own outlined Card, which is
-      // how a nine-item picker ended up 900pt tall.
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: l10n.theme,
+        backTooltip: l10n.back,
+      ),
       child: InsetSection(
         children: [
           for (final theme in AppThemeKind.values)

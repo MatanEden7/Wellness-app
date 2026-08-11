@@ -6,17 +6,42 @@ import UIKit
   /// Channel backing `lib/services/backup_location_service.dart`.
   private static let backupChannelName = "wellness_app/backup"
 
+  // Retained for the lifetime of the app — the engine must outlive all VCs.
+  private var flutterEngine: FlutterEngine?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-    // Registered *after* super, which is what installs the window and its
-    // FlutterViewController -- registering before it leaves `window` nil and
-    // the channel silently never gets attached.
-    let didFinish = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    registerBackupChannel()
-    return didFinish
+    // Start the Flutter engine before GeneratedPluginRegistrant so plugins
+    // can attach their channels to the engine's binary messenger.
+    let engine = FlutterEngine(name: "main")
+    engine.run()
+    GeneratedPluginRegistrant.register(with: engine)
+    flutterEngine = engine
+
+    // Install the native container as the window root (iOS 15+).
+    // On older OS the standard FlutterViewController path remains as fallback.
+    if #available(iOS 15.0, *) {
+      let container = RootContainerViewController(engine: engine)
+      // Force viewDidLoad so tabBarHost/navBarHost exist before we wire callbacks.
+      container.loadViewIfNeeded()
+      let messenger = engine.binaryMessenger
+      registerBridgeAPIs(container: container, messenger: messenger)
+      registerBackupChannel(messenger: messenger)
+
+      window = UIWindow(frame: UIScreen.main.bounds)
+      window?.rootViewController = container
+      window?.makeKeyAndVisible()
+    } else {
+      // Fallback: plain FlutterViewController (no native chrome).
+      let flutterVC = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
+      registerBackupChannel(messenger: engine.binaryMessenger)
+      window = UIWindow(frame: UIScreen.main.bounds)
+      window?.rootViewController = flutterVC
+      window?.makeKeyAndVisible()
+    }
+    return true
   }
 
   /// Lets Dart opt the data snapshot in or out of iCloud/iTunes device backups.
@@ -24,15 +49,10 @@ import UIKit
   /// Files in the app's Documents directory are backed up by default; the only
   /// way to opt out is the per-file `isExcludedFromBackup` resource value,
   /// which has no Flutter-side API.
-  private func registerBackupChannel() {
-    guard let controller = window?.rootViewController as? FlutterViewController else {
-      NSLog("[backup] No FlutterViewController; backup channel not registered")
-      return
-    }
-
+  private func registerBackupChannel(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(
       name: AppDelegate.backupChannelName,
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: messenger
     )
 
     channel.setMethodCallHandler { call, result in

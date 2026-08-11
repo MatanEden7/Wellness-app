@@ -73,6 +73,16 @@ launching on 2026-08-10** and needs a rebuild + reinstall to keep working.
 A paid Apple Developer Program membership ($99/yr) raises this to a year, allows up to 100
 registered devices, and lets you add device UDIDs from the web portal without Xcode.
 
+### N8 — new SDK adoption checklist (when a new iOS/Xcode lands)
+
+1. Update `IPHONEOS_DEPLOYMENT_TARGET` in `project.pbxproj` if raising the floor.
+2. Grep `ios/Runner/Chrome/` for `#available(iOS NN.0, *)` guards — add a new
+   tier branch if a better API is available.
+3. Run `test/architecture/shell_guardrail_test.dart` — confirms no hardcoded
+   colours or sizes crept into the chrome layer.
+4. Boot the new simulator tier and visual-check: tab bar glass, large-title
+   collapse, Reduce Transparency, Dynamic Type XL, Hebrew RTL.
+
 ### Deferred, non-blocking
 
 - **UIScene lifecycle migration** will be required by a future iOS —

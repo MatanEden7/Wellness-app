@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -70,20 +70,19 @@ class _NutritionGoalsPageState extends ConsumerState<NutritionGoalsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AppScaffold.child(
-      title: l10n.nutritionGoals,
-      backTooltip: l10n.back,
-      actions: [
-        // iOS keeps the confirming action in place and greys it out rather
-        // than removing it -- a button that appears only once you have typed
-        // something gives no hint that saving is how you finish.
-        NavBarAction(
-          label: l10n.save,
-          tooltip: l10n.save,
-          isProminent: true,
-          onPressed: _dirty ? _save : null,
-        ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: l10n.nutritionGoals,
+        backTooltip: l10n.back,
+        actions: [
+          ChromeAction(
+            label: l10n.save,
+            tooltip: l10n.save,
+            isProminent: true,
+            onPressed: _dirty ? _save : null,
+          ),
+        ],
+      ),
       child: Form(
           key: _formKey,
           child: Column(

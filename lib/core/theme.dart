@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -92,12 +93,16 @@ class AppTheme {
     Color? customBackground,
     Color? customSurface,
   }) {
-    return _appleize(_rawByKind(
+    final raw = _rawByKind(
       kind,
       customPrimary: customPrimary,
       customBackground: customBackground,
       customSurface: customSurface,
-    ));
+    );
+    // _appleize is Cupertino chrome only — not applied on Material (Android).
+    final isApplePlatform = defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS;
+    return isApplePlatform ? _appleize(raw) : raw;
   }
 
   static ThemeData _rawByKind(AppThemeKind kind, {

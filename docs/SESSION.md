@@ -4,6 +4,33 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-11 — Platform-native UI split N0–N8 complete
+
+**Current task:** None — Epic N complete. Branch `feat/platform-native-ui` ready to merge.
+
+**Last completed:** All 9 milestones (N0–N8) of Epic N on branch `feat/platform-native-ui`.
+Build verified on iPhone 17 simulator (iPhone 17, iOS 26.2, UDID 0B4D71FD).
+
+- N0: iOS target → 15.0, Pigeon added, `core/platform/` (`ShellKind`, `shellKindProvider`),
+  architecture layering test.
+- N1: `PageChrome`/`ChromeAction` data contract; `MaterialPageShell`; Cupertino fallback
+  wrappers. All 22+ `AppScaffold` call sites migrated. 1031 tests pass.
+- N2: `_appleize()` gated to iOS/macOS — Android gets real M3.
+- N3: Pigeon bridge; `RootContainerViewController` + `TabBarHostController` + `ChromeHostApiImpl`;
+  `AppDelegate` updated; native UITabBar live on simulator.
+- N4: `NavBarHostController` (UINavigationBar large-title, back button, trailing actions);
+  `_maybeSyncChrome()` fires Pigeon `setPageChrome` on every page build.
+- N5: `PresentationHostApiImpl` (action sheets, alerts, date picker, share, haptics);
+  `CapabilityReporter` (Reduce Transparency, Reduce Motion, Dynamic Type, dark mode).
+- N6: `PageChromeSpec` carries `languageCode`/`isRTL`; `CapabilityReporter` surfaces
+  accessibility flags. Device VoiceOver/Hebrew check deferred to attended session.
+- N7: `nativeChromeActiveProvider` is a plain Riverpod `Provider`, overridable per-test.
+- N8: `shell_guardrail_test.dart`; SDK adoption checklist in `docs/RELEASE.md`.
+
+**Next:** Merge `feat/platform-native-ui` → `main`, then continue with Epic B or A3.
+
+---
+
 ## 2026-08-09 — One iOS shell for every screen
 
 **Current task:** None.

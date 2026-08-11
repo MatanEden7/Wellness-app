@@ -4,7 +4,8 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/app_scaffold.dart'; // NavBarAction used in AppFormPage.confirm
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/controls.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/swipe_row.dart';
@@ -48,25 +49,27 @@ class ExerciseLibraryPage extends HookConsumerWidget {
     }, [searchController]);
     final selectedMuscle = useState<String?>(null);
 
-    return AppScaffold(
-      title: l10n.exerciseLibrary,
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.add,
-          tooltip: l10n.addExerciseTooltip,
-          onPressed: () => _openEditor(context),
-        ),
-      ],
-      pinnedHeader: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          UIConstants.screenHorizontalPadding,
-          4,
-          UIConstants.screenHorizontalPadding,
-          8,
-        ),
-        child: AppSearchField(
-          controller: searchController,
-          placeholder: l10n.searchExercises,
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.exerciseLibrary,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.add,
+            tooltip: l10n.addExerciseTooltip,
+            onPressed: () => _openEditor(context),
+          ),
+        ],
+        pinnedHeader: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            UIConstants.screenHorizontalPadding,
+            4,
+            UIConstants.screenHorizontalPadding,
+            8,
+          ),
+          child: AppSearchField(
+            controller: searchController,
+            placeholder: l10n.searchExercises,
+          ),
         ),
       ),
       slivers: [

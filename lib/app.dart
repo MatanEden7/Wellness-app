@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'bridge/native_chrome_service.dart';
 import 'core/date_utils.dart';
 import 'core/theme.dart';
 import 'features/calendar/data/calendar_service.dart';
@@ -36,6 +37,11 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
     // Deferred to after the first frame so the router's navigator exists and
     // the handler has a context it can actually push routes onto.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Make the router available to the native chrome service so it can route
+      // tab-selection callbacks from Swift to go_router.
+      provideRouter(ref, ref.read(routerProvider));
+      // Force initialization (reads nativeChromeServiceProvider).
+      ref.read(nativeChromeServiceProvider);
       _wireNotificationHandling();
       // Re-syncs the OS queue with the stored events on every launch. Without
       // it the queue only ever changed when an event was edited, so it drifted

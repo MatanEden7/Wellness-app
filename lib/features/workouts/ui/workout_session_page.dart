@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -50,29 +50,27 @@ class WorkoutSessionPage extends HookConsumerWidget {
     final currentSession = session.value!;
     final isCompleted = currentSession.isCompleted;
 
-    return AppNavScaffold(
-      title: template.value?.name ?? l10n.workoutSession,
-      actions: [
-        // The only way to add an exercise mid-session. Previously the sole
-        // "Add Exercise" affordance was the empty state's button, and it
-        // pushed the read-only Exercise Library, which cannot return anything
-        // to the session -- so a quick workout could never gain an exercise.
-        if (!isCompleted)
-          NavBarAction(
-            key: WorkoutKeys.addExerciseFab,
-            icon: CupertinoIcons.add,
-            tooltip: l10n.addExercise,
-            onPressed: () =>
-                _addExercise(context, ref, session, template, exercises),
-          ),
-        if (!isCompleted)
-          NavBarAction(
-            label: l10n.finishWorkout,
-            tooltip: l10n.finishWorkoutTooltip,
-            isProminent: true,
-            onPressed: () => _finishWorkout(context, ref, currentSession),
-          ),
-      ],
+    return PlatformNavPage(
+      chrome: PageChrome(
+        title: template.value?.name ?? l10n.workoutSession,
+        actions: [
+          if (!isCompleted)
+            ChromeAction(
+              key: WorkoutKeys.addExerciseFab,
+              icon: CupertinoIcons.add,
+              tooltip: l10n.addExercise,
+              onPressed: () =>
+                  _addExercise(context, ref, session, template, exercises),
+            ),
+          if (!isCompleted)
+            ChromeAction(
+              label: l10n.finishWorkout,
+              tooltip: l10n.finishWorkoutTooltip,
+              isProminent: true,
+              onPressed: () => _finishWorkout(context, ref, currentSession),
+            ),
+        ],
+      ),
       body: Column(
           children: [
             // Session Info

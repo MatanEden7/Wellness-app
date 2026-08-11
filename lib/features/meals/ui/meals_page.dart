@@ -4,11 +4,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
 import '../../../core/ios/date_strip.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/shortcuts.dart';
 import '../../../core/ios/swipe_row.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/ui_constants.dart';
 import '../../../core/widgets.dart';
@@ -19,7 +19,6 @@ import '../domain/models.dart';
 import 'quick_add_meal_dialog.dart';
 import '../../../services/preferences_service.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import '../../../core/ios/liquid_glass_tab_bar.dart';
 
 /// The home of the meals area: pick a day, see the day's totals, see the
 /// meals, add another. The workouts home screen is deliberately the same
@@ -37,26 +36,29 @@ class MealsPage extends HookConsumerWidget {
     final mealsStream = ref.watch(mealsByDateStreamProvider(dateInt));
     final dayTotalsStream = ref.watch(dayTotalsStreamProvider(dateInt));
 
-    return AppScaffold(
-      title: l10n.meals,
-      backTooltip: l10n.backToDashboard,
-      pinnedHeader: DateStrip(
-        date: selectedDate.value,
-        onChanged: (next) => selectedDate.value = next,
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.meals,
+        showBack: false,
+        backTooltip: l10n.backToDashboard,
+        pinnedHeader: DateStrip(
+          date: selectedDate.value,
+          onChanged: (next) => selectedDate.value = next,
+        ),
+        tabIndex: 1,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.calendar,
+            tooltip: l10n.calendar,
+            onPressed: () => context.push(Routes.calendar),
+          ),
+          ChromeAction(
+            icon: CupertinoIcons.add,
+            tooltip: l10n.logMeal,
+            onPressed: () => _showAddMealOptions(context, ref),
+          ),
+        ],
       ),
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.calendar,
-          tooltip: l10n.calendar,
-          onPressed: () => context.push(Routes.calendar),
-        ),
-        NavBarAction(
-          icon: CupertinoIcons.add,
-          tooltip: l10n.logMeal,
-          onPressed: () => _showAddMealOptions(context, ref),
-        ),
-      ],
-      floatingTabBar: const LiquidGlassTabBar(currentIndex: 1),
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(

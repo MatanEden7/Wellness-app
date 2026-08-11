@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/app_scaffold.dart'; // NavBarAction used in AppFormPage.confirm
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/controls.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/swipe_row.dart';
@@ -49,17 +50,18 @@ class FoodCatalogPage extends HookConsumerWidget {
     }, [searchController]);
     final selectedCategory = useState<FoodCategory?>(null);
 
-    return AppScaffold(
-      title: l10n.foodCatalog,
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.add,
-          tooltip: l10n.addFood,
-          onPressed: () => pushModalPage<void>(context, const FoodEditorPage()),
-        ),
-      ],
-      pinnedHeaderHeight: 104,
-      pinnedHeader: Padding(
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.foodCatalog,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.add,
+            tooltip: l10n.addFood,
+            onPressed: () => pushModalPage<void>(context, const FoodEditorPage()),
+          ),
+        ],
+        pinnedHeaderHeight: 104,
+        pinnedHeader: Padding(
         padding: const EdgeInsets.fromLTRB(
           UIConstants.screenHorizontalPadding,
           2,
@@ -83,6 +85,7 @@ class FoodCatalogPage extends HookConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
       slivers: [
         _FoodList(

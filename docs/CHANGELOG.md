@@ -5,6 +5,56 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Platform-native UI split N0–N8 complete (2026-08-11)
+
+Epic N: branch `feat/platform-native-ui`. All 9 milestones (N0–N8) shipped together.
+Build verified on iPhone 17 simulator 2026-08-11.
+
+**N0 – Foundations**: iOS deployment target 13.0 → 15.0; `pigeon: ^22.0.0` added;
+`lib/core/platform/` (`ShellKind`, `shellKindProvider`, `Capabilities`);
+`test/architecture/layering_test.dart` enforces that domain/data/services never
+import platform-detection APIs.
+
+**N1 – Chrome contract**: `lib/shell/platform_page.dart` introduces `PageChrome` and
+`ChromeAction` (plain data) with `PlatformPage`/`PlatformChildPage`/`PlatformNavPage`.
+All 22+ `AppScaffold` call sites across dashboard, meals, workouts, sleep, calendar,
+analytics, and all settings pages migrated. `AppScaffold` stays as the Cupertino
+fallback renderer — byte-identical output on iOS. 1031 fast tests pass.
+
+**N2 – Android Material shell**: `lib/shell/material/material_page_shell.dart` —
+M3 `SliverAppBar.large`, `NavigationBar` with 5 destinations, `TextButton`/`IconButton`
+actions. `theme.dart`'s `_appleize()` pass is now gated to iOS/macOS via
+`defaultTargetPlatform`. Android stops shipping iOS chevrons, large-title imitations,
+and the `BackdropFilter`-painted tab bar.
+
+**N3 – iOS native tab bar**: Pigeon bridge generated (`lib/bridge/generated/chrome.g.dart`
++ `ios/Runner/Bridge/ChromeMessages.g.swift`). `RootContainerViewController.swift` hosts
+`FlutterViewController` edge-to-edge with `TabBarHostController.swift` (native `UITabBar`)
+layered over it. `ChromeHostApiImpl.swift` wires the Pigeon `ChromeHostApi`; taps fire
+`ChromeFlutterApi.onTabSelected` and `go_router` stays authoritative. `AppDelegate`
+boots the engine explicitly and installs the container as window root (iOS ≥ 15 gate).
+
+**N4 – iOS native nav bar**: `NavBarHostController.swift` owns a `UINavigationBar`
+with large-title collapse, back button, and trailing action buttons.
+`_maybeSyncChrome()` in `platform_page.dart` fires every build, pushing title and
+`ChromeAction`s through Pigeon's `setPageChrome` to the native bar.
+
+**N5 – Native presentation layer**: `PresentationHostApiImpl.swift` implements
+action sheets, alerts, menus, `UIDatePicker`, `UIActivityViewController` (share),
+and `UIFeedbackGenerator` (haptics). `CapabilityReporter.swift` exposes OS flags
+(Reduce Transparency, Reduce Motion, Dynamic Type scale, dark mode, glass available).
+
+**N6 – Accessibility + RTL**: `PageChromeSpec` carries `languageCode` and `isRTL`
+to the native nav bar. `CapabilityReporter` surfaces accessibility prefs so Dart
+can adapt. VoiceOver/Hebrew device check deferred to an attended session.
+
+**N7 – Test/CI split**: `nativeChromeActiveProvider` is a plain Riverpod `Provider`,
+overridable per-test to run against both shells. XCUITest lane stub documented.
+
+**N8 – Guardrails**: `test/architecture/shell_guardrail_test.dart` bans hardcoded
+`UIColor(red:green:blue:)` in Chrome/Bridge/Presentation layers. N8 SDK adoption
+checklist added to `docs/RELEASE.md`.
+
 ### Demo data on demand (2026-08-09)
 
 `--dart-define=DEMO_SEED=true` wipes the app and rebuilds it as a known

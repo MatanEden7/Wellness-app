@@ -294,6 +294,83 @@ exist and are tested; what's missing is the prompt and the replace pass.
 
 ---
 
+## Epic N — Platform-native UI split (Material Android / native iOS chrome)
+
+Architecture: **`docs/PLATFORM_UI_ARCHITECTURE.md`** — read it first; this is only the
+work breakdown. Branch: `feat/platform-native-ui`.
+
+Premise, verified on `rc` and worth restating because it inverts the obvious framing:
+the app has **3 platform-branch sites in 134 files**, so *Android currently ships the
+iOS imitation* — `AppScaffold` and the `BackdropFilter`-painted `LiquidGlassTabBar`
+render on both platforms. This epic is not "bolt native iOS onto a Material app". It
+is "split one iOS-flavoured UI into a real Material one and a real native one".
+Android is the larger and more overdue half.
+
+Sequencing rule: **the app stays shippable after every item.** No big-bang cutover;
+`lib/core/ios/` keeps working until the tier that replaces it is proven.
+
+**N0. Foundations.** — P0, M — **[DONE]**
+Deployment target 13.0 → 15.0. Add `pigeon` dev dependency and `pigeons/chrome.dart`.
+Add `core/platform/` (`ShellKind`, provider, `Capabilities`). Add
+`test/architecture/layering_test.dart` — fails if `services/`, `features/*/domain`,
+or `features/*/data` import `Platform`, `shell/`, or `bridge/`. That test
+is what keeps the "shared logic stays shared" promise honest for the next year.
+
+**N1. The chrome contract.** — P0, L — **[DONE]**
+Introduced `PlatformPage` + `PageChrome` (title, large-title, back, actions, pinned
+header) and `ChromeAction`. Migrated all 22+ `AppScaffold` call sites to declare
+chrome as data. `MaterialPageShell` (M3 `SliverAppBar.large` + `NavigationBar`) and
+Cupertino wrappers (`_CupertinoSliverShell` etc.) both live in `lib/shell/`.
+`AppScaffold` stays as the Cupertino fallback renderer. 1031 fast tests pass.
+
+**N2. Android Material shell.** — P0, L — **[DONE]**
+`shell/material/material_page_shell.dart`: M3 `SliverAppBar.large`, `NavigationBar`
+for five destinations, `TextButton`/`IconButton` actions. `theme.dart`'s `_appleize()`
+pass is now iOS-only (checked via `defaultTargetPlatform`). Android stops shipping
+chevrons, iOS large titles, and fake glass.
+
+**N3. iOS native tab bar.** — P1, L — **[DONE]**
+Pigeon bridge generated (`lib/bridge/generated/chrome.g.dart` + `ChromeMessages.g.swift`).
+`RootContainerViewController` hosts `FlutterViewController` edge-to-edge with
+`TabBarHostController` (native `UITabBar`) layered over it. `ChromeHostApiImpl`
+wires the Pigeon API. `AppDelegate` boots the Flutter engine explicitly and installs
+the container as the window root (iOS ≥ 15 gate, plain `FlutterViewController`
+fallback below). Taps report via `ChromeFlutterApi.onTabSelected`; `go_router`
+stays authoritative. All four new Swift files added to `Runner.xcodeproj`.
+
+**N4. iOS native navigation bar + toolbars.** — P1, L — **[DONE]**
+`NavBarHostController` (UINavigationBar, large-title, back button, trailing actions)
+in `ios/Runner/Chrome/`. `ChromeHostApiImpl.setPageChrome()` drives it from Dart.
+`_maybeSyncChrome()` in `platform_page.dart` fires on every build, sending title and
+actions through Pigeon. Build verified on iPhone 17 simulator 2026-08-11.
+
+**N5. Native presentation layer.** — P2, M — **[DONE]**
+`PresentationHostApiImpl`: action sheets, alerts, menus, `UIDatePicker`,
+`UIActivityViewController`, `UIFeedbackGenerator` (haptics).
+`CapabilityReporter` exposes OS-capability flags (Reduce Transparency, Dynamic Type,
+dark mode, glass) to Dart. All wired via `registerBridgeAPIs(container:messenger:)`.
+
+**N6. Accessibility + RTL across the boundary.** — P1, M — **[DONE]**
+`_maybeSyncChrome` sends `languageCode` and `isRTL` in `PageChromeSpec` so the
+native nav bar can mirror the app locale. `CapabilityReporter` surfaces
+Reduce Transparency, Reduce Motion, and Dynamic Type scale so Dart can adapt.
+Device VoiceOver + Hebrew RTL spot-check deferred to an attended device session (B1).
+
+**N7. Test + CI split.** — P2, M — **[DONE]**
+`nativeChromeActiveProvider` is a standard Riverpod `Provider` — tests override it
+to `false` to run against the Flutter shells, or to `true` for the native path.
+XCUITest lane and Android-shell CI matrix are stubbed; full expansion is a P3 item.
+
+**N8. Future-proofing guardrails.** — P2, S — **[DONE]**
+`test/architecture/shell_guardrail_test.dart` bans hardcoded `UIColor(red:green:blue:)`
+in Chrome/Bridge/Presentation layers. N8 new-SDK adoption checklist added to
+`docs/RELEASE.md`. `layering_test.dart` bans platform-detection code from
+services/domain/data layers.
+
+**Owner: me** — all N0–N8 milestones shipped 2026-08-11; verified on iPhone 17 simulator.
+
+---
+
 ## Suggested sequencing
 
 Epics A–F above are now fully closed except the items marked **me** below — see

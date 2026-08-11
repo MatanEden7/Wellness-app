@@ -4,11 +4,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
 import '../../../core/ios/date_strip.dart';
 import '../../../core/ios/sheets.dart';
 import '../../../core/ios/shortcuts.dart';
 import '../../../core/ios/swipe_row.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/ui_constants.dart';
 import '../../../core/widgets.dart';
@@ -20,7 +20,6 @@ import '../domain/models.dart';
 import 'quick_start_workout_dialog.dart';
 import 'workout_keys.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import '../../../core/ios/liquid_glass_tab_bar.dart';
 
 /// The home of the workouts area.
 ///
@@ -41,30 +40,33 @@ class WorkoutsPage extends HookConsumerWidget {
     final workoutsColor = ref.watch(preferencesServiceProvider).workoutsColor;
     final sessionsStream = ref.watch(sessionsByDateStreamProvider(dateInt));
 
-    return AppScaffold(
-      title: l10n.workouts,
-      backTooltip: l10n.backToDashboard,
-      pinnedHeader: DateStrip(
-        date: selectedDate.value,
-        onChanged: (next) => selectedDate.value = next,
-      ),
-      actions: [
-        NavBarAction(
-          icon: CupertinoIcons.calendar,
-          tooltip: l10n.calendar,
-          onPressed: () => context.push(Routes.calendar),
+    return PlatformPage(
+      chrome: PageChrome(
+        title: l10n.workouts,
+        showBack: false,
+        backTooltip: l10n.backToDashboard,
+        pinnedHeader: DateStrip(
+          date: selectedDate.value,
+          onChanged: (next) => selectedDate.value = next,
         ),
-        NavBarAction(
-          key: WorkoutKeys.startWorkoutFab,
-          icon: CupertinoIcons.add,
-          tooltip: l10n.startWorkout,
-          onPressed: () => showAppSheet<void>(
-            context: context,
-            builder: (_) => const QuickStartWorkoutDialog(),
+        tabIndex: 2,
+        actions: [
+          ChromeAction(
+            icon: CupertinoIcons.calendar,
+            tooltip: l10n.calendar,
+            onPressed: () => context.push(Routes.calendar),
           ),
-        ),
-      ],
-      floatingTabBar: const LiquidGlassTabBar(currentIndex: 2),
+          ChromeAction(
+            key: WorkoutKeys.startWorkoutFab,
+            icon: CupertinoIcons.add,
+            tooltip: l10n.startWorkout,
+            onPressed: () => showAppSheet<void>(
+              context: context,
+              builder: (_) => const QuickStartWorkoutDialog(),
+            ),
+          ),
+        ],
+      ),
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(

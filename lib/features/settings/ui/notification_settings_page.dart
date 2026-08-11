@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../services/notification_preferences_service.dart';
 
@@ -16,9 +16,11 @@ class NotificationSettingsPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final prefs = ref.watch(notificationPreferencesProvider);
 
-    return AppScaffold.child(
-      title: l10n.notifications,
-      backTooltip: l10n.backToDashboard,
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: l10n.notifications,
+        backTooltip: l10n.backToDashboard,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -3,7 +3,7 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../services/preferences_service.dart';
@@ -29,9 +29,11 @@ class WorkoutSettingsPage extends HookConsumerWidget {
       return null;
     }, []);
 
-    return AppScaffold.child(
-      title: AppLocalizations.of(context)!.workoutSettingsTitle,
-      backTooltip: AppLocalizations.of(context)!.backToDashboard,
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: AppLocalizations.of(context)!.workoutSettingsTitle,
+        backTooltip: AppLocalizations.of(context)!.backToDashboard,
+      ),
       child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

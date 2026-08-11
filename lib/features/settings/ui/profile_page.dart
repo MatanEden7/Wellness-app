@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/ios/inset_list.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -25,8 +25,6 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   UserProfile? _profile;
-  bool _saving = false;
-
   @override
   void initState() {
     super.initState();
@@ -35,22 +33,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _saveProfile(UserProfile updated) async {
     final previous = _profile;
-    setState(() {
-      _profile = updated;
-      _saving = true;
-    });
-    try {
-      await ref.read(userProfileServiceProvider).saveProfile(updated);
-      // Write-through to preferences so the dashboard rings stay in sync.
-      final prefs = ref.read(preferencesServiceProvider);
-      await prefs.setCalorieGoal(updated.calorieTarget);
-      await prefs.setProteinGoal(updated.proteinTargetG);
-      await prefs.setCarbsGoal(updated.carbsTargetG);
-      await prefs.setFatGoal(updated.fatTargetG);
-      ref.invalidate(preferencesServiceProvider);
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    setState(() => _profile = updated);
+    await ref.read(userProfileServiceProvider).saveProfile(updated);
+    // Write-through to preferences so the dashboard rings stay in sync.
+    final prefs = ref.read(preferencesServiceProvider);
+    await prefs.setCalorieGoal(updated.calorieTarget);
+    await prefs.setProteinGoal(updated.proteinTargetG);
+    await prefs.setCarbsGoal(updated.carbsTargetG);
+    await prefs.setFatGoal(updated.fatTargetG);
+    ref.invalidate(preferencesServiceProvider);
 
     // Changing diet, exclusions, equipment, injuries, training days or meal
     // count changes *which content suits the user*, so the templates
@@ -102,21 +93,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
     if (confirmed != true) return;
 
-    setState(() => _saving = true);
-    try {
-      final created = await service.regenerate(profile);
-      // Regeneration rebuilds templates under fresh ids, leaving every
-      // calendar event onboarding pinned to the old ones pointing at nothing.
-      // Silent until the user presses "Approve" or "Start Workout" on a
-      // reminder and it does nothing at all.
-      await ref.read(calendarStateProvider.notifier).repinDanglingTemplates();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Rebuilt $created templates')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
+    final created = await service.regenerate(profile);
+    // Regeneration rebuilds templates under fresh ids, leaving every
+    // calendar event onboarding pinned to the old ones pointing at nothing.
+    // Silent until the user presses "Approve" or "Start Workout" on a
+    // reminder and it does nothing at all.
+    await ref.read(calendarStateProvider.notifier).repinDanglingTemplates();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Rebuilt $created templates')),
+      );
     }
   }
 
@@ -535,38 +521,37 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
 
     if (p == null) {
-      return AppScaffold.fill(
-        title: 'My Profile',
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.person_outline, size: 64, color: Colors.grey),
-              const SizedBox(height: 16),
-              const Text('Profile setup not completed'),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => context.go('/onboarding'),
-                child: const Text('Complete Setup'),
+      return PlatformPage(
+        chrome: const PageChrome(title: 'My Profile'),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.person_outline, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text('Profile setup not completed'),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: () => context.go('/onboarding'),
+                    child: const Text('Complete Setup'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       );
     }
 
-    return AppScaffold.child(
-      title: 'My Profile',
-      actions: [
-        if (_saving)
-          const Padding(
-            padding: EdgeInsets.all(14),
-            child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: 'My Profile',
+        // Saving spinner shown inline above content instead of in the action
+        // slot, since PageChrome actions are typed data, not widgets.
+      ),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -850,8 +835,8 @@ class _PickerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold.child(
-      title: title,
+    return PlatformChildPage(
+      chrome: PageChrome(title: title),
       child: InsetSection(
         children: [
           for (final opt in options)
@@ -917,18 +902,18 @@ class _MultiPickerPageState extends State<_MultiPickerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold.child(
-      title: widget.title,
-      actions: [
-        NavBarAction(
-          label: 'Done',
-          tooltip: 'Done',
-          isProminent: true,
-          onPressed: () => Navigator.of(context).pop(_selected.toList()),
-        ),
-      ],
-      // Multi-select on iOS is a checkmark on the row, not a checkbox in the
-      // margin.
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: widget.title,
+        actions: [
+          ChromeAction(
+            label: 'Done',
+            tooltip: 'Done',
+            isProminent: true,
+            onPressed: () => Navigator.of(context).pop(_selected.toList()),
+          ),
+        ],
+      ),
       child: InsetSection(
         children: [
           for (final opt in widget.options)
@@ -1009,16 +994,13 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold.child(
-      title: widget.title,
-      actions: [
-        NavBarAction(
-          label: 'Save',
-          tooltip: 'Save',
-          isProminent: true,
-          onPressed: _submit,
-        ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: widget.title,
+        actions: [
+          ChromeAction(label: 'Save', tooltip: 'Save', isProminent: true, onPressed: _submit),
+        ],
+      ),
       child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

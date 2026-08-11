@@ -6,9 +6,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
 import '../../../core/ios/date_strip.dart';
 import '../../../core/ios/liquid_glass_tab_bar.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/date_utils.dart' as dates;
@@ -78,24 +78,24 @@ class DashboardPage extends HookConsumerWidget {
     // The greeting is the large navigation title, so it shrinks into an
     // inline title on scroll like every other screen's does, and the actions
     // that used to sit beside it in the body are navigation-bar buttons.
-    return AppScaffold(
-      title: _getLocalizedGreeting(context),
-      showBack: false,
-      actions: _dashboardActions(context, ref),
-      pinnedHeader: DateStrip(
-        date: anchor.value,
-        onChanged: (next) => anchor.value = next,
-        // A week at a time when Settings asks for a weekly view, so the
-        // arrows move by whatever the cards are actually summarising.
-        stepDays: isWeek ? 7 : 1,
-        isCurrent: (date) => isWeek
-            ? dates.AppDateUtils.startOfWeek(date) ==
-                dates.AppDateUtils.startOfWeek(DateTime.now())
-            : AppDateUtils.dateToInt(date) ==
-                AppDateUtils.dateToInt(AppDateUtils.today),
-        labelBuilder: (date) => _periodLabel(l10n, date, isWeek),
+    return PlatformPage(
+      chrome: PageChrome(
+        title: _getLocalizedGreeting(context),
+        tabIndex: 0,
+        showBack: false,
+        actions: _dashboardActions(context, ref),
+        pinnedHeader: DateStrip(
+          date: anchor.value,
+          onChanged: (next) => anchor.value = next,
+          stepDays: isWeek ? 7 : 1,
+          isCurrent: (date) => isWeek
+              ? dates.AppDateUtils.startOfWeek(date) ==
+                  dates.AppDateUtils.startOfWeek(DateTime.now())
+              : AppDateUtils.dateToInt(date) ==
+                  AppDateUtils.dateToInt(AppDateUtils.today),
+          labelBuilder: (date) => _periodLabel(l10n, date, isWeek),
+        ),
       ),
-      floatingTabBar: const LiquidGlassTabBar(currentIndex: 0),
       slivers: [
         SliverToBoxAdapter(child: _DashboardContent(anchor: anchor.value)),
       ],
@@ -127,16 +127,13 @@ class DashboardPage extends HookConsumerWidget {
   ///
   /// Quick add keeps [DashboardKeys.quickAddFab] even though it is no longer
   /// a floating button -- it is the same action in the place iOS puts it.
-  List<Widget> _dashboardActions(BuildContext context, WidgetRef ref) {
+  List<ChromeAction> _dashboardActions(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return [
-      // Test Data button -- debug builds only. This used to be
-      // unconditionally visible, letting anyone running a release build
-      // inject fabricated demo data into their real database via
-      // DummyDataService.
       if (kDebugMode)
-        NavBarAction(
+        ChromeAction(
           icon: CupertinoIcons.lab_flask,
+          sfSymbolName: 'flask',
           tooltip: 'Generate Test Data',
           onPressed: () {
             final isHebrew =
@@ -148,27 +145,86 @@ class DashboardPage extends HookConsumerWidget {
             );
           },
         ),
-      // Six destinations do not fit five tab slots, so Stats is the one that
-      // sits up here. Calendar is the daily one -- you open it to see what is
-      // planned -- while Stats is something you check occasionally, and the
-      // tab bar should carry the things you reach for every day.
-      NavBarAction(
+      ChromeAction(
         key: DashboardKeys.analyticsAction,
         icon: CupertinoIcons.chart_bar_alt_fill,
+        sfSymbolName: 'chart.bar.fill',
         tooltip: l10n.navStats,
         onPressed: () => context.push(Routes.analytics),
       ),
-      NavBarAction(
+      ChromeAction(
         key: DashboardKeys.settingsAction,
         icon: CupertinoIcons.settings,
+        sfSymbolName: 'gearshape',
         tooltip: l10n.settings,
         onPressed: () => context.push(Routes.settings),
       ),
-      // The destructive "reset all data" action lives in Settings (see
-      // SettingsStub), behind a confirm dialog. A red one-tap wipe next to
-      // the greeting on the home screen is too easy to hit by accident.
-      QuickAddAction(key: DashboardKeys.quickAddFab),
+      ChromeAction(
+        key: DashboardKeys.quickAddFab,
+        icon: CupertinoIcons.add,
+        sfSymbolName: 'plus',
+        tooltip: l10n.quickActions,
+        onPressed: () => _showQuickAddSheet(context, ref),
+      ),
     ];
+  }
+
+  void _showQuickAddSheet(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final prefs = ref.read(preferencesServiceProvider);
+
+    void replaceWith(BuildContext sheetContext, VoidCallback open) {
+      Navigator.of(sheetContext).pop();
+      open();
+    }
+
+    showAppSheet<void>(
+      context: context,
+      builder: (sheetContext) => AppSheet(
+        title: l10n.quickActions,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            IconRowTile(
+              icon: Icons.restaurant,
+              label: l10n.meal,
+              color: prefs.mealsColor,
+              onTap: () => replaceWith(
+                sheetContext,
+                () => showAppSheet<void>(
+                  context: context,
+                  builder: (_) => const QuickAddMealDialog(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            IconRowTile(
+              icon: Icons.fitness_center,
+              label: l10n.workout,
+              color: prefs.workoutsColor,
+              onTap: () => replaceWith(
+                sheetContext,
+                () => showAppSheet<void>(
+                  context: context,
+                  builder: (_) => const QuickStartWorkoutDialog(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            IconRowTile(
+              icon: Icons.bedtime,
+              label: l10n.sleep,
+              color: prefs.sleepColor,
+              onTap: () => replaceWith(
+                sheetContext,
+                () => showAddSleepSheet(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
 }
@@ -1131,84 +1187,6 @@ class _DashboardContent extends HookConsumerWidget {
     );
   }
 
-}
-
-/// The "+" on the home screen: the actual quick-add entry point, opening a
-/// sheet to log a meal, workout, or sleep entry directly -- each tile then
-/// opens its own dialog rather than navigating away.
-/// The "+" that opens the quick-add sheet. Was a floating action button;
-/// on iOS the primary action of a screen lives in the navigation bar.
-class QuickAddAction extends ConsumerWidget {
-  const QuickAddAction({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return NavBarAction(
-      icon: CupertinoIcons.add,
-      tooltip: AppLocalizations.of(context)!.quickActions,
-      onPressed: () => _showQuickAddSheet(context, ref),
-    );
-  }
-
-  void _showQuickAddSheet(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final prefs = ref.read(preferencesServiceProvider);
-
-    // Close the picker first, then open the chosen form, so the two sheets
-    // never stack on top of each other.
-    void replaceWith(BuildContext sheetContext, VoidCallback open) {
-      Navigator.of(sheetContext).pop();
-      open();
-    }
-
-    showAppSheet<void>(
-      context: context,
-      builder: (sheetContext) => AppSheet(
-        title: l10n.quickActions,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            IconRowTile(
-              icon: Icons.restaurant,
-              label: l10n.meal,
-              color: prefs.mealsColor,
-              onTap: () => replaceWith(
-                sheetContext,
-                () => showAppSheet<void>(
-                  context: context,
-                  builder: (_) => const QuickAddMealDialog(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            IconRowTile(
-              icon: Icons.fitness_center,
-              label: l10n.workout,
-              color: prefs.workoutsColor,
-              onTap: () => replaceWith(
-                sheetContext,
-                () => showAppSheet<void>(
-                  context: context,
-                  builder: (_) => const QuickStartWorkoutDialog(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            IconRowTile(
-              icon: Icons.bedtime,
-              label: l10n.sleep,
-              color: prefs.sleepColor,
-              onTap: () => replaceWith(
-                sheetContext,
-                () => showAddSleepSheet(context),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _TestDataDialog extends StatefulWidget {

@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/ios/app_scaffold.dart';
+import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/validation.dart';
@@ -35,27 +35,29 @@ class MealTemplateEditorPage extends HookConsumerWidget {
       return null;
     }, [templateId]);
 
-    return AppScaffold.child(
-      title: isEditing ? l10n.editMealTemplate : l10n.createMealTemplate,
-      actions: [
-        NavBarAction(
-          label: l10n.save,
-          tooltip: l10n.save,
-          isProminent: true,
-          onPressed: isLoading.value
-              ? null
-              : () => _saveTemplate(
-                    context,
-                    ref,
-                    isEditing,
-                    templateId,
-                    nameController.text,
-                    descriptionController.text,
-                    templateItems.value,
-                    isLoading,
-                  ),
-        ),
-      ],
+    return PlatformChildPage(
+      chrome: PageChrome(
+        title: isEditing ? l10n.editMealTemplate : l10n.createMealTemplate,
+        actions: [
+          ChromeAction(
+            label: l10n.save,
+            tooltip: l10n.save,
+            isProminent: true,
+            onPressed: isLoading.value
+                ? null
+                : () => _saveTemplate(
+                      context,
+                      ref,
+                      isEditing,
+                      templateId,
+                      nameController.text,
+                      descriptionController.text,
+                      templateItems.value,
+                      isLoading,
+                    ),
+          ),
+        ],
+      ),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
