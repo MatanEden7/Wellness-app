@@ -48,7 +48,8 @@ void main() {
 
     // Dashboard -> Meals -> "Log new meal" -> blank meal editor.
     await tapDashboardAction(tester, DashboardKeys.mealsAction);
-    await tester.tap(find.byType(FloatingActionButton));
+    // "+" in the navigation bar, opening the iOS action sheet.
+    await tester.tap(find.byTooltip(l10n.logMeal));
     await settle(tester);
     await tester.tap(find.text(l10n.logNewMeal));
     await settle(tester);

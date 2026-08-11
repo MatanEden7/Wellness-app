@@ -79,6 +79,15 @@ class WorkoutTemplate with _$WorkoutTemplate {
     String? notesHe,
     // See MealTemplate.origin -- same contract, same safe default.
     @Default(TemplateOrigin.user) TemplateOrigin origin,
+    /// Whether this template manages its own breaks.
+    ///
+    /// False (the default, and what every existing template stays on) means
+    /// rest is automatic: derived from the rep count via `resolveRestSeconds`
+    /// between every set, with nothing to configure and no rest rows in the
+    /// list. True reveals the rest controls -- standalone [TemplateExercise]s
+    /// with [TemplateExercise.isRest] set, placed anywhere in the order, plus
+    /// per-exercise between-set rest.
+    @Default(false) bool customRest,
     @Default([]) List<TemplateExercise> exercises,
   }) = _WorkoutTemplate;
 
@@ -123,7 +132,20 @@ class TemplateExercise with _$TemplateExercise {
     /// model as well as the row because `updateTemplate` rebuilds every child
     /// from the model, so a field missing here is silently wiped on any edit.
     int? defaultRestSeconds,
+    /// Marks this entry as a standalone break rather than an exercise.
+    ///
+    /// A rest row is an ordinary row in the same ordered list -- that is what
+    /// lets it sit anywhere between exercises and be dragged like one -- with
+    /// [exerciseId] empty and [defaultRestSeconds] carrying its duration. Kept
+    /// as a flag rather than a separate table so ordering, reordering, backup
+    /// and export all keep working untouched.
+    @Default(false) bool isRest,
   }) = _TemplateExercise;
+
+  const TemplateExercise._();
+
+  /// Duration of a rest row, in seconds. Meaningless unless [isRest].
+  int get restDuration => defaultRestSeconds ?? 60;
 
   factory TemplateExercise.create({
     required String templateId,
@@ -143,6 +165,23 @@ class TemplateExercise with _$TemplateExercise {
       defaultReps: defaultReps,
       defaultWeight: defaultWeight,
       defaultRestSeconds: defaultRestSeconds,
+    );
+  }
+
+  /// A standalone break to sit between two exercises.
+  factory TemplateExercise.rest({
+    required String templateId,
+    required int orderIndex,
+    required int seconds,
+  }) {
+    return TemplateExercise(
+      id: _uuid.v4(),
+      templateId: templateId,
+      exerciseId: '',
+      orderIndex: orderIndex,
+      defaultSets: 0,
+      defaultRestSeconds: seconds,
+      isRest: true,
     );
   }
 

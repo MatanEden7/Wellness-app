@@ -115,17 +115,29 @@ class ChartAxisLabels extends StatelessWidget {
           for (var i = 0; i < count; i++)
             Expanded(
               child: indices.contains(i)
-                  ? Text(
-                      AnalyticsFormat.axisDate(series.points[i].t, bucket),
-                      textAlign: TextAlign.center,
-                      // Dates read left-to-right in both languages, matching
-                      // the app's existing "numbers stay LTR" convention --
-                      // and matching the charts, whose time axis does not
-                      // mirror for Hebrew.
-                      textDirection: TextDirection.ltr,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 11,
-                        color: theme.textTheme.bodySmall?.color,
+                  // One flex slot per data point is what puts the label under
+                  // the right bar -- but a month of days makes each slot ~11pt
+                  // wide, which wrapped "11/7" to one character per line. The
+                  // OverflowBox lets the text paint across its neighbours,
+                  // which are empty: only five of the slots carry a label.
+                  ? OverflowBox(
+                      maxWidth: 72,
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                        AnalyticsFormat.axisDate(series.points[i].t, bucket),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
+                        // Dates read left-to-right in both languages, matching
+                        // the app's existing "numbers stay LTR" convention --
+                        // and matching the charts, whose time axis does not
+                        // mirror for Hebrew.
+                        textDirection: TextDirection.ltr,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontSize: 11,
+                          color: theme.textTheme.bodySmall?.color,
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),

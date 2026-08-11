@@ -416,6 +416,16 @@ mixin _$WorkoutTemplate {
   String? get notesHe =>
       throw _privateConstructorUsedError; // See MealTemplate.origin -- same contract, same safe default.
   TemplateOrigin get origin => throw _privateConstructorUsedError;
+
+  /// Whether this template manages its own breaks.
+  ///
+  /// False (the default, and what every existing template stays on) means
+  /// rest is automatic: derived from the rep count via `resolveRestSeconds`
+  /// between every set, with nothing to configure and no rest rows in the
+  /// list. True reveals the rest controls -- standalone [TemplateExercise]s
+  /// with [TemplateExercise.isRest] set, placed anywhere in the order, plus
+  /// per-exercise between-set rest.
+  bool get customRest => throw _privateConstructorUsedError;
   List<TemplateExercise> get exercises => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -437,6 +447,7 @@ abstract class $WorkoutTemplateCopyWith<$Res> {
       String? notes,
       String? notesHe,
       TemplateOrigin origin,
+      bool customRest,
       List<TemplateExercise> exercises});
 }
 
@@ -459,6 +470,7 @@ class _$WorkoutTemplateCopyWithImpl<$Res, $Val extends WorkoutTemplate>
     Object? notes = freezed,
     Object? notesHe = freezed,
     Object? origin = null,
+    Object? customRest = null,
     Object? exercises = null,
   }) {
     return _then(_value.copyWith(
@@ -486,6 +498,10 @@ class _$WorkoutTemplateCopyWithImpl<$Res, $Val extends WorkoutTemplate>
           ? _value.origin
           : origin // ignore: cast_nullable_to_non_nullable
               as TemplateOrigin,
+      customRest: null == customRest
+          ? _value.customRest
+          : customRest // ignore: cast_nullable_to_non_nullable
+              as bool,
       exercises: null == exercises
           ? _value.exercises
           : exercises // ignore: cast_nullable_to_non_nullable
@@ -509,6 +525,7 @@ abstract class _$$WorkoutTemplateImplCopyWith<$Res>
       String? notes,
       String? notesHe,
       TemplateOrigin origin,
+      bool customRest,
       List<TemplateExercise> exercises});
 }
 
@@ -529,6 +546,7 @@ class __$$WorkoutTemplateImplCopyWithImpl<$Res>
     Object? notes = freezed,
     Object? notesHe = freezed,
     Object? origin = null,
+    Object? customRest = null,
     Object? exercises = null,
   }) {
     return _then(_$WorkoutTemplateImpl(
@@ -556,6 +574,10 @@ class __$$WorkoutTemplateImplCopyWithImpl<$Res>
           ? _value.origin
           : origin // ignore: cast_nullable_to_non_nullable
               as TemplateOrigin,
+      customRest: null == customRest
+          ? _value.customRest
+          : customRest // ignore: cast_nullable_to_non_nullable
+              as bool,
       exercises: null == exercises
           ? _value._exercises
           : exercises // ignore: cast_nullable_to_non_nullable
@@ -574,6 +596,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
       this.notes,
       this.notesHe,
       this.origin = TemplateOrigin.user,
+      this.customRest = false,
       final List<TemplateExercise> exercises = const []})
       : _exercises = exercises;
 
@@ -594,6 +617,18 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
   @override
   @JsonKey()
   final TemplateOrigin origin;
+
+  /// Whether this template manages its own breaks.
+  ///
+  /// False (the default, and what every existing template stays on) means
+  /// rest is automatic: derived from the rep count via `resolveRestSeconds`
+  /// between every set, with nothing to configure and no rest rows in the
+  /// list. True reveals the rest controls -- standalone [TemplateExercise]s
+  /// with [TemplateExercise.isRest] set, placed anywhere in the order, plus
+  /// per-exercise between-set rest.
+  @override
+  @JsonKey()
+  final bool customRest;
   final List<TemplateExercise> _exercises;
   @override
   @JsonKey()
@@ -605,7 +640,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
 
   @override
   String toString() {
-    return 'WorkoutTemplate(id: $id, name: $name, nameHe: $nameHe, notes: $notes, notesHe: $notesHe, origin: $origin, exercises: $exercises)';
+    return 'WorkoutTemplate(id: $id, name: $name, nameHe: $nameHe, notes: $notes, notesHe: $notesHe, origin: $origin, customRest: $customRest, exercises: $exercises)';
   }
 
   @override
@@ -619,6 +654,8 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
             (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.notesHe, notesHe) || other.notesHe == notesHe) &&
             (identical(other.origin, origin) || other.origin == origin) &&
+            (identical(other.customRest, customRest) ||
+                other.customRest == customRest) &&
             const DeepCollectionEquality()
                 .equals(other._exercises, _exercises));
   }
@@ -626,7 +663,7 @@ class _$WorkoutTemplateImpl implements _WorkoutTemplate {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, name, nameHe, notes, notesHe,
-      origin, const DeepCollectionEquality().hash(_exercises));
+      origin, customRest, const DeepCollectionEquality().hash(_exercises));
 
   @JsonKey(ignore: true)
   @override
@@ -651,6 +688,7 @@ abstract class _WorkoutTemplate implements WorkoutTemplate {
       final String? notes,
       final String? notesHe,
       final TemplateOrigin origin,
+      final bool customRest,
       final List<TemplateExercise> exercises}) = _$WorkoutTemplateImpl;
 
   factory _WorkoutTemplate.fromJson(Map<String, dynamic> json) =
@@ -668,6 +706,17 @@ abstract class _WorkoutTemplate implements WorkoutTemplate {
   String? get notesHe;
   @override // See MealTemplate.origin -- same contract, same safe default.
   TemplateOrigin get origin;
+  @override
+
+  /// Whether this template manages its own breaks.
+  ///
+  /// False (the default, and what every existing template stays on) means
+  /// rest is automatic: derived from the rep count via `resolveRestSeconds`
+  /// between every set, with nothing to configure and no rest rows in the
+  /// list. True reveals the rest controls -- standalone [TemplateExercise]s
+  /// with [TemplateExercise.isRest] set, placed anywhere in the order, plus
+  /// per-exercise between-set rest.
+  bool get customRest;
   @override
   List<TemplateExercise> get exercises;
   @override
@@ -696,6 +745,15 @@ mixin _$TemplateExercise {
   /// from the model, so a field missing here is silently wiped on any edit.
   int? get defaultRestSeconds => throw _privateConstructorUsedError;
 
+  /// Marks this entry as a standalone break rather than an exercise.
+  ///
+  /// A rest row is an ordinary row in the same ordered list -- that is what
+  /// lets it sit anywhere between exercises and be dragged like one -- with
+  /// [exerciseId] empty and [defaultRestSeconds] carrying its duration. Kept
+  /// as a flag rather than a separate table so ordering, reordering, backup
+  /// and export all keep working untouched.
+  bool get isRest => throw _privateConstructorUsedError;
+
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $TemplateExerciseCopyWith<TemplateExercise> get copyWith =>
@@ -716,7 +774,8 @@ abstract class $TemplateExerciseCopyWith<$Res> {
       int defaultSets,
       int? defaultReps,
       double? defaultWeight,
-      int? defaultRestSeconds});
+      int? defaultRestSeconds,
+      bool isRest});
 }
 
 /// @nodoc
@@ -740,6 +799,7 @@ class _$TemplateExerciseCopyWithImpl<$Res, $Val extends TemplateExercise>
     Object? defaultReps = freezed,
     Object? defaultWeight = freezed,
     Object? defaultRestSeconds = freezed,
+    Object? isRest = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -774,6 +834,10 @@ class _$TemplateExerciseCopyWithImpl<$Res, $Val extends TemplateExercise>
           ? _value.defaultRestSeconds
           : defaultRestSeconds // ignore: cast_nullable_to_non_nullable
               as int?,
+      isRest: null == isRest
+          ? _value.isRest
+          : isRest // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -794,7 +858,8 @@ abstract class _$$TemplateExerciseImplCopyWith<$Res>
       int defaultSets,
       int? defaultReps,
       double? defaultWeight,
-      int? defaultRestSeconds});
+      int? defaultRestSeconds,
+      bool isRest});
 }
 
 /// @nodoc
@@ -816,6 +881,7 @@ class __$$TemplateExerciseImplCopyWithImpl<$Res>
     Object? defaultReps = freezed,
     Object? defaultWeight = freezed,
     Object? defaultRestSeconds = freezed,
+    Object? isRest = null,
   }) {
     return _then(_$TemplateExerciseImpl(
       id: null == id
@@ -850,13 +916,17 @@ class __$$TemplateExerciseImplCopyWithImpl<$Res>
           ? _value.defaultRestSeconds
           : defaultRestSeconds // ignore: cast_nullable_to_non_nullable
               as int?,
+      isRest: null == isRest
+          ? _value.isRest
+          : isRest // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$TemplateExerciseImpl implements _TemplateExercise {
+class _$TemplateExerciseImpl extends _TemplateExercise {
   const _$TemplateExerciseImpl(
       {required this.id,
       required this.templateId,
@@ -865,7 +935,9 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
       this.defaultSets = 3,
       this.defaultReps,
       this.defaultWeight,
-      this.defaultRestSeconds});
+      this.defaultRestSeconds,
+      this.isRest = false})
+      : super._();
 
   factory _$TemplateExerciseImpl.fromJson(Map<String, dynamic> json) =>
       _$$TemplateExerciseImplFromJson(json);
@@ -893,9 +965,20 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
   @override
   final int? defaultRestSeconds;
 
+  /// Marks this entry as a standalone break rather than an exercise.
+  ///
+  /// A rest row is an ordinary row in the same ordered list -- that is what
+  /// lets it sit anywhere between exercises and be dragged like one -- with
+  /// [exerciseId] empty and [defaultRestSeconds] carrying its duration. Kept
+  /// as a flag rather than a separate table so ordering, reordering, backup
+  /// and export all keep working untouched.
+  @override
+  @JsonKey()
+  final bool isRest;
+
   @override
   String toString() {
-    return 'TemplateExercise(id: $id, templateId: $templateId, exerciseId: $exerciseId, orderIndex: $orderIndex, defaultSets: $defaultSets, defaultReps: $defaultReps, defaultWeight: $defaultWeight, defaultRestSeconds: $defaultRestSeconds)';
+    return 'TemplateExercise(id: $id, templateId: $templateId, exerciseId: $exerciseId, orderIndex: $orderIndex, defaultSets: $defaultSets, defaultReps: $defaultReps, defaultWeight: $defaultWeight, defaultRestSeconds: $defaultRestSeconds, isRest: $isRest)';
   }
 
   @override
@@ -917,13 +1000,23 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
             (identical(other.defaultWeight, defaultWeight) ||
                 other.defaultWeight == defaultWeight) &&
             (identical(other.defaultRestSeconds, defaultRestSeconds) ||
-                other.defaultRestSeconds == defaultRestSeconds));
+                other.defaultRestSeconds == defaultRestSeconds) &&
+            (identical(other.isRest, isRest) || other.isRest == isRest));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, templateId, exerciseId,
-      orderIndex, defaultSets, defaultReps, defaultWeight, defaultRestSeconds);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      templateId,
+      exerciseId,
+      orderIndex,
+      defaultSets,
+      defaultReps,
+      defaultWeight,
+      defaultRestSeconds,
+      isRest);
 
   @JsonKey(ignore: true)
   @override
@@ -940,7 +1033,7 @@ class _$TemplateExerciseImpl implements _TemplateExercise {
   }
 }
 
-abstract class _TemplateExercise implements TemplateExercise {
+abstract class _TemplateExercise extends TemplateExercise {
   const factory _TemplateExercise(
       {required final String id,
       required final String templateId,
@@ -949,7 +1042,9 @@ abstract class _TemplateExercise implements TemplateExercise {
       final int defaultSets,
       final int? defaultReps,
       final double? defaultWeight,
-      final int? defaultRestSeconds}) = _$TemplateExerciseImpl;
+      final int? defaultRestSeconds,
+      final bool isRest}) = _$TemplateExerciseImpl;
+  const _TemplateExercise._() : super._();
 
   factory _TemplateExercise.fromJson(Map<String, dynamic> json) =
       _$TemplateExerciseImpl.fromJson;
@@ -975,6 +1070,16 @@ abstract class _TemplateExercise implements TemplateExercise {
   /// model as well as the row because `updateTemplate` rebuilds every child
   /// from the model, so a field missing here is silently wiped on any edit.
   int? get defaultRestSeconds;
+  @override
+
+  /// Marks this entry as a standalone break rather than an exercise.
+  ///
+  /// A rest row is an ordinary row in the same ordered list -- that is what
+  /// lets it sit anywhere between exercises and be dragged like one -- with
+  /// [exerciseId] empty and [defaultRestSeconds] carrying its duration. Kept
+  /// as a flag rather than a separate table so ordering, reordering, backup
+  /// and export all keep working untouched.
+  bool get isRest;
   @override
   @JsonKey(ignore: true)
   _$$TemplateExerciseImplCopyWith<_$TemplateExerciseImpl> get copyWith =>

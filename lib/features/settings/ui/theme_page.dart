@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/inset_list.dart';
 import '../../../core/theme.dart';
 import '../../../services/theme_service.dart';
 
@@ -14,68 +16,47 @@ class ThemePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final currentTheme = ref.watch(currentThemeProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.theme),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-          tooltip: l10n.back,
-        ),
-      ),
-      body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          itemCount: AppThemeKind.values.length,
-          itemBuilder: (context, index) {
-            final theme = AppThemeKind.values[index];
-            final isSelected = theme == currentTheme;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              elevation: isSelected ? 3 : 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).dividerColor,
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: _previewColor(theme),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: Theme.of(context).dividerColor, width: 1),
+    return AppScaffold.child(
+      title: l10n.theme,
+      backTooltip: l10n.back,
+      // An iOS single-choice list: one grouped section, a checkmark on the
+      // selected row. Each option used to be its own outlined Card, which is
+      // how a nine-item picker ended up 900pt tall.
+      child: InsetSection(
+        children: [
+          for (final theme in AppThemeKind.values)
+            InsetRow(
+              title: _label(context, theme),
+              subtitle: _description(context, theme),
+              onTap: () async {
+                await ref.read(currentThemeProvider.notifier).setTheme(theme);
+              },
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: _previewColor(theme),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                          color: Theme.of(context).dividerColor, width: 1),
+                    ),
                   ),
-                ),
-                title: Text(
-                  _label(context, theme),
-                  style: TextStyle(
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal),
-                ),
-                subtitle: Text(_description(context, theme)),
-                trailing: isSelected
-                    ? Icon(Icons.check_circle,
-                        color: Theme.of(context).colorScheme.primary)
-                    : null,
-                onTap: () async {
-                  await ref
-                      .read(currentThemeProvider.notifier)
-                      .setTheme(theme);
-                },
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 20,
+                    child: theme == currentTheme
+                        ? Icon(CupertinoIcons.check_mark,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.primary)
+                        : null,
+                  ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+        ],
       ),
     );
   }

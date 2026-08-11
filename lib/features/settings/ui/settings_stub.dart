@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../data/db/drift_database.dart';
@@ -36,20 +37,11 @@ class SettingsStub extends ConsumerWidget {
     final currentLanguage = ref.watch(currentLanguageProvider);
     final profile = ref.read(userProfileServiceProvider).loadProfile();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
-          onPressed: () => context.pop(),
-          tooltip: l10n.backToDashboard,
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    return AppScaffold.child(
+      title: l10n.settings,
+      backTooltip: l10n.backToDashboard,
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── Profile card ────────────────────────────────────────────────
             _ProfileCard(
@@ -136,11 +128,20 @@ class SettingsStub extends ConsumerWidget {
                   value: _nutritionGoalsSummary(prefs),
                   onTap: () => context.push(Routes.nutritionGoals),
                 ),
+                // This row said "Workout Templates" and opened Workout
+                // Settings. Templates now have a screen of their own, so it
+                // is two rows, each going where it says.
                 SettingsRow(
                   icon: Icons.sports_gymnastics,
                   iconColor: Colors.indigo,
-                  title: l10n.workoutTemplates,
+                  title: l10n.workoutSettingsTitle,
                   onTap: () => context.push(Routes.workoutSettings),
+                ),
+                SettingsRow(
+                  icon: Icons.list_alt,
+                  iconColor: Colors.indigo,
+                  title: l10n.workoutTemplates,
+                  onTap: () => context.push(Routes.workoutTemplates),
                 ),
               ],
             ),
@@ -199,7 +200,6 @@ class SettingsStub extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
           ],
-        ),
       ),
     );
   }

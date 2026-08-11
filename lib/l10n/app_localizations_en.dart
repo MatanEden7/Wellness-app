@@ -30,6 +30,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboard => 'Dashboard';
 
   @override
+  String get navHome => 'Home';
+
+  @override
+  String get navStats => 'Stats';
+
+  @override
   String get meals => 'Meals';
 
   @override
@@ -73,6 +79,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fat => 'Fat';
+
+  @override
+  String get nights => 'nights';
 
   @override
   String get wellRested => 'Well rested!';
@@ -2365,4 +2374,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workoutExercises => 'Workout exercises';
+
+  @override
+  String get volumeLabel => 'Volume';
+
+  @override
+  String get trackYourTrainingFor => 'Track your training for ';
+
+  @override
+  String get workoutTotals => 'Daily Training';
+
+  @override
+  String get yourExercises => 'Your Exercises';
+
+  @override
+  String get starterExercises => 'Starter Library';
+
+  @override
+  String get noExercisesMatch => 'No exercises match';
+
+  @override
+  String get editExercise => 'Edit Exercise';
+
+  @override
+  String get addFirstFoodItem => 'Add your first food item';
+
+  @override
+  String get editMeal => 'Edit Meal';
+
+  @override
+  String get editTemplate => 'Edit Template';
+
+  @override
+  String get customBreaks => 'Customize breaks';
+
+  @override
+  String get customBreaksSubtitle =>
+      'Set your own rest between sets, and add breaks anywhere in the workout';
+
+  @override
+  String get autoBreaksSubtitle =>
+      'Rest between sets is set automatically from the rep count';
+
+  @override
+  String get addRest => 'Add Break';
+
+  @override
+  String get restBlock => 'Break';
+
+  @override
+  String get restDuration => 'Break length';
+
+  @override
+  String get betweenSets => 'Between sets';
+
+  @override
+  String get automatic => 'Automatic';
+
+  @override
+  String get addExerciseShort => 'Exercise';
+
+  @override
+  String get addBreakShort => 'Break';
+
+  @override
+  String restDefaultHelper(String rest) {
+    return 'Leave empty for this exercise’s default of $rest';
+  }
+
+  @override
+  String get dashboardPeriodToday => 'Today';
+
+  @override
+  String get dashboardPeriodWeek => 'This week';
+
+  @override
+  String workoutMinutes(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get nightlyAverage => 'nightly average';
 }

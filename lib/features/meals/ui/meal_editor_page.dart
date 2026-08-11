@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -43,41 +44,34 @@ class MealEditorPage extends HookConsumerWidget {
     final totalCarbs = mealItems.value.fold(0.0, (sum, item) => sum + item.carbs);
     final totalFat = mealItems.value.fold(0.0, (sum, item) => sum + item.fat);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          isEditing ? l10n.editFood : l10n.addFood,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+    // The title used to read "Add Food"/"Edit Food" -- copy-pasted from the
+    // food editor, on the screen that edits a *meal*.
+    return AppScaffold.child(
+      title: isEditing ? l10n.editMeal : l10n.logNewMeal,
+      actions: [
+        NavBarAction(
+          label: l10n.save,
+          tooltip: l10n.save,
+          isProminent: true,
+          onPressed: isLoading.value
+              ? null
+              : () => _saveMeal(
+                    context,
+                    ref,
+                    isEditing,
+                    mealId,
+                    nameController.text,
+                    noteController.text,
+                    selectedDate.value,
+                    selectedTime.value,
+                    mealItems.value,
+                    isLoading,
+                  ),
         ),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: AppButton(
-              text: l10n.save,
-              onPressed: isLoading.value ? null : () => _saveMeal(
-                context,
-                ref,
-                isEditing,
-                mealId,
-                nameController.text,
-                noteController.text,
-                selectedDate.value,
-                selectedTime.value,
-                mealItems.value,
-                isLoading,
-              ),
-              isLoading: isLoading.value,
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      ],
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               // Meal Name
               Text(
                 l10n.mealName,
@@ -303,10 +297,8 @@ class MealEditorPage extends HookConsumerWidget {
                     ),
                   );
                 }),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
+            const SizedBox(height: 16),
+          ],
       ),
     );
   }

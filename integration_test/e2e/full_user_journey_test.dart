@@ -66,7 +66,8 @@ void main() {
     const foodName = 'E2E Test Food';
 
     await tapDashboardAction(tester, DashboardKeys.mealsAction);
-    await tester.tap(find.byIcon(Icons.restaurant_menu)); // Food Catalog
+    // The catalog is a labelled shortcut tile on the meals page now.
+    await tester.tap(find.byTooltip(l10n.foodCatalog));
     await settle(tester);
     await tester.tap(find.byTooltip(l10n.addFood));
     await settle(tester);
@@ -79,13 +80,15 @@ void main() {
     await tester.enterText(foodFields.at(5), '10'); // Carbs
     await tester.enterText(foodFields.at(6), '5'); // Fat
     await settle(tester);
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.add));
+    // The add/edit food form is a full-screen modal page; its confirming
+    // action is the navigation-bar button, not an AppButton in a dialog.
+    await tapVisible(tester, find.byTooltip(l10n.add));
     await settle(tester);
 
     expect(find.text(foodName), findsOneWidget, reason: 'new food should appear in "Your Foods"');
 
-    // Back from Food Catalog to Meals -- the Meal Templates icon lives on
-    // the Meals page's AppBar, not the Food Catalog page's.
+    // Back from Food Catalog to Meals -- the Meal Templates shortcut lives
+    // on the Meals page, not the Food Catalog page.
     await tester.pageBack();
     await settle(tester);
 
@@ -127,7 +130,8 @@ void main() {
     ));
     await settle(tester);
 
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.save)); // template editor's Save
+    // The template editor's own Save is a navigation-bar action now.
+    await tapVisible(tester, find.byTooltip(l10n.save));
     await settle(tester);
     // Saving shows a "Meal template saved" SnackBar with the default 4s
     // duration, which floats at the bottom of the screen -- right where the
@@ -181,16 +185,16 @@ void main() {
     const exerciseName = 'E2E Test Exercise';
 
     await tapDashboardAction(tester, DashboardKeys.workoutsAction);
-    // The library is a labelled button on the page now, not an app-bar icon
-    // with a tooltip -- the app bar was down to two actions to stop the
-    // title wrapping, and starting a workout moved to the FAB.
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.exerciseLibrary));
+    // The library is one of the workouts page's shortcut tiles.
+    await tapVisible(tester, find.byTooltip(l10n.exerciseLibrary));
+    await settle(tester);
     await tester.tap(find.byTooltip(l10n.addExerciseTooltip));
     await settle(tester);
 
     await tester.enterText(find.byType(TextFormField).first, exerciseName);
     await settle(tester);
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.add));
+    // Full-screen modal form: confirm from the navigation bar.
+    await tapVisible(tester, find.byTooltip(l10n.add));
     await settle(tester);
 
     // Appended after the 16 built-in exercises in a ListView.builder, so it
@@ -206,12 +210,12 @@ void main() {
 
     await tester.pageBack();
     await settle(tester); // back to Workouts
-    // The Workout Templates section header carries its own "Create Template"
-    // button, so go through that rather than the app-bar overflow: the same
-    // label appears in both places, and tapping it by text with the menu open
-    // hits the overlay instead and lands on Workout Settings.
-    await tapVisible(
-        tester, find.widgetWithText(AppButton, l10n.createTemplate));
+    // Templates have their own screen now (mirroring Meal Templates), reached
+    // from the workouts page's shortcut tiles; "+" on it creates one.
+    await tapVisible(tester, find.byTooltip(l10n.workoutTemplates));
+    await settle(tester);
+    await tester.tap(find.byTooltip(l10n.createTemplate));
+    await settle(tester);
 
     await tester.enterText(find.byType(TextFormField).first, workoutTemplateName);
     await settle(tester);
@@ -224,12 +228,14 @@ void main() {
     await scrollToFind(tester, find.text(exerciseName), scrollable: exerciseDialogList);
     await tester.tap(find.text(exerciseName));
     await settle(tester);
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.save));
+    // The workout template editor's Save is a navigation-bar action now.
+    await tapVisible(tester, find.byTooltip(l10n.save));
     await settle(tester);
 
     // Same appended-at-the-end concern as the meal template list.
     await scrollToFind(tester, find.text(workoutTemplateName));
-    expect(find.text(workoutTemplateName), findsOneWidget, reason: 'should be back on Workouts showing the new template');
+    expect(find.text(workoutTemplateName), findsOneWidget,
+        reason: 'should be back on Workout Templates showing the new template');
 
     // ---------------------------------------------------------------
     // Phase 7: Execute the workout
@@ -251,10 +257,13 @@ void main() {
     await tester.tap(find.byTooltip(l10n.finishWorkoutTooltip));
     await settle(tester);
 
-    expect(find.text(workoutTemplateName), findsOneWidget, reason: 'should be back on Workouts after finishing');
+    expect(find.text(workoutTemplateName), findsOneWidget,
+        reason: 'should be back on Workout Templates after finishing');
 
-    // Back to the dashboard before using the bottom nav again (see the
-    // Phase 4->5 transition above for why pageBack() won't work here).
+    // Templates is a pushed page above Workouts, which is itself pushed
+    // above the dashboard -- pop both.
+    await tester.pageBack();
+    await settle(tester);
     await tester.tap(find.byTooltip(l10n.backToDashboard));
     await settle(tester);
 

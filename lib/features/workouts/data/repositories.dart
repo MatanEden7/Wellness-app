@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/utils.dart';
 import '../../../data/db/drift_database.dart';
 import '../domain/models.dart';
 
@@ -42,6 +43,17 @@ final workoutTemplatesStreamProvider =
 final recentSessionsStreamProvider =
     Provider.family<Stream<List<WorkoutSessionWithTemplate>>, int>((ref, limit) {
   return ref.read(workoutSessionsRepositoryProvider).watchRecentSessions(limit: limit);
+});
+
+/// Cached, date-keyed stream of one day's sessions.
+///
+/// The workouts home screen is date-anchored like the meals one -- you pick a
+/// day and see what you did on it -- so it needs the sessions for a single
+/// date rather than the last N regardless of when they happened. Keyed by the
+/// same `yyyymmdd` int the meals side uses.
+final sessionsByDateStreamProvider =
+    Provider.family<Stream<List<WorkoutSessionWithTemplate>>, int>((ref, date) {
+  return ref.read(workoutSessionsRepositoryProvider).watchSessionsByDate(date);
 });
 
 final workoutSessionsRepositoryProvider = Provider<WorkoutSessionsRepository>((ref) {
@@ -187,6 +199,7 @@ class WorkoutTemplatesRepository {
       notes: data.notes,
       notesHe: data.notesHe,
       origin: data.origin,
+      customRest: data.customRest,
     );
   }
 
@@ -198,6 +211,7 @@ class WorkoutTemplatesRepository {
       notes: model.notes,
       notesHe: model.notesHe,
       origin: model.origin,
+      customRest: model.customRest,
     );
   }
 
@@ -211,6 +225,7 @@ class WorkoutTemplatesRepository {
       defaultReps: data.defaultReps,
       defaultWeight: data.defaultWeight,
       defaultRestSeconds: data.defaultRestSeconds,
+      isRest: data.isRest,
     );
   }
 
@@ -224,6 +239,7 @@ class WorkoutTemplatesRepository {
       defaultReps: model.defaultReps,
       defaultWeight: model.defaultWeight,
       defaultRestSeconds: model.defaultRestSeconds,
+      isRest: model.isRest,
     );
   }
 }
@@ -236,25 +252,48 @@ class WorkoutSessionsRepository {
   Stream<List<WorkoutSessionWithTemplate>> watchRecentSessions({int limit = 10}) {
     return _database.watchWorkoutsStream().asyncMap((_) async {
       final sessions = await _database.getRecentWorkoutSessions(limit: limit);
-      final List<WorkoutSessionWithTemplate> result = [];
-      for (final session in sessions) {
-        final sets = await _database.getSetEntriesBySessionId(session.id);
-        
-        // Get template name if templateId exists
-        String? templateName;
-        if (session.templateId != null) {
-          final template = await _database.getWorkoutTemplateById(session.templateId!);
-          templateName = template?.name;
-        }
-        
-        result.add(WorkoutSessionWithTemplate(
-          session: _sessionDataToModel(session).copyWith(
-            sets: sets.map(_setEntryDataToModel).toList(),
-          ),
-          templateName: templateName,
-        ));
+      return _withTemplateNames(sessions);
+    });
+  }
+
+  /// Loads each session's sets and its template's name.
+  Future<List<WorkoutSessionWithTemplate>> _withTemplateNames(
+      List<WorkoutSessionData> sessions) async {
+    final List<WorkoutSessionWithTemplate> result = [];
+    for (final session in sessions) {
+      final sets = await _database.getSetEntriesBySessionId(session.id);
+
+      String? templateName;
+      if (session.templateId != null) {
+        final template =
+            await _database.getWorkoutTemplateById(session.templateId!);
+        templateName = template?.name;
       }
-      return result;
+
+      result.add(WorkoutSessionWithTemplate(
+        session: _sessionDataToModel(session).copyWith(
+          sets: sets.map(_setEntryDataToModel).toList(),
+        ),
+        templateName: templateName,
+      ));
+    }
+    return result;
+  }
+
+  /// Every session started on [date] (`yyyymmdd`), newest first.
+  ///
+  /// Filtering happens on the loaded rows rather than in a query because the
+  /// session table is small and already fully in memory -- same as
+  /// `getWorkoutSessionsInRange`, which this reuses.
+  Stream<List<WorkoutSessionWithTemplate>> watchSessionsByDate(int date) {
+    return _database.watchWorkoutsStream().asyncMap((_) async {
+      final day = AppDateUtils.intToDate(date);
+      final sessions = await _database.getWorkoutSessionsInRange(day, day);
+      final onDay = sessions
+          .where((s) => AppDateUtils.dateToInt(s.startedAt) == date)
+          .toList()
+        ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+      return _withTemplateNames(onDay);
     });
   }
 

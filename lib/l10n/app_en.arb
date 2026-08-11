@@ -10,6 +10,8 @@
   "goodNight": "Good night!",
   "yourWellnessOverview": "Your wellness overview",
   "dashboard": "Dashboard",
+  "navHome": "Home",
+  "navStats": "Stats",
   "meals": "Meals",
   "workouts": "Workouts",
   "sleep": "Sleep",
@@ -25,6 +27,7 @@
   "protein": "Protein",
   "carbs": "Carbs",
   "fat": "Fat",
+  "nights": "nights",
   "wellRested": "Well rested!",
   "needMore": "Need more sleep",
   "getMoving": "Get moving?",
@@ -1302,5 +1305,44 @@
   "workoutExercises": "Workout exercises",
   "@workoutExercises": {
     "description": "workoutExercises"
-  }
+  },
+  "volumeLabel": "Volume",
+  "trackYourTrainingFor": "Track your training for ",
+  "workoutTotals": "Daily Training",
+  "yourExercises": "Your Exercises",
+  "starterExercises": "Starter Library",
+  "noExercisesMatch": "No exercises match",
+  "editExercise": "Edit Exercise",
+  "addFirstFoodItem": "Add your first food item",
+  "editMeal": "Edit Meal",
+  "editTemplate": "Edit Template",
+  "customBreaks": "Customize breaks",
+  "customBreaksSubtitle": "Set your own rest between sets, and add breaks anywhere in the workout",
+  "autoBreaksSubtitle": "Rest between sets is set automatically from the rep count",
+  "addRest": "Add Break",
+  "restBlock": "Break",
+  "restDuration": "Break length",
+  "betweenSets": "Between sets",
+  "automatic": "Automatic",
+  "addExerciseShort": "Exercise",
+  "addBreakShort": "Break",
+  "restDefaultHelper": "Leave empty for this exercise’s default of {rest}",
+  "@restDefaultHelper": {
+    "placeholders": {
+      "rest": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardPeriodToday": "Today",
+  "dashboardPeriodWeek": "This week",
+  "workoutMinutes": "{minutes} min",
+  "@workoutMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "nightlyAverage": "nightly average"
 }

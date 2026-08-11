@@ -5,6 +5,129 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Demo data on demand (2026-08-09)
+
+`--dart-define=DEMO_SEED=true` wipes the app and rebuilds it as a known
+six-month dataset: the real generated plan for a real profile, 600 meals, 102
+sessions, 175 nights, 26 weigh-ins and the scheduled calendar, plus the edits a
+generated plan cannot produce (custom breaks, an odd rest, a prescribed weight,
+a bodyweight-only row, user-owned content). Fixed random seed, so the same
+build always produces the same data and a test checklist can name what each
+screen should show.
+
+It then exports and re-imports the whole thing and compares row counts, which
+exercises the backup path over a realistic dataset on every build.
+
+### Breaks you can place anywhere in a workout template (2026-08-09)
+
+Asked for as "I want the option to put [rest] wherever I want and how much I
+want ... make the break between each set automatically but you also can
+disable it", plus smaller cards and swipe-to-edit.
+
+**One switch decides the whole model.** "Customize breaks" is off by default,
+which is what every existing template stays on: rest is derived from the rep
+count between every set, there is nothing to configure and no break UI at all.
+Turning it on reveals the break rows and the button that adds them. Turning it
+back off strips any break rows rather than leaving orphans the app would not
+render.
+
+**A break is a row in the same list as the exercises** -- `TemplateExercise`
+with `isRest` set, `defaultRestSeconds` as its length. That is what lets it sit
+anywhere in the order and be dragged like an exercise, and it means ordering,
+reordering, backup and export all keep working untouched. Both new fields
+(`customRest` on the template, `isRest` on the row) default to false, so
+backups written before this read back exactly as they did.
+
+**The rows got much smaller.** An exercise was a two-line card with two icon
+buttons -- eight of them was 700pt of scrolling. It is one 56pt row now: drag
+handle, name, and the prescription ("3 x 10 · 60kg · 1:30") on the right. Edit
+and delete moved onto the swipe gestures.
+
+**Swipe-to-edit, app-wide.** `SwipeActionRow` now takes an `onEdit`: swipe from
+the leading edge to edit (blue), from the trailing edge to delete (red). Wired
+into every list -- meals, both template screens, the food catalog, the exercise
+library, sleep and the template editor.
+
+Also fixed a duplicated sheet drag handle: the theme sets `showDragHandle:
+true` and `AppSheet` drew its own on top, so every sheet in the app had two.
+
+### The iOS shell, actually looked at (2026-08-09)
+
+Shipped the conversion below with a green suite and a clean analyzer, and it
+was badly broken on a phone. Reported as "the UI looks broken in a lot of
+areas", which was generous -- the meals and workouts home screens rendered
+*nothing at all*.
+
+- **`ISSUES.md` #87**: `ShortcutRow` stretched a `Row` against the unbounded
+  height a sliver hands down, which throws in `performLayout` and fails the
+  whole subtree. One bad row, two entirely blank screens.
+- **`ISSUES.md` #88**: `cupertino_icons` was never a dependency, so every
+  `CupertinoIcons` glyph in the new UI -- every "+", chevron, ellipsis and
+  checkmark -- was a tofu box.
+- **`ISSUES.md` #89**: five pre-existing horizontal overflows, worst 184pt.
+- Two cosmetic ones: the date strip's label was 30pt left of centre (the Today
+  slot was only reserved on one side), and "Track your nutrition for2026-08-09"
+  lost its space (the ARB's trailing space does not survive codegen).
+
+**The lesson is the test, not the fixes.** `test/widget/page_smoke_test.dart`
+now renders all 22 screens at 402x874 and fails on any layout exception. Every
+bug above is invisible to `flutter analyze` and to unit tests of the widgets
+underneath; #87 reproduces in that file the moment the fix is reverted. Nothing
+in the suite had ever pumped a whole page.
+
+### One iOS shell for every screen; workouts realigned with meals (2026-08-09)
+
+Asked for as "make the workout page like the meals page, workout templates like
+the meal templates, exercises like food -- and make the view iPhone style
+100%". Two jobs: the areas had drifted into different shapes, and the whole app
+was wearing Material chrome on an iPhone.
+
+**The kit** (`lib/core/ios/`) is the part that matters -- every screen is now
+built from it rather than assembling its own `Scaffold` + `AppBar`:
+
+| File | What it gives every screen |
+|---|---|
+| `app_scaffold.dart` | `AppScaffold` (collapsing large title, chevron back, nav-bar actions, pinned header, bottom bar) and `AppNavScaffold` for screens whose body is not a scroll view |
+| `sheets.dart` | `showAppActionSheet`, `showAppConfirm`, `AppFormPage` + `pushModalPage` |
+| `swipe_row.dart` | swipe-to-delete, long-press actions, the ellipsis row button |
+| `inset_list.dart` | iOS inset-grouped sections and rows |
+| `controls.dart` | sliding segmented control, search field, filter pills, filter banner |
+| `date_strip.dart`, `shortcuts.dart` | the day picker and the shortcut tiles the meals/workouts home screens share |
+
+Material widgets underneath, so `theme.dart`'s eight themes, the per-area
+meals/workouts/sleep colours and the custom colour picker all keep working
+unchanged; nothing in the theme layer was touched.
+
+**What actually moved.** The workouts home screen was an undated list of every
+template stacked above the last five sessions; the meals home screen was a day
+view. They are the same screen now -- pick a day, see the day's totals, see the
+entries, add another -- which needed a new `watchSessionsByDate` on the sessions
+repository. Workout templates moved to `/workouts/templates`, mirroring meal
+templates, so the workout routes are now the same shape as the meal routes
+(`templates` = list, `templates/new` and `templates/:id` = editor). The exercise
+library gained the search and filtering the food catalog already had; at 115
+exercises it needed them.
+
+**Chrome, everywhere.** Seven floating action buttons became navigation-bar "+"
+buttons (keeping their widget keys, so the flow tests still address them).
+Every `PopupMenuButton` became an iOS action sheet, reachable from an ellipsis
+button *and* a long press, with swipe-to-delete alongside. Every delete
+confirmation became one `showAppConfirm`. The food and exercise editors were
+centred dialogs capped at 85% of the screen and scrolled internally -- they are
+full-screen modal pages now. The theme, language and profile pickers became
+inset-grouped lists. The secondary destinations of an area (catalog, templates,
+settings) are labelled shortcut tiles rather than unlabelled glyphs crowded
+into the bar -- the workouts page had already been forced to drop two of them
+because the title wrapped on a 393pt screen.
+
+Two bugs fell out of reading every title and destination out loud: `ISSUES.md`
+#85 (the meal editor titled itself "Add Food") and #86 (a Settings row labelled
+"Workout Templates" opened Workout Settings).
+
+Fast suite green at 997. `flutter analyze` clean. The device suite's finders
+were updated for the new chrome but have **not** been run -- that needs a
+booted simulator.
+
 ### Fast-food macros corrected against the Israeli menu (2026-08-09)
 
 `ISSUES.md` #83, closing the owner-action flagged in #79. Read from McDonald's

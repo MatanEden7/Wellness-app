@@ -1,9 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/date_strip.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/ios/shortcuts.dart';
+import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
+import '../../../core/ui_constants.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
@@ -12,7 +19,11 @@ import '../domain/models.dart';
 import 'quick_add_meal_dialog.dart';
 import '../../../services/preferences_service.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/liquid_glass_tab_bar.dart';
 
+/// The home of the meals area: pick a day, see the day's totals, see the
+/// meals, add another. The workouts home screen is deliberately the same
+/// screen with different content.
 class MealsPage extends HookConsumerWidget {
   const MealsPage({super.key});
 
@@ -21,286 +32,209 @@ class MealsPage extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final selectedDate = useState(AppDateUtils.today);
     final dateInt = AppDateUtils.dateToInt(selectedDate.value);
-    
-    final mealsAsync = ref.watch(mealsByDateStreamProvider(dateInt));
-    final dayTotalsAsync = ref.watch(dayTotalsStreamProvider(dateInt));
+    final mealsColor = ref.watch(preferencesServiceProvider).mealsColor;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.meals,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
-          onPressed: () => context.pop(),
-          tooltip: AppLocalizations.of(context)!.backToDashboard,
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_month, size: 22),
-            onPressed: () => context.push(Routes.calendar),
-            tooltip: AppLocalizations.of(context)!.calendar,
-          ),
-          IconButton(
-            icon: const Icon(Icons.restaurant_menu, size: 22),
-            onPressed: () => context.push(Routes.foodCatalog),
-            tooltip: l10n.foodCatalogTooltip,
-          ),
-          IconButton(
-            icon: const Icon(Icons.bookmark, size: 22),
-            onPressed: () => context.push(Routes.mealTemplates),
-            tooltip: l10n.mealTemplates,
-          ),
-        ],
+    final mealsStream = ref.watch(mealsByDateStreamProvider(dateInt));
+    final dayTotalsStream = ref.watch(dayTotalsStreamProvider(dateInt));
+
+    return AppScaffold(
+      title: l10n.meals,
+      backTooltip: l10n.backToDashboard,
+      pinnedHeader: DateStrip(
+        date: selectedDate.value,
+        onChanged: (next) => selectedDate.value = next,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Date Selector
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 28),
-                    onPressed: () {
-                      selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
-                    },
-            tooltip: l10n.previous,
+      actions: [
+        NavBarAction(
+          icon: CupertinoIcons.calendar,
+          tooltip: l10n.calendar,
+          onPressed: () => context.push(Routes.calendar),
+        ),
+        NavBarAction(
+          icon: CupertinoIcons.add,
+          tooltip: l10n.logMeal,
+          onPressed: () => _showAddMealOptions(context, ref),
+        ),
+      ],
+      floatingTabBar: const LiquidGlassTabBar(currentIndex: 1),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            UIConstants.screenHorizontalPadding,
+            UIConstants.cardSpacing,
+            UIConstants.screenHorizontalPadding,
+            0,
           ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        AppDateUtils.formatDate(selectedDate.value),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right, size: 28),
-                    onPressed: () {
-                      final tomorrow = selectedDate.value.add(const Duration(days: 1));
-                      if (tomorrow.isBefore(AppDateUtils.today.add(const Duration(days: 1)))) {
-                        selectedDate.value = tomorrow;
-                      }
-                    },
-            tooltip: l10n.next,
-          ),
-                  TextButton(
-                    onPressed: () {
-                      selectedDate.value = AppDateUtils.today;
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.today,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
-              ),
+          sliver: SliverToBoxAdapter(
+            child: ShortcutRow(
+              shortcuts: [
+                AppShortcut(
+                  icon: CupertinoIcons.square_list,
+                  label: l10n.mealTemplates,
+                  color: mealsColor,
+                  onTap: () => context.push(Routes.mealTemplates),
+                ),
+                AppShortcut(
+                  icon: CupertinoIcons.book,
+                  label: l10n.foodCatalog,
+                  color: mealsColor,
+                  onTap: () => context.push(Routes.foodCatalog),
+                ),
+                AppShortcut(
+                  icon: CupertinoIcons.slider_horizontal_3,
+                  label: l10n.nutritionGoals,
+                  color: mealsColor,
+                  onTap: () => context.push(Routes.nutritionGoals),
+                ),
+              ],
             ),
-
-            // Day Totals
-            StreamBuilder<DayTotals>(
-              stream: dayTotalsAsync,
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            UIConstants.screenHorizontalPadding,
+            UIConstants.cardSpacing,
+            UIConstants.screenHorizontalPadding,
+            0,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: StreamBuilder<DayTotals>(
+              stream: dayTotalsStream,
               builder: (context, snapshot) {
                 final totals = snapshot.data;
-                if (totals == null) {
-                  return const SizedBox.shrink();
-                }
+                if (totals == null) return const SizedBox.shrink();
 
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  child: AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.dailyTotals,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final prefs = ref.watch(preferencesServiceProvider);
-                            return NutritionProgressGrid(
-                              calories: totals.kcal,
-                              protein: totals.protein,
-                              carbs: totals.carbs,
-                              fat: totals.fat,
-                              calorieGoal: prefs.calorieGoal,
-                              proteinGoal: prefs.proteinGoal,
-                              carbsGoal: prefs.carbsGoal,
-                              fatGoal: prefs.fatGoal,
-                              useShortLabels: false,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                final prefs = ref.watch(preferencesServiceProvider);
+                return AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.dailyTotals,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      NutritionProgressGrid(
+                        calories: totals.kcal,
+                        protein: totals.protein,
+                        carbs: totals.carbs,
+                        fat: totals.fat,
+                        calorieGoal: prefs.calorieGoal,
+                        proteinGoal: prefs.proteinGoal,
+                        carbsGoal: prefs.carbsGoal,
+                        fatGoal: prefs.fatGoal,
+                        useShortLabels: false,
+                      ),
+                    ],
                   ),
                 );
               },
             ),
+          ),
+        ),
+        StreamBuilder<List<Meal>>(
+          stream: mealsStream,
+          builder: (context, snapshot) {
+            // First load only: on later rebuilds the list we already have is
+            // still valid, and a spinner over it reads as data disappearing.
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 60),
+                  child: LoadingIndicator(),
+                ),
+              );
+            }
 
-            const SizedBox(height: 16),
+            final meals = snapshot.data ?? [];
 
-            // Meals List
-            Expanded(
-              child: StreamBuilder<List<Meal>>(
-                stream: mealsAsync,
-                builder: (context, snapshot) {
-                  // Only show loading on initial load (no data yet)
-                  if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                    return const LoadingIndicator();
-                  }
+            if (meals.isEmpty) {
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: EmptyState(
+                    title: '${l10n.timeTo} ${l10n.fuelUp}',
+                    subtitle: '${l10n.trackYourNutritionFor.trim()} '
+                        '${AppDateUtils.formatDate(selectedDate.value)}',
+                    icon: Icons.restaurant,
+                    actionText: l10n.logFirstMeal,
+                    actionIcon: Icons.add,
+                    onAction: () => _showAddMealOptions(context, ref),
+                  ),
+                ),
+              );
+            }
 
-                  final meals = snapshot.data ?? [];
-
-                  if (meals.isEmpty) {
-                    return EmptyState(
-                      title: '${AppLocalizations.of(context)!.timeTo} ${AppLocalizations.of(context)!.fuelUp}',
-                      subtitle: '${AppLocalizations.of(context)!.trackYourNutritionFor}${AppDateUtils.formatDate(selectedDate.value)}',
-                      icon: Icons.restaurant,
-                      actionText: AppLocalizations.of(context)!.logFirstMeal,
-                      actionIcon: Icons.add,
-                      onAction: () => _showAddMealOptions(context, ref),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                    itemCount: meals.length,
-                    itemBuilder: (context, index) {
-                      final meal = meals[index];
-                      return _MealCard(
-                        meal: meal,
-                        onTap: () => context.push('/meals/edit/${meal.id}'),
-                        onDelete: () => _deleteMeal(context, ref, meal),
-                      );
-                    },
+            return SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                UIConstants.screenHorizontalPadding,
+                UIConstants.cardSpacing,
+                UIConstants.screenHorizontalPadding,
+                UIConstants.sectionSpacing,
+              ),
+              sliver: SliverList.builder(
+                itemCount: meals.length,
+                itemBuilder: (context, index) {
+                  final meal = meals[index];
+                  return _MealCard(
+                    meal: meal,
+                    onTap: () => context.push('/meals/edit/${meal.id}'),
+                    onDelete: () => _deleteMeal(ref, meal),
                   );
                 },
               ),
-            ),
-          ],
+            );
+          },
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddMealOptions(context, ref),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.logMeal),
-      ),
+      ],
     );
   }
 
   Future<void> _showAddMealOptions(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final mealsColor = ref.read(preferencesServiceProvider).mealsColor;
 
-    void replaceWith(BuildContext sheetContext, VoidCallback open) {
-      Navigator.of(sheetContext).pop();
-      open();
-    }
-
-    await showAppSheet<void>(
+    await showAppActionSheet(
       context: context,
-      builder: (sheetContext) => AppSheet(
-        title: l10n.logMeal,
-        icon: Icons.restaurant,
-        iconColor: mealsColor,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Quick add stays on this page; the other two navigate away.
-            IconRowTile(
-              icon: Icons.bolt,
-              label: l10n.quickAdd,
-              subtitle: l10n.quickAddMealSubtitle,
-              color: mealsColor,
-              onTap: () => replaceWith(
-                sheetContext,
-                () => showAppSheet<void>(
-                  context: context,
-                  builder: (_) => const QuickAddMealDialog(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            IconRowTile(
-              icon: Icons.edit,
-              label: l10n.logNewMeal,
-              subtitle: l10n.createMealFromScratch,
-              color: Theme.of(sheetContext).colorScheme.primary,
-              onTap: () => replaceWith(
-                sheetContext,
-                () => context.push(Routes.mealEditor),
-              ),
-            ),
-            const SizedBox(height: 10),
-            IconRowTile(
-              icon: Icons.bookmark,
-              label: l10n.useTemplate,
-              subtitle: l10n.chooseSavedMealTemplate,
-              color: Theme.of(sheetContext).colorScheme.secondary,
-              onTap: () => replaceWith(
-                sheetContext,
-                () => context.push(Routes.mealTemplates),
-              ),
-            ),
-          ],
+      title: l10n.logMeal,
+      actions: [
+        AppAction(
+          label: l10n.quickAdd,
+          icon: CupertinoIcons.bolt,
+          isDefault: true,
+          onPressed: () => showAppSheet<void>(
+            context: context,
+            builder: (_) => const QuickAddMealDialog(),
+          ),
         ),
-      ),
+        AppAction(
+          label: l10n.logNewMeal,
+          icon: CupertinoIcons.pencil,
+          onPressed: () => context.push(Routes.mealEditor),
+        ),
+        AppAction(
+          label: l10n.useTemplate,
+          icon: CupertinoIcons.square_list,
+          onPressed: () => context.push(Routes.mealTemplates),
+        ),
+      ],
     );
   }
 
-  Future<void> _deleteMeal(BuildContext context, WidgetRef ref, Meal meal) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteMeal),
-        content: Text('${AppLocalizations.of(context)!.areYouSure} "${meal.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context)!.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await ref.read(mealsRepositoryProvider).deleteMeal(meal.id);
-      // Trigger refresh to update UI immediately
-      ref.invalidate(mealsRepositoryProvider);
-    }
+  Future<void> _deleteMeal(WidgetRef ref, Meal meal) async {
+    await ref.read(mealsRepositoryProvider).deleteMeal(meal.id);
+    // Trigger refresh to update UI immediately
+    ref.invalidate(mealsRepositoryProvider);
   }
 }
 
 class _MealCard extends ConsumerWidget {
   final Meal meal;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
+  final Future<void> Function() onDelete;
 
   const _MealCard({
     required this.meal,
@@ -314,120 +248,123 @@ class _MealCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final mealsColor = ref.watch(preferencesServiceProvider).mealsColor;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SettingsIconBadge(Icons.restaurant, color: mealsColor, size: 20),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        meal.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (meal.items.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+    return SwipeActionRow(
+      rowKey: ValueKey(meal.id),
+      deleteLabel: l10n.delete,
+      confirmTitle: l10n.deleteMeal,
+      confirmMessage: '${l10n.areYouSure} "${meal.name}"?',
+      onDelete: onDelete,
+      onEdit: onTap,
+      editLabel: l10n.edit,
+      actions: [
+        AppAction(
+          label: l10n.edit,
+          icon: CupertinoIcons.pencil,
+          onPressed: onTap,
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SettingsIconBadge(Icons.restaurant, color: mealsColor, size: 20),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          l10n.itemsCount(meal.items.length),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6),
+                          meal.name,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        if (meal.items.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.itemsCount(meal.items.length),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
                       ],
+                    ),
+                  ),
+                  Text(
+                    Formatters.formatCalories(meal.totalKcal),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: mealsColor,
+                    ),
+                  ),
+                  Text(
+                    ' ${l10n.kcal}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  AppRowMenuButton(
+                    title: meal.name,
+                    tooltip: l10n.meals,
+                    actions: [
+                      AppAction(
+                        label: l10n.edit,
+                        icon: CupertinoIcons.pencil,
+                        onPressed: onTap,
+                      ),
+                      AppAction(
+                        label: l10n.delete,
+                        icon: CupertinoIcons.delete,
+                        isDestructive: true,
+                        onPressed: () async {
+                          final confirmed = await showAppConfirm(
+                            context: context,
+                            title: l10n.deleteMeal,
+                            message: '${l10n.areYouSure} "${meal.name}"?',
+                            confirmLabel: l10n.delete,
+                          );
+                          if (confirmed) await onDelete();
+                        },
+                      ),
                     ],
                   ),
-                ),
-                Text(
-                  Formatters.formatCalories(meal.totalKcal),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: mealsColor,
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  _MacroBadge(
+                    label: l10n.proteinShort,
+                    grams: meal.totalProtein,
+                    color: Colors.blue,
                   ),
-                ),
-                Text(
-                  ' ${l10n.kcal}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  const SizedBox(width: 6),
+                  _MacroBadge(
+                    label: l10n.carbsShort,
+                    grams: meal.totalCarbs,
+                    color: Colors.green,
                   ),
-                ),
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert,
-                    size: 20,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  const SizedBox(width: 6),
+                  _MacroBadge(
+                    label: l10n.fatShort,
+                    grams: meal.totalFat,
+                    color: Colors.purple,
                   ),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.edit, size: 20),
-                          const SizedBox(width: 12),
-                          Text(l10n.edit),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.delete, color: Colors.red, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            l10n.delete,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      onTap();
-                    } else if (value == 'delete') {
-                      onDelete();
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                _MacroBadge(
-                  label: l10n.proteinShort,
-                  grams: meal.totalProtein,
-                  color: Colors.blue,
-                ),
-                const SizedBox(width: 6),
-                _MacroBadge(
-                  label: l10n.carbsShort,
-                  grams: meal.totalCarbs,
-                  color: Colors.green,
-                ),
-                const SizedBox(width: 6),
-                _MacroBadge(
-                  label: l10n.fatShort,
-                  grams: meal.totalFat,
-                  color: Colors.purple,
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

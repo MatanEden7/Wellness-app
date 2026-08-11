@@ -370,7 +370,11 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     labelText: '${l10n.weight} (${exercise.unit})',
-                    hintText: '0',
+                    // Empty means bodyweight, not zero -- and the label has to
+                    // float for that to be readable before the field is
+                    // tapped. See the template editor's weight field.
+                    hintText: l10n.bodyweight,
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
                 ),
               ),

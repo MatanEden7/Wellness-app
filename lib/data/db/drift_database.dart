@@ -1289,6 +1289,63 @@ class AppDatabase {
     return _sumSessionMinutes(todayStart, todayEnd);
   }
 
+  /// Sessions completed inside an arbitrary window.
+  ///
+  /// The dashboard can be paged back through days and weeks, so it cannot use
+  /// the `...Today` / `...ThisWeek` helpers -- those pin themselves to
+  /// `DateTime.now()` and answer for the wrong period the moment you press an
+  /// arrow.
+  Future<int> getCompletedWorkoutsInRange(DateTime start, DateTime end) async {
+    return _workoutSessions
+        .where((session) =>
+            session.endedAt != null &&
+            !session.startedAt.isBefore(start) &&
+            session.startedAt.isBefore(end))
+        .length;
+  }
+
+  Future<double> getWorkoutMinutesInRange(DateTime start, DateTime end) async {
+    double total = 0;
+    for (final session in _workoutSessions) {
+      if (session.endedAt == null) continue;
+      if (session.startedAt.isBefore(start)) continue;
+      if (!session.startedAt.isBefore(end)) continue;
+      total += session.endedAt!.difference(session.startedAt).inMinutes;
+    }
+    return total;
+  }
+
+  /// Sleep stats for a date window, or null if nothing was logged.
+  ///
+  /// A night is attributed to the day it *ended* on -- you wake up on the day
+  /// the sleep counts for.
+  Future<SleepRangeData?> getSleepDataInRange(
+      DateTime start, DateTime end) async {
+    final nights = _sleepEntries.where((entry) {
+      final ended = entry.endedAt;
+      if (ended == null) return false;
+      return !ended.isBefore(start) && ended.isBefore(end);
+    }).toList();
+
+    if (nights.isEmpty) return null;
+
+    var totalMinutes = 0;
+    for (final night in nights) {
+      totalMinutes += night.endedAt!.difference(night.startedAt).inMinutes;
+    }
+    final totalHours = totalMinutes / 60.0;
+    return SleepRangeData(
+      totalHours: totalHours,
+      averageHours: totalHours / nights.length,
+      nightCount: nights.length,
+    );
+  }
+
+  /// Convenience: average hours per night in [start]..[end], or null if empty.
+  Future<double?> getSleepAverageHoursInRange(
+          DateTime start, DateTime end) async =>
+      (await getSleepDataInRange(start, end))?.averageHours;
+
   Future<double> getWorkoutMinutesThisWeek() async {
     return _sumSessionMinutes(
       AppDateUtils.startOfWeek(DateTime.now()),
@@ -2045,6 +2102,11 @@ class WorkoutTemplateData {
   /// by the user -- regeneration only ever replaces [TemplateOrigin.generated].
   final TemplateOrigin origin;
 
+  /// Whether this template manages its own breaks -- see
+  /// `WorkoutTemplate.customRest`. Defaults false, which is what every row
+  /// written before this field existed means: automatic, derived rest.
+  final bool customRest;
+
   WorkoutTemplateData({
     required this.id,
     required this.name,
@@ -2052,6 +2114,7 @@ class WorkoutTemplateData {
     this.notes,
     this.notesHe,
     this.origin = TemplateOrigin.user,
+    this.customRest = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -2061,6 +2124,7 @@ class WorkoutTemplateData {
     'notes': notes,
     'notesHe': notesHe,
     'origin': origin.key,
+    'customRest': customRest,
   };
 
   factory WorkoutTemplateData.fromJson(Map<String, dynamic> json) => WorkoutTemplateData(
@@ -2071,6 +2135,7 @@ class WorkoutTemplateData {
     notesHe: json['notesHe'] as String?,
     // See MealTemplateData.fromJson.
     origin: TemplateOrigin.fromKey(json['origin']),
+    customRest: json['customRest'] as bool? ?? false,
   );
 }
 
@@ -2105,6 +2170,11 @@ class TemplateExerciseData {
     return 60;
   }
 
+  /// Marks this row as a standalone break rather than an exercise -- see
+  /// `TemplateExercise.isRest`. Rows written before this field existed are
+  /// all exercises, which is what the `false` default says.
+  final bool isRest;
+
   TemplateExerciseData({
     required this.id,
     required this.templateId,
@@ -2114,6 +2184,7 @@ class TemplateExerciseData {
     this.defaultReps,
     this.defaultWeight,
     this.defaultRestSeconds,
+    this.isRest = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -2125,6 +2196,7 @@ class TemplateExerciseData {
     'defaultReps': defaultReps,
     'defaultWeight': defaultWeight,
     'defaultRestSeconds': defaultRestSeconds,
+    'isRest': isRest,
   };
 
   factory TemplateExerciseData.fromJson(Map<String, dynamic> json) => TemplateExerciseData(
@@ -2138,6 +2210,7 @@ class TemplateExerciseData {
     // Absent on rows written before this field existed; `restSeconds` derives
     // a value from the rep count in that case.
     defaultRestSeconds: (json['defaultRestSeconds'] as num?)?.toInt(),
+    isRest: json['isRest'] as bool? ?? false,
   );
 }
 
@@ -2222,6 +2295,18 @@ class SetEntryData {
     weight: (json['weight'] as num?)?.toDouble(),
     restSeconds: json['restSeconds'] as int?,
   );
+}
+
+class SleepRangeData {
+  final double totalHours;
+  final double averageHours;
+  final int nightCount;
+
+  const SleepRangeData({
+    required this.totalHours,
+    required this.averageHours,
+    required this.nightCount,
+  });
 }
 
 class SleepEntryData {

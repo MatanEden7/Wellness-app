@@ -4,39 +4,40 @@ Snapshot only — update when overall project status changes, not on every commi
 See `CLAUDE.md` for the doc-tracking rules and `.claude/commands/status.md` /
 `big-status.md` / `my-status.md` for how to regenerate this.
 
-Last updated: 2026-08-07 (analytics screen)
+Last updated: 2026-08-09 (iOS UI shell, verified on device)
 
 ## Current task
 
-None. The analytics screen is complete, bilingual and VoiceOver-readable,
-reachable from the dashboard header (`/analytics`): goals-together hero chart,
-nutrition, training, strength with plateau detection, body weight, sleep, and
-generated insights. Body weight is a new tracked entity and is in the backup.
-Planned in `docs/ANALYTICS_PLAN.md`.
+None. Every screen in the app is now built from the shared iOS kit in
+`lib/core/ios/` — collapsing large titles, nav-bar actions instead of floating
+buttons, action sheets instead of overflow menus, swipe-to-delete, inset
+grouped lists. Meals and workouts are structurally identical: day-anchored
+home screen, templates screen, catalog/library screen, matching routes.
 
-Five bugs closed the same day (ISSUES #73–#77), three of them found by *running*
-rather than by reading: #76 by testing against real generated localisations,
-and #77 — custom foods and exercises could not be saved on a phone at all — by
-running the full integration suite.
+Five bugs fell out of it: ISSUES #85–#89. Three were serious and were only
+found by *running* the app — the meals and workouts screens rendered blank
+(#87) and every iOS glyph was a tofu box (#88).
 
-Fast suite green at 606. Device suite green: 9/9 sanity, 4/4 regression
-(including four new onboarding→schedule flows), 3/3 e2e. `flutter analyze
-lib/ test/` clean.
+Fast suite green at 1019, including a new `page_smoke_test.dart` that renders
+all 22 screens at phone size and fails on any layout exception — the gap that
+let #87 ship. `flutter analyze` clean. Screens verified visually on the
+simulator: dashboard, meals, workouts, food catalog.
 
-**The release build is installed on the iPhone** (`com.matan.wellnessx123`,
-via `xcrun devicectl` — `flutter install` cannot find its own bundle here).
-Everything above was verified on the simulator; the device itself has had the
-build put on it but has not been driven through a manual pass.
+**The `integration_test/` device suite still has not been run** since the
+conversion; its finders were updated for the new chrome but not confirmed.
+That is the one open thread.
 
 ## Snapshot
 
 | Area | Status | Progress |
 |---|---|---|
-| Fast unit suite | ✅ Green | 606/606 |
+| Fast unit suite | ✅ Green | 1022/1022 (incl. 22-screen smoke test) |
 | `flutter analyze` | ✅ Clean | 0 errors (info-level style lints only) |
-| Device suite | ✅ Green | 16/16 sanity+regression, plus 3/3 e2e (2 need an attended permission tap) |
+| Device suite | ⚠️ Not re-run | finders updated for the new iOS chrome; needs a simulator pass |
 | Analytics screen | ✅ Shipped | EN+HE, a11y labelled, exercised by an integration flow |
 | `docs/ISSUES.md` open items | 5 remain | all 5 need the user — see below |
+| iOS UI shell | ✅ Shipped | every page on `lib/core/ios/`; meals ≙ workouts |
+| Template breaks | ✅ Shipped | "Customize breaks" switch; break rows draggable anywhere |
 | `docs/ROADMAP.md` Epic B (notifications) | B1/B3/B4 open | all three are device checks — **me** |
 | Exercise catalog depth | ⚠️ Binding constraint | Calves ×1, Glutes ×2, Biceps ×2 — Leg Day A/B identical at 6 days |
 | `docs/ROADMAP.md` epics A–F | Closed | except the 4 user-blocked items below |

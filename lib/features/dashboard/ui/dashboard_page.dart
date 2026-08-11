@@ -1,25 +1,31 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/date_strip.dart';
+import '../../../core/ios/liquid_glass_tab_bar.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
+import '../../../core/date_utils.dart' as dates;
 import '../../../core/utils.dart';
 import '../../../core/rtl_helper.dart';
 import '../../../routing/routes.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/background_refresh_service.dart';
 import '../../../services/dummy_data_service.dart';
+import '../../../data/db/drift_database.dart';
 import '../../meals/data/repositories.dart';
+import '../../meals/domain/models.dart';
 import '../../meals/ui/quick_add_meal_dialog.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import '../../workouts/data/repositories.dart';
 import '../../workouts/data/daily_workouts_provider.dart';
 import '../../workouts/domain/models.dart';
 import '../../workouts/ui/quick_start_workout_dialog.dart';
-import '../../sleep/data/repositories.dart';
 import '../../sleep/ui/sleep_page.dart' show showAddSleepSheet;
 
 /// Keys for the dashboard's navigation affordances.
@@ -31,11 +37,17 @@ import '../../sleep/ui/sleep_page.dart' show showAddSleepSheet;
 class DashboardKeys {
   const DashboardKeys._();
 
-  static const mealsAction = Key('dashboard_action_meals');
-  static const workoutsAction = Key('dashboard_action_workouts');
-  static const sleepAction = Key('dashboard_action_sleep');
+  // Meals, workouts, sleep and calendar are no longer dashboard buttons --
+  // they are tabs in the floating glass bar, which is present on the
+  // dashboard and everywhere else. These keys point at those tabs, so a
+  // caller that means "go to meals" still finds the control that does it.
+  static final mealsAction = LiquidGlassTabBar.tabKey(Routes.meals);
+  static final workoutsAction = LiquidGlassTabBar.tabKey(Routes.workouts);
+  static final sleepAction = LiquidGlassTabBar.tabKey(Routes.sleep);
+  static final calendarAction = LiquidGlassTabBar.tabKey(Routes.calendar);
+
+  /// Stats stayed a navigation-bar button: six destinations, five slots.
   static const analyticsAction = Key('dashboard_action_analytics');
-  static const calendarAction = Key('dashboard_action_calendar');
   static const settingsAction = Key('dashboard_action_settings');
   static const quickAddFab = Key('dashboard_quick_add_fab');
 }
@@ -45,129 +57,154 @@ class DashboardPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // The period every card reports on. Lives here rather than in the body
+    // because the arrows that move it are page chrome, pinned under the
+    // title -- the same place and the same control the meals and workouts
+    // screens use.
+    final anchor = useState(AppDateUtils.today);
+    final isWeek = ref.watch(preferencesServiceProvider).globalTimeframeMode ==
+        TimeframeMode.week;
     final l10n = AppLocalizations.of(context)!;
-    
-    // Get current route and compute selectedIndex from it
-    final location = GoRouterState.of(context).uri.path;
-    int selectedIndex = 0;
-    if (location == '/') {
-      selectedIndex = 0;
-    } else if (location.startsWith('/meals')) {
-      selectedIndex = 1;
-    } else if (location.startsWith('/workouts')) {
-      selectedIndex = 2;
-    } else if (location.startsWith('/sleep')) {
-      selectedIndex = 3;
-    } else if (location.startsWith('/settings')) {
-      selectedIndex = 4;
-    }
-    
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
-        
-        if (isMobile) {
-          // Mobile layout: no bottom tab bar. Navigation lives in the quick
-          // actions grid and header icons instead; the "+" button is for
-          // instant data entry, not page redirection.
-          return Scaffold(
-            body: SafeArea(
-              top: true,
-              bottom: false,
-              // Extra bottom room so the quick-actions grid clears the
-              // floating "+" -- without it the FAB sits on top of the
-              // Calendar button and swallows its taps.
-              child: _DashboardContent(bottomInset: 96),
-            ),
-            floatingActionButton: _QuickAddFab(key: DashboardKeys.quickAddFab),
-          );
-        } else {
-          // Desktop layout with sidebar
-          return Scaffold(
-            body: Row(
-              children: [
-                // Sidebar Navigation
-                NavigationRail(
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: (index) {
-                    _navigateToPage(context, index);
-                  },
-                  labelType: NavigationRailLabelType.all,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.dashboard_outlined),
-                      selectedIcon: const Icon(Icons.dashboard),
-                      label: Text(l10n.dashboardTab),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.restaurant_outlined),
-                      selectedIcon: const Icon(Icons.restaurant),
-                      label: Text(l10n.mealsTab),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.fitness_center_outlined),
-                      selectedIcon: const Icon(Icons.fitness_center),
-                      label: Text(l10n.workoutsTab),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.bedtime_outlined),
-                      selectedIcon: const Icon(Icons.bedtime),
-                      label: Text(l10n.sleepTab),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.settings_outlined),
-                      selectedIcon: const Icon(Icons.settings),
-                      label: Text(l10n.settingsTab),
-                    ),
-                  ],
-                ),
-                const VerticalDivider(thickness: 1, width: 1),
-                // Main Content
-                Expanded(
-                  // Desktop has no FAB, so no extra inset needed.
-                  child: _DashboardContent(),
-                ),
-              ],
-            ),
-          );
-        }
-      },
+
+    // One layout at every width.
+    //
+    // There used to be a second branch above 600pt carrying a NavigationRail
+    // with five destinations -- the bottom tab bar that was removed from the
+    // phone layout, still alive in the wide one. A phone crosses 600pt the
+    // moment it is turned on its side, so rotating the device brought back a
+    // navigation pattern the app no longer uses anywhere else, listing routes
+    // the quick-action grid already covers.
+    //
+    // The greeting is the large navigation title, so it shrinks into an
+    // inline title on scroll like every other screen's does, and the actions
+    // that used to sit beside it in the body are navigation-bar buttons.
+    return AppScaffold(
+      title: _getLocalizedGreeting(context),
+      showBack: false,
+      actions: _dashboardActions(context, ref),
+      pinnedHeader: DateStrip(
+        date: anchor.value,
+        onChanged: (next) => anchor.value = next,
+        // A week at a time when Settings asks for a weekly view, so the
+        // arrows move by whatever the cards are actually summarising.
+        stepDays: isWeek ? 7 : 1,
+        isCurrent: (date) => isWeek
+            ? dates.AppDateUtils.startOfWeek(date) ==
+                dates.AppDateUtils.startOfWeek(DateTime.now())
+            : AppDateUtils.dateToInt(date) ==
+                AppDateUtils.dateToInt(AppDateUtils.today),
+        labelBuilder: (date) => _periodLabel(l10n, date, isWeek),
+      ),
+      floatingTabBar: const LiquidGlassTabBar(currentIndex: 0),
+      slivers: [
+        SliverToBoxAdapter(child: _DashboardContent(anchor: anchor.value)),
+      ],
     );
   }
 
-  void _navigateToPage(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go(Routes.dashboard);
-        break;
-      case 1:
-        context.push(Routes.meals);
-        break;
-      case 2:
-        context.push(Routes.workouts);
-        break;
-      case 3:
-        context.push(Routes.sleep);
-        break;
-      case 4:
-        context.push(Routes.settings);
-        break;
+  /// "Today" / "This week" for the current period, and the dates themselves
+  /// once you have paged away from it -- "Today" on a week three months ago
+  /// would be a lie.
+  String _periodLabel(AppLocalizations l10n, DateTime date, bool isWeek) {
+    if (!isWeek) {
+      return AppDateUtils.dateToInt(date) ==
+              AppDateUtils.dateToInt(AppDateUtils.today)
+          ? l10n.dashboardPeriodToday
+          : AppDateUtils.formatDate(date);
     }
+
+    final start = dates.AppDateUtils.startOfWeek(date);
+    if (start == dates.AppDateUtils.startOfWeek(DateTime.now())) {
+      return l10n.dashboardPeriodWeek;
+    }
+    final end = start.add(const Duration(days: 6));
+    return '${DateFormat('d MMM').format(start)} - '
+        '${DateFormat('d MMM').format(end)}';
+  }
+
+  /// Navigation-bar buttons for the dashboard: quick add, settings, and the
+  /// debug-only test-data generator.
+  ///
+  /// Quick add keeps [DashboardKeys.quickAddFab] even though it is no longer
+  /// a floating button -- it is the same action in the place iOS puts it.
+  List<Widget> _dashboardActions(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      // Test Data button -- debug builds only. This used to be
+      // unconditionally visible, letting anyone running a release build
+      // inject fabricated demo data into their real database via
+      // DummyDataService.
+      if (kDebugMode)
+        NavBarAction(
+          icon: CupertinoIcons.lab_flask,
+          tooltip: 'Generate Test Data',
+          onPressed: () {
+            final isHebrew =
+                Localizations.localeOf(context).languageCode == 'he';
+            showDialog(
+              context: context,
+              builder: (context) =>
+                  _TestDataDialog(isHebrew: isHebrew, ref: ref),
+            );
+          },
+        ),
+      // Six destinations do not fit five tab slots, so Stats is the one that
+      // sits up here. Calendar is the daily one -- you open it to see what is
+      // planned -- while Stats is something you check occasionally, and the
+      // tab bar should carry the things you reach for every day.
+      NavBarAction(
+        key: DashboardKeys.analyticsAction,
+        icon: CupertinoIcons.chart_bar_alt_fill,
+        tooltip: l10n.navStats,
+        onPressed: () => context.push(Routes.analytics),
+      ),
+      NavBarAction(
+        key: DashboardKeys.settingsAction,
+        icon: CupertinoIcons.settings,
+        tooltip: l10n.settings,
+        onPressed: () => context.push(Routes.settings),
+      ),
+      // The destructive "reset all data" action lives in Settings (see
+      // SettingsStub), behind a confirm dialog. A red one-tap wipe next to
+      // the greeting on the home screen is too easy to hit by accident.
+      QuickAddAction(key: DashboardKeys.quickAddFab),
+    ];
+  }
+
+}
+
+/// Time-of-day greeting, used as the dashboard's navigation title.
+String _getLocalizedGreeting(BuildContext context) {
+  final hour = DateTime.now().hour;
+  final l10n = AppLocalizations.of(context)!;
+  
+  // Morning: 5:00 AM - 11:59 AM
+  if (hour >= 5 && hour < 12) {
+    return l10n.goodMorning;
+  } 
+  // Afternoon: 12:00 PM - 5:59 PM
+  else if (hour >= 12 && hour < 18) {
+    return l10n.goodAfternoon;
+  } 
+  // Evening: 6:00 PM - 11:59 PM
+  else if (hour >= 18 && hour < 24) {
+    return l10n.goodEvening;
+  }
+  // Night/Early Morning: 12:00 AM - 4:59 AM
+  else {
+    return l10n.goodNight;
   }
 }
 
 class _DashboardContent extends HookConsumerWidget {
-  /// Padding below the last row, reserved for the floating action button on
-  /// layouts that have one.
-  final double bottomInset;
+  /// The day (or the day whose week) the cards report on.
+  final DateTime anchor;
 
-  const _DashboardContent({this.bottomInset = 16});
+  const _DashboardContent({required this.anchor});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
     final today = AppDateUtils.dateToInt(AppDateUtils.today);
     debugPrint('DEBUG: Dashboard requesting data for date: $today');
     
@@ -183,72 +220,38 @@ class _DashboardContent extends HookConsumerWidget {
       return null;
     }, []);
     
+    // Settings -> Preferences -> Global Timeframe and Workout Metric. Both
+    // were persisted and displayed on their own rows but read by nothing, so
+    // changing either did nothing anywhere (ISSUES #90, #91).
+    final prefs = ref.watch(preferencesServiceProvider);
+    final isWeek = prefs.globalTimeframeMode == TimeframeMode.week;
+    final database = ref.watch(databaseProvider);
+
+    // The period being shown, chosen by the arrows in the page's chrome.
+    final start = isWeek
+        ? dates.AppDateUtils.startOfWeek(anchor)
+        : dates.AppDateUtils.startOfDay(anchor);
+    final end = start.add(Duration(days: isWeek ? 7 : 1));
+
     // Watch data for dashboard stats
-    final dayTotalsStream = ref.watch(dayTotalsStreamProvider(today));
-    final completedWorkoutsAsync = ref.watch(workoutSessionsRepositoryProvider).getCompletedWorkoutsToday();
-    final sleepHoursAsync = ref.watch(sleepRepositoryProvider).getLastNightSleepHours();
-    // Removed: recentWorkoutsAsync - now using dailyWorkoutsProvider
+    final dayTotalsStream =
+        ref.watch(dayTotalsStreamProvider(AppDateUtils.dateToInt(start)));
+    final weekTotalsAsync =
+        isWeek ? database.getWeekTotals(AppDateUtils.dateToInt(start)) : null;
+    final workoutValueAsync =
+        prefs.workoutMetricMode == WorkoutMetricMode.time
+            ? database.getWorkoutMinutesInRange(start, end)
+            : database.getCompletedWorkoutsInRange(start, end)
+                .then<num>((value) => value);
+    final sleepDataAsync = database.getSleepDataInRange(start, end);
 
     return RTLHelper.withDirectionality(
       context,
-      SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         child: Column(
           crossAxisAlignment: RTLHelper.getStartCrossAxisAlignment(context),
           children: [
-          // Welcome Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  _getLocalizedGreeting(context),
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Analytics and Calendar moved into the quick actions grid
-                  // below alongside Meal/Workout/Sleep, now that the bottom
-                  // tab bar (which used to carry Settings) is gone. Settings
-                  // stays here since it doesn't fit the "log data" grid.
-                  IconButton(
-                    key: DashboardKeys.settingsAction,
-                    icon: const Icon(Icons.settings_outlined, size: 24),
-                    onPressed: () => context.push(Routes.settings),
-                    tooltip: AppLocalizations.of(context)!.settings,
-                  ),
-                  // Test Data button -- debug builds only. This used to be
-                  // unconditionally visible, letting anyone running a
-                  // release build inject fabricated demo data into their
-                  // real database via DummyDataService.
-                  if (kDebugMode)
-                  IconButton(
-                    icon: const Icon(Icons.science, size: 24),
-                    onPressed: () {
-                      final isHebrew = Localizations.localeOf(context).languageCode == 'he';
-                      showDialog(
-                        context: context,
-                        builder: (context) => _TestDataDialog(isHebrew: isHebrew, ref: ref),
-                      );
-                    },
-                    tooltip: 'Generate Test Data',
-                  ),
-                  // The destructive "reset all data" action lives in
-                  // Settings (see SettingsStub), behind the same confirm
-                  // dialog. A red one-tap wipe sitting next to the greeting
-                  // on the home screen is too easy to hit by accident.
-                ],
-              ),
-            ],
-          ),
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.yourWellnessOverview,
@@ -260,7 +263,8 @@ class _DashboardContent extends HookConsumerWidget {
           const SizedBox(height: 24),
 
           // 3 Enhanced Cards Layout
-          _build3CardLayout(context, ref, dayTotalsStream, completedWorkoutsAsync, sleepHoursAsync),
+          _build3CardLayout(context, ref, dayTotalsStream, weekTotalsAsync,
+              workoutValueAsync, sleepDataAsync),
 
           const SizedBox(height: AppSpacing.lg),
 
@@ -287,97 +291,11 @@ class _DashboardContent extends HookConsumerWidget {
                       },
                     ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Consumer(
-                builder: (context, ref, child) {
-                  final prefs = ref.watch(preferencesServiceProvider);
-                  return _QuickActionButton(
-                    key: DashboardKeys.mealsAction,
-                    icon: Icons.restaurant,
-                    label: AppLocalizations.of(context)!.meal,
-                    color: prefs.mealsColor,
-                    onPressed: () => context.push(Routes.meals),
-                  );
-                },
-              ),
-              Consumer(
-                builder: (context, ref, child) {
-                  final prefs = ref.watch(preferencesServiceProvider);
-                  return _QuickActionButton(
-                    key: DashboardKeys.workoutsAction,
-                    icon: Icons.fitness_center,
-                    label: AppLocalizations.of(context)!.workout,
-                    color: prefs.workoutsColor,
-                    onPressed: () => context.push(Routes.workouts),
-                  );
-                },
-              ),
-              Consumer(
-                builder: (context, ref, child) {
-                  final prefs = ref.watch(preferencesServiceProvider);
-                  // Previously this button always read "Sleep Timer" even
-                  // with a session already running, so stopping it required
-                  // knowing to navigate there blind. Reflect the active
-                  // state so the stop action is actually discoverable.
-                  final entriesAsync =
-                      ref.watch(recentSleepEntriesStreamProvider(1));
-                  return StreamBuilder(
-                    stream: entriesAsync,
-                    builder: (context, snapshot) {
-                      final active = snapshot.data?.firstOrNull;
-                      final isSleeping =
-                          active != null && !active.isCompleted;
-                      return _QuickActionButton(
-                        key: DashboardKeys.sleepAction,
-                        icon: isSleeping ? Icons.wb_sunny : Icons.bedtime,
-                        label: isSleeping
-                            ? AppLocalizations.of(context)!.sleepingEllipsis
-                            : AppLocalizations.of(context)!.sleep,
-                        color: prefs.sleepColor,
-                        // Land on the sleep *history* -- it carries the entry
-                        // list, the summary and a link to the timer. Sending
-                        // this button straight to /sleep/timer left the
-                        // history with no route at all once the bottom tab
-                        // bar was removed, so logged nights looked lost.
-                        // Mid-session is the one case where the timer is what
-                        // you actually want, so jump straight to it then.
-                        onPressed: () => context
-                            .push(isSleeping ? Routes.sleepTimer : Routes.sleep),
-                      );
-                    },
-                  );
-                },
-              ),
-                      ],
-                    ),
-                  const SizedBox(height: 16),
-
-                  // Analytics and Calendar joined the quick actions grid
-                  // when the bottom tab bar was removed -- they're still
-                  // page redirects, just grouped with the rest of the
-                  // navigation instead of living as small header icons.
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _QuickActionButton(
-                        key: DashboardKeys.analyticsAction,
-                        icon: Icons.insights_outlined,
-                        label: AppLocalizations.of(context)!.analyticsTitle,
-                        color: theme.colorScheme.primary,
-                        onPressed: () => context.push(Routes.analytics),
-                      ),
-                      const SizedBox(width: 48),
-                      _QuickActionButton(
-                        key: DashboardKeys.calendarAction,
-                        icon: Icons.calendar_month_outlined,
-                        label: l10n.calendarTooltip,
-                        color: theme.colorScheme.secondary,
-                        onPressed: () => context.push(Routes.calendar),
-                      ),
-                    ],
-                  ),
+          // The five navigation cards that used to sit here are gone -- the
+          // floating glass tab bar carries Home/Meals/Workouts/Sleep/Stats on
+          // every screen now, and Calendar moved to a nav-bar action. Cards
+          // are for content; navigation belongs in chrome that is always
+          // present, not halfway down one page's scroll.
                   ],
       ),
     ),
@@ -385,27 +303,6 @@ class _DashboardContent extends HookConsumerWidget {
   }
 
 
-  String _getLocalizedGreeting(BuildContext context) {
-    final hour = DateTime.now().hour;
-    final l10n = AppLocalizations.of(context)!;
-    
-    // Morning: 5:00 AM - 11:59 AM
-    if (hour >= 5 && hour < 12) {
-      return l10n.goodMorning;
-    } 
-    // Afternoon: 12:00 PM - 5:59 PM
-    else if (hour >= 12 && hour < 18) {
-      return l10n.goodAfternoon;
-    } 
-    // Evening: 6:00 PM - 11:59 PM
-    else if (hour >= 18 && hour < 24) {
-      return l10n.goodEvening;
-    }
-    // Night/Early Morning: 12:00 AM - 4:59 AM
-    else {
-      return l10n.goodNight;
-    }
-  }
 
   // Step 2-7: Complete workout section implementation
   Widget _buildTodaysWorkoutsSection(BuildContext context, WidgetRef ref, ThemeData theme) {
@@ -763,11 +660,12 @@ class _DashboardContent extends HookConsumerWidget {
 
   // New 3-card layout with integrated nutrition metrics
   Widget _build3CardLayout(
-    BuildContext context, 
-    WidgetRef ref, 
-    Stream dayTotalsStream, 
-    Future<int> completedWorkoutsAsync, 
-    Future<double?> sleepHoursAsync
+    BuildContext context,
+    WidgetRef ref,
+    Stream dayTotalsStream,
+    Future<Map<String, double>>? weekTotalsAsync,
+    Future<num> workoutValueAsync,
+    Future<SleepRangeData?> sleepDataAsync,
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -778,18 +676,18 @@ class _DashboardContent extends HookConsumerWidget {
           return Column(
             children: [
               // Card 1: Enhanced Nutrition Card
-              _buildEnhancedNutritionCard(context, ref, dayTotalsStream),
+              _buildEnhancedNutritionCard(context, ref, dayTotalsStream, weekTotalsAsync),
           const SizedBox(height: AppSpacing.md),
           
               // Cards 2 & 3: Workouts and Sleep in a row
               Row(
                 children: [
                   Expanded(
-                    child: _buildEnhancedWorkoutsCard(context, ref, completedWorkoutsAsync),
+                    child: _buildEnhancedWorkoutsCard(context, ref, workoutValueAsync),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: _buildEnhancedSleepCard(context, ref, sleepHoursAsync),
+                    child: _buildEnhancedSleepCard(context, ref, sleepDataAsync),
                   ),
                 ],
               ),
@@ -801,15 +699,15 @@ class _DashboardContent extends HookConsumerWidget {
             children: [
               Expanded(
                 flex: 2, // Give nutrition card more space
-                child: _buildEnhancedNutritionCard(context, ref, dayTotalsStream),
+                child: _buildEnhancedNutritionCard(context, ref, dayTotalsStream, weekTotalsAsync),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: _buildEnhancedWorkoutsCard(context, ref, completedWorkoutsAsync),
+                child: _buildEnhancedWorkoutsCard(context, ref, workoutValueAsync),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: _buildEnhancedSleepCard(context, ref, sleepHoursAsync),
+                child: _buildEnhancedSleepCard(context, ref, sleepDataAsync),
               ),
             ],
           );
@@ -819,11 +717,71 @@ class _DashboardContent extends HookConsumerWidget {
   }
 
   // Enhanced Nutrition Card with integrated metrics
-  Widget _buildEnhancedNutritionCard(BuildContext context, WidgetRef ref, Stream dayTotalsStream) {
+  /// The nutrition card.
+  ///
+  /// On the weekly timeframe it shows the week's *totals* against goals
+  /// multiplied by seven, rather than a daily average: a weekly sum measured
+  /// against a daily goal reads as 700% and makes the progress bars useless.
+  Widget _buildEnhancedNutritionCard(
+    BuildContext context,
+    WidgetRef ref,
+    Stream dayTotalsStream,
+    Future<Map<String, double>>? weekTotalsAsync,
+  ) {
+    if (weekTotalsAsync != null) {
+      return FutureBuilder<Map<String, double>>(
+        future: weekTotalsAsync,
+        builder: (context, snapshot) => _nutritionCardBody(
+          context,
+          ref,
+          kcal: snapshot.data?['kcal'] ?? 0,
+          protein: snapshot.data?['protein'] ?? 0,
+          carbs: snapshot.data?['carbs'] ?? 0,
+          fat: snapshot.data?['fat'] ?? 0,
+          hasData: snapshot.hasData,
+        ),
+      );
+    }
+
     return StreamBuilder(
       stream: dayTotalsStream,
       builder: (context, snapshot) {
         final totals = snapshot.data;
+        return _nutritionCardBody(
+          context,
+          ref,
+          kcal: totals?.kcal ?? 0,
+          protein: totals?.protein ?? 0,
+          carbs: totals?.carbs ?? 0,
+          fat: totals?.fat ?? 0,
+          hasData: totals != null,
+        );
+      },
+    );
+  }
+
+  Widget _nutritionCardBody(
+    BuildContext context,
+    WidgetRef ref, {
+    required double kcal,
+    required double protein,
+    required double carbs,
+    required double fat,
+    required bool hasData,
+  }) {
+    return Builder(
+      builder: (context) {
+        final totals = hasData
+            // `date` is unused by the card -- it renders the four numbers --
+            // but the model requires one, so pass the day being summarised.
+            ? DayTotals(
+                date: AppDateUtils.dateToInt(DateTime.now()),
+                kcal: kcal,
+                protein: protein,
+                carbs: carbs,
+                fat: fat,
+              )
+            : null;
         final prefs = ref.watch(preferencesServiceProvider);
         final primaryMetric = prefs.primaryNutritionMetric;
         final mealsColor = prefs.mealsColor;
@@ -929,16 +887,23 @@ class _DashboardContent extends HookConsumerWidget {
                     final hasAnyGoals = hasCal || hasPro || hasCar || hasFat;
                     
                     if (hasAnyGoals) {
+                      // Daily goals become weekly ones on the weekly view.
+                      final days = prefs.globalTimeframeMode ==
+                              TimeframeMode.week
+                          ? 7
+                          : 1;
+                      double? scaled(double? goal) =>
+                          goal == null ? null : goal * days;
                       // Show progress bars when goals are set
                       return NutritionProgressGrid(
                         calories: totals.kcal,
                         protein: totals.protein,
                         carbs: totals.carbs,
                         fat: totals.fat,
-                        calorieGoal: prefs.calorieGoal,
-                        proteinGoal: prefs.proteinGoal,
-                        carbsGoal: prefs.carbsGoal,
-                        fatGoal: prefs.fatGoal,
+                        calorieGoal: scaled(prefs.calorieGoal),
+                        proteinGoal: scaled(prefs.proteinGoal),
+                        carbsGoal: scaled(prefs.carbsGoal),
+                        fatGoal: scaled(prefs.fatGoal),
                         useShortLabels: false, // Use full labels for better visibility
                       );
                     } else {
@@ -971,14 +936,26 @@ class _DashboardContent extends HookConsumerWidget {
   }
 
   // Enhanced Workouts Card
-  Widget _buildEnhancedWorkoutsCard(BuildContext context, WidgetRef ref, Future<int> completedWorkoutsAsync) {
-    return FutureBuilder<int>(
-      future: completedWorkoutsAsync,
+  /// The workouts card, reporting whichever metric Settings asks for over
+  /// whichever period Settings asks for.
+  Widget _buildEnhancedWorkoutsCard(
+    BuildContext context,
+    WidgetRef ref,
+    Future<num> workoutValueAsync,
+  ) {
+    return FutureBuilder<num>(
+      future: workoutValueAsync,
       builder: (context, snapshot) {
-        final count = snapshot.data ?? 0;
+        final value = snapshot.data ?? 0;
         final prefs = ref.watch(preferencesServiceProvider);
         final workoutsColor = prefs.workoutsColor;
         final l10n = AppLocalizations.of(context)!;
+        final isTime = prefs.workoutMetricMode == WorkoutMetricMode.time;
+        // "3" for a count, "95 min" for time under the bar.
+        final display = isTime
+            ? l10n.workoutMinutes(value.round().toString())
+            : value.round().toString();
+        final count = value;
         
         return Container(
           padding: const EdgeInsets.all(18),
@@ -1025,7 +1002,7 @@ class _DashboardContent extends HookConsumerWidget {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  count.toString(),
+                  display,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: workoutsColor,
                     fontWeight: FontWeight.bold,
@@ -1051,15 +1028,33 @@ class _DashboardContent extends HookConsumerWidget {
   }
 
   // Enhanced Sleep Card
-  Widget _buildEnhancedSleepCard(BuildContext context, WidgetRef ref, Future<double?> sleepHoursAsync) {
-    return FutureBuilder<double?>(
-      future: sleepHoursAsync,
+  /// Daily: last night's hours. Weekly: total hours for the week + avg/night.
+  Widget _buildEnhancedSleepCard(
+    BuildContext context,
+    WidgetRef ref,
+    Future<SleepRangeData?> sleepDataAsync,
+  ) {
+    return FutureBuilder<SleepRangeData?>(
+      future: sleepDataAsync,
       builder: (context, snapshot) {
-        final hours = snapshot.data;
+        final data = snapshot.data;
+        final isWeek = ref.watch(preferencesServiceProvider)
+                .globalTimeframeMode ==
+            TimeframeMode.week;
         final prefs = ref.watch(preferencesServiceProvider);
         final sleepColor = prefs.sleepColor;
         final l10n = AppLocalizations.of(context)!;
-        
+
+        // Weekly: headline = total hours, subtitle = "X nights · Xh avg/night"
+        // Daily:  headline = nightly hours, subtitle = well-rested / need more
+        final headlineHours = isWeek ? data?.totalHours : data?.averageHours;
+        final subtitle = data == null
+            ? l10n.noDataAvailable
+            : isWeek
+                ? '${data.nightCount} ${l10n.nights} · '
+                    '${data.averageHours.toStringAsFixed(1)}h ${l10n.nightlyAverage}'
+                : (data.averageHours >= 7 ? l10n.wellRested : l10n.needMore);
+
         return Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -1105,7 +1100,9 @@ class _DashboardContent extends HookConsumerWidget {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  hours != null ? '${hours.toStringAsFixed(1)}h' : '−',
+                  headlineHours != null
+                      ? '${headlineHours.toStringAsFixed(1)}h'
+                      : '−',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: sleepColor,
                     fontWeight: FontWeight.bold,
@@ -1116,17 +1113,19 @@ class _DashboardContent extends HookConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                hours != null 
-                    ? (hours >= 7 ? l10n.wellRested : l10n.needMore)
-                    : l10n.noDataAvailable,
+                subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.color
+                      ?.withValues(alpha: 0.7),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-        ],
-      ),
         );
       },
     );
@@ -1134,81 +1133,20 @@ class _DashboardContent extends HookConsumerWidget {
 
 }
 
-class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onPressed;
-
-  const _QuickActionButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.25),
-                  width: 1.5,
-                ),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 32,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: 90,
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// The "+" on the home screen: the actual quick-add entry point, opening a
 /// sheet to log a meal, workout, or sleep entry directly -- each tile then
 /// opens its own dialog rather than navigating away.
-class _QuickAddFab extends ConsumerWidget {
-  const _QuickAddFab({super.key});
+/// The "+" that opens the quick-add sheet. Was a floating action button;
+/// on iOS the primary action of a screen lives in the navigation bar.
+class QuickAddAction extends ConsumerWidget {
+  const QuickAddAction({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FloatingActionButton(
-      onPressed: () => _showQuickAddSheet(context, ref),
+    return NavBarAction(
+      icon: CupertinoIcons.add,
       tooltip: AppLocalizations.of(context)!.quickActions,
-      child: const Icon(Icons.add),
+      onPressed: () => _showQuickAddSheet(context, ref),
     );
   }
 

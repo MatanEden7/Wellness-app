@@ -4,12 +4,19 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter/cupertino.dart';
+
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/inset_list.dart';
+import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
+import '../../../services/preferences_service.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../core/validation.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
+import '../domain/rest_time.dart';
 
 class TemplateEditorPage extends HookConsumerWidget {
   final String? templateId;
@@ -22,48 +29,42 @@ class TemplateEditorPage extends HookConsumerWidget {
     final nameController = useTextEditingController();
     final notesController = useTextEditingController();
     final templateExercises = useState<List<TemplateExercise>>([]);
+    final customRest = useState(false);
     final isLoading = useState(false);
     final isEditing = templateId != null;
 
     // Load existing template if editing
     useEffect(() {
       if (isEditing) {
-        _loadTemplate(ref, templateId!, nameController, notesController, templateExercises);
+        _loadTemplate(ref, templateId!, nameController, notesController,
+            templateExercises, customRest);
       }
       return null;
     }, [templateId]);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          isEditing ? 'Edit Template' : 'Create Template',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+    return AppScaffold.child(
+      title: isEditing ? l10n.editTemplate : l10n.createTemplate,
+      actions: [
+        NavBarAction(
+          label: l10n.save,
+          tooltip: l10n.save,
+          isProminent: true,
+          onPressed: isLoading.value
+              ? null
+              : () => _saveTemplate(
+                    context,
+                    ref,
+                    isEditing,
+                    templateId,
+                    nameController.text,
+                    notesController.text,
+                    templateExercises.value,
+                    customRest.value,
+                    isLoading,
+                  ),
         ),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: AppButton(
-              text: 'Save',
-              onPressed: isLoading.value ? null : () => _saveTemplate(
-                context,
-                ref,
-                isEditing,
-                templateId,
-                nameController.text,
-                notesController.text,
-                templateExercises.value,
-                isLoading,
-              ),
-              isLoading: isLoading.value,
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
+      ],
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Template Name
@@ -113,27 +114,70 @@ class TemplateEditorPage extends HookConsumerWidget {
               ),
               const SizedBox(height: 24),
 
-              // Exercises Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              // Breaks
+              //
+              // One switch decides whether this template has an opinion about
+              // rest at all. Off (the default) means the app derives it from
+              // the rep count between every set and there is nothing to see;
+              // on reveals the break rows and the button that adds them.
+              InsetSection(
+                footer: customRest.value
+                    ? l10n.customBreaksSubtitle
+                    : l10n.autoBreaksSubtitle,
                 children: [
-                  Text(
-                    l10n.exercises,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  InsetRow(
+                    title: l10n.customBreaks,
+                    icon: Icons.timer_outlined,
+                    trailing: Switch.adaptive(
+                      value: customRest.value,
+                      onChanged: (value) {
+                        customRest.value = value;
+                        // Dropping back to automatic leaves orphaned break
+                        // rows in the list that nothing would render -- take
+                        // them out rather than hide them.
+                        if (!value) {
+                          templateExercises.value = _reindexed([
+                            for (final item in templateExercises.value)
+                              if (!item.isRest) item,
+                          ]);
+                        }
+                      },
                     ),
-                  ),
-                  AppButton(
-                    text: l10n.addExerciseTooltip,
-                    onPressed: () => _addExercise(context, ref, templateExercises),
-                    isSecondary: true,
-                    icon: Icons.add,
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Exercises Section
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.exercises,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (customRest.value) ...[
+                    _AddPill(
+                      icon: CupertinoIcons.timer,
+                      label: l10n.addBreakShort,
+                      onTap: () => _addRest(context, templateExercises),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  _AddPill(
+                    icon: CupertinoIcons.add,
+                    label: l10n.addExerciseShort,
+                    onTap: () => _addExercise(context, ref, templateExercises),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
 
               // Exercises List
               if (templateExercises.value.isEmpty)
@@ -146,6 +190,10 @@ class TemplateEditorPage extends HookConsumerWidget {
                 ReorderableListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  // The rows own their own drag handle: their whole surface is
+                  // swipeable, and a long-press drag anywhere on them would
+                  // fight the swipe gesture.
+                  buildDefaultDragHandles: false,
                   itemCount: templateExercises.value.length,
                   onReorder: (oldIndex, newIndex) => _reorderExercises(
                     templateExercises,
@@ -153,23 +201,39 @@ class TemplateEditorPage extends HookConsumerWidget {
                     newIndex,
                   ),
                   itemBuilder: (context, index) {
-                    final exercise = templateExercises.value[index];
-                    return Padding(
-                      key: ValueKey(exercise.id),
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _TemplateExerciseCard(
-                        exercise: exercise,
-                        index: index,
-                        onEdit: () => _editExercise(context, ref, templateExercises, index),
-                        onDelete: () => _deleteExercise(templateExercises, index),
-                      ),
+                    final item = templateExercises.value[index];
+                    return SwipeActionRow(
+                      key: ValueKey(item.id),
+                      rowKey: ValueKey('swipe-${item.id}'),
+                      deleteLabel: l10n.delete,
+                      editLabel: l10n.edit,
+                      confirmTitle: item.isRest ? l10n.restBlock : l10n.delete,
+                      confirmMessage: l10n.areYouSure,
+                      onDelete: () async =>
+                          _deleteExercise(templateExercises, index),
+                      onEdit: () => item.isRest
+                          ? _editRest(context, templateExercises, index)
+                          : _editExercise(context, ref, templateExercises, index),
+                      // Long press is the reorder gesture here.
+                      enableLongPressMenu: false,
+                      child: item.isRest
+                          ? _RestRowCard(
+                              rest: item,
+                              index: index,
+                              onTap: () =>
+                                  _editRest(context, templateExercises, index),
+                            )
+                          : _TemplateExerciseCard(
+                              exercise: item,
+                              index: index,
+                              onTap: () => _editExercise(
+                                  context, ref, templateExercises, index),
+                            ),
                     );
                   },
                 ),
               const SizedBox(height: 16),
             ],
-          ),
-        ),
       ),
     );
   }
@@ -180,12 +244,14 @@ class TemplateEditorPage extends HookConsumerWidget {
     TextEditingController nameController,
     TextEditingController notesController,
     ValueNotifier<List<TemplateExercise>> templateExercises,
+    ValueNotifier<bool> customRest,
   ) async {
     final template = await ref.read(workoutTemplatesRepositoryProvider).getTemplateById(templateId);
     if (template != null) {
       nameController.text = template.name;
       notesController.text = template.notes ?? '';
       templateExercises.value = template.exercises;
+      customRest.value = template.customRest;
     }
   }
 
@@ -197,6 +263,7 @@ class TemplateEditorPage extends HookConsumerWidget {
     String name,
     String? notes,
     List<TemplateExercise> exercises,
+    bool customRest,
     ValueNotifier<bool> isLoading,
   ) async {
     final l10n = AppLocalizations.of(context)!;
@@ -207,7 +274,8 @@ class TemplateEditorPage extends HookConsumerWidget {
       return;
     }
 
-    if (exercises.isEmpty) {
+    // A template of nothing but breaks is not a workout.
+    if (exercises.where((e) => !e.isRest).isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.pleaseAddExercise)),
       );
@@ -222,12 +290,13 @@ class TemplateEditorPage extends HookConsumerWidget {
               id: templateId!,
               name: name.trim(),
               notes: notes?.trim().isEmpty == true ? null : notes?.trim(),
+              customRest: customRest,
               exercises: exercises,
             )
           : WorkoutTemplate.create(
               name: name.trim(),
               notes: notes?.trim().isEmpty == true ? null : notes?.trim(),
-            ).copyWith(exercises: exercises);
+            ).copyWith(customRest: customRest, exercises: exercises);
 
       if (isEditing) {
         await ref.read(workoutTemplatesRepositoryProvider).updateTemplate(template);
@@ -270,6 +339,44 @@ class TemplateEditorPage extends HookConsumerWidget {
     }
   }
 
+  /// Appends a break at the end of the list. It is dragged into place from
+  /// there, which is one gesture fewer than asking where it should go first.
+  Future<void> _addRest(
+    BuildContext context,
+    ValueNotifier<List<TemplateExercise>> items,
+  ) async {
+    final seconds = await _showRestPicker(context, 120);
+    if (seconds == null) return;
+    items.value = _reindexed([
+      ...items.value,
+      TemplateExercise.rest(
+        templateId: '',
+        orderIndex: items.value.length,
+        seconds: seconds,
+      ),
+    ]);
+  }
+
+  Future<void> _editRest(
+    BuildContext context,
+    ValueNotifier<List<TemplateExercise>> items,
+    int index,
+  ) async {
+    final seconds =
+        await _showRestPicker(context, items.value[index].restDuration);
+    if (seconds == null) return;
+    final next = List<TemplateExercise>.from(items.value);
+    next[index] = next[index].copyWith(defaultRestSeconds: seconds);
+    items.value = next;
+  }
+
+  Future<int?> _showRestPicker(BuildContext context, int initial) {
+    return showAppSheet<int>(
+      context: context,
+      builder: (_) => _RestPickerSheet(initialSeconds: initial),
+    );
+  }
+
   Future<void> _editExercise(
     BuildContext context,
     WidgetRef ref,
@@ -288,11 +395,7 @@ class TemplateEditorPage extends HookConsumerWidget {
   void _deleteExercise(ValueNotifier<List<TemplateExercise>> templateExercises, int index) {
     final newExercises = List<TemplateExercise>.from(templateExercises.value);
     newExercises.removeAt(index);
-    // Update order indices
-    for (int i = 0; i < newExercises.length; i++) {
-      newExercises[i] = newExercises[i].copyWith(orderIndex: i);
-    }
-    templateExercises.value = newExercises;
+    templateExercises.value = _reindexed(newExercises);
   }
 
   void _reorderExercises(
@@ -304,13 +407,14 @@ class TemplateEditorPage extends HookConsumerWidget {
     final newExercises = List<TemplateExercise>.from(templateExercises.value);
     final exercise = newExercises.removeAt(oldIndex);
     newExercises.insert(newIndex, exercise);
-    
-    // Update order indices
-    for (int i = 0; i < newExercises.length; i++) {
-      newExercises[i] = newExercises[i].copyWith(orderIndex: i);
-    }
-    templateExercises.value = newExercises;
+    templateExercises.value = _reindexed(newExercises);
   }
+
+  /// `orderIndex` is what the list's order actually persists as, so it has to
+  /// be rewritten after every insert, delete and drag.
+  static List<TemplateExercise> _reindexed(List<TemplateExercise> items) => [
+        for (var i = 0; i < items.length; i++) items[i].copyWith(orderIndex: i),
+      ];
 
   Future<Exercise?> _showExerciseSelector(BuildContext context, WidgetRef ref) async {
     return showDialog<Exercise>(
@@ -331,87 +435,303 @@ class TemplateEditorPage extends HookConsumerWidget {
   }
 }
 
+/// One exercise in the template list.
+///
+/// Deliberately a single 56pt row rather than the two-line card with two icon
+/// buttons this used to be: a template of eight exercises was 700pt of
+/// scrolling, and on a phone the prescription ("3 x 10") is the only thing
+/// worth showing next to the name. Editing and deleting moved onto the swipe
+/// gestures, which is where an iPhone user looks for them.
 class _TemplateExerciseCard extends ConsumerWidget {
   final TemplateExercise exercise;
   final int index;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const _TemplateExerciseCard({
     required this.exercise,
     required this.index,
-    required this.onEdit,
-    required this.onDelete,
+    required this.onTap,
   });
+
+  /// "3 x 10 · Bodyweight · 1:30" -- everything prescribed, nothing padded
+  /// out.
+  ///
+  /// No prescribed weight means bodyweight, and says so: an empty space where
+  /// a number should be reads as missing data, when in fact it is the answer
+  /// for press-ups, planks and every band exercise in the library. [unit] is
+  /// the exercise's own ('kg', 'lb', 'bodyweight'), not an assumed kg.
+  String _summary(AppLocalizations l10n, String? unit) {
+    final weight = exercise.defaultWeight;
+    final isBodyweight = unit == 'bodyweight' || weight == null;
+
+    return <String>[
+      exercise.defaultReps == null
+          ? '${exercise.defaultSets} sets'
+          : '${exercise.defaultSets} x ${exercise.defaultReps}',
+      if (isBodyweight)
+        l10n.bodyweight
+      else
+        '${Formatters.formatWeight(weight)} ${unit ?? 'kg'}',
+      if (exercise.defaultRestSeconds != null)
+        formatRest(exercise.defaultRestSeconds!),
+    ].join(' \u00b7 ');
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.drag_handle, color: Colors.grey.shade400),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: FutureBuilder<Exercise?>(
-                  future: ref.read(exercisesRepositoryProvider).getExerciseById(exercise.exerciseId),
-                  builder: (context, snapshot) {
-                    final exerciseData = snapshot.data;
-                    return Text(
-                      exerciseData?.name ?? 'Loading...',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    );
-                  },
-                ),
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AppCard(
+        padding: const EdgeInsets.fromLTRB(8, 10, 14, 10),
+        onTap: onTap,
+        child: Row(
+          children: [
+            _DragHandle(index: index),
+            // One lookup feeds both halves of the row: the name and the unit
+            // the prescribed weight is expressed in.
+            Expanded(
+              child: FutureBuilder<Exercise?>(
+                future: ref
+                    .read(exercisesRepositoryProvider)
+                    .getExerciseById(exercise.exerciseId),
+                builder: (context, snapshot) {
+                  final data = snapshot.data;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          data?.name ?? '...',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _summary(l10n, data?.unit),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  );
+                },
               ),
-              IconButton(
-                icon: const Icon(Icons.edit, size: 20),
-                onPressed: onEdit,
-            tooltip: AppLocalizations.of(context)!.edit,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A standalone break between two exercises. Tinted and shorter than an
+/// exercise row so the eye reads the list as work / pause / work without
+/// having to read the words.
+class _RestRowCard extends StatelessWidget {
+  final TemplateExercise rest;
+  final int index;
+  final VoidCallback onTap;
+
+  const _RestRowCard({
+    required this.rest,
+    required this.index,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final tint = theme.colorScheme.primary;
+
+    return Padding(
+      // The 4pt inset matches Card's own default margin, so a break row lines
+      // up with the exercise cards above and below it instead of sitting
+      // 8pt wider than all of them.
+      padding: const EdgeInsets.only(bottom: 8, left: 4, right: 4),
+      child: Material(
+        color: tint.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 14, 8),
+            child: Row(
+              children: [
+                _DragHandle(index: index),
+                Icon(CupertinoIcons.timer, size: 18, color: tint),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.restBlock,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: tint,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  formatRest(rest.restDuration),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: tint,
+                  ),
+                ),
+              ],
+            ),
           ),
-              IconButton(
-                icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-                onPressed: onDelete,
-            tooltip: AppLocalizations.of(context)!.delete,
-          ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
+        ),
+      ),
+    );
+  }
+}
+
+/// A compact "+ Exercise" / "+ Break" button for a section header.
+///
+/// Tinted pills rather than plain text buttons: two text buttons and a title
+/// do not fit across 402pt, and iOS uses exactly this shape for a secondary
+/// add action sitting beside a heading.
+class _AddPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _AddPill({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = Theme.of(context).colorScheme.primary;
+
+    return Material(
+      color: tint.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(width: 32), // Offset for drag handle
+              Icon(icon, size: 16, color: tint),
+              const SizedBox(width: 5),
               Text(
-                '${exercise.defaultSets} sets',
-                style: Theme.of(context).textTheme.bodySmall,
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: tint,
+                ),
               ),
-              if (exercise.defaultReps != null) ...[
-                const Text(' • '),
-                Text(
-                  '${exercise.defaultReps} reps',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-              if (exercise.defaultWeight != null) ...[
-                const Text(' • '),
-                Text(
-                  '${Formatters.formatWeight(exercise.defaultWeight!)} kg',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-              // Rest is part of the prescription, not a detail: it is what
-              // separates a heavy compound from an accessory, and it drives
-              // the in-session timer. Showing sets and reps but hiding rest
-              // makes the generated plan look like it has no opinion on it.
-              if (exercise.defaultRestSeconds != null) ...[
-                const Text(' • '),
-                Text(
-                  '${exercise.defaultRestSeconds}s rest',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The grab area for reordering. Explicit, because the rows' own long-press
+/// and horizontal drag are already spoken for by the swipe actions.
+class _DragHandle extends StatelessWidget {
+  final int index;
+
+  const _DragHandle({required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return ReorderableDragStartListener(
+      index: index,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Icon(
+          CupertinoIcons.line_horizontal_3,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+        ),
+      ),
+    );
+  }
+}
+
+/// Picks a break length: four presets, then a minute/second wheel for
+/// anything else. A break is "about two minutes", not 137 seconds, so the
+/// presets are the fast path and the wheel is the escape hatch.
+class _RestPickerSheet extends HookWidget {
+  final int initialSeconds;
+
+  const _RestPickerSheet({required this.initialSeconds});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final seconds = useState(initialSeconds);
+
+    return AppSheet(
+      title: l10n.restDuration,
+      icon: Icons.timer_outlined,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final preset in const [30, 60, 90, 120, 180, 300])
+                ChoiceChip(
+                  label: Text(formatRest(preset)),
+                  selected: seconds.value == preset,
+                  onSelected: (_) => seconds.value = preset,
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Text(
+                formatRest(seconds.value),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              ),
+              Expanded(
+                child: Slider(
+                  value: seconds.value.toDouble().clamp(10, 600),
+                  min: 10,
+                  max: 600,
+                  divisions: 59,
+                  onChanged: (value) => seconds.value = value.round(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            text: l10n.save,
+            onPressed: () => Navigator.of(context).pop(seconds.value),
+            icon: Icons.check,
           ),
         ],
       ),
@@ -488,13 +808,13 @@ class _ExerciseSelectorDialog extends ConsumerWidget {
   }
 }
 
-class _TemplateExerciseEditorDialog extends HookWidget {
+class _TemplateExerciseEditorDialog extends HookConsumerWidget {
   final TemplateExercise templateExercise;
 
   const _TemplateExerciseEditorDialog({required this.templateExercise});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final setsController = useTextEditingController(
       text: templateExercise.defaultSets.toString(),
@@ -507,6 +827,23 @@ class _TemplateExerciseEditorDialog extends HookWidget {
     );
     final restController = useTextEditingController(
       text: templateExercise.defaultRestSeconds?.toString() ?? '',
+    );
+
+    // The placeholder is the rest this exercise would actually get if the
+    // field is left empty -- not the word "Automatic", which tells you the
+    // mechanism but not the number. It follows the rep count as you type,
+    // because that is what decides it.
+    final reps = useState(templateExercise.defaultReps);
+    useEffect(() {
+      void listener() => reps.value = int.tryParse(repsController.text);
+      repsController.addListener(listener);
+      return () => repsController.removeListener(listener);
+    }, [repsController]);
+
+    final fallbackRest = resolveRestSeconds(
+      reps: reps.value,
+      globalDefaultSeconds:
+          ref.watch(preferencesServiceProvider).defaultRestTime,
     );
 
     return Dialog(
@@ -544,7 +881,14 @@ class _TemplateExerciseEditorDialog extends HookWidget {
               controller: weightController,
               decoration: InputDecoration(
                 labelText: l10n.defaultWeightOptional,
-                hintText: 'Leave empty for variable weight',
+                // Empty is not "unspecified", it is bodyweight -- say so.
+                hintText: l10n.bodyweight,
+                // Without this the label sits *inside* the empty field and
+                // the hint is hidden until you tap it, so the one state that
+                // needs explaining -- empty -- is the one that explains
+                // nothing. Floating it always makes "Bodyweight" the
+                // placeholder you actually see.
+                floatingLabelBehavior: FloatingLabelBehavior.always,
               ),
               keyboardType: TextInputType.number,
             ),
@@ -554,7 +898,10 @@ class _TemplateExerciseEditorDialog extends HookWidget {
               controller: restController,
               decoration: InputDecoration(
                 labelText: l10n.defaultRestOptional,
-                hintText: 'Leave empty to use the rep-based default',
+                hintText: '$fallbackRest',
+                helperText: l10n.restDefaultHelper(formatRest(fallbackRest)),
+                // Same reason as the weight field above.
+                floatingLabelBehavior: FloatingLabelBehavior.always,
               ),
               keyboardType: TextInputType.number,
             ),
@@ -574,6 +921,9 @@ class _TemplateExerciseEditorDialog extends HookWidget {
                     final sets = int.tryParse(setsController.text) ?? 3;
                     final reps = int.tryParse(repsController.text);
                     final weight = double.tryParse(weightController.text);
+
+                    // Empty means "follow the default", which is a real
+                    // answer -- null, not zero.
                     final rest = int.tryParse(restController.text);
 
                     final updatedExercise = templateExercise.copyWith(

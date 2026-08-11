@@ -17,7 +17,9 @@ void main() {
       await tapDashboardAction(tester, DashboardKeys.sleepAction);
 
       expect(find.text(l10n.sleep), findsOneWidget);
-      expect(find.text(l10n.manualEntry), findsOneWidget);
+      // Adding an entry by hand is the navigation bar's "+" now, not a
+      // labelled floating button.
+      expect(find.byTooltip(l10n.addSleepEntryTooltip), findsOneWidget);
       expect(find.text(l10n.sleepTimer), findsOneWidget);
     });
   }

@@ -102,12 +102,18 @@ remaining work is a translator/designer decision, not engineering effort.
 | 82 | Rehab pools too small to fill a physio session; no bodyweight hamstring/shoulder/biceps work; dead getRehabExercises; exercises never reached existing installs | High | Fixed | ~3h |
 | 83 | Fast-food macros were US figures on an Israeli menu | Medium | Fixed | ~1h |
 | 84 | The whole Profile page renders English in Hebrew mode | Medium | **Open** — needs ~29 new Hebrew strings — **me** | ~2h |
+| 85 | Meal editor titled itself "Add Food"/"Edit Food" | Low | Fixed | ~5min |
+| 86 | Settings' "Workout Templates" row opened Workout Settings | Low | Fixed | ~5min |
+| 87 | Meals and Workouts home screens rendered completely blank on device | Critical | Fixed | ~1h |
+| 88 | Every CupertinoIcons glyph in the app rendered as a tofu box | High | Fixed | ~10min |
+| 89 | Five horizontal overflows on settings/editor screens | Medium | Fixed | ~30min |
+| 90 | Settings' "Global Timeframe" changes nothing on the dashboard | High | Fixed | ~1h |
+| 91 | Settings' "Workout Metric" changes nothing on the dashboard | Medium | Fixed | ~1h |
 
-**Totals:** 72 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
+**Totals:** 74 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
 again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
 a translator (#31, which now also covers the Hebrew wording added by #72), and
-one 15-minute device check (#9). No engineering work is blocked on anything but
-those.
+one 15-minute device check (#9).
 
 ---
 
@@ -1308,3 +1314,125 @@ copy authored, which is exactly the half C5 says wants a person; and it is
 `integration_test` that cannot run here without a simulator. Doing it blind on
 a screen in daily use is the wrong trade. The mechanical wiring in the files
 that *were* already localised is done (17 strings).
+
+---
+
+### 85. The meal editor called itself the food editor  **[FIXED]**
+
+`MealEditorPage`'s app-bar title was `isEditing ? l10n.editFood : l10n.addFood`
+-- copy-pasted from the food editor onto the screen that edits a *meal*. Found
+while moving the page onto the shared iOS scaffold, which forced every title to
+be read out rather than carried along. Now `editMeal` / `logNewMeal`
+(`editMeal` is a new key in both ARBs).
+
+### 86. A Settings row went somewhere other than where it said  **[FIXED]**
+
+The Settings list had one row labelled "Workout Templates" whose `onTap` pushed
+`Routes.workoutSettings`. Nothing was wrong with the destination -- the label
+was simply the wrong one, and there was no templates screen to point at. Now
+that workout templates have their own screen it is two rows, each going where
+it says: **Workout Settings** -> `/settings/workouts`, **Workout Templates** ->
+`/workouts/templates`.
+
+---
+
+### 87. The meals and workouts home screens were blank  **[FIXED]**
+
+Reported as "the UI looks broken in a lot of areas". Both screens rendered
+nothing at all -- not even a navigation bar -- while `flutter analyze` was
+clean and 997 fast tests were green.
+
+`ShortcutRow` laid its tiles out with `Row(crossAxisAlignment: stretch)`. A
+sliver hands its child an **unbounded** height constraint, and stretching
+against an unbounded constraint asks the children to be infinitely tall:
+
+```
+BoxConstraints forces an infinite height.
+The offending constraints were: BoxConstraints(0.0<=w<=Infinity, h=Infinity)
+Row:file:///lib/core/ios/shortcuts.dart:36:12
+```
+
+That throws inside `performLayout`, which fails the whole subtree -- so one
+bad row took both entire screens down. Fixed with `IntrinsicHeight`, which
+resolves a real height first so the tiles can then stretch to match it.
+
+**Why nothing caught it.** No test pumped either page. The unit suite covers
+the widgets underneath and the repositories behind them, and a layout
+exception is invisible to both -- and to the analyzer. `test/widget/
+page_smoke_test.dart` now renders all 22 screens at 402x874 and fails on any
+layout exception; it reproduces this bug exactly when the fix is reverted.
+
+### 88. Every iOS glyph rendered as an empty box  **[FIXED]**
+
+`cupertino_icons` was never a dependency. The whole new UI is built on
+`CupertinoIcons` -- the "+" buttons, back chevrons, ellipsis menus, checkmarks,
+calendar and search glyphs -- and every one of them rendered as tofu. Added to
+`pubspec.yaml`. Nothing in Dart analysis flags this: `CupertinoIcons` is a
+const `IconData` from the framework, so it compiles fine and only the *font*
+is missing at runtime.
+
+### 89. Five horizontal overflows on settings and editor screens  **[FIXED]**
+
+Found by the new smoke test, and pre-existing -- all five are title/subtitle
+columns or label rows with no `Expanded`, which overflow as soon as the text is
+long. Worst was the rest-timer sound row at **184pt** over.
+
+| Screen | Over by |
+|---|---|
+| Workout settings -- sound row | 184pt |
+| Workout settings -- rest-time row | 19pt |
+| Appearance -- preview chip row | 28pt |
+| Appearance -- section headers | 18pt |
+| Workout template editor -- "Exercises" header | 6.6pt |
+
+---
+
+### 90. Settings' "Global Timeframe" changes nothing on the dashboard  **[FIXED]**
+
+Reported from device testing on the Settings screen. Settings -> Preferences ->
+**Global Timeframe** offers Day / Week (/ Month), and the setting is persisted
+and reads back correctly on the row itself -- but the home screen keeps showing
+the same day view whatever it is set to.
+
+Expected: setting it to Week switches the whole dashboard to a weekly view --
+every total, ring and summary aggregates over the week rather than today, and
+the date/period label follows suit. Same for the other values the picker
+offers.
+
+**[FIXED]** The scoping answer was short: *no* dashboard section read the
+preference, and the weekly aggregates it needed already existed on the database
+-- `getWeekTotals`, `getCompletedWorkoutsThisWeek`, `getWorkoutMinutesThisWeek`,
+`getSleepWeekTotals` were all written and never called by anything. The
+dashboard now picks its data source from the setting.
+
+What "weekly" means, per section:
+
+| Card | Day | Week |
+|---|---|---|
+| Nutrition | today's totals vs the daily goals | the week's totals vs the goals **x7** |
+| Workouts | today's count or minutes | the week's count or minutes |
+| Sleep | last night | the week's nightly average |
+
+Weekly nutrition is a total against a scaled goal rather than a daily average,
+because a weekly sum measured against a daily goal reads as 700% and makes the
+progress bars meaningless. Each card now names its period ("Calories · This
+week"), without which a correct change is still invisible.
+
+### 91. Settings' "Workout Metric" changes nothing on the dashboard  **[FIXED]**
+
+Same shape as #90 and found in the same pass. Settings -> Preferences ->
+**Workout Metric** (Time Spent / others) persists and displays on its row, but
+the home screen's workout figure never changes -- the dashboard ignores the
+choice and shows whatever it always showed.
+
+Expected: the metric selected here is the one the home screen's workout card
+reports.
+
+**[FIXED]** Done with #90, and the same root cause: the card called
+`getCompletedWorkoutsToday()` unconditionally. It now reads the setting and
+shows a count ("2") or minutes ("90 min") over the selected period.
+
+Both are covered by `test/widget/dashboard_preferences_test.dart`, which sets
+the preference and reads the dashboard. That is the only kind of test that can
+catch this class of bug: a setting nothing reads still analyses, still persists,
+still round-trips through backup -- it just does nothing.

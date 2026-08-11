@@ -1,11 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/controls.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets.dart';
+import '../../../core/ui_constants.dart';
 import '../../../core/utils.dart';
+import '../../../core/widgets.dart';
 import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../../../core/tag_chips.dart';
@@ -15,6 +21,13 @@ import '../../meals/ui/food_catalog_page.dart' show MismatchBadge;
 import '../domain/exercise_tags.dart';
 import '../domain/models.dart';
 
+/// The exercise library -- the workouts counterpart of the food catalog, and
+/// now built the same way: search pinned under the title, a muscle-group
+/// filter bar, then the rows.
+///
+/// It had neither search nor filtering before, which was survivable at 58
+/// exercises and is not at 115. The food catalog had both; there was no
+/// reason for the two to differ.
 class ExerciseLibraryPage extends HookConsumerWidget {
   const ExerciseLibraryPage({super.key});
 
@@ -22,141 +35,196 @@ class ExerciseLibraryPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final language = ref.watch(currentLanguageProvider);
-    final exercisesAsync = ref.watch(exercisesStreamProvider);
+    final exercisesStream = ref.watch(exercisesStreamProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.exerciseLibrary,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+    // Browsing state, not app state: it resets when the page closes -- see
+    // the identical reasoning in the food catalog.
+    final searchController = useTextEditingController();
+    final search = useState('');
+    useEffect(() {
+      void listener() => search.value = searchController.text;
+      searchController.addListener(listener);
+      return () => searchController.removeListener(listener);
+    }, [searchController]);
+    final selectedMuscle = useState<String?>(null);
+
+    return AppScaffold(
+      title: l10n.exerciseLibrary,
+      actions: [
+        NavBarAction(
+          icon: CupertinoIcons.add,
+          tooltip: l10n.addExerciseTooltip,
+          onPressed: () => _openEditor(context),
         ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, size: 22),
-            onPressed: () => _showAddExerciseDialog(context, ref),
-            tooltip: l10n.addExerciseTooltip,
-          ),
-        ],
+      ],
+      pinnedHeader: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          UIConstants.screenHorizontalPadding,
+          4,
+          UIConstants.screenHorizontalPadding,
+          8,
+        ),
+        child: AppSearchField(
+          controller: searchController,
+          placeholder: l10n.searchExercises,
+        ),
       ),
-      body: StreamBuilder<List<Exercise>>(
-        stream: exercisesAsync,
-        builder: (context, snapshot) {
-          // Only show loading on initial load (no data yet)
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              !snapshot.hasData) {
-            return const LoadingIndicator();
-          }
+      slivers: [
+        StreamBuilder<List<Exercise>>(
+          stream: exercisesStream,
+          builder: (context, snapshot) {
+            // First load only -- see the workouts home screen.
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingIndicator(),
+              );
+            }
 
-          final all = snapshot.data ?? [];
+            final all = snapshot.data ?? [];
 
-          // Same contract as the food catalog: hide what the user can't do,
-          // never delete it, and make the escape hatch one tap away.
-          final profile = ref.watch(filterProfileProvider);
-          final showAll = ref.watch(showAllContentProvider);
-          final exercises = (profile == null || showAll)
-              ? all
-              : all.where((e) => ProfileFit.exerciseFits(e, profile)).toList();
-          final hiddenCount = all.length - exercises.length;
+            // Same contract as the food catalog: hide what the user can't do,
+            // never delete it, and make the escape hatch one tap away.
+            final profile = ref.watch(filterProfileProvider);
+            final showAll = ref.watch(showAllContentProvider);
+            final fitting = (profile == null || showAll)
+                ? all
+                : all
+                    .where((e) => ProfileFit.exerciseFits(e, profile))
+                    .toList();
+            final hiddenCount = all.length - fitting.length;
 
-          if (exercises.isEmpty) {
-            return EmptyState(
-              title: l10n.buildYourExerciseLibrary,
-              subtitle: l10n.addExercisesToCreateWorkouts,
-              icon: Icons.fitness_center,
-              actionText: l10n.addFirstExercise,
-              actionIcon: Icons.add,
-              onAction: () => _showAddExerciseDialog(context, ref),
-            );
-          }
-
-          return Column(
-            children: [
-              if (hiddenCount > 0)
-                _ExerciseHiddenBanner(
-                  count: hiddenCount,
-                  onShowAll: () =>
-                      ref.read(showAllContentProvider.notifier).state = true,
+            if (fitting.isEmpty) {
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: EmptyState(
+                  title: l10n.buildYourExerciseLibrary,
+                  subtitle: l10n.addExercisesToCreateWorkouts,
+                  icon: Icons.fitness_center,
+                  actionText: l10n.addFirstExercise,
+                  actionIcon: Icons.add,
+                  onAction: () => _openEditor(context),
                 ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                  itemCount: exercises.length,
-                  itemBuilder: (context, index) {
-                    final exercise = exercises[index];
-                    final reason = profile == null
-                        ? null
-                        : fitFailureLabel(
-                            ProfileFit.exerciseFit(exercise, profile));
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _ExerciseCard(
-                        exercise: exercise,
-                        language: language,
-                        mismatchReason: reason,
-                        onEdit: () =>
-                            _showEditExerciseDialog(context, ref, exercise),
-                        onDelete: () => _deleteExercise(context, ref, exercise),
+              );
+            }
+
+            // Only offer muscle groups that something in the filtered list
+            // actually belongs to, so a user with a shoulder injury is not
+            // shown an empty "Shoulders" pill.
+            final muscles = <String>{
+              for (final e in fitting)
+                if (e.displayPrimaryMuscle(language) != null)
+                  e.displayPrimaryMuscle(language)!,
+            }.toList()
+              ..sort();
+            // A group that stops existing must not leave the list stuck
+            // showing nothing.
+            final activeMuscle = muscles.contains(selectedMuscle.value)
+                ? selectedMuscle.value
+                : null;
+
+            final query = search.value.trim().toLowerCase();
+            final exercises = fitting
+                .where((e) =>
+                    activeMuscle == null ||
+                    e.displayPrimaryMuscle(language) == activeMuscle)
+                .where((e) =>
+                    query.isEmpty ||
+                    e.name.toLowerCase().contains(query) ||
+                    (e.nameHe?.toLowerCase().contains(query) ?? false) ||
+                    (e.primaryMuscle?.toLowerCase().contains(query) ?? false))
+                .toList();
+
+            return SliverMainAxisGroup(
+              slivers: [
+                if (muscles.length > 1)
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 44,
+                      child: AppFilterBar<String>(
+                        options: muscles,
+                        value: activeMuscle,
+                        allLabel: l10n.categoryAll,
+                        labelOf: (m) => m,
+                        onChanged: (next) => selectedMuscle.value = next,
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddExerciseDialog(context, ref),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.addExerciseTooltip),
-        elevation: 4,
-      ),
+                    ),
+                  ),
+                if (hiddenCount > 0)
+                  SliverToBoxAdapter(
+                    child: FilterBanner(
+                      icon: Icons.filter_alt_outlined,
+                      message: '$hiddenCount hidden by your profile',
+                      actionLabel: 'Show all',
+                      onAction: () => ref
+                          .read(showAllContentProvider.notifier)
+                          .state = true,
+                    ),
+                  ),
+                if (showAll && profile != null)
+                  SliverToBoxAdapter(
+                    child: FilterBanner(
+                      icon: Icons.visibility_outlined,
+                      message: 'Showing everything',
+                      actionLabel: l10n.filter,
+                      onAction: () => ref
+                          .read(showAllContentProvider.notifier)
+                          .state = false,
+                    ),
+                  ),
+                if (exercises.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 60),
+                      child: Text(
+                        l10n.noExercisesMatch,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      UIConstants.screenHorizontalPadding,
+                      UIConstants.cardSpacing,
+                      UIConstants.screenHorizontalPadding,
+                      UIConstants.sectionSpacing,
+                    ),
+                    sliver: SliverList.builder(
+                      itemCount: exercises.length,
+                      itemBuilder: (context, index) {
+                        final exercise = exercises[index];
+                        final reason = profile == null
+                            ? null
+                            : fitFailureLabel(
+                                ProfileFit.exerciseFit(exercise, profile));
+                        return _ExerciseCard(
+                          exercise: exercise,
+                          language: language,
+                          mismatchReason: reason,
+                          onEdit: () => _openEditor(context, exercise: exercise),
+                          onDelete: () => _deleteExercise(ref, exercise),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 
-  Future<void> _showAddExerciseDialog(
-      BuildContext context, WidgetRef ref) async {
-    await showDialog(
-      context: context,
-      builder: (context) => const _AddExerciseDialog(),
-    );
+  Future<void> _openEditor(BuildContext context, {Exercise? exercise}) {
+    return pushModalPage<void>(context, ExerciseEditorPage(exercise: exercise));
   }
 
-  Future<void> _showEditExerciseDialog(
-      BuildContext context, WidgetRef ref, Exercise exercise) async {
-    await showDialog(
-      context: context,
-      builder: (context) => _AddExerciseDialog(exercise: exercise),
-    );
-  }
-
-  Future<void> _deleteExercise(
-      BuildContext context, WidgetRef ref, Exercise exercise) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        final l10n = AppLocalizations.of(context)!;
-        return AlertDialog(
-          title: Text(l10n.deleteExercise),
-          content: Text(l10n.deleteExerciseConfirmation(exercise.name)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(l10n.delete),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true) {
-      await ref.read(exercisesRepositoryProvider).deleteExercise(exercise.id);
-    }
+  Future<void> _deleteExercise(WidgetRef ref, Exercise exercise) async {
+    await ref.read(exercisesRepositoryProvider).deleteExercise(exercise.id);
   }
 }
 
@@ -164,7 +232,7 @@ class _ExerciseCard extends StatelessWidget {
   final Exercise exercise;
   final AppLanguage language;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final Future<void> Function() onDelete;
 
   /// Non-null only when shown despite not suiting the profile -- see the
   /// food catalog's equivalent.
@@ -180,131 +248,140 @@ class _ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (mismatchReason != null) ...[
-            MismatchBadge(mismatchReason!),
-            const SizedBox(height: 8),
-          ],
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final name = exercise.displayName(language);
+
+    return SwipeActionRow(
+      rowKey: ValueKey(exercise.id),
+      deleteLabel: l10n.delete,
+      confirmTitle: l10n.deleteExercise,
+      confirmMessage: l10n.deleteExerciseConfirmation(name),
+      onDelete: onDelete,
+      onEdit: onEdit,
+      editLabel: l10n.edit,
+      actions: [
+        AppAction(
+          label: l10n.edit,
+          icon: CupertinoIcons.pencil,
+          onPressed: onEdit,
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          onTap: onEdit,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  exercise.displayName(language),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              if (mismatchReason != null) ...[
+                MismatchBadge(mismatchReason!),
+                const SizedBox(height: 8),
+              ],
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
                       ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              PopupMenuButton(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                ),
-                itemBuilder: (context) {
-                  final l10n = AppLocalizations.of(context)!;
-                  return [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.edit, size: 20),
-                          const SizedBox(width: 12),
-                          Text(l10n.edit),
-                        ],
-                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.delete, color: Colors.red, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            l10n.delete,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ],
+                  ),
+                  AppRowMenuButton(
+                    title: name,
+                    tooltip: l10n.exercises,
+                    actions: [
+                      AppAction(
+                        label: l10n.edit,
+                        icon: CupertinoIcons.pencil,
+                        onPressed: onEdit,
                       ),
-                    ),
-                  ];
-                },
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                  } else if (value == 'delete') {
-                    onDelete();
-                  }
-                },
+                      AppAction(
+                        label: l10n.delete,
+                        icon: CupertinoIcons.delete,
+                        isDestructive: true,
+                        onPressed: () async {
+                          final confirmed = await showAppConfirm(
+                            context: context,
+                            title: l10n.deleteExercise,
+                            message: l10n.deleteExerciseConfirmation(name),
+                            confirmLabel: l10n.delete,
+                          );
+                          if (confirmed) await onDelete();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-          if (exercise.primaryMuscle != null) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.accessibility_new,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  exercise.displayPrimaryMuscle(language) ??
-                      exercise.primaryMuscle!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              if (exercise.primaryMuscle != null) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.accessibility_new,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      exercise.displayPrimaryMuscle(language) ??
+                          exercise.primaryMuscle!,
+                      style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              Icon(
-                Icons.scale,
-                size: 16,
-                color: Theme.of(context).textTheme.bodySmall?.color,
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                children: [
+                  Icon(
+                    Icons.scale,
+                    size: 16,
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    '${l10n.weightUnit}: ${exercise.unit}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
               ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                'Weight unit: ${exercise.unit}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              if (exercise.notes != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  exercise.notes!,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
             ],
           ),
-          if (exercise.notes != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              exercise.notes!,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
 }
 
-class _AddExerciseDialog extends HookConsumerWidget {
+/// Add/edit exercise, as a full-screen modal page.
+///
+/// Was a `Dialog` capped at 85% height with everything scrolling inside it;
+/// the form is tall enough (four fields plus two tag groups) that the Save
+/// button repeatedly ended up unreachable on a phone.
+class ExerciseEditorPage extends HookConsumerWidget {
   final Exercise? exercise;
 
-  const _AddExerciseDialog({this.exercise});
+  const ExerciseEditorPage({super.key, this.exercise});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -312,8 +389,7 @@ class _AddExerciseDialog extends HookConsumerWidget {
     final nameController = useTextEditingController(text: exercise?.name ?? '');
     final muscleController =
         useTextEditingController(text: exercise?.primaryMuscle ?? '');
-    final unitController =
-        useTextEditingController(text: exercise?.unit ?? 'kg');
+    final unit = useState(exercise?.unit ?? 'kg');
     final notesController =
         useTextEditingController(text: exercise?.notes ?? '');
     final isLoading = useState(false);
@@ -327,171 +403,103 @@ class _AddExerciseDialog extends HookConsumerWidget {
 
     final isEditing = exercise != null;
 
-    // Scrollable fields, pinned title and actions -- see the identical fix on
-    // the food dialog in food_catalog_page.dart. This form is the taller of
-    // the two (equipment, contraindication and rehab tag groups on top of the
-    // fields), so its Save button was even further off the bottom of a phone
-    // screen, with nothing to scroll and no way to reach it.
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 400,
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isEditing ? 'Edit Exercise' : l10n.addExerciseTooltip,
-                  style: Theme.of(context).textTheme.titleLarge,
+    return AppFormPage(
+      title: isEditing ? l10n.editExercise : l10n.addExerciseTooltip,
+      confirm: NavBarAction(
+        label: isEditing ? l10n.update : l10n.add,
+        tooltip: isEditing ? l10n.update : l10n.add,
+        isProminent: true,
+        onPressed: isLoading.value
+            ? null
+            : () => _save(
+                  context,
+                  ref,
+                  formKey,
+                  nameController.text,
+                  muscleController.text,
+                  unit.value,
+                  notesController.text,
+                  equipment.value,
+                  contraindicated.value,
+                  isLoading,
                 ),
-                const SizedBox(height: AppSpacing.lg),
-
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Name
-                        TextFormField(
-                          controller: nameController,
-                          decoration: InputDecoration(
-                            labelText: l10n.exerciseName,
-                            hintText: 'e.g., Bench Press, Squats',
-                          ),
-                          maxLength: 40,
-                          validator: (value) =>
-                              Validators.required(value, 'Exercise name'),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // Primary Muscle
-                        TextFormField(
-                          controller: muscleController,
-                          decoration: InputDecoration(
-                            labelText: l10n.primaryMuscleOptional,
-                            hintText: 'e.g., Chest, Legs, Back',
-                          ),
-                          maxLength: 40,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // Unit
-                        DropdownButtonFormField<String>(
-                          initialValue: unitController.text.isEmpty
-                              ? 'kg'
-                              : unitController.text,
-                          decoration:
-                              InputDecoration(labelText: l10n.weightUnit),
-                          items: [
-                            DropdownMenuItem(
-                                value: 'kg', child: Text(l10n.kilogramsKg)),
-                            DropdownMenuItem(
-                                value: 'lb', child: Text(l10n.poundsLb)),
-                            DropdownMenuItem(
-                                value: 'bodyweight',
-                                child: Text(l10n.bodyweight)),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              unitController.text = value;
-                            }
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // Notes
-                        TextFormField(
-                          controller: notesController,
-                          decoration: InputDecoration(
-                            labelText: l10n.notesOptional,
-                            hintText: 'Form cues, variations, etc.',
-                          ),
-                          maxLines: 3,
-                          maxLength: 200,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        TagChips<Equipment>(
-                          title: 'Equipment needed',
-                          subtitle:
-                              'Pick every option this can be done with. Leave '
-                              'blank and it will be treated as always available.',
-                          options: Equipment.values,
-                          selected: equipment.value,
-                          labelOf: (e) => e.label,
-                          onChanged: (next) => equipment.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        TagChips<BodyPart>(
-                          title: 'Avoid with injury to',
-                          subtitle:
-                              'This will be hidden for anyone reporting one of '
-                              'these injuries.',
-                          options: BodyPart.values,
-                          selected: contraindicated.value,
-                          labelOf: (b) => b.label,
-                          onChanged: (next) => contraindicated.value = next,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Actions
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: isLoading.value
-                          ? null
-                          : () => Navigator.of(context).pop(),
-                      child: Text(l10n.cancel),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    AppButton(
-                      text: isEditing ? l10n.update : l10n.add,
-                      onPressed: isLoading.value
-                          ? null
-                          : () => _saveExercise(
-                                context,
-                                ref,
-                                formKey,
-                                isEditing,
-                                exercise,
-                                nameController.text,
-                                muscleController.text,
-                                unitController.text,
-                                notesController.text,
-                                equipment.value,
-                                contraindicated.value,
-                                isLoading,
-                              ),
-                      isLoading: isLoading.value,
-                    ),
-                  ],
-                ),
-              ],
+      ),
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: l10n.exerciseName,
+                hintText: 'e.g., Bench Press, Squats',
+              ),
+              maxLength: 40,
+              validator: (value) =>
+                  Validators.required(value, l10n.exerciseName),
             ),
-          ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: muscleController,
+              decoration: InputDecoration(
+                labelText: l10n.primaryMuscleOptional,
+                hintText: 'e.g., Chest, Legs, Back',
+              ),
+              maxLength: 40,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(l10n.weightUnit, style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: AppSpacing.sm),
+            AppSegmented<String>(
+              value: unit.value,
+              onChanged: (next) => unit.value = next,
+              segments: {
+                'kg': l10n.kilogramsKg,
+                'lb': l10n.poundsLb,
+                'bodyweight': l10n.bodyweight,
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: notesController,
+              decoration: InputDecoration(
+                labelText: l10n.notesOptional,
+                hintText: 'Form cues, variations, etc.',
+              ),
+              maxLines: 3,
+              maxLength: 200,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TagChips<Equipment>(
+              title: 'Equipment needed',
+              subtitle: 'Pick every option this can be done with. Leave '
+                  'blank and it will be treated as always available.',
+              options: Equipment.values,
+              selected: equipment.value,
+              labelOf: (e) => e.label,
+              onChanged: (next) => equipment.value = next,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TagChips<BodyPart>(
+              title: 'Avoid with injury to',
+              subtitle: 'This will be hidden for anyone reporting one of '
+                  'these injuries.',
+              options: BodyPart.values,
+              selected: contraindicated.value,
+              labelOf: (b) => b.label,
+              onChanged: (next) => contraindicated.value = next,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _saveExercise(
+  Future<void> _save(
     BuildContext context,
     WidgetRef ref,
     GlobalKey<FormState> formKey,
-    bool isEditing,
-    Exercise? existingExercise,
     String name,
     String muscle,
     String unit,
@@ -505,8 +513,8 @@ class _AddExerciseDialog extends HookConsumerWidget {
     isLoading.value = true;
 
     try {
-      final exerciseItem = isEditing
-          ? existingExercise!.copyWith(
+      final exerciseItem = exercise != null
+          ? exercise!.copyWith(
               name: name.trim(),
               primaryMuscle: muscle.trim().isEmpty ? null : muscle.trim(),
               unit: unit,
@@ -524,7 +532,7 @@ class _AddExerciseDialog extends HookConsumerWidget {
               contraindicatedFor: contraindicated,
             );
 
-      if (isEditing) {
+      if (exercise != null) {
         await ref
             .read(exercisesRepositoryProvider)
             .updateExercise(exerciseItem);
@@ -550,35 +558,5 @@ class _AddExerciseDialog extends HookConsumerWidget {
     } finally {
       isLoading.value = false;
     }
-  }
-}
-
-class _ExerciseHiddenBanner extends StatelessWidget {
-  const _ExerciseHiddenBanner({required this.count, required this.onShowAll});
-
-  final int count;
-  final VoidCallback onShowAll;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-      child: Row(
-        children: [
-          Icon(Icons.filter_alt_outlined,
-              size: 18,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text('$count hidden by your profile',
-                style: theme.textTheme.bodySmall),
-          ),
-          TextButton(onPressed: onShowAll, child: const Text('Show all')),
-        ],
-      ),
-    );
   }
 }

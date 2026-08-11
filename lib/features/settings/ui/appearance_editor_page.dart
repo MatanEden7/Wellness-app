@@ -1,44 +1,32 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/theme_service.dart';
 import 'advanced_color_picker.dart';
 
-class AppearanceEditorPage extends HookConsumerWidget {
+class AppearanceEditorPage extends ConsumerWidget {
   const AppearanceEditorPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(preferencesServiceProvider);
     final currentTheme = ref.watch(currentThemeProvider);
-    final scrollController = useScrollController();
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.appearance),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-            tooltip: AppLocalizations.of(context)!.backToDashboard,
-          ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _showResetDialog(context, ref),
-            tooltip: AppLocalizations.of(context)!.resetAllColors,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    return AppScaffold.child(
+      title: AppLocalizations.of(context)!.appearance,
+      backTooltip: AppLocalizations.of(context)!.backToDashboard,
+      actions: [
+        NavBarAction(
+          icon: CupertinoIcons.arrow_counterclockwise,
+          tooltip: AppLocalizations.of(context)!.resetAllColors,
+          onPressed: () => _showResetDialog(context, ref),
+        ),
+      ],
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Info banner
@@ -232,8 +220,6 @@ class AppearanceEditorPage extends HookConsumerWidget {
               
               const SizedBox(height: 24),
             ],
-          ),
-        ),
       ),
     );
   }
@@ -243,10 +229,14 @@ class AppearanceEditorPage extends HookConsumerWidget {
       children: [
         Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -403,8 +393,12 @@ class _PreviewPanel extends ConsumerWidget {
           const SizedBox(height: 12),
           
           // Section chips
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          // Wrap, not Row: three chips of translated text do not fit on one
+          // line at 402pt in either language.
+          Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Chip(
                 label: Text(AppLocalizations.of(context)!.meals),

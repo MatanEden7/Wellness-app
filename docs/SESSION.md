@@ -4,6 +4,63 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-09 — One iOS shell for every screen
+
+**Current task:** None.
+
+**Last completed:** the UI realignment asked for as "make the workout page like
+the meals page ... and make the view iPhone style 100%". Scope was confirmed up
+front rather than guessed: iOS idioms on Material (not a Cupertino rewrite,
+which would bypass `theme.dart`'s colour system), every screen that needs it,
+templates split onto their own screen, FABs dropped.
+
+- New `lib/core/ios/` kit: `AppScaffold`/`AppNavScaffold`, action sheets and
+  confirms, swipe-to-delete rows, inset lists, segmented control/search/filter
+  pills, the shared date strip and shortcut tiles. Every page in `lib/features/`
+  is built from it; `grep -rn "appBar: AppBar\|PopupMenuButton\|FloatingActionButton" lib`
+  now returns only comments in the kit itself.
+- Workouts restructured to mirror meals: date-anchored home screen (new
+  `watchSessionsByDate`), templates on `/workouts/templates` with the editor at
+  `templates/new` and `templates/:id`, search + muscle filtering added to the
+  exercise library.
+- The two add/edit dialogs (food, exercise) became full-screen modal pages —
+  they were the ones capped at 85% height with the Save button falling off the
+  bottom.
+- Two bugs found by conversion: `ISSUES.md` #85 and #86.
+
+**Then it turned out to be broken.** Installed on the phone, the meals and
+workouts screens were completely blank and every iOS glyph was a tofu box —
+with the fast suite green and the analyzer clean the whole time. Found by
+running it on a simulator and reading the layout exception, not by reasoning:
+
+- `ShortcutRow` stretched a `Row` against the unbounded height a sliver hands
+  down (#87) — one bad row, two blank screens.
+- `cupertino_icons` was never a dependency (#88).
+- Five pre-existing horizontal overflows, worst 184pt (#89), plus an
+  off-centre date label and a missing space.
+
+**The real fix is `test/widget/page_smoke_test.dart`**: all 22 screens rendered
+at 402x874, failing on any layout exception. It reproduces #87 exactly when the
+fix is reverted. Nothing in the suite had ever pumped a whole page — that is
+why a green suite meant nothing here.
+
+**Verification:** fast suite 1019/1019, `flutter analyze` clean, and dashboard
+/ meals / workouts / food catalog eyeballed on the simulator.
+
+**Then: breaks in workout templates.** A "Customize breaks" switch (off =
+automatic rest from the rep count, nothing to see; on = break rows plus the
+button that adds them), breaks as ordinary rows in the exercise list so they
+drag anywhere, compact 56pt exercise rows, and swipe-to-edit added to
+`SwipeActionRow` and wired into every list in the app. Two new fields, both
+defaulting false so old backups read back unchanged; covered by
+`test/regression/template_breaks_test.dart`. Verified on the simulator screen
+by screen.
+
+**Next task:** run `integration_test/` on the simulator to confirm the updated
+finders — still not done.
+
+---
+
 ## 2026-08-09 — Nutrition targets rebuilt
 
 **Current task:** None.

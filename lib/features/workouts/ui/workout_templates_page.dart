@@ -9,38 +9,45 @@ import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
 import '../../../core/ui_constants.dart';
 import '../../../core/widgets.dart';
-import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
 import '../../../services/language_service.dart';
+import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
+import '../domain/session_actions.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
-/// Saved meal templates. Structurally identical to the workout templates
-/// screen -- same rows, same primary button, same actions.
-class MealTemplatesPage extends ConsumerWidget {
-  const MealTemplatesPage({super.key});
+/// Saved workout templates -- the workouts counterpart of the meal templates
+/// screen, down to the layout of a row and the placement of its primary
+/// button.
+///
+/// These used to be the top half of the workouts home screen, which is why
+/// that screen could not also be a day view. "Use now" there means starting a
+/// session from the template, exactly as it means logging a meal here.
+class WorkoutTemplatesPage extends ConsumerWidget {
+  const WorkoutTemplatesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final language = ref.watch(currentLanguageProvider);
-    final templatesStream = ref.watch(allMealTemplatesStreamProvider);
+    final workoutsColor = ref.watch(preferencesServiceProvider).workoutsColor;
+    final templatesStream = ref.watch(workoutTemplatesStreamProvider);
 
     return AppScaffold(
-      title: l10n.mealTemplates,
+      title: l10n.workoutTemplates,
       actions: [
         NavBarAction(
           icon: CupertinoIcons.add,
-          tooltip: l10n.createMealTemplate,
-          onPressed: () => context.push(Routes.mealTemplateEditor),
+          tooltip: l10n.createTemplate,
+          onPressed: () => context.push(Routes.templateEditor),
         ),
       ],
       slivers: [
-        StreamBuilder<List<MealTemplate>>(
+        StreamBuilder<List<WorkoutTemplate>>(
           stream: templatesStream,
           builder: (context, snapshot) {
-            // First load only -- see the meals home screen.
+            // See the workouts home screen: spinner on the first load only.
             if (snapshot.connectionState == ConnectionState.waiting &&
                 !snapshot.hasData) {
               return const SliverFillRemaining(
@@ -55,12 +62,12 @@ class MealTemplatesPage extends ConsumerWidget {
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: EmptyState(
-                  title: l10n.noMealTemplates,
-                  subtitle: l10n.createMealTemplateToReuse,
-                  icon: Icons.bookmark_border,
-                  actionText: l10n.createFirstMealTemplate,
+                  title: l10n.designYourWorkouts,
+                  subtitle: l10n.startYourFitness,
+                  icon: Icons.fitness_center,
+                  actionText: l10n.createFirstTemplate,
                   actionIcon: Icons.add,
-                  onAction: () => context.push(Routes.mealTemplateEditor),
+                  onAction: () => context.push(Routes.templateEditor),
                 ),
               );
             }
@@ -76,12 +83,13 @@ class MealTemplatesPage extends ConsumerWidget {
                 itemCount: templates.length,
                 itemBuilder: (context, index) {
                   final template = templates[index];
-                  return _MealTemplateCard(
+                  return _WorkoutTemplateCard(
                     template: template,
                     language: language,
-                    onUseNow: () => _useMealTemplate(context, ref, template),
+                    color: workoutsColor,
+                    onStart: () => _startWorkout(context, ref, template),
                     onEdit: () =>
-                        context.push('${Routes.mealTemplates}/${template.id}'),
+                        context.push('${Routes.workoutTemplates}/${template.id}'),
                     onDelete: () => _deleteTemplate(ref, template),
                   );
                 },
@@ -93,81 +101,35 @@ class MealTemplatesPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _useMealTemplate(
-      BuildContext context, WidgetRef ref, MealTemplate template) async {
-    final l10n = AppLocalizations.of(context)!;
-
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: AppDateUtils.today,
-      firstDate: DateTime(2020),
-      lastDate: AppDateUtils.today.add(const Duration(days: 365)),
-    );
-
-    if (selectedDate == null) return;
-
-    try {
-      // Create meal from template
-      final dateInt = AppDateUtils.dateToInt(selectedDate);
-      final meal = Meal.create(
-        date: dateInt,
-        name: template.name,
-        note: template.description,
-      );
-
-      // Calculate meal items with nutrition
-      final items = <MealItem>[];
-      for (final templateItem in template.items) {
-        final food = await ref
-            .read(mealsRepositoryProvider)
-            .getFoodById(templateItem.foodId);
-        if (food != null) {
-          items.add(MealItem.create(
-            mealId: meal.id,
-            foodId: templateItem.foodId,
-            amount: templateItem.amount,
-            food: food,
-          ));
-        }
-      }
-
-      final mealWithItems = meal.copyWith(items: items);
-      await ref.read(mealsRepositoryProvider).createMeal(mealWithItems);
-
-      ref.invalidate(mealsRepositoryProvider);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.mealCreatedFromTemplate)),
-        );
-        context.pop();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
-        );
-      }
+  Future<void> _startWorkout(
+      BuildContext context, WidgetRef ref, WorkoutTemplate template) async {
+    final session = await startWorkoutSessionFromTemplate(ref, template);
+    if (context.mounted) {
+      context.push('/workouts/session/${session.id}');
     }
   }
 
-  Future<void> _deleteTemplate(WidgetRef ref, MealTemplate template) async {
-    await ref.read(mealsRepositoryProvider).deleteMealTemplate(template.id);
-    ref.invalidate(mealsRepositoryProvider);
+  Future<void> _deleteTemplate(WidgetRef ref, WorkoutTemplate template) async {
+    await ref
+        .read(workoutTemplatesRepositoryProvider)
+        .deleteTemplate(template.id);
+    ref.invalidate(workoutTemplatesRepositoryProvider);
   }
 }
 
-class _MealTemplateCard extends StatelessWidget {
-  final MealTemplate template;
+class _WorkoutTemplateCard extends StatelessWidget {
+  final WorkoutTemplate template;
   final AppLanguage language;
-  final VoidCallback onUseNow;
+  final Color color;
+  final VoidCallback onStart;
   final VoidCallback onEdit;
   final Future<void> Function() onDelete;
 
-  const _MealTemplateCard({
+  const _WorkoutTemplateCard({
     required this.template,
     required this.language,
-    required this.onUseNow,
+    required this.color,
+    required this.onStart,
     required this.onEdit,
     required this.onDelete,
   });
@@ -188,10 +150,10 @@ class _MealTemplateCard extends StatelessWidget {
       editLabel: l10n.edit,
       actions: [
         AppAction(
-          label: l10n.useNow,
-          icon: CupertinoIcons.add_circled,
+          label: l10n.startWorkout,
+          icon: CupertinoIcons.play_arrow,
           isDefault: true,
-          onPressed: onUseNow,
+          onPressed: onStart,
         ),
         AppAction(
           label: l10n.edit,
@@ -222,13 +184,13 @@ class _MealTemplateCard extends StatelessWidget {
                   ),
                   AppRowMenuButton(
                     title: name,
-                    tooltip: l10n.mealTemplates,
+                    tooltip: l10n.workoutTemplates,
                     actions: [
                       AppAction(
-                        label: l10n.useNow,
-                        icon: CupertinoIcons.add_circled,
+                        label: l10n.startWorkout,
+                        icon: CupertinoIcons.play_arrow,
                         isDefault: true,
-                        onPressed: onUseNow,
+                        onPressed: onStart,
                       ),
                       AppAction(
                         label: l10n.edit,
@@ -253,12 +215,11 @@ class _MealTemplateCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (template.description != null) ...[
-                const SizedBox(height: 8),
+              if (template.displayNotes(language) != null) ...[
+                const SizedBox(height: AppSpacing.xs),
                 Text(
-                  template.displayDescription(language) ??
-                      template.description!,
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 14),
+                  template.displayNotes(language)!,
+                  style: theme.textTheme.bodySmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -267,13 +228,13 @@ class _MealTemplateCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    Icons.restaurant,
+                    Icons.fitness_center,
                     size: 16,
                     color: theme.textTheme.bodySmall?.color,
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
-                    l10n.itemsCount(template.items.length),
+                    l10n.exercisesCount(template.exercises.length),
                     style: theme.textTheme.bodySmall,
                   ),
                 ],
@@ -282,9 +243,9 @@ class _MealTemplateCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: l10n.useNow,
-                  onPressed: onUseNow,
-                  icon: Icons.add_circle,
+                  text: l10n.startWorkout,
+                  onPressed: onStart,
+                  icon: Icons.play_arrow,
                 ),
               ),
             ],

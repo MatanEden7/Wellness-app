@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -29,16 +30,9 @@ class SleepTimerPage extends HookConsumerWidget {
       return null;
     }, []);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.sleepTimer,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Center(
+    return AppNavScaffold(
+      title: l10n.sleepTimer,
+      body: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: currentEntry.value == null
@@ -53,7 +47,6 @@ class SleepTimerPage extends HookConsumerWidget {
                     isLoading: isLoading.value,
                   ),
           ),
-        ),
       ),
     );
   }

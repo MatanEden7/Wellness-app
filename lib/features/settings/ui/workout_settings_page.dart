@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../services/preferences_service.dart';
@@ -29,23 +29,10 @@ class WorkoutSettingsPage extends HookConsumerWidget {
       return null;
     }, []);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.workoutSettingsTitle,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
-          onPressed: () => context.pop(),
-            tooltip: AppLocalizations.of(context)!.backToDashboard,
-          ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
+    return AppScaffold.child(
+      title: AppLocalizations.of(context)!.workoutSettingsTitle,
+      backTooltip: AppLocalizations.of(context)!.backToDashboard,
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -64,7 +51,10 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
+                        // Expanded: the subtitle beside it is a full
+                        // sentence, which overflowed the row by 184pt.
+                        Expanded(
+                          child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -77,6 +67,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                               style: theme.textTheme.bodySmall,
                             ),
                           ],
+                          ),
                         ),
                         Text(
                           '${restTime.value}s',
@@ -119,7 +110,10 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
+                        // Expanded: the subtitle beside it is a full
+                        // sentence, which overflowed the row by 184pt.
+                        Expanded(
+                          child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -132,6 +126,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                               style: theme.textTheme.bodySmall,
                             ),
                           ],
+                          ),
                         ),
                         Switch(
                           value: soundEnabled.value,
@@ -224,8 +219,6 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                 ),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

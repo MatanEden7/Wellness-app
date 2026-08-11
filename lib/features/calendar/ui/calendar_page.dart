@@ -1,8 +1,12 @@
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/liquid_glass_tab_bar.dart';
+import '../../../core/ios/sheets.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -28,96 +32,72 @@ class CalendarPage extends ConsumerWidget {
     final calendarState = ref.watch(calendarStateProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.calendarTitle,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+    return AppNavScaffold(
+      title: AppLocalizations.of(context)!.calendarTitle,
+      backTooltip: l10n.backToDashboardTooltip,
+      actions: [
+        // Two overflow menus of Material popups became two action sheets:
+        // one picks the view, one toggles what is shown.
+        NavBarAction(
+          icon: CupertinoIcons.square_grid_2x2,
+          tooltip: l10n.monthView,
+          onPressed: () => showAppActionSheet(
+            context: context,
+            actions: [
+              for (final mode in CalendarViewMode.values)
+                AppAction(
+                  label: switch (mode) {
+                    CalendarViewMode.month => l10n.monthView,
+                    CalendarViewMode.week => l10n.weekView,
+                    CalendarViewMode.day => l10n.dayView,
+                  },
+                  icon: switch (mode) {
+                    CalendarViewMode.month => CupertinoIcons.calendar,
+                    CalendarViewMode.week => CupertinoIcons.calendar_today,
+                    CalendarViewMode.day => CupertinoIcons.list_bullet,
+                  },
+                  isDefault: mode == calendarState.viewMode,
+                  onPressed: () => ref
+                      .read(calendarStateProvider.notifier)
+                      .setViewMode(mode),
+                ),
+            ],
+          ),
         ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
-          onPressed: () => context.pop(),
-          tooltip: l10n.backToDashboardTooltip,
-        ),
-        actions: [
-          // View mode toggle
-          PopupMenuButton<CalendarViewMode>(
-            icon: const Icon(Icons.view_module, size: 22),
-            onSelected: (mode) {
-              ref.read(calendarStateProvider.notifier).setViewMode(mode);
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: CalendarViewMode.month,
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_view_month, size: 20),
-                    const SizedBox(width: 12),
-                    Text(l10n.monthView),
-                  ],
-                ),
+        NavBarAction(
+          icon: CupertinoIcons.line_horizontal_3_decrease,
+          tooltip: l10n.filter,
+          onPressed: () => showAppActionSheet(
+            context: context,
+            actions: [
+              AppAction(
+                label: l10n.showPlanned,
+                icon: calendarState.showPlanned
+                    ? CupertinoIcons.check_mark
+                    : CupertinoIcons.circle,
+                onPressed: () => ref
+                    .read(calendarStateProvider.notifier)
+                    .toggleShowPlanned(),
               ),
-              PopupMenuItem(
-                value: CalendarViewMode.week,
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_view_week, size: 20),
-                    const SizedBox(width: 12),
-                    Text(l10n.weekView),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: CalendarViewMode.day,
-                child: Row(
-                  children: [
-                    const Icon(Icons.today, size: 20),
-                    const SizedBox(width: 12),
-                    Text(l10n.dayView),
-                  ],
-                ),
+              AppAction(
+                label: l10n.showCompleted,
+                icon: calendarState.showCompleted
+                    ? CupertinoIcons.check_mark
+                    : CupertinoIcons.circle,
+                onPressed: () => ref
+                    .read(calendarStateProvider.notifier)
+                    .toggleShowCompleted(),
               ),
             ],
           ),
-          // Filter options
-          PopupMenuButton(
-            icon: const Icon(Icons.filter_list, size: 22),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: StatefulBuilder(
-                  builder: (context, setState) => CheckboxListTile(
-                    title: Text(l10n.showPlanned),
-                    value: calendarState.showPlanned,
-                    onChanged: (value) {
-                      ref.read(calendarStateProvider.notifier).toggleShowPlanned();
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ),
-              PopupMenuItem(
-                child: StatefulBuilder(
-                  builder: (context, setState) => CheckboxListTile(
-                    title: Text(l10n.showCompleted),
-                    value: calendarState.showCompleted,
-                    onChanged: (value) {
-                      ref.read(calendarStateProvider.notifier).toggleShowCompleted();
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // Add event
-          IconButton(
-            icon: const Icon(Icons.add, size: 22),
-            onPressed: () => _showAddEventDialog(context, ref),
-            tooltip: l10n.addEventTooltip,
-          ),
-        ],
-      ),
+        ),
+        NavBarAction(
+          icon: CupertinoIcons.add,
+          tooltip: l10n.addEventTooltip,
+          onPressed: () => _showAddEventDialog(context, ref),
+        ),
+      ],
+      floatingTabBar: const LiquidGlassTabBar(currentIndex: 4),
       body: calendarState.viewMode == CalendarViewMode.day
           ? _buildDayView(context, ref, calendarState)
           : Stack(

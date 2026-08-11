@@ -1,4 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/inset_list.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -531,16 +535,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
 
     if (p == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('My Profile'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
-            tooltip: 'Back',
-          ),
-        ),
-        body: Center(
+      return AppScaffold.fill(
+        title: 'My Profile',
+        child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -558,28 +555,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-          tooltip: 'Back',
-        ),
-        actions: [
-          if (_saving)
-            const Padding(
-              padding: EdgeInsets.all(14),
-              child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2)),
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    return AppScaffold.child(
+      title: 'My Profile',
+      actions: [
+        if (_saving)
+          const Padding(
+            padding: EdgeInsets.all(14),
+            child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+      ],
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header card
             Card(
@@ -835,7 +824,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
             const SizedBox(height: 32),
           ],
-        ),
       ),
     );
   }
@@ -862,29 +850,24 @@ class _PickerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: 'Back',
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          children: options.map((opt) {
-            final selected = opt.value == current;
-            return ListTile(
-              title: Text(opt.label),
-              trailing: selected
-                  ? Icon(Icons.check,
-                      color: Theme.of(context).colorScheme.primary)
-                  : null,
+    return AppScaffold.child(
+      title: title,
+      child: InsetSection(
+        children: [
+          for (final opt in options)
+            InsetRow(
+              title: opt.label,
               onTap: () => Navigator.of(context).pop(opt.value),
-            );
-          }).toList(),
-        ),
+              trailing: SizedBox(
+                width: 20,
+                child: opt.value == current
+                    ? Icon(CupertinoIcons.check_mark,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary)
+                    : null,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -934,38 +917,34 @@ class _MultiPickerPageState extends State<_MultiPickerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: 'Back',
+    return AppScaffold.child(
+      title: widget.title,
+      actions: [
+        NavBarAction(
+          label: 'Done',
+          tooltip: 'Done',
+          isProminent: true,
+          onPressed: () => Navigator.of(context).pop(_selected.toList()),
         ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(_selected.toList()),
-            child: Text(
-              'Done',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600),
+      ],
+      // Multi-select on iOS is a checkmark on the row, not a checkbox in the
+      // margin.
+      child: InsetSection(
+        children: [
+          for (final opt in widget.options)
+            InsetRow(
+              title: opt.label,
+              onTap: () => _toggle(opt.value),
+              trailing: SizedBox(
+                width: 20,
+                child: _selected.contains(opt.value)
+                    ? Icon(CupertinoIcons.check_mark,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary)
+                    : null,
+              ),
             ),
-          ),
         ],
-      ),
-      body: SafeArea(
-        child: ListView(
-          children: widget.options.map((opt) {
-            final isSelected = _selected.contains(opt.value);
-            return CheckboxListTile(
-              title: Text(opt.label),
-              value: isSelected,
-              onChanged: (_) => _toggle(opt.value),
-            );
-          }).toList(),
-        ),
       ),
     );
   }
@@ -1030,28 +1009,17 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: 'Back',
+    return AppScaffold.child(
+      title: widget.title,
+      actions: [
+        NavBarAction(
+          label: 'Save',
+          tooltip: 'Save',
+          isProminent: true,
+          onPressed: _submit,
         ),
-        actions: [
-          TextButton(
-            onPressed: _submit,
-            child: Text('Save',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
+      ],
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
@@ -1083,8 +1051,6 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
                     ),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

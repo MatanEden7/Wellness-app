@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/ios/app_scaffold.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -68,30 +70,24 @@ class _NutritionGoalsPageState extends ConsumerState<NutritionGoalsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.nutritionGoals),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-          tooltip: l10n.back,
+    return AppScaffold.child(
+      title: l10n.nutritionGoals,
+      backTooltip: l10n.back,
+      actions: [
+        // iOS keeps the confirming action in place and greys it out rather
+        // than removing it -- a button that appears only once you have typed
+        // something gives no hint that saving is how you finish.
+        NavBarAction(
+          label: l10n.save,
+          tooltip: l10n.save,
+          isProminent: true,
+          onPressed: _dirty ? _save : null,
         ),
-        actions: [
-          if (_dirty)
-            TextButton(
-              onPressed: _save,
-              child: Text(l10n.save,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w600)),
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: Form(
+      ],
+      child: Form(
           key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 'Set your daily nutrition targets. Leave a field empty to disable that goal.',
@@ -141,7 +137,6 @@ class _NutritionGoalsPageState extends ConsumerState<NutritionGoalsPage> {
               ),
             ],
           ),
-        ),
       ),
     );
   }

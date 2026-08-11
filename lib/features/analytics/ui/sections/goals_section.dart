@@ -4,7 +4,9 @@ import '../../../../l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../services/preferences_service.dart';
+import '../../domain/analytics_range.dart';
 import '../../domain/analytics_view.dart';
+import '../../domain/series.dart';
 import '../../domain/goal_scoring.dart';
 import '../analytics_format.dart';
 import '../charts/bar_chart.dart';
@@ -191,6 +193,12 @@ class _GoalsSectionState extends ConsumerState<GoalsSection> {
 
   /// Today's standing, as rings. Falls back to the last day in range, so the
   /// row is never blank when the range ends in the past.
+  ///
+  /// Each ring is *how close*, not *did you make it*. A binary 0-or-1 told
+  /// someone who had eaten 1,800 of a 2,550 target that they were at zero,
+  /// which is both wrong and useless -- the ring's whole job is to show what
+  /// is left to do. The met flag still decides the colour of the day in the
+  /// chart above; this is the finer-grained view of the same day.
   List<RingSpec> _todayRings(AnalyticsView view,
       Map<WellnessGoal, Color> colors, AppLocalizations l10n) {
     final today = view.goalDays.isEmpty ? null : view.goalDays.last;
@@ -205,10 +213,57 @@ class _GoalsSectionState extends ConsumerState<GoalsSection> {
       for (final goal in view.targets.applicable)
         RingSpec(
           label: labels[goal]!,
-          progress: today != null && today.met.contains(goal) ? 1 : 0,
+          progress: _progressFor(goal, view, today),
           color: colors[goal]!,
         ),
     ];
+  }
+
+  /// 0..1 for the last scored day.
+  ///
+  /// Read off the same series the charts draw, so the ring and the chart can
+  /// never disagree. A goal already met reports a full ring even if the raw
+  /// ratio is under 1 -- fat loss is met by staying *under* target, where a
+  /// literal ratio would show a good day as an incomplete one.
+  double _progressFor(
+      WellnessGoal goal, AnalyticsView view, GoalDay? today) {
+    if (today != null && today.met.contains(goal)) return 1;
+
+    double ratio(MetricSeries series, double? target) {
+      if (target == null || target <= 0) return 0;
+      final last = series.points.isEmpty ? null : series.points.last.value;
+      if (last == null) return 0;
+      return (last / target).clamp(0.0, 1.0);
+    }
+
+    return switch (goal) {
+      WellnessGoal.calories =>
+        ratio(view.calories, view.targets.calorieGoal),
+      WellnessGoal.protein => ratio(view.protein, view.targets.proteinGoal),
+      WellnessGoal.sleep => ratio(view.sleepHours, view.targets.sleepGoalHours),
+      // Against the week's target rather than the day's: training is a weekly
+      // commitment, and "1 of 4 sessions" is the number that means something
+      // on a Tuesday.
+      WellnessGoal.training => _weekTrainingRatio(view),
+    };
+  }
+
+  double _weekTrainingRatio(AnalyticsView view) {
+    final target = view.targets.trainingDaysPerWeek;
+    if (target <= 0) return 0;
+
+    // Daily buckets: add up the last week of them. Coarser buckets already
+    // hold a week or more per point, so the last point is the count.
+    final points = view.sessionCount.points;
+    if (points.isEmpty) return 0;
+    final window = view.bucket == AnalyticsBucket.day
+        ? points.length < 7
+            ? points
+            : points.sublist(points.length - 7)
+        : [points.last];
+    final sessions =
+        window.fold<double>(0, (sum, p) => sum + (p.value ?? 0));
+    return (sessions / target).clamp(0.0, 1.0);
   }
 }
 

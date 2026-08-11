@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../services/notification_preferences_service.dart';
 
@@ -16,17 +16,11 @@ class NotificationSettingsPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final prefs = ref.watch(notificationPreferencesProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.notifications),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-            tooltip: l10n.backToDashboard,
-          ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+    return AppScaffold.child(
+      title: l10n.notifications,
+      backTooltip: l10n.backToDashboard,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Category Toggles
           Card(

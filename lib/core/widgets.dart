@@ -852,11 +852,12 @@ class AppSheet extends StatelessWidget {
             ],
           );
 
+    // No handle of our own: the theme sets `showDragHandle: true`, so the
+    // sheet already draws one. Both were being painted, one above the other.
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SheetDragHandle(),
         if (header != null) ...[header, const SizedBox(height: AppSpacing.md)],
         child,
       ],
@@ -975,26 +976,6 @@ class SummaryStrip extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-/// Small pill-shaped handle for the top of a modal bottom sheet.
-class SheetDragHandle extends StatelessWidget {
-  const SheetDragHandle({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 36,
-        height: 4,
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(2),
-        ),
       ),
     );
   }

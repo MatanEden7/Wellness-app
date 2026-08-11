@@ -1,418 +1,381 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/date_strip.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/ios/shortcuts.dart';
+import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
+import '../../../core/ui_constants.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../routing/routes.dart';
-import '../../../services/language_service.dart';
+import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
-import '../domain/session_actions.dart';
 import 'quick_start_workout_dialog.dart';
 import 'workout_keys.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/liquid_glass_tab_bar.dart';
 
-class WorkoutsPage extends ConsumerWidget {
+/// The home of the workouts area.
+///
+/// Structurally the same screen as the meals home, deliberately: pick a day,
+/// see what that day's totals were, see the individual entries, add another.
+/// It used to be a different shape entirely -- an undated list of every
+/// template stacked above the last five sessions -- which meant the two
+/// halves of the app taught you two different ways to read a day. Templates
+/// now live on their own screen, exactly as meal templates do.
+class WorkoutsPage extends HookConsumerWidget {
   const WorkoutsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final language = ref.watch(currentLanguageProvider);
-    final templatesAsync = ref.watch(workoutTemplatesStreamProvider);
-    final recentSessionsAsync = ref.watch(recentSessionsStreamProvider(5));
+    final l10n = AppLocalizations.of(context)!;
+    final selectedDate = useState(AppDateUtils.today);
+    final dateInt = AppDateUtils.dateToInt(selectedDate.value);
+    final workoutsColor = ref.watch(preferencesServiceProvider).workoutsColor;
+    final sessionsStream = ref.watch(sessionsByDateStreamProvider(dateInt));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.workouts,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
-          onPressed: () => context.pop(),
-          tooltip: AppLocalizations.of(context)!.backToDashboard,
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_month, size: 22),
-            onPressed: () => context.push(Routes.calendar),
-            tooltip: AppLocalizations.of(context)!.calendar,
-          ),
-          // Two actions, not four: the title wrapped on a 393pt screen.
-          // Starting a workout is the FAB, the exercise library and template
-          // creation each have a labelled button in the page body, so only
-          // settings has nowhere else to live.
-          IconButton(
-            icon: const Icon(Icons.settings, size: 22),
-            onPressed: () => context.push(Routes.workoutSettings),
-            tooltip: AppLocalizations.of(context)!.workoutSettingsTooltip,
-          ),
-        ],
+    return AppScaffold(
+      title: l10n.workouts,
+      backTooltip: l10n.backToDashboard,
+      pinnedHeader: DateStrip(
+        date: selectedDate.value,
+        onChanged: (next) => selectedDate.value = next,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Starting a workout is the FAB; this is the one shortcut it
-              // doesn't cover.
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: AppLocalizations.of(context)!.exerciseLibrary,
-                  onPressed: () => context.push(Routes.exerciseLibrary),
-                  isSecondary: true,
-                  icon: Icons.library_books,
+      actions: [
+        NavBarAction(
+          icon: CupertinoIcons.calendar,
+          tooltip: l10n.calendar,
+          onPressed: () => context.push(Routes.calendar),
+        ),
+        NavBarAction(
+          key: WorkoutKeys.startWorkoutFab,
+          icon: CupertinoIcons.add,
+          tooltip: l10n.startWorkout,
+          onPressed: () => showAppSheet<void>(
+            context: context,
+            builder: (_) => const QuickStartWorkoutDialog(),
+          ),
+        ),
+      ],
+      floatingTabBar: const LiquidGlassTabBar(currentIndex: 2),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            UIConstants.screenHorizontalPadding,
+            UIConstants.cardSpacing,
+            UIConstants.screenHorizontalPadding,
+            0,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: ShortcutRow(
+              shortcuts: [
+                AppShortcut(
+                  icon: CupertinoIcons.square_list,
+                  label: l10n.workoutTemplates,
+                  color: workoutsColor,
+                  onTap: () => context.push(Routes.workoutTemplates),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-            // Workout Templates
-            SectionHeader(
-              title: AppLocalizations.of(context)!.workoutTemplates,
-              action: AppButton(
-                text: AppLocalizations.of(context)!.createTemplate,
-                onPressed: () => context.push(Routes.templateEditor),
-                isSecondary: true,
-                icon: Icons.add,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            StreamBuilder<List<WorkoutTemplate>>(
-              stream: templatesAsync,
-              builder: (context, snapshot) {
-                // Only show loading on initial load (no data yet)
-                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                  return const LoadingIndicator();
-                }
-
-                final templates = snapshot.data ?? [];
-
-                if (templates.isEmpty) {
-                  return EmptyState(
-                    title: AppLocalizations.of(context)!.designYourWorkouts,
-                    subtitle: AppLocalizations.of(context)!.startYourFitness,
-                    icon: Icons.fitness_center,
-                    actionText: AppLocalizations.of(context)!.createFirstTemplate,
-                    actionIcon: Icons.add,
-                    onAction: () => context.push(Routes.templateEditor),
-                  );
-                }
-
-                return Column(
-                  children: templates.map((template) {
-                    return _WorkoutTemplateCard(
-                      template: template,
-                      language: language,
-                      onStart: () => _startWorkout(context, ref, template),
-                      onEdit: () => context.push('/workouts/templates/${template.id}'),
-                      onDelete: () => _deleteTemplate(context, ref, template),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-
-            const SizedBox(height: AppSpacing.xl),
-
-            // Recent Workouts
-            SectionHeader(
-              title: AppLocalizations.of(context)!.recentWorkouts,
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            StreamBuilder<List<WorkoutSessionWithTemplate>>(
-              stream: recentSessionsAsync,
-              builder: (context, snapshot) {
-                // Only show loading on initial load (no data yet)
-                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                  return const LoadingIndicator();
-                }
-
-                final sessionsWithTemplate = snapshot.data ?? [];
-
-                if (sessionsWithTemplate.isEmpty) {
-                  return EmptyState(
-                    title: AppLocalizations.of(context)!.yourFitnessJourneyAwaits,
-                    subtitle: AppLocalizations.of(context)!.completeWorkoutsWillAppear,
-                    icon: Icons.history,
-                    actionText: AppLocalizations.of(context)!.startQuickWorkout,
-                    actionIcon: Icons.play_arrow,
-                    onAction: () => _startQuickWorkout(context, ref),
-                  );
-                }
-
-                return Column(
-                  children: sessionsWithTemplate.map((sessionWithTemplate) {
-                    return _WorkoutSessionCard(
-                      sessionWithTemplate: sessionWithTemplate,
-                      onTap: () => context.push('/workouts/session/${sessionWithTemplate.session.id}'),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: WorkoutKeys.startWorkoutFab,
-        onPressed: () => showAppSheet<void>(
-          context: context,
-          builder: (_) => const QuickStartWorkoutDialog(),
-        ),
-        icon: const Icon(Icons.play_arrow),
-        label: Text(AppLocalizations.of(context)!.startWorkout),
-      ),
-    );
-  }
-
-  Future<void> _startQuickWorkout(BuildContext context, WidgetRef ref) async {
-    final session = await startQuickWorkoutSession(ref);
-    if (context.mounted) {
-      context.push('/workouts/session/${session.id}');
-    }
-  }
-
-  Future<void> _startWorkout(BuildContext context, WidgetRef ref, WorkoutTemplate template) async {
-    final session = await startWorkoutSessionFromTemplate(ref, template);
-    if (context.mounted) {
-      context.push('/workouts/session/${session.id}');
-    }
-  }
-
-  Future<void> _deleteTemplate(BuildContext context, WidgetRef ref, WorkoutTemplate template) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteTemplate),
-        content: Text('${AppLocalizations.of(context)!.areYouSure} "${template.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context)!.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await ref.read(workoutTemplatesRepositoryProvider).deleteTemplate(template.id);
-      // Trigger refresh to update UI immediately
-      ref.invalidate(workoutTemplatesRepositoryProvider);
-    }
-  }
-}
-
-class _WorkoutTemplateCard extends StatelessWidget {
-  final WorkoutTemplate template;
-  final AppLanguage language;
-  final VoidCallback onStart;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  const _WorkoutTemplateCard({
-    required this.template,
-    required this.language,
-    required this.onStart,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    template.displayName(language),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                AppShortcut(
+                  icon: CupertinoIcons.book,
+                  label: l10n.exerciseLibrary,
+                  color: workoutsColor,
+                  onTap: () => context.push(Routes.exerciseLibrary),
                 ),
-                PopupMenuButton(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'start',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.play_arrow, color: Colors.green, size: 20),
-                          const SizedBox(width: 12),
-                          Text(AppLocalizations.of(context)!.startWorkout),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.edit, size: 20),
-                          const SizedBox(width: 12),
-                          Text(AppLocalizations.of(context)!.edit),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.delete, color: Colors.red, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            AppLocalizations.of(context)!.delete,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                onSelected: (value) {
-                  switch (value) {
-                    case 'start':
-                      onStart();
-                      break;
-                    case 'edit':
-                      onEdit();
-                      break;
-                    case 'delete':
-                      onDelete();
-                      break;
-                  }
-                },
+                AppShortcut(
+                  icon: CupertinoIcons.slider_horizontal_3,
+                  label: l10n.settings,
+                  color: workoutsColor,
+                  onTap: () => context.push(Routes.workoutSettings),
                 ),
               ],
             ),
-            if (template.notes != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              template.notes!,
-              style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        _SessionsBody(
+          sessionsStream: sessionsStream,
+          date: selectedDate.value,
+          workoutsColor: workoutsColor,
+        ),
+      ],
+    );
+  }
+}
+
+/// The day's summary card and its sessions -- one sliver so the whole thing
+/// swaps atomically when the date changes.
+class _SessionsBody extends ConsumerWidget {
+  final Stream<List<WorkoutSessionWithTemplate>> sessionsStream;
+  final DateTime date;
+  final Color workoutsColor;
+
+  const _SessionsBody({
+    required this.sessionsStream,
+    required this.date,
+    required this.workoutsColor,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SliverToBoxAdapter(
+      child: StreamBuilder<List<WorkoutSessionWithTemplate>>(
+        stream: sessionsStream,
+        builder: (context, snapshot) {
+          // Only on the very first load: on later rebuilds the list we
+          // already have is still valid, and flashing a spinner over it
+          // reads as data disappearing.
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 80),
+              child: LoadingIndicator(),
+            );
+          }
+
+          final sessions = snapshot.data ?? [];
+
+          if (sessions.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 48),
+              child: EmptyState(
+                title: l10n.noWorkoutsYet,
+                subtitle: '${l10n.trackYourTrainingFor.trim()} '
+                    '${AppDateUtils.formatDate(date)}',
+                icon: Icons.fitness_center,
+                actionText: l10n.startQuickWorkout,
+                actionIcon: Icons.play_arrow,
+                onAction: () => showAppSheet<void>(
+                  context: context,
+                  builder: (_) => const QuickStartWorkoutDialog(),
+                ),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(
+              UIConstants.screenHorizontalPadding,
+              UIConstants.cardSpacing,
+              UIConstants.screenHorizontalPadding,
+              UIConstants.sectionSpacing,
             ),
-          ],
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Icon(
-                Icons.fitness_center,
-                size: 16,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                AppLocalizations.of(context)!.exercisesCount(template.exercises.length),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _DayTrainingCard(sessions: sessions, color: workoutsColor),
+                const SizedBox(height: UIConstants.cardSpacing),
+                for (final entry in sessions)
+                  WorkoutSessionCard(
+                    sessionWithTemplate: entry,
+                    color: workoutsColor,
+                    onTap: () => context
+                        .push('/workouts/session/${entry.session.id}'),
+                    onDelete: () => _deleteSession(context, ref, entry),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _deleteSession(BuildContext context, WidgetRef ref,
+      WorkoutSessionWithTemplate entry) async {
+    await ref
+        .read(workoutSessionsRepositoryProvider)
+        .deleteSession(entry.session.id);
+    ref.invalidate(workoutSessionsRepositoryProvider);
+  }
+}
+
+/// What the day added up to: sets, volume, time under the bar. The workouts
+/// counterpart of the meals page's daily totals card, in the same slot.
+class _DayTrainingCard extends StatelessWidget {
+  final List<WorkoutSessionWithTemplate> sessions;
+  final Color color;
+
+  const _DayTrainingCard({required this.sessions, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    var sets = 0;
+    var volume = 0.0;
+    var minutes = 0;
+    for (final entry in sessions) {
+      sets += entry.session.sets.length;
+      for (final set in entry.session.sets) {
+        // Bodyweight sets carry no weight; they still count as sets but
+        // cannot contribute to a kg total.
+        volume += (set.weight ?? 0) * set.reps;
+      }
+      minutes += entry.session.duration?.inMinutes ?? 0;
+    }
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.workoutTotals,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: AppButton(
-              text: AppLocalizations.of(context)!.startWorkout,
-              onPressed: onStart,
-              icon: Icons.play_arrow,
-            ),
+          SummaryStrip(
+            stats: [
+              SummaryStat(
+                icon: Icons.fitness_center,
+                label: l10n.sets,
+                value: '$sets',
+                color: color,
+              ),
+              SummaryStat(
+                icon: Icons.scale,
+                label: l10n.volumeLabel,
+                value: '${Formatters.formatCalories(volume)} kg',
+                color: color,
+              ),
+              SummaryStat(
+                icon: Icons.timer_outlined,
+                label: l10n.duration,
+                value: '$minutes min',
+                color: color,
+              ),
+            ],
           ),
         ],
-      ),
       ),
     );
   }
 }
 
-class _WorkoutSessionCard extends StatelessWidget {
+/// One logged session. Shared with the workout templates screen's "recent"
+/// list, hence public.
+class WorkoutSessionCard extends StatelessWidget {
   final WorkoutSessionWithTemplate sessionWithTemplate;
   final VoidCallback onTap;
+  final Future<void> Function() onDelete;
+  final Color color;
 
-  const _WorkoutSessionCard({
+  const WorkoutSessionCard({
+    super.key,
     required this.sessionWithTemplate,
     required this.onTap,
+    required this.onDelete,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final session = sessionWithTemplate.session;
-    final templateName = sessionWithTemplate.templateName ?? AppLocalizations.of(context)!.quickWorkout;
-    final startTime = AppDateUtils.formatTime(session.startedAt);
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    '$templateName • $startTime',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
+    final name = sessionWithTemplate.templateName ?? l10n.quickWorkout;
+
+    return SwipeActionRow(
+      rowKey: ValueKey(session.id),
+      deleteLabel: l10n.delete,
+      confirmTitle: l10n.deleteWorkout,
+      confirmMessage: '${l10n.areYouSure} "$name"?',
+      onDelete: onDelete,
+      onEdit: onTap,
+      editLabel: l10n.edit,
+      actions: [
+        AppAction(
+          label: l10n.edit,
+          icon: CupertinoIcons.pencil,
+          onPressed: onTap,
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          onTap: onTap,
+          child: Row(
+            children: [
+              SettingsIconBadge(
+                session.isCompleted
+                    ? Icons.check_circle_outline
+                    : Icons.play_circle_outline,
+                color: color,
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 2),
+                    Text(
+                      [
+                        AppDateUtils.formatTime(session.startedAt),
+                        if (session.duration != null)
+                          AppDateUtils.formatDuration(session.duration!),
+                        if (session.sets.isNotEmpty)
+                          l10n.setsCompletedCount(session.sets.length),
+                      ].join(' · '),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.6),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              AppRowMenuButton(
+                title: name,
+                tooltip: l10n.workout,
+                actions: [
+                  AppAction(
+                    label: l10n.edit,
+                    icon: CupertinoIcons.pencil,
+                    onPressed: onTap,
                   ),
-                ),
-                Icon(
-                  session.isCompleted ? Icons.check_circle : Icons.play_circle,
-                  color: session.isCompleted ? Colors.green : Colors.orange,
-                  size: 24,
-                ),
-              ],
-            ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            AppDateUtils.formatDate(session.startedAt),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          if (session.duration != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${AppLocalizations.of(context)!.duration}: ${AppDateUtils.formatDuration(session.duration!)}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-            if (session.sets.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                AppLocalizations.of(context)!.setsCompletedCount(session.sets.length),
-                style: Theme.of(context).textTheme.bodySmall,
+                  AppAction(
+                    label: l10n.delete,
+                    icon: CupertinoIcons.delete,
+                    isDestructive: true,
+                    onPressed: () async {
+                      final confirmed = await showAppConfirm(
+                        context: context,
+                        title: l10n.deleteWorkout,
+                        message: '${l10n.areYouSure} "$name"?',
+                        confirmLabel: l10n.delete,
+                      );
+                      if (confirmed) await onDelete();
+                    },
+                  ),
+                ],
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 }
-

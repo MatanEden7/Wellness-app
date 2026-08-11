@@ -77,6 +77,7 @@ _$WorkoutTemplateImpl _$$WorkoutTemplateImplFromJson(
       notesHe: json['notesHe'] as String?,
       origin: $enumDecodeNullable(_$TemplateOriginEnumMap, json['origin']) ??
           TemplateOrigin.user,
+      customRest: json['customRest'] as bool? ?? false,
       exercises: (json['exercises'] as List<dynamic>?)
               ?.map((e) => TemplateExercise.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -92,6 +93,7 @@ Map<String, dynamic> _$$WorkoutTemplateImplToJson(
       'notes': instance.notes,
       'notesHe': instance.notesHe,
       'origin': _$TemplateOriginEnumMap[instance.origin]!,
+      'customRest': instance.customRest,
       'exercises': instance.exercises,
     };
 
@@ -112,6 +114,7 @@ _$TemplateExerciseImpl _$$TemplateExerciseImplFromJson(
       defaultReps: json['defaultReps'] as int?,
       defaultWeight: (json['defaultWeight'] as num?)?.toDouble(),
       defaultRestSeconds: json['defaultRestSeconds'] as int?,
+      isRest: json['isRest'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$TemplateExerciseImplToJson(
@@ -125,6 +128,7 @@ Map<String, dynamic> _$$TemplateExerciseImplToJson(
       'defaultReps': instance.defaultReps,
       'defaultWeight': instance.defaultWeight,
       'defaultRestSeconds': instance.defaultRestSeconds,
+      'isRest': instance.isRest,
     };
 
 _$WorkoutSessionImpl _$$WorkoutSessionImplFromJson(Map<String, dynamic> json) =>

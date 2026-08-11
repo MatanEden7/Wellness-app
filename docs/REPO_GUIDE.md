@@ -244,6 +244,59 @@ theming layer would be a second source of truth for colour.
 
 - **[`lib/data/db/drift_database.dart`](lib/data/db/drift_database.dart)** - In-memory storage (18 static lists)
 - **[`lib/routing/routes.dart`](lib/routing/routes.dart)** - GoRouter configuration
+- **[`lib/core/ios/`](lib/core/ios/)** - the UI kit every screen is built from (see below)
+
+### Demo data for hand-testing
+
+[`lib/services/demo_seed_service.dart`](lib/services/demo_seed_service.dart)
+builds a full, known dataset and is enabled by a compile-time flag:
+
+```bash
+flutter build ios --simulator --debug --dart-define=DEMO_SEED=true
+```
+
+Without the flag it is unreachable, so release builds can never seed. Every
+run **wipes and reseeds**, so each build lands on an identical app.
+
+The plan is not invented: it runs the same `SetupEngineService` profile and the
+same three generators onboarding does, so what you test is the app's own
+output. Only then does it layer on six months of history and a handful of
+deliberate edits -- custom breaks with two break rows, an explicit 3:45 rest, a
+92.5kg prescription, a bodyweight-only exercise, and a user-owned food and
+exercise -- the cases a freshly generated plan cannot contain.
+
+It finishes by exporting everything and importing it straight back, comparing
+row counts either side. That runs the real backup path over a six-month dataset
+on every build, so a field that fails to serialise surfaces here rather than the
+first time someone restores a backup.
+
+### The iOS UI kit (`lib/core/ios/`)
+
+Every screen in the app gets its chrome from here. No page assembles its own
+`Scaffold` + `AppBar` any more; that is how the meals and workouts pages ended
+up with different action sets, paddings and title treatments for what is the
+same kind of screen.
+
+| File | Contents |
+|---|---|
+| [`app_scaffold.dart`](lib/core/ios/app_scaffold.dart) | `AppScaffold` — collapsing large title, chevron back, `NavBarAction`s, optional pinned header and bottom bar. `.child` / `.fill` are box-body conveniences; `AppNavScaffold` is the fixed-height variant for screens with an `Expanded` in them (a running session, the sleep timer, the calendar) |
+| [`sheets.dart`](lib/core/ios/sheets.dart) | `showAppActionSheet` (replaces every `PopupMenuButton`), `showAppConfirm` (replaces every delete `AlertDialog`), `AppFormPage` + `pushModalPage` for full-screen forms |
+| [`swipe_row.dart`](lib/core/ios/swipe_row.dart) | `SwipeActionRow` — swipe-to-delete plus long-press actions — and `AppRowMenuButton`, the ellipsis button |
+| [`inset_list.dart`](lib/core/ios/inset_list.dart) | `InsetSection` / `InsetRow`, the settings-style grouped list |
+| [`controls.dart`](lib/core/ios/controls.dart) | `AppSegmented`, `AppSearchField`, `AppFilterBar`, `FilterBanner` |
+| [`date_strip.dart`](lib/core/ios/date_strip.dart) | The day picker shared by the meals and workouts home screens |
+| [`shortcuts.dart`](lib/core/ios/shortcuts.dart) | `ShortcutRow` — the labelled tiles that lead to an area's secondary screens |
+
+It is Material underneath by design: `theme.dart`'s eight themes, the per-area
+meals/workouts/sleep colours and the custom colour picker all keep working, and
+the app still builds sanely on Android. Cupertino is used for the pieces where
+Material has no iOS-shaped equivalent (action sheets, alerts, the sliding
+segmented control, search field, glyphs).
+
+**Meals and workouts are deliberately symmetrical.** Home screen (day picker →
+day totals → entries → "+"), templates screen, catalog/library screen — the two
+areas have the same three screens in the same shapes, and the routes match too
+(`/{meals,workouts}/templates`, `.../templates/new`, `.../templates/:id`).
 
 ### Feature Modules
 

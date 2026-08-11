@@ -13,6 +13,7 @@ import '../features/meals/ui/meal_templates_page.dart';
 import '../features/meals/ui/meal_template_editor_page.dart';
 import '../features/workouts/ui/workouts_page.dart';
 import '../features/workouts/ui/exercise_library_page.dart';
+import '../features/workouts/ui/workout_templates_page.dart';
 import '../features/workouts/ui/template_editor_page.dart';
 import '../features/workouts/ui/workout_session_page.dart';
 import '../features/sleep/ui/sleep_page.dart';
@@ -130,18 +131,33 @@ final routerProvider = Provider<GoRouter>((ref) {
             name: 'exercise_library',
             pageBuilder: (context, state) => _platformPage(const ExerciseLibraryPage()),
           ),
-          GoRoute(
-            path: 'templates/:templateId',
-            name: 'template_editor_with_id',
-            pageBuilder: (context, state) {
-              final templateId = state.pathParameters['templateId']!;
-              return _platformPage(TemplateEditorPage(templateId: templateId));
-            },
-          ),
+          // Same shape as /meals/templates: the bare path is the list, 'new'
+          // and ':id' are the editor. It used to be the editor itself, with
+          // no list route at all, because templates were a section of the
+          // workouts home screen.
           GoRoute(
             path: 'templates',
-            name: 'template_editor_new',
-            pageBuilder: (context, state) => _platformPage(const TemplateEditorPage()),
+            name: 'workout_templates',
+            pageBuilder: (context, state) =>
+                _platformPage(const WorkoutTemplatesPage()),
+            routes: [
+              // IMPORTANT: specific routes must come BEFORE parameterized ones
+              GoRoute(
+                path: 'new',
+                name: 'template_editor_new',
+                pageBuilder: (context, state) =>
+                    _platformPage(const TemplateEditorPage()),
+              ),
+              GoRoute(
+                path: ':templateId',
+                name: 'template_editor_with_id',
+                pageBuilder: (context, state) {
+                  final templateId = state.pathParameters['templateId']!;
+                  return _platformPage(
+                      TemplateEditorPage(templateId: templateId));
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: 'session/:sessionId',
@@ -232,7 +248,8 @@ class Routes {
   static const mealTemplateEditor = '/meals/templates/new';
   static const workouts = '/workouts';
   static const exerciseLibrary = '/workouts/exercises';
-  static const templateEditor = '/workouts/templates';
+  static const workoutTemplates = '/workouts/templates';
+  static const templateEditor = '/workouts/templates/new';
   static const workoutSession = '/workouts/session';
   static const sleep = '/sleep';
   static const sleepTimer = '/sleep/timer';

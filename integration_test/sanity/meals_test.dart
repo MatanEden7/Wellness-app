@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -21,13 +20,16 @@ void main() {
       expect(find.text(l10n.meals), findsOneWidget);
 
       // Open the food catalog -- this is where seeded nutrition data (unit,
-      // kcal/protein/carbs/fat per unit) is actually displayed.
-      await tester.tap(find.byIcon(Icons.restaurant_menu));
+      // kcal/protein/carbs/fat per unit) is actually displayed. It is a
+      // labelled shortcut tile on the meals page now, not an app-bar glyph.
+      await tester.tap(find.byTooltip(l10n.foodCatalog));
       await settle(tester);
-      expect(find.text(l10n.foodCatalog), findsOneWidget);
+      // Twice: the catalog's own title, and the shortcut tile's label on the
+      // meals page still mounted underneath it.
+      expect(find.text(l10n.foodCatalog), findsWidgets);
 
-      // Starter foods live on the second tab (see food_catalog_page.dart:
-      // tab 0 = user foods, tab 1 = starter foods).
+      // Starter foods are the second segment of the catalog's segmented
+      // control (see food_catalog_page.dart: user foods / starter list).
       await tester.tap(find.text(l10n.starterList));
       await settle(tester);
 

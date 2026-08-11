@@ -30,6 +30,12 @@ class AppLocalizationsHe extends AppLocalizations {
   String get dashboard => 'לוח בקרה';
 
   @override
+  String get navHome => 'בית';
+
+  @override
+  String get navStats => 'נתונים';
+
+  @override
   String get meals => 'ארוחות';
 
   @override
@@ -73,6 +79,9 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get fat => 'שומן';
+
+  @override
+  String get nights => 'לילות';
 
   @override
   String get wellRested => 'נח היטב!';
@@ -2351,4 +2360,85 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get workoutExercises => 'תרגילי האימון';
+
+  @override
+  String get volumeLabel => 'נפח';
+
+  @override
+  String get trackYourTrainingFor => 'עקוב אחר האימונים שלך ל־';
+
+  @override
+  String get workoutTotals => 'אימון יומי';
+
+  @override
+  String get yourExercises => 'התרגילים שלי';
+
+  @override
+  String get starterExercises => 'ספריית בסיס';
+
+  @override
+  String get noExercisesMatch => 'לא נמצאו תרגילים';
+
+  @override
+  String get editExercise => 'עריכת תרגיל';
+
+  @override
+  String get addFirstFoodItem => 'הוסף פריט מזון ראשון';
+
+  @override
+  String get editMeal => 'עריכת ארוחה';
+
+  @override
+  String get editTemplate => 'עריכת תבנית';
+
+  @override
+  String get customBreaks => 'התאמת הפסקות';
+
+  @override
+  String get customBreaksSubtitle =>
+      'קבע מנוחה בין סטים והוסף הפסקות בכל מקום באימון';
+
+  @override
+  String get autoBreaksSubtitle =>
+      'המנוחה בין סטים נקבעת אוטומטית לפי מספר החזרות';
+
+  @override
+  String get addRest => 'הוסף הפסקה';
+
+  @override
+  String get restBlock => 'הפסקה';
+
+  @override
+  String get restDuration => 'משך ההפסקה';
+
+  @override
+  String get betweenSets => 'בין סטים';
+
+  @override
+  String get automatic => 'אוטומטי';
+
+  @override
+  String get addExerciseShort => 'תרגיל';
+
+  @override
+  String get addBreakShort => 'הפסקה';
+
+  @override
+  String restDefaultHelper(String rest) {
+    return 'השאר ריק כדי להשתמש בברירת המחדל של התרגיל ($rest)';
+  }
+
+  @override
+  String get dashboardPeriodToday => 'היום';
+
+  @override
+  String get dashboardPeriodWeek => 'השבוע';
+
+  @override
+  String workoutMinutes(String minutes) {
+    return '$minutes דק׳';
+  }
+
+  @override
+  String get nightlyAverage => 'ממוצע לילי';
 }

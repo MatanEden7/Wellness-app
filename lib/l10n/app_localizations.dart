@@ -140,6 +140,18 @@ abstract class AppLocalizations {
   /// **'Dashboard'**
   String get dashboard;
 
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get navStats;
+
   /// No description provided for @meals.
   ///
   /// In en, this message translates to:
@@ -229,6 +241,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fat'**
   String get fat;
+
+  /// No description provided for @nights.
+  ///
+  /// In en, this message translates to:
+  /// **'nights'**
+  String get nights;
 
   /// No description provided for @wellRested.
   ///
@@ -4489,6 +4507,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Workout exercises'**
   String get workoutExercises;
+
+  /// No description provided for @volumeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volumeLabel;
+
+  /// No description provided for @trackYourTrainingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your training for '**
+  String get trackYourTrainingFor;
+
+  /// No description provided for @workoutTotals.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Training'**
+  String get workoutTotals;
+
+  /// No description provided for @yourExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Exercises'**
+  String get yourExercises;
+
+  /// No description provided for @starterExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Starter Library'**
+  String get starterExercises;
+
+  /// No description provided for @noExercisesMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises match'**
+  String get noExercisesMatch;
+
+  /// No description provided for @editExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Exercise'**
+  String get editExercise;
+
+  /// No description provided for @addFirstFoodItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first food item'**
+  String get addFirstFoodItem;
+
+  /// No description provided for @editMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Meal'**
+  String get editMeal;
+
+  /// No description provided for @editTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Template'**
+  String get editTemplate;
+
+  /// No description provided for @customBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize breaks'**
+  String get customBreaks;
+
+  /// No description provided for @customBreaksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your own rest between sets, and add breaks anywhere in the workout'**
+  String get customBreaksSubtitle;
+
+  /// No description provided for @autoBreaksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest between sets is set automatically from the rep count'**
+  String get autoBreaksSubtitle;
+
+  /// No description provided for @addRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Break'**
+  String get addRest;
+
+  /// No description provided for @restBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Break'**
+  String get restBlock;
+
+  /// No description provided for @restDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Break length'**
+  String get restDuration;
+
+  /// No description provided for @betweenSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Between sets'**
+  String get betweenSets;
+
+  /// No description provided for @automatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get automatic;
+
+  /// No description provided for @addExerciseShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get addExerciseShort;
+
+  /// No description provided for @addBreakShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Break'**
+  String get addBreakShort;
+
+  /// No description provided for @restDefaultHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for this exercise’s default of {rest}'**
+  String restDefaultHelper(String rest);
+
+  /// No description provided for @dashboardPeriodToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dashboardPeriodToday;
+
+  /// No description provided for @dashboardPeriodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get dashboardPeriodWeek;
+
+  /// No description provided for @workoutMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String workoutMinutes(String minutes);
+
+  /// No description provided for @nightlyAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'nightly average'**
+  String get nightlyAverage;
 }
 
 class _AppLocalizationsDelegate

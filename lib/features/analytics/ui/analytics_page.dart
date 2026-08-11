@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/controls.dart';
 import '../../../core/ui_constants.dart';
 import '../data/providers.dart';
 import '../domain/analytics_range.dart';
@@ -32,28 +34,26 @@ class AnalyticsPage extends ConsumerWidget {
     final range = ref.watch(analyticsRangeProvider);
     final viewAsync = ref.watch(analyticsViewProvider(range));
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              floating: true,
-              pinned: false,
-              titleSpacing: UIConstants.screenHorizontalPadding,
-              title: Text(l10n.analyticsTitle),
-              centerTitle: false,
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _RangeSelectorHeader(
-                child: _RangeSelector(
-                  value: range,
-                  onChanged: (next) =>
-                      ref.read(analyticsRangeProvider.notifier).state = next,
-                ),
-              ),
-            ),
+    return AppScaffold(
+      title: l10n.analyticsTitle,
+      pinnedHeaderHeight: 52,
+      // Was a hand-rolled sliding segmented control; it is now the same one
+      // the food catalog and the exercise editor use.
+      pinnedHeader: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: UIConstants.screenHorizontalPadding,
+          vertical: 8,
+        ),
+        child: AppSegmented<AnalyticsRange>(
+          value: range,
+          onChanged: (next) =>
+              ref.read(analyticsRangeProvider.notifier).state = next,
+          segments: {
+            for (final r in AnalyticsRange.values) r: r.shortLabelFor(l10n),
+          },
+        ),
+      ),
+      slivers: [
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(
                 UIConstants.screenHorizontalPadding,
@@ -82,9 +82,7 @@ class AnalyticsPage extends ConsumerWidget {
                 ),
               ),
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }
@@ -120,87 +118,4 @@ class _Sections extends StatelessWidget {
       ]),
     );
   }
-}
-
-/// The W / M / 6M / Y control.
-class _RangeSelector extends StatelessWidget {
-  final AnalyticsRange value;
-  final ValueChanged<AnalyticsRange> onChanged;
-
-  const _RangeSelector({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: UIConstants.screenHorizontalPadding,
-        vertical: 8,
-      ),
-      color: theme.scaffoldBackgroundColor,
-      child: Container(
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color: theme.dividerColor.withValues(alpha: 0.25),
-          borderRadius: BorderRadius.circular(9),
-        ),
-        child: Row(
-          children: [
-            for (final range in AnalyticsRange.values)
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => onChanged(range),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    curve: Curves.easeOut,
-                    padding: const EdgeInsets.symmetric(vertical: 7),
-                    decoration: BoxDecoration(
-                      color: range == value ? theme.cardColor : null,
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: Text(
-                      range.shortLabelFor(AppLocalizations.of(context)!),
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        fontWeight:
-                            range == value ? FontWeight.w600 : FontWeight.w400,
-                        color: range == value
-                            ? theme.textTheme.bodyLarge?.color
-                            : theme.textTheme.bodySmall?.color,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RangeSelectorHeader extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  const _RangeSelectorHeader({required this.child});
-
-  static const double _height = 52;
-
-  @override
-  double get minExtent => _height;
-
-  @override
-  double get maxExtent => _height;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) =>
-      SizedBox(height: _height, child: child);
-
-  @override
-  bool shouldRebuild(_RangeSelectorHeader old) => old.child != child;
 }

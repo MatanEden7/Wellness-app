@@ -1,8 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ios/app_scaffold.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/ios/swipe_row.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -12,6 +16,7 @@ import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/liquid_glass_tab_bar.dart';
 
 /// Sleep history -- every logged night, plus the entry points that produce
 /// them (the live timer, and manual entry for a night you forgot to time).
@@ -31,28 +36,25 @@ class SleepPage extends ConsumerWidget {
     final goalHours = ref.watch(notificationPreferencesProvider).sleepGoalHours;
     final streakAsync = ref.watch(sleepStreakProvider(goalHours));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.sleep,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+    return AppScaffold(
+      title: l10n.sleep,
+      backTooltip: l10n.backToDashboard,
+      actions: [
+        NavBarAction(
+          icon: CupertinoIcons.calendar,
+          tooltip: l10n.calendar,
+          onPressed: () => context.push(Routes.calendar),
         ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
-          onPressed: () => context.pop(),
-          tooltip: l10n.backToDashboard,
+        NavBarAction(
+          icon: CupertinoIcons.add,
+          tooltip: l10n.addSleepEntryTooltip,
+          onPressed: () => showAddSleepSheet(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_month, size: 22),
-            onPressed: () => context.push(Routes.calendar),
-            tooltip: l10n.calendar,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: StreamBuilder<List<SleepEntry>>(
+      ],
+      floatingTabBar: const LiquidGlassTabBar(currentIndex: 3),
+      slivers: [
+        SliverToBoxAdapter(
+          child: StreamBuilder<List<SleepEntry>>(
           stream: entriesStream,
           builder: (context, snapshot) {
             // Only show the spinner on the very first load -- on later
@@ -67,9 +69,12 @@ class SleepPage extends ConsumerWidget {
             final active =
                 entries.where((e) => !e.isCompleted).firstOrNull;
 
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const SizedBox(height: AppSpacing.md),
                 _SummaryCard(
                   entries: entries,
                   streak: streakAsync.valueOrNull ?? 0,
@@ -98,55 +103,29 @@ class SleepPage extends ConsumerWidget {
                         color: sleepColor,
                         onEdit: () =>
                             showAddSleepSheet(context, entry: entry),
-                        onDelete: () => _deleteSleepEntry(context, ref, entry),
+                        onDelete: () => _deleteSleepEntry(ref, entry),
                       ),
                     ),
+                const SizedBox(height: AppSpacing.lg),
               ],
+              ),
             );
           },
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showAddSleepSheet(context),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.manualEntry),
-        tooltip: l10n.addSleepEntryTooltip,
-      ),
+        ),
+      ],
     );
   }
 
-  Future<void> _deleteSleepEntry(
-    BuildContext context,
-    WidgetRef ref,
-    SleepEntry entry,
-  ) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.deleteSleep),
-        content: Text(l10n.areYouSure),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(l10n.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await ref.read(sleepRepositoryProvider).deleteEntry(entry.id);
-      // The entry list rides `watchSleepStream()` and updates itself. This
-      // invalidate is for the dashboard's `getLastNightSleepHours()`, which
-      // is a one-shot Future read off the watched repository provider.
-      ref.invalidate(sleepRepositoryProvider);
-    }
+  /// Deletes without asking -- the row that calls this has already
+  /// confirmed, so that the swipe gesture and the menu item cannot end up
+  /// with two different confirmation dialogs.
+  Future<void> _deleteSleepEntry(WidgetRef ref, SleepEntry entry) async {
+    await ref.read(sleepRepositoryProvider).deleteEntry(entry.id);
+    // The entry list rides `watchSleepStream()` and updates itself. This
+    // invalidate is for the dashboard's `getLastNightSleepHours()`, which
+    // is a one-shot Future read off the watched repository provider.
+    ref.invalidate(sleepRepositoryProvider);
   }
 }
 
@@ -239,7 +218,7 @@ class _SleepEntryCard extends StatelessWidget {
   final SleepEntry entry;
   final Color color;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final Future<void> Function() onDelete;
 
   const _SleepEntryCard({
     required this.entry,
@@ -254,7 +233,22 @@ class _SleepEntryCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final duration = entry.durationInHours;
 
-    return AppCard(
+    return SwipeActionRow(
+      rowKey: ValueKey(entry.id),
+      deleteLabel: l10n.delete,
+      confirmTitle: l10n.deleteSleep,
+      confirmMessage: l10n.areYouSure,
+      onDelete: onDelete,
+      onEdit: onEdit,
+      editLabel: l10n.edit,
+      actions: [
+        AppAction(
+          label: l10n.edit,
+          icon: CupertinoIcons.pencil,
+          onPressed: onEdit,
+        ),
+      ],
+      child: AppCard(
       onTap: onEdit,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,44 +289,30 @@ class _SleepEntryCard extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               _DurationChip(duration: duration, color: color),
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert,
-                  size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.edit, size: 20),
-                        const SizedBox(width: 12),
-                        Text(l10n.edit),
-                      ],
-                    ),
+              AppRowMenuButton(
+                title: AppDateUtils.formatDate(entry.startedAt),
+                tooltip: l10n.sleep,
+                actions: [
+                  AppAction(
+                    label: l10n.edit,
+                    icon: CupertinoIcons.pencil,
+                    onPressed: onEdit,
                   ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.delete, color: Colors.red, size: 20),
-                        const SizedBox(width: 12),
-                        Text(
-                          l10n.delete,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
+                  AppAction(
+                    label: l10n.delete,
+                    icon: CupertinoIcons.delete,
+                    isDestructive: true,
+                    onPressed: () async {
+                      final confirmed = await showAppConfirm(
+                        context: context,
+                        title: l10n.deleteSleep,
+                        message: l10n.areYouSure,
+                        confirmLabel: l10n.delete,
+                      );
+                      if (confirmed) await onDelete();
+                    },
                   ),
                 ],
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                  } else if (value == 'delete') {
-                    onDelete();
-                  }
-                },
               ),
             ],
           ),
@@ -369,6 +349,7 @@ class _SleepEntryCard extends StatelessWidget {
             ],
           ],
         ],
+      ),
       ),
     );
   }

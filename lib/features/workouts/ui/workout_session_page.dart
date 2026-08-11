@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../../core/ios/app_scaffold.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
@@ -48,24 +50,30 @@ class WorkoutSessionPage extends HookConsumerWidget {
     final currentSession = session.value!;
     final isCompleted = currentSession.isCompleted;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          template.value?.name ?? l10n.workoutSession,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        actions: [
-          if (!isCompleted)
-            IconButton(
-              icon: const Icon(Icons.stop, size: 22),
-              onPressed: () => _finishWorkout(context, ref, currentSession),
-              tooltip: l10n.finishWorkoutTooltip,
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
+    return AppNavScaffold(
+      title: template.value?.name ?? l10n.workoutSession,
+      actions: [
+        // The only way to add an exercise mid-session. Previously the sole
+        // "Add Exercise" affordance was the empty state's button, and it
+        // pushed the read-only Exercise Library, which cannot return anything
+        // to the session -- so a quick workout could never gain an exercise.
+        if (!isCompleted)
+          NavBarAction(
+            key: WorkoutKeys.addExerciseFab,
+            icon: CupertinoIcons.add,
+            tooltip: l10n.addExercise,
+            onPressed: () =>
+                _addExercise(context, ref, session, template, exercises),
+          ),
+        if (!isCompleted)
+          NavBarAction(
+            label: l10n.finishWorkout,
+            tooltip: l10n.finishWorkoutTooltip,
+            isProminent: true,
+            onPressed: () => _finishWorkout(context, ref, currentSession),
+          ),
+      ],
+      body: Column(
           children: [
             // Session Info
             Container(
@@ -175,21 +183,7 @@ class WorkoutSessionPage extends HookConsumerWidget {
                     ),
             ),
           ],
-        ),
       ),
-      // The only way to add an exercise mid-session. Previously the sole
-      // "Add Exercise" affordance was the empty state's button, and it
-      // pushed the read-only Exercise Library, which cannot return anything
-      // to the session -- so a quick workout could never gain an exercise.
-      floatingActionButton: isCompleted
-          ? null
-          : FloatingActionButton.extended(
-              key: WorkoutKeys.addExerciseFab,
-              onPressed: () =>
-                  _addExercise(context, ref, session, template, exercises),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.addExercise),
-            ),
     );
   }
 
@@ -214,6 +208,10 @@ class WorkoutSessionPage extends HookConsumerWidget {
         if (templateData != null) {
           final exerciseList = <Exercise>[];
           for (final templateExercise in templateData.exercises) {
+            // Rest rows are breaks in the plan, not things to perform. They
+            // would resolve to a null exercise and be dropped anyway; saying
+            // so explicitly stops that looking like a lookup failure.
+            if (templateExercise.isRest) continue;
             final exercise = await ref.read(exercisesRepositoryProvider).getExerciseById(templateExercise.exerciseId);
             if (exercise != null) {
               exerciseList.add(exercise);
@@ -631,26 +629,31 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                     color: theme.textTheme.bodySmall?.color,
                                   ),
                                 ),
-                                if (weight != null) ...[
-                                  const SizedBox(height: 24),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primaryContainer,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      '${Formatters.formatWeight(weight)} ${exercise.unit}',
-                                      style: theme.textTheme.headlineSmall?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.onPrimaryContainer,
-                                      ),
+                                // No prescribed weight means bodyweight, and
+                                // the chip says so rather than vanishing --
+                                // an absent chip reads as missing data.
+                                const SizedBox(height: 24),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    weight == null ||
+                                            exercise.unit == 'bodyweight'
+                                        ? AppLocalizations.of(context)!
+                                            .bodyweight
+                                        : '${Formatters.formatWeight(weight)} ${exercise.unit}',
+                                    style: theme.textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onPrimaryContainer,
                                     ),
                                   ),
-                                ],
+                                ),
                               ],
                               if (isExerciseComplete) ...[
                                 const Icon(

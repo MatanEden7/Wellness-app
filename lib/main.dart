@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'app.dart';
 import 'data/db/drift_database.dart';
 import 'services/backup_location_service.dart';
+import 'services/demo_seed_service.dart';
 import 'services/preferences_service.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
@@ -61,6 +62,13 @@ void main() async {
 
   // Initialize calendar service
   final calendarService = CalendarService(prefs, database);
+
+  // Hand-testing dataset. Compiled out of any build that does not pass
+  // --dart-define=DEMO_SEED=true, and the seeder itself checks the flag
+  // again, so a release build can never reach it.
+  if (DemoSeedService.isEnabled) {
+    await DemoSeedService(database, prefs, calendarService).seed();
+  }
 
   // Persist pending changes when the app is backgrounded.
   WidgetsBinding.instance.addObserver(_PersistenceLifecycleObserver(database));

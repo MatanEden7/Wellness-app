@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -60,11 +61,9 @@ void main() {
 
     // Back through Settings -- Profile/Settings are go_router pushes on top
     // of the bottom-nav shell, which is why the shell's own nav icons aren't
-    // in the tree here -- pop back through each pushed page instead.
-    // tester.pageBack() looks for a Material BackButton/Cupertino back
-    // chevron; these pages hand-roll their back arrow as a plain
-    // IconButton(Icons.arrow_back), so tap that directly.
-    await tester.tap(find.byIcon(Icons.arrow_back).first); // Profile -> Settings
+    // in the tree here -- pop back through each pushed page instead. Every
+    // screen's back control is the navigation bar's chevron now.
+    await tester.tap(find.byIcon(CupertinoIcons.back).first); // Profile -> Settings
     await settle(tester);
 
     await tester.scrollUntilVisible(find.text('4/4 goals set'), 200,
@@ -72,9 +71,9 @@ void main() {
     expect(find.text('4/4 goals set'), findsOneWidget);
     expect(find.text('Not set'), findsNothing);
 
-    // ... and on to the dashboard. The back arrow lives in the AppBar, not
-    // the scrolling body, so it's already on-screen regardless of scroll position.
-    await tester.tap(find.byIcon(Icons.arrow_back).first); // Settings -> Dashboard
+    // ... and on to the dashboard. The chevron lives in the navigation bar,
+    // not the scrolling body, so it's on-screen regardless of scroll.
+    await tester.tap(find.byIcon(CupertinoIcons.back).first); // Settings -> Dashboard
     await settle(tester);
 
     expect(find.byType(NutritionProgressGrid), findsOneWidget,

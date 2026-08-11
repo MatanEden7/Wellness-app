@@ -19,6 +19,11 @@ dependencies:
   
   # Navigation
   go_router: 12.1.3
+
+  # Ships the CupertinoIcons font. Without it every `CupertinoIcons.*` glyph
+  # -- the "+" buttons, back chevrons, ellipsis menus and checkmarks the whole
+  # UI is built from -- renders as an empty tofu box.
+  cupertino_icons: ^1.0.8
   
   # Storage: the app persists an in-memory model as a JSON snapshot (see
   # AppDatabase). Drift/sqlite3 were removed -- nothing imported them, and

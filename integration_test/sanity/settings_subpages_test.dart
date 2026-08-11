@@ -25,7 +25,8 @@ void main() {
     await tester.tap(find.text(l10n.theme));
     await settle(tester);
 
-    expect(find.widgetWithText(AppBar, l10n.theme), findsOneWidget);
+    // The large title and the Settings row behind it both read "Theme".
+    expect(find.text(l10n.theme), findsWidgets);
     expect(find.text(l10n.dark), findsOneWidget);
 
     await tester.tap(find.text(l10n.dark));
@@ -67,7 +68,7 @@ void main() {
     await tester.tap(find.text(l10n.nutritionGoals));
     await settle(tester);
 
-    expect(find.widgetWithText(AppBar, l10n.nutritionGoals), findsOneWidget);
+    expect(find.text(l10n.nutritionGoals), findsWidgets);
 
     await tester.enterText(
       find.widgetWithText(TextFormField, l10n.calorieGoal),
@@ -75,8 +76,8 @@ void main() {
     );
     await settle(tester);
 
-    // The Save action appears twice once a field is dirty: an AppBar
-    // TextButton and the bottom FilledButton. Target the FilledButton.
+    // Save appears twice: the navigation-bar action and the button at the
+    // bottom of the form. Target the button.
     await tester.tap(find.widgetWithText(FilledButton, l10n.save));
     await settle(tester);
 
