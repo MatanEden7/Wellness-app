@@ -17,7 +17,8 @@ final calendarServiceProvider = Provider<CalendarService>((ref) {
 });
 
 // Provider for calendar state
-final calendarStateProvider = StateNotifierProvider<CalendarNotifier, CalendarState>((ref) {
+final calendarStateProvider =
+    StateNotifierProvider<CalendarNotifier, CalendarState>((ref) {
   final calendarService = ref.watch(calendarServiceProvider);
   return CalendarNotifier(calendarService, ref);
 });
@@ -49,7 +50,8 @@ class CalendarService {
   static ({String baseId, int dateInt})? parseOccurrenceId(String id) {
     final index = id.lastIndexOf(occurrenceSeparator);
     if (index < 0) return null;
-    final dateInt = int.tryParse(id.substring(index + occurrenceSeparator.length));
+    final dateInt =
+        int.tryParse(id.substring(index + occurrenceSeparator.length));
     if (dateInt == null) return null;
     return (baseId: id.substring(0, index), dateInt: dateInt);
   }
@@ -77,7 +79,9 @@ class CalendarService {
 
   Future<List<ScheduledEvent>> getEvents() async {
     final eventsJson = _prefs.getStringList(_eventsKey) ?? [];
-    return eventsJson.map((json) => ScheduledEvent.fromJson(jsonDecode(json))).toList();
+    return eventsJson
+        .map((json) => ScheduledEvent.fromJson(jsonDecode(json)))
+        .toList();
   }
 
   /// Removes every scheduled event.
@@ -93,13 +97,13 @@ class CalendarService {
   Future<void> saveEvent(ScheduledEvent event) async {
     final events = await getEvents();
     final existingIndex = events.indexWhere((e) => e.id == event.id);
-    
+
     if (existingIndex >= 0) {
       events[existingIndex] = event;
     } else {
       events.add(event);
     }
-    
+
     await _saveEvents(events);
   }
 
@@ -108,7 +112,8 @@ class CalendarService {
     // leaves the series intact.
     final occurrence = parseOccurrenceId(eventId);
     if (occurrence != null) {
-      await _recordOccurrence(occurrence.baseId, occurrence.dateInt, _skippedKey);
+      await _recordOccurrence(
+          occurrence.baseId, occurrence.dateInt, _skippedKey);
       return;
     }
 
@@ -200,7 +205,8 @@ class CalendarService {
     return getEventsForDateRange(dateOnly, dateOnly);
   }
 
-  Future<List<ScheduledEvent>> getEventsForDateRange(DateTime start, DateTime end) async {
+  Future<List<ScheduledEvent>> getEventsForDateRange(
+      DateTime start, DateTime end) async {
     final scheduledEvents = await getEvents();
 
     // Generate recurring events for the date range
@@ -208,7 +214,8 @@ class CalendarService {
     for (final event in scheduledEvents) {
       if (event.recurrenceType != RecurrenceType.none) {
         // Generate recurring instances
-        final recurringInstances = await generateRecurringEvents(event, start, end);
+        final recurringInstances =
+            await generateRecurringEvents(event, start, end);
         allEvents.addAll(recurringInstances);
       } else {
         // Add single event if it falls in the range.
@@ -222,7 +229,7 @@ class CalendarService {
         }
       }
     }
-    
+
     // Logged data is loaded only after the scheduled ids are known, so entries
     // created by completing one of these events can be folded into it instead
     // of appearing as a second row.
@@ -261,15 +268,18 @@ class CalendarService {
     // Sessions and sleep entries are fetched once for the whole range rather
     // than re-fetched (and re-sorted) inside the per-day loop, which made a
     // month view do ~30 full scans of each collection per refresh.
-    final sessions = await _database.getWorkoutSessionsInRange(startDate, endDate);
-    final sleepEntries = await _database.getSleepEntriesInRange(startDate, endDate);
+    final sessions =
+        await _database.getWorkoutSessionsInRange(startDate, endDate);
+    final sleepEntries =
+        await _database.getSleepEntriesInRange(startDate, endDate);
 
     // Meals are keyed by date int, so they still need a per-day lookup, but
     // that is a cheap filter over one collection.
     var currentDate = startDate;
     while (!currentDate.isAfter(endDate)) {
       final date = currentDate;
-      final meals = await _database.getMealsByDate(AppDateUtils.dateToInt(date));
+      final meals =
+          await _database.getMealsByDate(AppDateUtils.dateToInt(date));
 
       for (final MealData meal in meals) {
         if (isCovered(meal.sourceEventId)) continue;
@@ -295,7 +305,8 @@ class CalendarService {
 
       String title = 'Workout';
       if (workout.templateId != null) {
-        final template = await _database.getWorkoutTemplateById(workout.templateId!);
+        final template =
+            await _database.getWorkoutTemplateById(workout.templateId!);
         title = template?.name ?? 'Workout';
       }
 
@@ -305,7 +316,9 @@ class CalendarService {
         type: EventType.workout,
         scheduledAt: workout.startedAt,
         completedAt: workout.endedAt,
-        status: workout.endedAt != null ? EventStatus.completed : EventStatus.active,
+        status: workout.endedAt != null
+            ? EventStatus.completed
+            : EventStatus.active,
         templateId: workout.templateId,
       ));
     }
@@ -328,7 +341,8 @@ class CalendarService {
         type: EventType.sleep,
         scheduledAt: sleep.startedAt,
         completedAt: sleep.endedAt,
-        status: sleep.endedAt != null ? EventStatus.completed : EventStatus.active,
+        status:
+            sleep.endedAt != null ? EventStatus.completed : EventStatus.active,
       ));
     }
 
@@ -368,7 +382,8 @@ class CalendarService {
     final name = meal.name.toLowerCase();
     for (final slot in slots) {
       if (slot.keywords.any(name.contains)) {
-        return DateTime(date.year, date.month, date.day, slot.hour, slot.minute);
+        return DateTime(
+            date.year, date.month, date.day, slot.hour, slot.minute);
       }
     }
     return DateTime(date.year, date.month, date.day, 12, 0);
@@ -377,7 +392,8 @@ class CalendarService {
   Future<void> markEventCompleted(String eventId, DateTime? completedAt) async {
     final occurrence = parseOccurrenceId(eventId);
     if (occurrence != null) {
-      await _recordOccurrence(occurrence.baseId, occurrence.dateInt, _completedKey);
+      await _recordOccurrence(
+          occurrence.baseId, occurrence.dateInt, _completedKey);
       return;
     }
 
@@ -397,7 +413,8 @@ class CalendarService {
   Future<void> markEventMissed(String eventId) async {
     final occurrence = parseOccurrenceId(eventId);
     if (occurrence != null) {
-      await _recordOccurrence(occurrence.baseId, occurrence.dateInt, _missedKey);
+      await _recordOccurrence(
+          occurrence.baseId, occurrence.dateInt, _missedKey);
       return;
     }
 
@@ -434,8 +451,10 @@ class CalendarService {
       baseEvent.scheduledAt.day,
     );
 
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
-      if (currentDate.isAfter(startDate) || currentDate.isAtSameMomentAs(startDate)) {
+    while (currentDate.isBefore(endDate) ||
+        currentDate.isAtSameMomentAs(endDate)) {
+      if (currentDate.isAfter(startDate) ||
+          currentDate.isAtSameMomentAs(startDate)) {
         bool shouldInclude = false;
 
         switch (baseEvent.recurrenceType) {
@@ -540,7 +559,7 @@ class CalendarService {
       }
 
       // Check end date limit
-      if (baseEvent.recurrenceEndDate != null && 
+      if (baseEvent.recurrenceEndDate != null &&
           currentDate.isAfter(baseEvent.recurrenceEndDate!)) {
         break;
       }
@@ -554,10 +573,11 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   final CalendarService _calendarService;
   final Ref _ref;
 
-  CalendarNotifier(this._calendarService, this._ref) : super(CalendarState(
-    focusedDate: DateTime.now(),
-    selectedDate: DateTime.now(),
-  )) {
+  CalendarNotifier(this._calendarService, this._ref)
+      : super(CalendarState(
+          focusedDate: DateTime.now(),
+          selectedDate: DateTime.now(),
+        )) {
     _loadEvents();
   }
 
@@ -586,7 +606,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
 
   Future<void> loadEventsForMonth(DateTime month) async {
     _trackMonth(month);
-    state = state.copyWith(days: await _daysWithMonthReplaced(state.days, month));
+    state =
+        state.copyWith(days: await _daysWithMonthReplaced(state.days, month));
   }
 
   void _trackMonth(DateTime month) {
@@ -612,8 +633,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     final daysMap = Map<DateTime, CalendarDay>.from(days);
 
     // Clear existing events for this month
-    daysMap.removeWhere((date, _) =>
-        date.year == month.year && date.month == month.month);
+    daysMap.removeWhere(
+        (date, _) => date.year == month.year && date.month == month.month);
 
     // Add new events
     for (final event in events) {
@@ -654,7 +675,7 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   void setSelectedDate(DateTime date) {
     state = state.copyWith(selectedDate: date);
   }
-  
+
   /// Reloads every month currently on screen, plus [including].
   ///
   /// Every month, not just the focused one: a recurring series added in August
@@ -731,7 +752,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
 
     // Reschedule notification
     await _cancelNotification(event.id);
-    if (event.status == EventStatus.planned && event.scheduledAt.isAfter(DateTime.now())) {
+    if (event.status == EventStatus.planned &&
+        event.scheduledAt.isAfter(DateTime.now())) {
       await _scheduleNotification(event);
     }
   }
@@ -739,7 +761,7 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   Future<void> deleteEvent(String eventId) async {
     await _calendarService.deleteEvent(eventId);
     await refresh();
-    
+
     // Cancel notification
     await _cancelNotification(eventId);
   }
@@ -747,7 +769,7 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   Future<void> markEventCompleted(String eventId, DateTime? completedAt) async {
     await _calendarService.markEventCompleted(eventId, completedAt);
     await refresh();
-    
+
     // Cancel notification since event is completed
     await _cancelNotification(eventId);
   }
@@ -783,7 +805,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     // at instead" prefers the generated ones. Checking liveness against the
     // re-pin pool alone would treat a user's hand-pinned template as dangling
     // and overwrite a deliberate choice.
-    final mealPool = _generatedFirst(mealTemplates, (t) => t.origin, (t) => t.id);
+    final mealPool =
+        _generatedFirst(mealTemplates, (t) => t.origin, (t) => t.id);
     final workoutPool =
         _generatedFirst(workoutTemplates, (t) => t.origin, (t) => t.id);
     final liveMeals = mealTemplates.map((t) => t.id).toSet();
@@ -807,8 +830,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
         }
 
         final replacement = pool.isEmpty ? null : pool[i % pool.length];
-        await _calendarService
-            .saveEvent(event.copyWith(templateId: replacement, clearTemplateId: replacement == null));
+        await _calendarService.saveEvent(event.copyWith(
+            templateId: replacement, clearTemplateId: replacement == null));
         repinned++;
       }
     }
@@ -828,8 +851,9 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     TemplateOrigin Function(T) originOf,
     String Function(T) idOf,
   ) {
-    final generated =
-        templates.where((t) => originOf(t) == TemplateOrigin.generated).toList();
+    final generated = templates
+        .where((t) => originOf(t) == TemplateOrigin.generated)
+        .toList();
     return (generated.isNotEmpty ? generated : templates).map(idOf).toList();
   }
 
@@ -862,43 +886,47 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
       debugPrint('🔔 _scheduleNotification called for: ${event.title}');
       final notificationService = _ref.read(notificationServiceProvider);
       final notificationPrefs = _ref.read(notificationPreferencesProvider);
-      
+
       // Check if notifications are enabled for this event type
       bool isEnabled = false;
       int leadTime = 0;
-      
+
       switch (event.type) {
         case EventType.meal:
           isEnabled = notificationPrefs.mealsEnabled;
           leadTime = notificationPrefs.mealLeadTime;
-          debugPrint('🔔 Meal notifications enabled: $isEnabled, lead time: $leadTime');
+          debugPrint(
+              '🔔 Meal notifications enabled: $isEnabled, lead time: $leadTime');
           break;
         case EventType.workout:
           isEnabled = notificationPrefs.workoutsEnabled;
           leadTime = notificationPrefs.workoutLeadTime;
-          debugPrint('🔔 Workout notifications enabled: $isEnabled, lead time: $leadTime');
+          debugPrint(
+              '🔔 Workout notifications enabled: $isEnabled, lead time: $leadTime');
           break;
         case EventType.sleep:
           isEnabled = notificationPrefs.sleepEnabled;
           leadTime = notificationPrefs.sleepLeadTime;
-          debugPrint('🔔 Sleep notifications enabled: $isEnabled, lead time: $leadTime');
+          debugPrint(
+              '🔔 Sleep notifications enabled: $isEnabled, lead time: $leadTime');
           break;
       }
-      
+
       if (!isEnabled) {
         debugPrint('🔔 Notifications disabled for ${event.type}, skipping');
         return;
       }
-      
+
       // Check quiet hours
-      final scheduledTime = event.scheduledAt.subtract(Duration(minutes: leadTime));
+      final scheduledTime =
+          event.scheduledAt.subtract(Duration(minutes: leadTime));
       debugPrint('🔔 Scheduled time (with lead): $scheduledTime');
-      
+
       if (notificationPrefs.isQuietTime(scheduledTime)) {
         debugPrint('🔔 Notification falls in quiet hours, skipping');
         return; // Don't schedule during quiet hours
       }
-      
+
       // Get current locale from language service
       final currentLanguage = _ref.read(currentLanguageProvider);
       final l10n = await AppLocalizations.delegate.load(currentLanguage.locale);
@@ -953,7 +981,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   /// Bounded to [_notificationHorizon]: iOS caps an app at 64 pending local
   /// notifications, so a daily event must not try to claim a year of them.
   /// Rescheduled whenever the event is edited and on app start.
-  Future<List<ScheduledEvent>> _upcomingOccurrences(ScheduledEvent event) async {
+  Future<List<ScheduledEvent>> _upcomingOccurrences(
+      ScheduledEvent event) async {
     final now = DateTime.now();
     if (!event.hasRecurrence) {
       return event.scheduledAt.isAfter(now) ? [event] : const [];
@@ -966,7 +995,8 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     );
 
     return occurrences
-        .where((o) => o.status == EventStatus.planned && o.scheduledAt.isAfter(now))
+        .where((o) =>
+            o.status == EventStatus.planned && o.scheduledAt.isAfter(now))
         .take(_maxScheduledPerEvent)
         .toList();
   }

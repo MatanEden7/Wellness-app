@@ -33,7 +33,7 @@ void main() async {
 
   // Initialize user profile service
   final userProfileService = UserProfileService(prefs);
-  
+
   // Initialize theme service
   final themeService = ThemeService(prefs);
 
@@ -93,9 +93,9 @@ void main() async {
           // affects events scheduled after the toggle. Resolved lazily inside
           // the callback: CalendarNotifier reads this provider, so taking the
           // dependency eagerly here would be a cycle.
-          notificationPrefs.onScheduleAffectingChange =
-              () => ref.read(calendarStateProvider.notifier)
-                  .rescheduleAllNotifications();
+          notificationPrefs.onScheduleAffectingChange = () => ref
+              .read(calendarStateProvider.notifier)
+              .rescheduleAllNotifications();
           return notificationPrefs;
         }),
       ],

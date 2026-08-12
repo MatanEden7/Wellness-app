@@ -7,12 +7,12 @@ enum AppLanguage {
   hebrew('he', 'עברית');
 
   const AppLanguage(this.code, this.displayName);
-  
+
   final String code;
   final String displayName;
-  
+
   Locale get locale => Locale(code);
-  
+
   // Hebrew is RTL (right-to-left)
   bool get isRTL => code == 'he';
 }
@@ -23,7 +23,8 @@ final languageServiceProvider = Provider<LanguageService>((ref) {
 });
 
 // Provider for the current language
-final currentLanguageProvider = StateNotifierProvider<LanguageNotifier, AppLanguage>((ref) {
+final currentLanguageProvider =
+    StateNotifierProvider<LanguageNotifier, AppLanguage>((ref) {
   final languageService = ref.watch(languageServiceProvider);
   return LanguageNotifier(languageService);
 });
@@ -52,7 +53,7 @@ class LanguageService {
   String getLanguageLabel(AppLanguage language) {
     return language.displayName;
   }
-  
+
   String getLanguageDescription(AppLanguage language) {
     switch (language) {
       case AppLanguage.english:
@@ -66,7 +67,8 @@ class LanguageService {
 class LanguageNotifier extends StateNotifier<AppLanguage> {
   final LanguageService _languageService;
 
-  LanguageNotifier(this._languageService) : super(_languageService.getLanguage());
+  LanguageNotifier(this._languageService)
+      : super(_languageService.getLanguage());
 
   Future<void> setLanguage(AppLanguage language) async {
     await _languageService.setLanguage(language);

@@ -88,12 +88,44 @@ final class RootContainerViewController: UIViewController {
         tabBarHost = host
     }
 
+    /// Switches both bars between the system's standard (Liquid Glass on
+    /// iOS 26) and opaque backgrounds. Driven by the app's glass setting and
+    /// by Reduce Transparency, so chrome and content never disagree.
+    func setChromeStyle(_ style: ChromeStyle) {
+        navBarHost?.applyStyle(style)
+        tabBarHost?.applyStyle(style)
+    }
+
+    /// Reports whether page content is under the bars, driving the scroll edge
+    /// effect on both.
+    func setUnderContent(_ under: Bool) {
+        navBarHost?.setUnderContent(under)
+        tabBarHost?.setUnderContent(under)
+    }
+
+    /// Shows or hides the native chrome, then re-derives the Flutter insets.
+    ///
+    /// The relayout is the point: a hidden bar reserves no inset, and without
+    /// forcing the pass here Flutter would keep padding its content around a
+    /// bar that is no longer on screen until something else happened to
+    /// trigger layout.
+    func setChromeVisible(navBar: Bool, tabBar: Bool) {
+        navBarHost?.view.isHidden = !navBar
+        tabBarHost?.view.isHidden = !tabBar
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        updateFlutterInsets()
+    }
+
     /// Pushes chrome insets to Flutter so SafeArea works correctly.
     private func updateFlutterInsets() {
         // Read nav bar height from the UINavigationBar frame directly so we
         // don't depend on NavBarHostController.viewDidLayoutSubviews() having
         // already fired (avoids a one-frame race on cold start).
-        let navH = navBarHost?.view.subviews.first?.frame.maxY ?? navBarHost?.barHeight ?? 0
+        let navH: CGFloat = {
+            guard let host = navBarHost, !host.view.isHidden else { return 0 }
+            return host.view.subviews.first?.frame.maxY ?? host.barHeight
+        }()
         let tabH = tabBarHost?.barHeight ?? 0
         let systemTop = view.safeAreaInsets.top
         let systemBottom = view.safeAreaInsets.bottom
@@ -121,4 +153,18 @@ final class RootContainerViewController: UIViewController {
     override var childForScreenEdgesDeferringSystemGestures: UIViewController? { flutterVC }
 
     override var preferredStatusBarStyle: UIStatusBarStyle { flutterVC.preferredStatusBarStyle }
+}
+
+/// The two background kinds the native bars can ask the system for.
+///
+/// Deliberately an enum over the wire's raw string: an unrecognised value from
+/// Dart resolves to `.glass` rather than crashing or silently doing nothing.
+@available(iOS 15.0, *)
+enum ChromeStyle {
+    case glass
+    case opaque
+
+    init(wireValue: String) {
+        self = wireValue == "opaque" ? .opaque : .glass
+    }
 }

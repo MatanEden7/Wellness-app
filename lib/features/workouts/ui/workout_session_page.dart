@@ -20,6 +20,9 @@ import '../domain/session_actions.dart';
 import 'exercise_picker_sheet.dart';
 import 'workout_keys.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 class WorkoutSessionPage extends HookConsumerWidget {
   final String sessionId;
@@ -72,19 +75,23 @@ class WorkoutSessionPage extends HookConsumerWidget {
         ],
       ),
       body: Column(
-          children: [
-            // Session Info
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                ),
+        children: [
+          // Session Info
+          ContentSurface.tinted(
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.2),
+                width: 1,
               ),
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.xl, vertical: Space.xl),
               child: Column(
                 children: [
                   Row(
@@ -124,7 +131,8 @@ class WorkoutSessionPage extends HookConsumerWidget {
                         // Calculate total target sets across all exercises
                         int totalTargetSets = 0;
                         for (final exercise in exercises.value) {
-                          final templateExercise = template.value?.exercises.firstWhere(
+                          final templateExercise =
+                              template.value?.exercises.firstWhere(
                             (te) => te.exerciseId == exercise.id,
                             orElse: () => TemplateExercise.create(
                               templateId: '',
@@ -134,16 +142,19 @@ class WorkoutSessionPage extends HookConsumerWidget {
                           );
                           totalTargetSets += templateExercise?.defaultSets ?? 3;
                         }
-                        
+
                         // Total completed sets across entire workout
                         final totalCompletedSets = currentSession.sets.length;
-                        final progress = totalTargetSets > 0 ? totalCompletedSets / totalTargetSets : 0.0;
-                        
+                        final progress = totalTargetSets > 0
+                            ? totalCompletedSets / totalTargetSets
+                            : 0.0;
+
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: LinearProgressIndicator(
                             value: progress.clamp(0.0, 1.0),
-                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
                             minHeight: 8,
                           ),
                         );
@@ -153,34 +164,39 @@ class WorkoutSessionPage extends HookConsumerWidget {
                     Text(
                       'Exercise ${currentExerciseIndex.value + 1} of ${exercises.value.length}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ],
                 ],
               ),
             ),
+          ),
 
-            // Exercise List or Current Exercise
-            Expanded(
-              child: isCompleted
-                  ? _CompletedWorkoutView(session: currentSession, exercises: exercises.value)
-                  : _ActiveWorkoutView(
-                      session: currentSession,
-                      template: template.value,
-                      exercises: exercises.value,
-                      currentExerciseIndex: currentExerciseIndex,
-                      onSetCompleted: (setEntry) => _addSetEntry(ref, setEntry, session),
-                      onNextExercise: () {
-                        if (currentExerciseIndex.value < exercises.value.length - 1) {
-                          currentExerciseIndex.value++;
-                        }
-                      },
-                      onFinishWorkout: () => _finishWorkout(context, ref, currentSession),
-                    ),
-            ),
-          ],
+          // Exercise List or Current Exercise
+          Expanded(
+            child: isCompleted
+                ? _CompletedWorkoutView(
+                    session: currentSession, exercises: exercises.value)
+                : _ActiveWorkoutView(
+                    session: currentSession,
+                    template: template.value,
+                    exercises: exercises.value,
+                    currentExerciseIndex: currentExerciseIndex,
+                    onSetCompleted: (setEntry) =>
+                        _addSetEntry(ref, setEntry, session),
+                    onNextExercise: () {
+                      if (currentExerciseIndex.value <
+                          exercises.value.length - 1) {
+                        currentExerciseIndex.value++;
+                      }
+                    },
+                    onFinishWorkout: () =>
+                        _finishWorkout(context, ref, currentSession),
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -194,13 +210,17 @@ class WorkoutSessionPage extends HookConsumerWidget {
     ValueNotifier<bool> isLoading,
   ) async {
     try {
-      final sessionData = await ref.read(workoutSessionsRepositoryProvider).getSessionById(sessionId);
+      final sessionData = await ref
+          .read(workoutSessionsRepositoryProvider)
+          .getSessionById(sessionId);
       if (sessionData == null) return;
 
       session.value = sessionData;
 
       if (sessionData.templateId != null) {
-        final templateData = await ref.read(workoutTemplatesRepositoryProvider).getTemplateById(sessionData.templateId!);
+        final templateData = await ref
+            .read(workoutTemplatesRepositoryProvider)
+            .getTemplateById(sessionData.templateId!);
         template.value = templateData;
 
         if (templateData != null) {
@@ -210,7 +230,9 @@ class WorkoutSessionPage extends HookConsumerWidget {
             // would resolve to a null exercise and be dropped anyway; saying
             // so explicitly stops that looking like a lookup failure.
             if (templateExercise.isRest) continue;
-            final exercise = await ref.read(exercisesRepositoryProvider).getExerciseById(templateExercise.exerciseId);
+            final exercise = await ref
+                .read(exercisesRepositoryProvider)
+                .getExerciseById(templateExercise.exerciseId);
             if (exercise != null) {
               exerciseList.add(exercise);
             }
@@ -224,19 +246,23 @@ class WorkoutSessionPage extends HookConsumerWidget {
   }
 
   Future<void> _addSetEntry(
-    WidgetRef ref, 
+    WidgetRef ref,
     SetEntry setEntry,
     ValueNotifier<WorkoutSession?> session,
   ) async {
     // Save the set with the current session ID
     final setWithSessionId = setEntry.copyWith(sessionId: sessionId);
-    await ref.read(workoutSessionsRepositoryProvider).addSetEntry(setWithSessionId);
-    
+    await ref
+        .read(workoutSessionsRepositoryProvider)
+        .addSetEntry(setWithSessionId);
+
     // Force a small delay to ensure DB write completes
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     // Reload session to update UI with new set
-    final updatedSession = await ref.read(workoutSessionsRepositoryProvider).getSessionById(sessionId);
+    final updatedSession = await ref
+        .read(workoutSessionsRepositoryProvider)
+        .getSessionById(sessionId);
     if (updatedSession != null) {
       session.value = updatedSession;
     }
@@ -259,8 +285,8 @@ class WorkoutSessionPage extends HookConsumerWidget {
     if (currentSession == null) return;
 
     final l10n = AppLocalizations.of(context)!;
-    final adHocName =
-        l10n.quickWorkoutNamed(AppDateUtils.formatDate(currentSession.startedAt));
+    final adHocName = l10n
+        .quickWorkoutNamed(AppDateUtils.formatDate(currentSession.startedAt));
 
     final prescription = await showExercisePicker(context);
     if (prescription == null) return;
@@ -293,16 +319,20 @@ class WorkoutSessionPage extends HookConsumerWidget {
     }
   }
 
-  Future<void> _finishWorkout(BuildContext context, WidgetRef ref, WorkoutSession session) async {
+  Future<void> _finishWorkout(
+      BuildContext context, WidgetRef ref, WorkoutSession session) async {
     final completedSession = session.copyWith(endedAt: DateTime.now());
-    await ref.read(workoutSessionsRepositoryProvider).updateSession(completedSession);
+    await ref
+        .read(workoutSessionsRepositoryProvider)
+        .updateSession(completedSession);
     if (context.mounted) {
       context.pop();
     }
   }
 
   String _formatSessionDuration(WorkoutSession session) {
-    final duration = session.duration ?? DateTime.now().difference(session.startedAt);
+    final duration =
+        session.duration ?? DateTime.now().difference(session.startedAt);
     return AppDateUtils.formatDuration(duration);
   }
 }
@@ -331,18 +361,18 @@ class _SessionStat extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       ],
     );
@@ -394,7 +424,7 @@ class _ActiveWorkoutView extends HookConsumerWidget {
 
     final showExerciseDetails = useState(false);
     final showRestTimer = useState<int?>(null);
-    
+
     return Column(
       children: [
         // Current Exercise Header - Hide during rest timer
@@ -424,35 +454,44 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                         ),
                         Row(
                           children: [
-                            if (currentExercise.primaryMuscle != null || currentExercise.notes != null)
+                            if (currentExercise.primaryMuscle != null ||
+                                currentExercise.notes != null)
                               Icon(
-                                showExerciseDetails.value ? Icons.expand_less : Icons.expand_more,
+                                showExerciseDetails.value
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
                                 size: 20,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color,
                               ),
                             const SizedBox(width: 8),
                             if (currentExerciseIndex.value > 0)
                               IconButton(
                                 icon: const Icon(Icons.chevron_left),
                                 onPressed: () {
-                                  showRestTimer.value = null; // Reset rest timer
+                                  showRestTimer.value =
+                                      null; // Reset rest timer
                                   currentExerciseIndex.value--;
                                 },
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-            tooltip: l10n.previous,
-          ),
-                            if (currentExerciseIndex.value < exercises.length - 1)
+                                tooltip: l10n.previous,
+                              ),
+                            if (currentExerciseIndex.value <
+                                exercises.length - 1)
                               IconButton(
                                 icon: const Icon(Icons.chevron_right),
                                 onPressed: () {
-                                  showRestTimer.value = null; // Reset rest timer
+                                  showRestTimer.value =
+                                      null; // Reset rest timer
                                   currentExerciseIndex.value++;
                                 },
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-            tooltip: l10n.next,
-          ),
+                                tooltip: l10n.next,
+                              ),
                           ],
                         ),
                       ],
@@ -465,10 +504,12 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                         templateExercise?.defaultSets ?? 3,
                         formatRest(
                           resolveRestSeconds(
-                            explicitSeconds: templateExercise?.defaultRestSeconds,
+                            explicitSeconds:
+                                templateExercise?.defaultRestSeconds,
                             reps: templateExercise?.defaultReps,
-                            globalDefaultSeconds:
-                                ref.watch(preferencesServiceProvider).defaultRestTime,
+                            globalDefaultSeconds: ref
+                                .watch(preferencesServiceProvider)
+                                .defaultRestTime,
                           ),
                         ),
                       ),
@@ -511,12 +552,14 @@ class _ActiveWorkoutView extends HookConsumerWidget {
               exercise: currentExercise,
               templateExercise: templateExercise,
               onSetCompleted: onSetCompleted,
-              onExerciseComplete: currentExerciseIndex.value < exercises.length - 1 
-                  ? () {
-                      showRestTimer.value = null; // Reset rest timer when moving to next exercise
-                      onNextExercise?.call();
-                    }
-                  : null,
+              onExerciseComplete:
+                  currentExerciseIndex.value < exercises.length - 1
+                      ? () {
+                          showRestTimer.value =
+                              null; // Reset rest timer when moving to next exercise
+                          onNextExercise?.call();
+                        }
+                      : null,
               onFinishWorkout: onFinishWorkout,
               showRestTimer: showRestTimer,
             ),
@@ -548,7 +591,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final completedSets = session.sets.where((set) => set.exerciseId == exercise.id).toList();
+    final completedSets =
+        session.sets.where((set) => set.exerciseId == exercise.id).toList();
     final targetSets = templateExercise?.defaultSets ?? 3;
     final prefs = ref.watch(preferencesServiceProvider);
     final theme = Theme.of(context);
@@ -556,7 +600,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
 
     // Check if exercise is complete
     final isExerciseComplete = completedSets.length >= targetSets;
-    
+
     final reps = templateExercise?.defaultReps ?? 10;
     final weight = templateExercise?.defaultWeight;
 
@@ -594,7 +638,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
                         )
                       else
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: Space.xl, vertical: 40),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -605,7 +650,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                     letterSpacing: 1.5,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13,
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.7),
                                   ),
                                 ),
                                 const SizedBox(height: 24),
@@ -631,24 +677,26 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                 // the chip says so rather than vanishing --
                                 // an absent chip reads as missing data.
                                 const SizedBox(height: 24),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    weight == null ||
-                                            exercise.unit == 'bodyweight'
-                                        ? AppLocalizations.of(context)!
-                                            .bodyweight
-                                        : '${Formatters.formatWeight(weight)} ${exercise.unit}',
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onPrimaryContainer,
+                                ContentSurface.tinted(
+                                  color: theme.colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: Space.xl,
+                                      vertical: 10,
+                                    ),
+                                    child: Text(
+                                      weight == null ||
+                                              exercise.unit == 'bodyweight'
+                                          ? AppLocalizations.of(context)!
+                                              .bodyweight
+                                          : '${Formatters.formatWeight(weight)} ${exercise.unit}',
+                                      style: theme.textTheme.headlineSmall
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: theme
+                                            .colorScheme.onPrimaryContainer,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -661,8 +709,10 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                 ),
                                 const SizedBox(height: 20),
                                 Text(
-                                  AppLocalizations.of(context)!.exerciseComplete,
-                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                  AppLocalizations.of(context)!
+                                      .exerciseComplete,
+                                  style:
+                                      theme.textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -677,42 +727,48 @@ class _ExerciseSetsView extends HookConsumerWidget {
                             ],
                           ),
                         ),
-                      
+
                       // Completed sets at bottom (only show when NOT resting)
-                      if (completedSets.isNotEmpty && showRestTimer.value == null) ...[
+                      if (completedSets.isNotEmpty &&
+                          showRestTimer.value == null) ...[
                         const SizedBox(height: 16),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          margin:
+                              const EdgeInsets.symmetric(horizontal: Space.lg),
+                          child: ContentSurface(
                             borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!.completedSets,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                            padding: const EdgeInsets.all(Space.lg),
+                            color: theme.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.3),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)!.completedSets,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: completedSets.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final set = entry.value;
-                                  return _CompactSetChip(
-                                    setNumber: index + 1,
-                                    setEntry: set,
-                                    exercise: exercise,
-                                  );
-                                }).toList(),
-                              ),
-                            ],
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: completedSets
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                    final index = entry.key;
+                                    final set = entry.value;
+                                    return _CompactSetChip(
+                                      setNumber: index + 1,
+                                      setEntry: set,
+                                      exercise: exercise,
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -725,40 +781,33 @@ class _ExerciseSetsView extends HookConsumerWidget {
         ),
 
         // Fixed bottom action panel - ALWAYS VISIBLE
-        Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
+        ContentSurface(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: theme.colorScheme.surface,
+          child: Container(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).padding.bottom + 20,
+            ),
+            child: SafeArea(
+              top: false,
+              child: _buildActionButton(
+                context,
+                theme,
+                completedSets,
+                targetSets,
+                isExerciseComplete,
+                isLoading,
+                onSetCompleted,
+                onExerciseComplete,
+                onFinishWorkout,
+                reps,
+                weight,
+                restForThisSet,
+                showRestTimer,
               ),
-            ],
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).padding.bottom + 20,
-          ),
-          child: SafeArea(
-            top: false,
-            child: _buildActionButton(
-              context,
-              theme,
-              completedSets,
-              targetSets,
-              isExerciseComplete,
-              isLoading,
-              onSetCompleted,
-              onExerciseComplete,
-              onFinishWorkout,
-              reps,
-              weight,
-              restForThisSet,
-              showRestTimer,
             ),
           ),
         ),
@@ -787,20 +836,22 @@ class _ExerciseSetsView extends HookConsumerWidget {
         return SizedBox(
           width: double.infinity,
           height: 56,
-          child: ElevatedButton.icon(
+          child: GlassButton(
+            prominent: true,
+            tint: Colors.green,
+            borderRadius: BorderRadius.circular(16),
             onPressed: onExerciseComplete,
-            icon: const Icon(Icons.arrow_forward_rounded, size: 24),
-            label: Text(
-              AppLocalizations.of(context)!.nextExercise,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.arrow_forward_rounded, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.nextExercise,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
           ),
         );
@@ -809,20 +860,22 @@ class _ExerciseSetsView extends HookConsumerWidget {
         return SizedBox(
           width: double.infinity,
           height: 56,
-          child: ElevatedButton.icon(
+          child: GlassButton(
+            prominent: true,
+            tint: Colors.orange,
+            borderRadius: BorderRadius.circular(16),
             onPressed: onFinishWorkout,
-            icon: const Icon(Icons.check_circle_rounded, size: 24),
-            label: Text(
-              AppLocalizations.of(context)!.finishWorkout,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle_rounded, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.finishWorkout,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
           ),
         );
@@ -831,29 +884,34 @@ class _ExerciseSetsView extends HookConsumerWidget {
 
     if (completedSets.length < targetSets) {
       final isResting = showRestTimer.value != null;
-      
+
       return SizedBox(
         width: double.infinity,
         height: 56,
         child: isLoading.value
-            ? Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      color: theme.colorScheme.primary,
-                      strokeWidth: 3,
+            ? ContentSurface.tinted(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: theme.colorScheme.primary,
+                        strokeWidth: 3,
+                      ),
                     ),
                   ),
                 ),
               )
-            : ElevatedButton.icon(
-                onPressed: isResting 
+            : GlassButton(
+                prominent: true,
+                tint: isResting
+                    ? theme.colorScheme.secondary
+                    : theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(16),
+                onPressed: isResting
                     ? () {
                         // Skip rest timer
                         showRestTimer.value = null;
@@ -876,7 +934,7 @@ class _ExerciseSetsView extends HookConsumerWidget {
                           );
                           await onSetCompleted(setEntry);
                           HapticsHelper.mediumImpact();
-                          
+
                           // Check if we should start rest timer
                           final updatedCompletedSets = session.sets
                               .where((set) => set.exerciseId == exercise.id)
@@ -894,27 +952,22 @@ class _ExerciseSetsView extends HookConsumerWidget {
                           isLoading.value = false;
                         }
                       },
-                icon: Icon(
-                  isResting ? Icons.skip_next : Icons.check_circle_rounded,
-                  size: 24,
-                ),
-                label: Text(
-                  isResting 
-                      ? 'Skip Rest' 
-                      : 'Complete Set ${completedSets.length + 1}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isResting 
-                      ? theme.colorScheme.secondary
-                      : theme.colorScheme.primary,
-                  foregroundColor: isResting
-                      ? theme.colorScheme.onSecondary
-                      : theme.colorScheme.onPrimary,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isResting ? Icons.skip_next : Icons.check_circle_rounded,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isResting
+                          ? 'Skip Rest'
+                          : 'Complete Set ${completedSets.length + 1}',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
               ),
       );
@@ -939,39 +992,39 @@ class _CompactSetChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.check_circle, size: 16, color: Colors.green),
-          const SizedBox(width: 6),
-          Text(
-            '$setNumber: ${setEntry.reps}',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (setEntry.weight != null) ...[
-            Text(' × ', style: TextStyle(color: Colors.grey.shade600)),
+    return ContentSurface.tinted(
+      color: Colors.green.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: Space.md, vertical: Space.sm),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, size: 16, color: Colors.green),
+            const SizedBox(width: 6),
             Text(
-              '${Formatters.formatWeight(setEntry.weight!)}${exercise.unit}',
+              '$setNumber: ${setEntry.reps}',
               style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
+            if (setEntry.weight != null) ...[
+              Text(' × ', style: TextStyle(color: Colors.grey.shade600)),
+              Text(
+                '${Formatters.formatWeight(setEntry.weight!)}${exercise.unit}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 }
-
 
 class _RestTimerCard extends HookConsumerWidget {
   final int initialSeconds;
@@ -990,7 +1043,8 @@ class _RestTimerCard extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final timerController = ref.watch(restTimerControllerProvider(initialSeconds));
+    final timerController =
+        ref.watch(restTimerControllerProvider(initialSeconds));
     final notificationService = ref.read(notificationServiceProvider);
     final notificationPrefs = ref.watch(notificationPreferencesProvider);
     final prefs = ref.watch(preferencesServiceProvider);
@@ -1034,7 +1088,7 @@ class _RestTimerCard extends HookConsumerWidget {
     }, []);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: Space.xl, vertical: 10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -1062,26 +1116,26 @@ class _RestTimerCard extends HookConsumerWidget {
                 color: isMuted.value ? Colors.grey : theme.colorScheme.primary,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-            tooltip: l10n.muteSound,
-          ),
+                tooltip: l10n.muteSound,
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Large countdown timer
           Text(
             _formatTime(timerController.remainingSeconds),
             style: TextStyle(
               fontSize: 64,
               fontWeight: FontWeight.bold,
-              color: timerController.remainingSeconds <= 10 
-                  ? Colors.red 
+              color: timerController.remainingSeconds <= 10
+                  ? Colors.red
                   : theme.colorScheme.primary,
               height: 1,
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Progress bar
           Container(
             width: double.infinity,
@@ -1091,12 +1145,13 @@ class _RestTimerCard extends HookConsumerWidget {
               borderRadius: BorderRadius.circular(3),
             ),
             child: FractionallySizedBox(
-              widthFactor: 1 - (timerController.remainingSeconds / initialSeconds),
+              widthFactor:
+                  1 - (timerController.remainingSeconds / initialSeconds),
               alignment: Alignment.centerLeft,
               child: Container(
                 decoration: BoxDecoration(
-                  color: timerController.remainingSeconds <= 10 
-                      ? Colors.red 
+                  color: timerController.remainingSeconds <= 10
+                      ? Colors.red
                       : theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(3),
                 ),
@@ -1104,7 +1159,7 @@ class _RestTimerCard extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Control buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1115,40 +1170,62 @@ class _RestTimerCard extends HookConsumerWidget {
                 onPressed: timerController.remainingSeconds > 15
                     ? () {
                         final newTime = timerController.remainingSeconds - 15;
-                        ref.read(restTimerControllerProvider(initialSeconds).notifier).reset(newTime);
-                        ref.read(restTimerControllerProvider(initialSeconds).notifier).start();
+                        ref
+                            .read(restTimerControllerProvider(initialSeconds)
+                                .notifier)
+                            .reset(newTime);
+                        ref
+                            .read(restTimerControllerProvider(initialSeconds)
+                                .notifier)
+                            .start();
                       }
                     : null,
                 iconSize: 28,
                 tooltip: '-15s',
-                color: timerController.remainingSeconds > 15 ? Colors.orange : Colors.grey,
+                color: timerController.remainingSeconds > 15
+                    ? Colors.orange
+                    : Colors.grey,
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Pause/Resume
               IconButton(
                 icon: Icon(
-                  timerController.isRunning ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                  timerController.isRunning
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_filled,
                 ),
                 onPressed: timerController.isRunning
-                    ? () => ref.read(restTimerControllerProvider(initialSeconds).notifier).pause()
-                    : () => ref.read(restTimerControllerProvider(initialSeconds).notifier).resume(),
+                    ? () => ref
+                        .read(restTimerControllerProvider(initialSeconds)
+                            .notifier)
+                        .pause()
+                    : () => ref
+                        .read(restTimerControllerProvider(initialSeconds)
+                            .notifier)
+                        .resume(),
                 iconSize: 40,
                 color: theme.colorScheme.primary,
                 tooltip: timerController.isRunning ? l10n.pause : l10n.resume,
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Add 15s
               IconButton(
                 icon: const Icon(Icons.add_circle_outline),
                 onPressed: () {
-                  ref.read(restTimerControllerProvider(initialSeconds).notifier).reset(
-                    timerController.remainingSeconds + 15,
-                  );
-                  ref.read(restTimerControllerProvider(initialSeconds).notifier).start();
+                  ref
+                      .read(
+                          restTimerControllerProvider(initialSeconds).notifier)
+                      .reset(
+                        timerController.remainingSeconds + 15,
+                      );
+                  ref
+                      .read(
+                          restTimerControllerProvider(initialSeconds).notifier)
+                      .start();
                 },
                 iconSize: 28,
                 tooltip: '+15s',
@@ -1170,7 +1247,8 @@ class _RestTimerCard extends HookConsumerWidget {
   /// then just buzz the haptics engine three times, so "Rest timer sound"
   /// and its volume slider produced no sound at all. Haptics are kept as a
   /// deliberate fallback for a silenced device, where the beep is inaudible.
-  Future<void> _playTimerBeep(AudioPlayer player, PreferencesService prefs) async {
+  Future<void> _playTimerBeep(
+      AudioPlayer player, PreferencesService prefs) async {
     if (!prefs.restTimerSoundEnabled) return;
 
     try {
@@ -1235,14 +1313,16 @@ class _CompletedWorkoutView extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: AppSpacing.lg),
-          
+
           // Exercise Summary
           ...exercises.map((exercise) {
-            final exerciseSets = session.sets.where((set) => set.exerciseId == exercise.id).toList();
+            final exerciseSets = session.sets
+                .where((set) => set.exerciseId == exercise.id)
+                .toList();
             if (exerciseSets.isEmpty) return const SizedBox.shrink();
-            
+
             return Container(
               margin: const EdgeInsets.only(bottom: AppSpacing.md),
               child: AppCard(
@@ -1252,30 +1332,37 @@ class _CompletedWorkoutView extends StatelessWidget {
                     Text(
                       exercise.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ...exerciseSets.asMap().entries.map((entry) {
                       final index = entry.key;
                       final set = entry.value;
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                         child: Row(
                           children: [
-                            const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                            const Icon(Icons.check_circle,
+                                size: 16, color: Colors.green),
                             const SizedBox(width: AppSpacing.xs),
-                            Text('Set ${index + 1}: ', 
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Text(
+                              'Set ${index + 1}: ',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                             ),
                             Text('${set.reps} reps'),
                             if (set.weight != null) ...[
                               const Text(' × '),
                               Text(
                                 '${Formatters.formatWeight(set.weight!)} ${exercise.unit}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                             ],
                           ],

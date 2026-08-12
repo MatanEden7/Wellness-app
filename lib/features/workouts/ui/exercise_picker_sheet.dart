@@ -11,6 +11,8 @@ import '../domain/models.dart';
 import '../domain/rest_time.dart';
 import 'workout_keys.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 /// What the picker hands back: which exercise, and how it should be done.
 class ExercisePrescription {
@@ -80,7 +82,7 @@ class _ExercisePickerSheet extends HookConsumerWidget {
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
+                  padding: EdgeInsets.symmetric(vertical: Space.xxxl),
                   child: LoadingIndicator(),
                 );
               }
@@ -89,7 +91,8 @@ class _ExercisePickerSheet extends HookConsumerWidget {
               final matches = snapshot.data!.where((exercise) {
                 if (needle.isEmpty) return true;
                 final muscle =
-                    exercise.displayPrimaryMuscle(language)?.toLowerCase() ?? '';
+                    exercise.displayPrimaryMuscle(language)?.toLowerCase() ??
+                        '';
                 return exercise
                         .displayName(language)
                         .toLowerCase()
@@ -101,7 +104,7 @@ class _ExercisePickerSheet extends HookConsumerWidget {
 
               if (matches.isEmpty) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  padding: const EdgeInsets.symmetric(vertical: Space.xxxl),
                   child: Text(
                     l10n.noExercisesFound,
                     textAlign: TextAlign.center,
@@ -136,8 +139,8 @@ class _ExercisePickerSheet extends HookConsumerWidget {
                       onToggleDetails: () => expandedId.value =
                           expandedId.value == exercise.id ? null : exercise.id,
                       onSelect: () async {
-                        final prescription = await showAppSheet<
-                            ExercisePrescription>(
+                        final prescription =
+                            await showAppSheet<ExercisePrescription>(
                           context: context,
                           builder: (_) =>
                               ExercisePrescriptionSheet(exercise: exercise),
@@ -193,81 +196,82 @@ class _ExerciseRow extends StatelessWidget {
       child: InkWell(
         onTap: onSelect,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.18)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.fitness_center, color: color, size: 22),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          exercise.displayName(language),
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (muscle != null)
+        child: ContentSurface.tinted(
+          color: color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.18)),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.fitness_center, color: color, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            muscle,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
+                            exercise.displayName(language),
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                      ],
-                    ),
-                  ),
-                  if (hasDetails)
-                    IconButton(
-                      icon: Icon(
-                        isExpanded ? Icons.expand_less : Icons.expand_more,
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.5),
+                          if (muscle != null)
+                            Text(
+                              muscle,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
                       ),
-                      onPressed: onToggleDetails,
-                      tooltip: l10n.exerciseDetails,
-                      visualDensity: VisualDensity.compact,
                     ),
-                  Icon(
-                    Icons.add_circle,
-                    color: color,
-                    size: 24,
-                  ),
-                ],
-              ),
-              if (isExpanded && hasDetails) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Divider(
-                  height: 1,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+                    if (hasDetails)
+                      IconButton(
+                        icon: Icon(
+                          isExpanded ? Icons.expand_less : Icons.expand_more,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.5),
+                        ),
+                        onPressed: onToggleDetails,
+                        tooltip: l10n.exerciseDetails,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    Icon(
+                      Icons.add_circle,
+                      color: color,
+                      size: 24,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                if (muscle != null)
-                  _DetailLine(label: l10n.primaryMuscle, value: muscle),
-                if (exercise.equipment.isNotEmpty)
-                  _DetailLine(
-                    label: l10n.equipmentLabel,
-                    value: exercise.equipment.map((e) => e.name).join(', '),
+                if (isExpanded && hasDetails) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Divider(
+                    height: 1,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
                   ),
-                if (exercise.notes != null)
-                  _DetailLine(label: l10n.notes, value: exercise.notes!),
+                  const SizedBox(height: AppSpacing.sm),
+                  if (muscle != null)
+                    _DetailLine(label: l10n.primaryMuscle, value: muscle),
+                  if (exercise.equipment.isNotEmpty)
+                    _DetailLine(
+                      label: l10n.equipmentLabel,
+                      value: exercise.equipment.map((e) => e.name).join(', '),
+                    ),
+                  if (exercise.notes != null)
+                    _DetailLine(label: l10n.notes, value: exercise.notes!),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -389,7 +393,6 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-
           Text(l10n.targetSets, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: AppSpacing.sm),
           _Stepper(
@@ -400,7 +403,6 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
             color: workoutsColor,
           ),
           const SizedBox(height: AppSpacing.lg),
-
           Text(
             l10n.restBetweenSets,
             style: Theme.of(context).textTheme.titleSmall,
@@ -438,7 +440,6 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
-
           AppButton(
             key: WorkoutKeys.savePrescription,
             text: initial == null ? l10n.addToWorkout : l10n.save,

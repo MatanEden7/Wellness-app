@@ -21,6 +21,43 @@ final class TabBarHostController: UIViewController, UITabBarDelegate {
     // MARK: - Private
 
     private let tabBar = UITabBar()
+    private var currentStyle: ChromeStyle = .glass
+    private var underContent = false
+
+    /// Which background the bar asks the system for. See the twin method in
+    /// `NavBarHostController` for why every appearance state is assigned:
+    /// a standalone bar tracks no scroll view, so it never leaves its
+    /// (transparent) scroll-edge state on its own.
+    func applyStyle(_ style: ChromeStyle) {
+        currentStyle = style
+        refreshAppearance()
+    }
+
+    /// See the twin on `NavBarHostController`. A tab bar spends most of its
+    /// life with content under it, but a short page that does not fill the
+    /// screen should still show it floating over the page rather than as a
+    /// panel welded to the bottom.
+    func setUnderContent(_ under: Bool) {
+        guard under != underContent else { return }
+        underContent = under
+        refreshAppearance()
+    }
+
+    private func refreshAppearance() {
+        let appearance = UITabBarAppearance()
+        switch currentStyle {
+        case .glass:
+            if underContent {
+                appearance.configureWithDefaultBackground()
+            } else {
+                appearance.configureWithTransparentBackground()
+            }
+        case .opaque:
+            appearance.configureWithOpaqueBackground()
+        }
+        tabBar.standardAppearance = appearance
+        tabBar.scrollEdgeAppearance = appearance
+    }
 
     // MARK: - Lifecycle
 
@@ -35,9 +72,8 @@ final class TabBarHostController: UIViewController, UITabBarDelegate {
         tabBar.delegate = self
         tabBar.translatesAutoresizingMaskIntoConstraints = false
 
-        // Glass background on iOS 26+; standard blur material otherwise.
-        // No extra styling needed — UITabBar picks the correct appearance
-        // automatically, including Reduce Transparency fallback.
+        applyStyle(currentStyle)
+
         view.addSubview(tabBar)
         NSLayoutConstraint.activate([
             tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -77,7 +113,10 @@ final class TabBarHostController: UIViewController, UITabBarDelegate {
 
     // MARK: - Height reporting
 
-    var barHeight: CGFloat { tabBar.frame.height }
+    /// Height the bar covers, for the inset Flutter has to reserve. Zero while
+    /// hidden — otherwise a screen with no tab bar keeps a blank strip at the
+    /// bottom where the bar used to be.
+    var barHeight: CGFloat { view.isHidden ? 0 : tabBar.frame.height }
 }
 
 // MARK: - Safe subscript

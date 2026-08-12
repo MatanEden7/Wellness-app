@@ -1,94 +1,132 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'design/tokens.dart';
 import 'package:flutter/services.dart';
 
-enum AppThemeKind { 
-  light, 
-  dark, 
+enum AppThemeKind {
+  light,
+  dark,
   gold,
-  ocean,      // Analogous blues & teals - calming, trustworthy
-  forest,     // Nature greens - balanced, healthy
-  sunset,     // Warm oranges & pinks - energetic, optimistic
-  lavender,   // Soft purples - creative, mindful
-  midnight,   // Deep blue-blacks - sophisticated, focused
-  custom,     // User-customizable theme
+  ocean, // Analogous blues & teals - calming, trustworthy
+  forest, // Nature greens - balanced, healthy
+  sunset, // Warm oranges & pinks - energetic, optimistic
+  lavender, // Soft purples - creative, mindful
+  midnight, // Deep blue-blacks - sophisticated, focused
+  custom, // User-customizable theme
 }
 
 class AppTheme {
   // ===== Shared base tokens (from your original) =====
+  // Every theme below is a three-step ramp — background -> surface -> elevated
+  // — with a measured luminance gap between the steps. The old palettes were
+  // two-step and the gap was ~1.05:1 on the light themes, which is invisible:
+  // a card read as a hairline outline drawn on the page rather than as a
+  // surface sitting on it, and a translucent pane read as nothing at all.
+  // `outline` is explicit everywhere because three themes were falling back to
+  // 87% white for their hairlines.
   static const _primaryIndigo = Color(0xFF6366F1);
-  static const _lightBg = Color(0xFFF8FAFC);
-  static const _lightSurface = Colors.white;
+  static const _lightBg = Color(0xFFE6EAF2);
+  static const _lightSurface = Color(0xFFF4F6FA);
+  static const _lightElevated = Colors.white;
+  static const _lightOutline = Color(0xFFD5DAE3);
   static const _lightTextPrimary = Color(0xFF1E293B);
   static const _lightTextSecondary = Color(0xFF64748B);
 
   // ===== Dark (black & white) =====
-  static const _darkBg = Color(0xFF121212);         // WCAG-friendly dark
-  static const _darkSurface = Color(0xFF1E1E1E);    // slightly lighter for cards
+  static const _darkBg = Color(0xFF0E0E10);
+  static const _darkSurface = Color(0xFF1A1A1D);
+  static const _darkElevated = Color(0xFF232327);
+  static const _darkOutline = Color(0xFF34343A);
   static const _darkTextPrimary = Color(0xDEFFFFFF); // 87% opacity white
   static const _darkTextSecondary = Color(0x99FFFFFF); // 60% opacity white
-  static const _darkPrimary = Colors.white;         // white accents
+  // Monochrome, but no longer *one* colour: primary, secondary and tertiary
+  // were all pure white, so the theme had no way to rank one control above
+  // another. A three-step grey keeps the black-and-white identity and gets the
+  // hierarchy back.
+  static const _darkPrimary = Colors.white;
+  static const _darkSecondary = Color(0xFFB9BEC7);
+  static const _darkTertiary = Color(0xFF8A9099);
 
   // ===== Gold (luxury) =====
   // Tip: keep gold as accent, not large surfaces. Looks premium & readable.
-  static const _goldPrimary = Color(0xFFFFD700);    // bright gold for contrast
+  static const _goldPrimary = Color(0xFFFFD700); // bright gold for contrast
   static const _goldPrimaryAlt = Color(0xFFC6A05E); // hover/pressed
-  static const _goldBg = Color(0xFF121212);         // WCAG dark background
-  static const _goldSurface = Color(0xFF1E1E1E);    // dark card surface
+  // Warm charcoal, not the grey one. Gold used byte-identical values to the
+  // dark theme, so on any tinted or translucent surface the two themes were
+  // indistinguishable and the gold identity existed only in the accent.
+  static const _goldBg = Color(0xFF14110B);
+  static const _goldSurface = Color(0xFF201B12);
+  static const _goldElevated = Color(0xFF2C2518);
+  static const _goldOutline = Color(0xFF3E3524);
   static const _goldTextPrimary = Color(0xDEFFFFFF); // 87% opacity white
-  static const _goldTextSecondary = Color(0xFFC7A200); // brighter gold for better contrast
+  static const _goldTextSecondary =
+      Color(0xFFC7A200); // brighter gold for better contrast
 
   // ===== Ocean (Analogous: blues & teals - calming, trustworthy) =====
   // Darkened from 0xFF0EA5E9: that sky blue only hit 2.77:1 contrast against
   // the white text buttons render on top of it (AA needs 4.5:1) -- caught by
   // test/regression/theme_contrast_test.dart. Reuses the palette's existing
   // deep-blue shade rather than inventing a new color.
-  static const _oceanPrimary = Color(0xFF0369A1);     // Sky blue (main CTA)
-  static const _oceanSecondary = Color(0xFF06B6D4);   // Cyan (accents)
-  static const _oceanBg = Color(0xFFF0F9FF);          // Very light blue bg
-  static const _oceanSurface = Color(0xFFFFFFFF);     // White cards
+  static const _oceanPrimary = Color(0xFF0369A1); // Sky blue (main CTA)
+  static const _oceanSecondary = Color(0xFF06B6D4); // Cyan (accents)
+  static const _oceanBg = Color(0xFFDFEBF5);
+  static const _oceanSurface = Color(0xFFF1F8FD);
+  static const _oceanElevated = Color(0xFFFFFFFF);
+  static const _oceanOutline = Color(0xFFC9DEEC);
   static const _oceanTextPrimary = Color(0xFF0C4A6E); // Deep blue text
   static const _oceanTextSecondary = Color(0xFF0369A1); // Medium blue
 
   // ===== Forest (Nature: greens - balanced, healthy, growth) =====
   // Darkened from 0xFF10B981 for the same reason as ocean above (2.54:1
   // white-on-primary contrast, below the 4.5:1 AA bar).
-  static const _forestPrimary = Color(0xFF047857);    // Emerald green
-  static const _forestSecondary = Color(0xFF059669);  // Darker green
-  static const _forestBg = Color(0xFFF0FDF4);         // Very light green bg
-  static const _forestSurface = Color(0xFFFFFFFF);    // White cards
+  static const _forestPrimary = Color(0xFF047857); // Emerald green
+  static const _forestSecondary = Color(0xFF059669); // Darker green
+  static const _forestBg = Color(0xFFE0F0E6);
+  static const _forestSurface = Color(0xFFF2FBF5);
+  static const _forestElevated = Color(0xFFFFFFFF);
+  static const _forestOutline = Color(0xFFC6E5D2);
   static const _forestTextPrimary = Color(0xFF064E3B); // Deep forest text
   static const _forestTextSecondary = Color(0xFF047857); // Medium green
 
   // ===== Sunset (Warm: oranges & pinks - energetic, optimistic) =====
   // Darkened from 0xFFFF6B35 for the same reason as ocean above (2.84:1
   // white-on-primary contrast, below the 4.5:1 AA bar).
-  static const _sunsetPrimary = Color(0xFFC2410C);    // Vibrant orange
-  static const _sunsetSecondary = Color(0xFFF72585);  // Hot pink accent
-  static const _sunsetBg = Color(0xFFFFF8F5);         // Warm cream bg
-  static const _sunsetSurface = Color(0xFFFFFFFF);    // White cards
+  static const _sunsetPrimary = Color(0xFFC2410C); // Vibrant orange
+  static const _sunsetSecondary = Color(0xFFF72585); // Hot pink accent
+  static const _sunsetBg = Color(0xFFF6E8E0);
+  static const _sunsetSurface = Color(0xFFFDF6F2);
+  static const _sunsetElevated = Color(0xFFFFFFFF);
+  static const _sunsetOutline = Color(0xFFEBD3C6);
   static const _sunsetTextPrimary = Color(0xFF7C2D12); // Deep brown-red text
   static const _sunsetTextSecondary = Color(0xFFC2410C); // Orange-brown
 
   // ===== Lavender (Soft purples - creative, mindful, wellness) =====
-  static const _lavenderPrimary = Color(0xFF9333EA);  // Rich purple
+  static const _lavenderPrimary = Color(0xFF9333EA); // Rich purple
   static const _lavenderSecondary = Color(0xFFA855F7); // Lighter purple
-  static const _lavenderBg = Color(0xFFFAF5FF);       // Very light lavender bg
-  static const _lavenderSurface = Color(0xFFFFFFFF);  // White cards
+  static const _lavenderBg = Color(0xFFEBE2F6);
+  static const _lavenderSurface = Color(0xFFFAF6FE);
+  static const _lavenderElevated = Color(0xFFFFFFFF);
+  static const _lavenderOutline = Color(0xFFDCCCEE);
   static const _lavenderTextPrimary = Color(0xFF581C87); // Deep purple text
   static const _lavenderTextSecondary = Color(0xFF7E22CE); // Medium purple
 
   // ===== Midnight (Deep blue-black - sophisticated, focused) =====
-  static const _midnightPrimary = Color(0xFF60A5FA);  // Bright blue accent
+  static const _midnightPrimary = Color(0xFF60A5FA); // Bright blue accent
   static const _midnightSecondary = Color(0xFF3B82F6); // Medium blue
-  static const _midnightBg = Color(0xFF0F172A);       // Very dark blue-black
-  static const _midnightSurface = Color(0xFF1E293B);  // Slate surface
+  // The best-separated theme in the app before this pass, and the one the
+  // other eight were calibrated against.
+  static const _midnightBg = Color(0xFF0B1220);
+  static const _midnightSurface = Color(0xFF18233A);
+  static const _midnightElevated = Color(0xFF22304D);
+  static const _midnightOutline = Color(0xFF2F3E5C);
   static const _midnightTextPrimary = Color(0xDEFFFFFF); // 87% white
   static const _midnightTextSecondary = Color(0x99FFFFFF); // 60% white
 
   // Public API: get ThemeData by kind
-  static ThemeData byKind(AppThemeKind kind, {
+  static ThemeData byKind(
+    AppThemeKind kind, {
     Color? customPrimary,
     Color? customBackground,
     Color? customSurface,
@@ -105,7 +143,8 @@ class AppTheme {
     return isApplePlatform ? _appleize(raw) : raw;
   }
 
-  static ThemeData _rawByKind(AppThemeKind kind, {
+  static ThemeData _rawByKind(
+    AppThemeKind kind, {
     Color? customPrimary,
     Color? customBackground,
     Color? customSurface,
@@ -200,14 +239,16 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(64, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(64, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
       ),
@@ -227,8 +268,15 @@ class AppTheme {
       ),
     );
   }
-  
+
   // Build a custom theme from provided colors
+  /// Rotates a colour's hue while keeping its saturation and lightness, so a
+  /// derived accent still belongs to the user's chosen palette.
+  static Color _shiftHue(Color c, double degrees) {
+    final hsl = HSLColor.fromColor(c);
+    return hsl.withHue((hsl.hue + degrees) % 360).toColor();
+  }
+
   static ThemeData buildCustomTheme({
     required Color primary,
     required Color background,
@@ -236,35 +284,67 @@ class AppTheme {
   }) {
     // Determine if we're in dark mode based on background luminance
     final isDark = background.computeLuminance() < 0.5;
-    final onPrimary = primary.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-    final onSurface = surface.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+    final onPrimary =
+        primary.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+    final onSurface =
+        surface.computeLuminance() > 0.5 ? Colors.black : Colors.white;
     // No `onBackground` counterpart: Material 3 folded ColorScheme.background
     // and onBackground into surface/onSurface, and the argument no longer
     // exists. `background` is still applied below via scaffoldBackgroundColor.
+
+    // The custom theme gets the same three-step ramp as the other eight, derived
+    // from the two colours the user actually picked. `elevated` steps away from
+    // the background rather than towards it, so a card stays visible whichever
+    // way round the user's colours are; `outline` is a blend rather than a
+    // faded body colour, which is what the other themes were doing wrong.
+    final elevated = Color.alphaBlend(
+      (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+      surface,
+    );
+    final outline = Color.alphaBlend(
+      onSurface.withValues(alpha: 0.18),
+      surface,
+    );
 
     final colorScheme = ColorScheme(
       brightness: isDark ? Brightness.dark : Brightness.light,
       primary: primary,
       onPrimary: onPrimary,
-      secondary: primary,
+      // A second and third accent, derived by rotating the user's hue rather
+      // than repeating it: `secondary` and `tertiary` were both aliases of
+      // `primary`, so a custom theme had exactly one accent and no way to rank
+      // anything against anything.
+      secondary: _shiftHue(primary, 24),
       onSecondary: onPrimary,
+      tertiary: _shiftHue(primary, -24),
+      onTertiary: onPrimary,
       error: Colors.red,
       onError: Colors.white,
       surface: surface,
+      surfaceContainerHighest: elevated,
+      outline: outline,
       onSurface: onSurface,
     );
-    
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: background,
+      // The custom theme had no textTheme at all, so choosing it silently
+      // dropped every screen onto Material's Roboto scale — different sizes,
+      // different weights, a different app. It gets the same ramp as the other
+      // eight now.
+      textTheme: AppType.ramp(
+        onSurface: onSurface,
+        muted: onSurface.withValues(alpha: 0.6),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: surface,
         foregroundColor: onSurface,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
-          fontSize: 20,
+          fontSize: AppType.title3,
           fontWeight: FontWeight.w600,
           color: onSurface,
         ),
@@ -281,7 +361,8 @@ class AppTheme {
           backgroundColor: primary,
           foregroundColor: onPrimary,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -300,8 +381,8 @@ class AppTheme {
 
   // Keep aliases if you want direct access:
   static ThemeData get lightTheme => _lightTheme;
-  static ThemeData get darkTheme  => _darkTheme;
-  static ThemeData get goldTheme  => _goldTheme;
+  static ThemeData get darkTheme => _darkTheme;
+  static ThemeData get goldTheme => _goldTheme;
 
   // ===== LIGHT THEME (yours, with a few small extras) =====
   static ThemeData get _lightTheme {
@@ -310,6 +391,13 @@ class AppTheme {
       brightness: Brightness.light,
       surface: _lightSurface,
       background: _lightBg,
+      tertiary: const Color(0xFF06B6D4),
+    ).copyWith(
+      // The third step of the ramp, and a hairline that is not just
+      // the body colour faded — `fromSeed` derives both from the seed
+      // and lands them too close together on a pale surface.
+      surfaceContainerHighest: _lightElevated,
+      outline: _lightOutline,
     );
 
     return ThemeData(
@@ -326,18 +414,18 @@ class AppTheme {
           TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
         },
       ),
-
       appBarTheme: const AppBarTheme(
         backgroundColor: _lightSurface,
         foregroundColor: _lightTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _lightTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _lightTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
-
       cardTheme: CardThemeData(
         color: _lightSurface,
         elevation: 0,
@@ -345,28 +433,28 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: Colors.grey.shade200),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _primaryIndigo,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _primaryIndigo,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.grey.shade50,
@@ -382,23 +470,17 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: _primaryIndigo, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _lightTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _lightTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _lightTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _lightTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _lightTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _lightTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _lightTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _lightTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _lightTextPrimary,
+        muted: _lightTextSecondary,
       ),
-
       dividerColor: Colors.grey.shade200,
       iconTheme: const IconThemeData(color: _lightTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _lightSurface,
         selectedItemColor: _primaryIndigo,
@@ -414,14 +496,16 @@ class AppTheme {
       brightness: Brightness.dark,
       primary: _darkPrimary,
       onPrimary: Colors.black,
-      secondary: _darkPrimary,
+      secondary: _darkSecondary,
       onSecondary: Colors.black,
       surface: _darkSurface,
+      surfaceContainerHighest: _darkElevated,
       onSurface: _darkTextPrimary,
       onSurfaceVariant: _darkTextSecondary, // 60% opacity for secondary text
+      outline: _darkOutline,
       error: Color(0xFFEF4444),
       onError: Colors.white,
-      tertiary: Colors.white,
+      tertiary: _darkTertiary,
       onTertiary: Colors.black,
     );
 
@@ -439,18 +523,18 @@ class AppTheme {
           TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
         },
       ),
-
       appBarTheme: const AppBarTheme(
         backgroundColor: _darkBg,
         foregroundColor: _darkTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _darkTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _darkTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-
       cardTheme: CardThemeData(
         color: _darkSurface,
         elevation: 0,
@@ -458,28 +542,28 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _darkSurface,
@@ -496,23 +580,17 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: Colors.white, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _darkTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _darkTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _darkTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _darkTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _darkTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _darkTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _darkTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _darkTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _darkTextPrimary,
+        muted: _darkTextSecondary,
       ),
-
       dividerColor: Colors.white.withValues(alpha: 0.06),
       iconTheme: const IconThemeData(color: _darkTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _darkSurface,
         selectedItemColor: Colors.white,
@@ -527,17 +605,20 @@ class AppTheme {
     const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: _goldPrimary,
-      onPrimary: Color(0xFF121212), // Dark text on gold
-      secondary: _goldPrimary,
-      onSecondary: Color(0xFF121212),
+      onPrimary: Color(0xFF14110B), // Dark text on gold
+      secondary: _goldPrimaryAlt,
+      onSecondary: Color(0xFF14110B),
       surface: _goldSurface,
+      surfaceContainerHighest: _goldElevated,
       onSurface: _goldTextPrimary,
       onSurfaceVariant: _goldTextSecondary, // Brighter gold for secondary text
-      outline: _goldTextSecondary, // Use brighter gold for outlines
+      // Was the bright secondary gold, which made every hairline in the app a
+      // luminous line. A hairline is structure, not accent.
+      outline: _goldOutline,
       error: Color(0xFFEF4444),
       onError: Colors.white,
-      tertiary: _goldPrimaryAlt,
-      onTertiary: Color(0xFF121212),
+      tertiary: Color(0xFF8C6F3A),
+      onTertiary: Colors.white,
     );
 
     return ThemeData(
@@ -554,18 +635,18 @@ class AppTheme {
           TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
         },
       ),
-
       appBarTheme: const AppBarTheme(
         backgroundColor: _goldBg,
         foregroundColor: _goldTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _goldTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _goldTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-
       cardTheme: CardThemeData(
         color: _goldSurface,
         elevation: 0,
@@ -573,28 +654,29 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: _goldPrimary.withValues(alpha: 0.25)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _goldPrimary,
           foregroundColor: Colors.black,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _goldPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _goldSurface,
@@ -611,20 +693,13 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(10)),
           borderSide: BorderSide(color: _goldPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: _goldTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _goldTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _goldTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _goldTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _goldTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _goldTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _goldTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _goldTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _goldTextPrimary,
+        muted: _goldTextSecondary,
       ),
-
       dividerColor: _goldPrimary.withValues(alpha: 0.18),
       iconTheme: const IconThemeData(color: _goldTextPrimary),
       snackBarTheme: const SnackBarThemeData(
@@ -650,24 +725,31 @@ class AppTheme {
       secondary: _oceanSecondary,
       surface: _oceanSurface,
       background: _oceanBg,
+      tertiary: const Color(0xFF0891B2),
+    ).copyWith(
+      // The third step of the ramp, and a hairline that is not just
+      // the body colour faded — `fromSeed` derives both from the seed
+      // and lands them too close together on a pale surface.
+      surfaceContainerHighest: _oceanElevated,
+      outline: _oceanOutline,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _oceanBg,
-      
       appBarTheme: const AppBarTheme(
         backgroundColor: _oceanSurface,
         foregroundColor: _oceanTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _oceanTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _oceanTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
-
       cardTheme: CardThemeData(
         color: _oceanSurface,
         elevation: 0,
@@ -675,28 +757,28 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: _oceanPrimary.withValues(alpha: 0.2)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _oceanPrimary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _oceanPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _oceanSurface,
@@ -712,23 +794,17 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: _oceanPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _oceanTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _oceanTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _oceanTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _oceanTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _oceanTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _oceanTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _oceanTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _oceanTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _oceanTextPrimary,
+        muted: _oceanTextSecondary,
       ),
-
       dividerColor: _oceanSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _oceanTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _oceanSurface,
         selectedItemColor: _oceanPrimary,
@@ -747,24 +823,31 @@ class AppTheme {
       secondary: _forestSecondary,
       surface: _forestSurface,
       background: _forestBg,
+      tertiary: const Color(0xFF65A30D),
+    ).copyWith(
+      // The third step of the ramp, and a hairline that is not just
+      // the body colour faded — `fromSeed` derives both from the seed
+      // and lands them too close together on a pale surface.
+      surfaceContainerHighest: _forestElevated,
+      outline: _forestOutline,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _forestBg,
-      
       appBarTheme: const AppBarTheme(
         backgroundColor: _forestSurface,
         foregroundColor: _forestTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _forestTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _forestTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
-
       cardTheme: CardThemeData(
         color: _forestSurface,
         elevation: 0,
@@ -772,60 +855,56 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: _forestPrimary.withValues(alpha: 0.2)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _forestPrimary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _forestPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _forestSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _forestSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _forestSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _forestSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _forestSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: _forestPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _forestTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _forestTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _forestTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _forestTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _forestTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _forestTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _forestTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _forestTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _forestTextPrimary,
+        muted: _forestTextSecondary,
       ),
-
       dividerColor: _forestSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _forestTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _forestSurface,
         selectedItemColor: _forestPrimary,
@@ -844,24 +923,31 @@ class AppTheme {
       secondary: _sunsetSecondary,
       surface: _sunsetSurface,
       background: _sunsetBg,
+      tertiary: const Color(0xFFDB2777),
+    ).copyWith(
+      // The third step of the ramp, and a hairline that is not just
+      // the body colour faded — `fromSeed` derives both from the seed
+      // and lands them too close together on a pale surface.
+      surfaceContainerHighest: _sunsetElevated,
+      outline: _sunsetOutline,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _sunsetBg,
-      
       appBarTheme: const AppBarTheme(
         backgroundColor: _sunsetSurface,
         foregroundColor: _sunsetTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _sunsetTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _sunsetTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
-
       cardTheme: CardThemeData(
         color: _sunsetSurface,
         elevation: 0,
@@ -869,60 +955,56 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: _sunsetPrimary.withValues(alpha: 0.2)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _sunsetPrimary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _sunsetPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _sunsetSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _sunsetSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _sunsetSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _sunsetSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _sunsetSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: _sunsetPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _sunsetTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _sunsetTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _sunsetTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _sunsetTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _sunsetTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _sunsetTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _sunsetTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _sunsetTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _sunsetTextPrimary,
+        muted: _sunsetTextSecondary,
       ),
-
       dividerColor: _sunsetSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _sunsetTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _sunsetSurface,
         selectedItemColor: _sunsetPrimary,
@@ -941,24 +1023,31 @@ class AppTheme {
       secondary: _lavenderSecondary,
       surface: _lavenderSurface,
       background: _lavenderBg,
+      tertiary: const Color(0xFFEC4899),
+    ).copyWith(
+      // The third step of the ramp, and a hairline that is not just
+      // the body colour faded — `fromSeed` derives both from the seed
+      // and lands them too close together on a pale surface.
+      surfaceContainerHighest: _lavenderElevated,
+      outline: _lavenderOutline,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _lavenderBg,
-      
       appBarTheme: const AppBarTheme(
         backgroundColor: _lavenderSurface,
         foregroundColor: _lavenderTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _lavenderTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _lavenderTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
-
       cardTheme: CardThemeData(
         color: _lavenderSurface,
         elevation: 0,
@@ -966,60 +1055,56 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: _lavenderPrimary.withValues(alpha: 0.2)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _lavenderPrimary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _lavenderPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _lavenderSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _lavenderSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _lavenderSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _lavenderSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _lavenderSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: _lavenderPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _lavenderTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _lavenderTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _lavenderTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _lavenderTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _lavenderTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _lavenderTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _lavenderTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _lavenderTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _lavenderTextPrimary,
+        muted: _lavenderTextSecondary,
       ),
-
       dividerColor: _lavenderSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _lavenderTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _lavenderSurface,
         selectedItemColor: _lavenderPrimary,
@@ -1038,11 +1123,13 @@ class AppTheme {
       secondary: _midnightSecondary,
       onSecondary: Colors.white,
       surface: _midnightSurface,
+      surfaceContainerHighest: _midnightElevated,
+      outline: _midnightOutline,
       onSurface: _midnightTextPrimary,
       onSurfaceVariant: _midnightTextSecondary,
       error: Color(0xFFEF4444),
       onError: Colors.white,
-      tertiary: _midnightPrimary,
+      tertiary: Color(0xFF22D3EE),
       onTertiary: _midnightBg,
     );
 
@@ -1050,18 +1137,18 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _midnightBg,
-      
       appBarTheme: const AppBarTheme(
         backgroundColor: _midnightBg,
         foregroundColor: _midnightTextPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 20, fontWeight: FontWeight.w600, color: _midnightTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _midnightTextPrimary,
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-
       cardTheme: CardThemeData(
         color: _midnightSurface,
         elevation: 0,
@@ -1069,61 +1156,57 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: _midnightPrimary.withValues(alpha: 0.2)),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.sm),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _midnightPrimary,
           foregroundColor: _midnightBg,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.md),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: _midnightPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.sm),
           minimumSize: const Size(44, 44),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _midnightSurface,
         hintStyle: const TextStyle(color: _midnightTextSecondary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _midnightSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _midnightSecondary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _midnightSecondary.withValues(alpha: 0.3)),
+          borderSide:
+              BorderSide(color: _midnightSecondary.withValues(alpha: 0.3)),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
           borderSide: BorderSide(color: _midnightPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: Space.lg, vertical: Space.md),
       ),
-
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _midnightTextPrimary),
-        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _midnightTextPrimary),
-        headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _midnightTextPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _midnightTextPrimary),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _midnightTextPrimary),
-        bodyLarge: TextStyle(fontSize: 16, color: _midnightTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: _midnightTextPrimary),
-        bodySmall: TextStyle(fontSize: 12, color: _midnightTextSecondary),
+      textTheme: AppType.ramp(
+        onSurface: _midnightTextPrimary,
+        muted: _midnightTextSecondary,
       ),
-
       dividerColor: _midnightSecondary.withValues(alpha: 0.2),
       iconTheme: const IconThemeData(color: _midnightTextPrimary),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme:
+          const SnackBarThemeData(behavior: SnackBarBehavior.floating),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: _midnightSurface,
         selectedItemColor: _midnightPrimary,

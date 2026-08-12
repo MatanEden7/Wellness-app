@@ -2455,4 +2455,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nightlyAverage => 'nightly average';
+
+  @override
+  String get glassEffect => 'Glass Effect';
+
+  @override
+  String get glassOff => 'Off';
+
+  @override
+  String get glassSubtle => 'Subtle';
+
+  @override
+  String get glassFull => 'Full';
+
+  @override
+  String get glassEffectReducedByAccessibility =>
+      'Off — Reduce Transparency is on';
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/ios/glass.dart' show GlassLevel;
+
 // Provider for the preferences service
 final preferencesServiceProvider = Provider<PreferencesService>((ref) {
   throw UnimplementedError('PreferencesService provider must be overridden');
@@ -9,7 +11,9 @@ final preferencesServiceProvider = Provider<PreferencesService>((ref) {
 
 // Enums for preferences
 enum NutritionMetric { calories, protein, carbs, fat }
+
 enum TimeframeMode { day, week }
+
 enum WorkoutMetricMode { count, time }
 
 class PreferencesService {
@@ -24,7 +28,8 @@ class PreferencesService {
   static const String _mealsTimeframeModeKey = 'meals_timeframe_mode';
   static const String _workoutsTimeframeModeKey = 'workouts_timeframe_mode';
   static const String _sleepTimeframeModeKey = 'sleep_timeframe_mode';
-  
+  static const String _glassLevelKey = 'glass_level';
+
   // Nutrition goals keys
   static const String _calorieGoalKey = 'calorie_goal';
   static const String _proteinGoalKey = 'protein_goal';
@@ -38,22 +43,22 @@ class PreferencesService {
   static const String _carbsColorKey = 'carbs_color';
   static const String _fatColorKey = 'fat_color';
   static const String _useThemeColorsKey = 'use_theme_colors';
-  
+
   // Section color keys
   static const String _mealsColorKey = 'meals_color';
   static const String _workoutsColorKey = 'workouts_color';
   static const String _sleepColorKey = 'sleep_color';
-  
+
   // Custom theme color keys
   static const String _customPrimaryColorKey = 'custom_primary_color';
   static const String _customBackgroundColorKey = 'custom_background_color';
   static const String _customSurfaceColorKey = 'custom_surface_color';
-  
+
   // Workout timer settings keys
   static const String _defaultRestTimeKey = 'default_rest_time';
   static const String _restTimerSoundEnabledKey = 'rest_timer_sound_enabled';
   static const String _restTimerVolumeKey = 'rest_timer_volume';
-  
+
   // Default colors
   static const Color defaultCalorieColor = Colors.orange;
   static const Color defaultProteinColor = Colors.red;
@@ -63,7 +68,8 @@ class PreferencesService {
   static const Color defaultWorkoutsColor = Colors.blue;
   static const Color defaultSleepColor = Colors.purple;
   static const Color defaultCustomPrimaryColor = Color(0xFF6366F1); // Indigo
-  static const Color defaultCustomBackgroundColor = Color(0xFFF8FAFC); // Light gray
+  static const Color defaultCustomBackgroundColor =
+      Color(0xFFF8FAFC); // Light gray
   static const Color defaultCustomSurfaceColor = Colors.white;
 
   // Primary nutrition metric (Enhancement 3)
@@ -92,6 +98,25 @@ class PreferencesService {
     await _prefs.setString(_globalTimeframeModeKey, mode.name);
   }
 
+  /// How much Liquid Glass the user wants.
+  ///
+  /// Stored unconditionally as [GlassLevel.full]; the platform gate lives in
+  /// `glassSpecProvider`, not here — `services/` is forbidden from detecting
+  /// the platform (see `test/architecture/layering_test.dart`), and the
+  /// stored preference should survive a user moving between an iPhone and an
+  /// Android phone with the same backup rather than being rewritten by it.
+  GlassLevel get glassLevel {
+    final value = _prefs.getString(_glassLevelKey);
+    return GlassLevel.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => GlassLevel.full,
+    );
+  }
+
+  Future<void> setGlassLevel(GlassLevel level) async {
+    await _prefs.setString(_glassLevelKey, level.name);
+  }
+
   // Workout metric mode (Enhancement 5)
   WorkoutMetricMode get workoutMetricMode {
     final value = _prefs.getString(_workoutMetricModeKey);
@@ -108,7 +133,7 @@ class PreferencesService {
   // Section-specific timeframe overrides (Enhancement 4)
   TimeframeMode? getMealsTimeframeOverride() {
     final value = _prefs.getString(_mealsTimeframeModeKey);
-    return value != null 
+    return value != null
         ? TimeframeMode.values.firstWhere((e) => e.name == value)
         : null;
   }
@@ -123,7 +148,7 @@ class PreferencesService {
 
   TimeframeMode? getWorkoutsTimeframeOverride() {
     final value = _prefs.getString(_workoutsTimeframeModeKey);
-    return value != null 
+    return value != null
         ? TimeframeMode.values.firstWhere((e) => e.name == value)
         : null;
   }
@@ -138,7 +163,7 @@ class PreferencesService {
 
   TimeframeMode? getSleepTimeframeOverride() {
     final value = _prefs.getString(_sleepTimeframeModeKey);
-    return value != null 
+    return value != null
         ? TimeframeMode.values.firstWhere((e) => e.name == value)
         : null;
   }
@@ -270,59 +295,59 @@ class PreferencesService {
         return 'Week';
     }
   }
-  
+
   // Use theme colors setting
   bool get useThemeColors {
     return _prefs.getBool(_useThemeColorsKey) ?? false;
   }
-  
+
   Future<void> setUseThemeColors(bool value) async {
     await _prefs.setBool(_useThemeColorsKey, value);
   }
-  
+
   // Custom colors for nutrition macros
   Color get calorieColor {
     final colorValue = _prefs.getInt(_calorieColorKey);
     return colorValue != null ? Color(colorValue) : defaultCalorieColor;
   }
-  
+
   Future<void> setCalorieColor(Color color) async {
     await _prefs.setInt(_calorieColorKey, color.toARGB32());
   }
-  
+
   Color get proteinColor {
     final colorValue = _prefs.getInt(_proteinColorKey);
     return colorValue != null ? Color(colorValue) : defaultProteinColor;
   }
-  
+
   Future<void> setProteinColor(Color color) async {
     await _prefs.setInt(_proteinColorKey, color.toARGB32());
   }
-  
+
   Color get carbsColor {
     final colorValue = _prefs.getInt(_carbsColorKey);
     return colorValue != null ? Color(colorValue) : defaultCarbsColor;
   }
-  
+
   Future<void> setCarbsColor(Color color) async {
     await _prefs.setInt(_carbsColorKey, color.toARGB32());
   }
-  
+
   Color get fatColor {
     final colorValue = _prefs.getInt(_fatColorKey);
     return colorValue != null ? Color(colorValue) : defaultFatColor;
   }
-  
+
   Future<void> setFatColor(Color color) async {
     await _prefs.setInt(_fatColorKey, color.toARGB32());
   }
-  
+
   // Get color for a specific metric (considering theme colors setting)
   Color getColorForMetric(NutritionMetric metric, {Color? themeColor}) {
     if (useThemeColors && themeColor != null) {
       return themeColor;
     }
-    
+
     switch (metric) {
       case NutritionMetric.calories:
         return calorieColor;
@@ -334,12 +359,12 @@ class PreferencesService {
         return fatColor;
     }
   }
-  
+
   // WCAG contrast validation
   static double calculateLuminance(Color color) {
     return color.computeLuminance();
   }
-  
+
   static double calculateContrastRatio(Color color1, Color color2) {
     final lum1 = calculateLuminance(color1);
     final lum2 = calculateLuminance(color2);
@@ -347,18 +372,18 @@ class PreferencesService {
     final darker = lum1 > lum2 ? lum2 : lum1;
     return (lighter + 0.05) / (darker + 0.05);
   }
-  
+
   static bool isColorAccessible(Color color, Color background) {
     final contrastRatio = calculateContrastRatio(color, background);
     return contrastRatio >= 4.5; // WCAG AA standard
   }
-  
+
   // Adjust color for better contrast if needed
   static Color ensureContrast(Color color, Color background) {
     if (isColorAccessible(color, background)) {
       return color;
     }
-    
+
     // Make color lighter or darker to meet contrast requirements
     final backgroundLum = calculateLuminance(background);
     if (backgroundLum > 0.5) {
@@ -369,35 +394,35 @@ class PreferencesService {
       return HSLColor.fromColor(color).withLightness(0.7).toColor();
     }
   }
-  
+
   // Section colors
   Color get mealsColor {
     final colorValue = _prefs.getInt(_mealsColorKey);
     return colorValue != null ? Color(colorValue) : defaultMealsColor;
   }
-  
+
   Future<void> setMealsColor(Color color) async {
     await _prefs.setInt(_mealsColorKey, color.toARGB32());
   }
-  
+
   Color get workoutsColor {
     final colorValue = _prefs.getInt(_workoutsColorKey);
     return colorValue != null ? Color(colorValue) : defaultWorkoutsColor;
   }
-  
+
   Future<void> setWorkoutsColor(Color color) async {
     await _prefs.setInt(_workoutsColorKey, color.toARGB32());
   }
-  
+
   Color get sleepColor {
     final colorValue = _prefs.getInt(_sleepColorKey);
     return colorValue != null ? Color(colorValue) : defaultSleepColor;
   }
-  
+
   Future<void> setSleepColor(Color color) async {
     await _prefs.setInt(_sleepColorKey, color.toARGB32());
   }
-  
+
   // Reset colors to defaults
   Future<void> resetColors() async {
     await _prefs.remove(_calorieColorKey);
@@ -405,76 +430,78 @@ class PreferencesService {
     await _prefs.remove(_carbsColorKey);
     await _prefs.remove(_fatColorKey);
   }
-  
+
   Future<void> resetSectionColors() async {
     await _prefs.remove(_mealsColorKey);
     await _prefs.remove(_workoutsColorKey);
     await _prefs.remove(_sleepColorKey);
   }
-  
+
   // Custom theme colors
   Color get customPrimaryColor {
     final colorValue = _prefs.getInt(_customPrimaryColorKey);
     return colorValue != null ? Color(colorValue) : defaultCustomPrimaryColor;
   }
-  
+
   Future<void> setCustomPrimaryColor(Color color) async {
     await _prefs.setInt(_customPrimaryColorKey, color.toARGB32());
   }
-  
+
   Color get customBackgroundColor {
     final colorValue = _prefs.getInt(_customBackgroundColorKey);
-    return colorValue != null ? Color(colorValue) : defaultCustomBackgroundColor;
+    return colorValue != null
+        ? Color(colorValue)
+        : defaultCustomBackgroundColor;
   }
-  
+
   Future<void> setCustomBackgroundColor(Color color) async {
     await _prefs.setInt(_customBackgroundColorKey, color.toARGB32());
   }
-  
+
   Color get customSurfaceColor {
     final colorValue = _prefs.getInt(_customSurfaceColorKey);
     return colorValue != null ? Color(colorValue) : defaultCustomSurfaceColor;
   }
-  
+
   Future<void> setCustomSurfaceColor(Color color) async {
     await _prefs.setInt(_customSurfaceColorKey, color.toARGB32());
   }
-  
+
   // Reset theme colors
   Future<void> resetThemeColors() async {
     await _prefs.remove(_customPrimaryColorKey);
     await _prefs.remove(_customBackgroundColorKey);
     await _prefs.remove(_customSurfaceColorKey);
   }
-  
+
   // Reset all custom colors
   Future<void> resetAllCustomColors() async {
     await resetColors();
     await resetSectionColors();
     await resetThemeColors();
   }
-  
+
   // Workout timer settings
   int get defaultRestTime {
     return _prefs.getInt(_defaultRestTimeKey) ?? 90; // Default 90 seconds
   }
-  
+
   Future<void> setDefaultRestTime(int seconds) async {
     await _prefs.setInt(_defaultRestTimeKey, seconds);
   }
-  
+
   bool get restTimerSoundEnabled {
     return _prefs.getBool(_restTimerSoundEnabledKey) ?? true;
   }
-  
+
   Future<void> setRestTimerSoundEnabled(bool enabled) async {
     await _prefs.setBool(_restTimerSoundEnabledKey, enabled);
   }
-  
+
   double get restTimerVolume {
     return _prefs.getDouble(_restTimerVolumeKey) ?? 1.0; // Default full volume
   }
-  
+
   Future<void> setRestTimerVolume(double volume) async {
     await _prefs.setDouble(_restTimerVolumeKey, volume);
   }

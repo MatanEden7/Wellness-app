@@ -4,6 +4,133 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-12 (later) — The UI design pass: a real Liquid Glass system
+
+**Current task:** None. Branch `feat/platform-native-ui`, built and installed on the
+iPhone 17 simulator (iOS 26.3). 1168 fast tests green, `flutter analyze` clean.
+
+**Asked for:** a full UI design pass — "make sure to see actual design of liquid glass,
+fix all the themes, change all the things you see fit from the size of buttons to size
+of everything".
+
+**The finding that reframed the work.** I read Apple's own material rather than
+reasoning from screenshots. The WWDC25 session names three layers — content, functional,
+navigation — and lists **"applying Liquid Glass directly to content"** as an
+anti-pattern. We had glass on every card, twice, on request. That is why the screens
+read as washed out: with everything translucent there was nothing left for the glass to
+float over, so the material stopped meaning anything.
+
+**And the system underneath was worse than the material.** The audit measured:
+
+  * two spacing scales that disagreed (screen padding 16 vs 20), with **86% of paddings
+    written as raw literals** and the most common pair in the app — `horizontal: 14,
+    vertical: 7` — belonging to neither;
+  * 18 font sizes, no 17pt slot, so iOS body text could only be a literal (20 sites);
+    `AppThemeKind.custom` had **no textTheme at all** and silently reflowed the app to
+    Roboto;
+  * 13 corner radii arranged anti-concentrically — 18pt chips inside 12pt cards;
+  * six tap heights, 24+ controls under Apple's 44pt floor;
+  * **`dark` and `gold` were byte-identical palettes**, `dark` had one accent repeated
+    three times, three themes drew hairlines in 87% white, and the light family sat at
+    1.05:1 background-to-surface, where a surface is invisible.
+
+**Four decisions, all the owner's**, taken before any code: Apple's layer model, real
+scroll-edge behaviour piped to native, all nine themes re-derived, full 44pt spec.
+
+**What shipped**, in eight steps: `lib/core/design/tokens.dart` (type ramp as a
+`TextTheme`, one 4pt scale, `Radii.inner()` implementing concentricity, 44pt floor) ·
+nine theme ramps · `ContentSurface` and 22 files off glass · glass re-tuned to tint from
+the elevated rung · sizing to spec · the scroll edge · a per-screen pass · docs.
+
+**Three things worth carrying forward:**
+
+  * **The tests set the numbers, not my eye.** Four new per-theme assertions caught
+    eight real failures mid-pass; `prominentTintAlpha` had already been moved 0.86 → 0.93
+    by the contrast test earlier in the day. Every colour decision here has a test that
+    would fail if it drifted.
+  * **The scroll edge was the missing signal all along.** The date strip went band → no
+    band → unpinned across three rounds of screenshots, and each was a workaround for
+    the fact that nothing observed scroll offset. UIKit derives it from a connected
+    `UIScrollView`; ours is Flutter's, so it had to be reported over the bridge.
+    `setScrollEdge` is 20 lines and it retired the whole argument.
+  * **`glass_coverage_test.dart` was inverted rather than deleted.** It used to enforce
+    "everything is glass"; it now enforces the layer split, with a per-file reason list.
+    The rule that changed is the one the test states.
+
+**Not done:** the `--profile` raster measurement (moving cards off glass should have
+*reduced* it — worth confirming), and the on-device look itself.
+
+**Next:** owner's visual pass; then the profile run; then merge.
+
+---
+
+## 2026-08-12 — Liquid Glass everywhere, and nine native-chrome bugs
+
+**Current task:** None. Branch `feat/platform-native-ui`, built and installed on the
+iPhone 17 simulator (iOS 26.3). Awaiting the owner's visual pass.
+
+**Asked for:** "fix the bugs in this branch, and make sure the liquid glass of iOS 27
+is presented", then "I want all the app to be glassy".
+
+**Worth recording about the version:** Liquid Glass is the **iOS 26** design language.
+The simulator and Xcode here are both 26.3; there is no iOS 27 runtime on this Mac and
+nothing in my knowledge covers one. Everything targets iOS 26's material, which is what
+the device renders. Said once, early — the owner used "iOS 27" throughout and it did not
+change any decision.
+
+**Why glass was missing, which was not guessable from the code:** a standalone
+`UINavigationBar`/`UITabBar` picks its appearance by tracking a scroll view. These bars
+have none — Flutter's scroll views are not `UIScrollView`s — so both sat permanently in
+`scrollEdgeAppearance`, which is transparent. The app was asking for nothing. Fixed by
+assigning `configureWithDefaultBackground()` to every appearance state. The other half:
+the shells wrapped their scroll view in `SafeArea`, so even a rendering material had
+only flat background behind it.
+
+**Nine bugs**, ISSUES #92–#100, all pre-existing on the branch and all found by reading
+rather than by testing: content under the tab bar, the tab bar never following
+navigation, both bars floating over onboarding, English-only tab labels, hidden bars
+still reserving insets, two shells ignoring the app theme, unhandled async bridge
+failures, and a leaking deferred chrome sync.
+
+**Then the glass pass**, scoped by four decisions the owner made up front: everything
+including content cards; a theme-derived gradient backdrop; an Off/Subtle/Full setting;
+iOS only. `lib/core/ios/glass.dart` is the single recipe — every card, list group,
+sheet, dialog and Cupertino-tier bar calls `GlassSurface`.
+
+**Three things worth carrying forward:**
+
+  * The tint is the theme's own `surface` at an alpha, not a grey film. That is what
+    makes legibility *provable*: a composite of surface over background has a luminance
+    between the two, and `theme_contrast_test` already pins `onSurface` against both.
+    The test now runs every theme × every level × the coloured wash, and it is what
+    fixes the alphas — not taste.
+  * `GlassBackdrop` is load-bearing, not decoration. Blurring a flat colour returns the
+    same flat colour; without a wash behind the content the entire pass is invisible.
+  * One `BackdropGroup` per route (`GlassLayer`) with `BackdropFilter.grouped`
+    everywhere. A surface outside the group still looks correct and costs a full-screen
+    read — the only symptom is raster time, which no test catches.
+
+**`docs/PLATFORM_UI_ARCHITECTURE.md` §4 said content must never be glass** ("the design
+would collapse into soup"). The owner was shown that paragraph, chose the wider scope,
+and the reversal is now written into the doc with its mitigations rather than left as a
+silent contradiction between doc and code.
+
+**Verification:** 1100 fast tests green (was 1032), `flutter analyze` clean, built and
+installed on the simulator. `page_smoke_test` gained a second pass rendering all 21
+screens on the **Cupertino shell with glass at full strength** — that branch had zero
+coverage before, on either side of the bridge.
+
+**Not done, deliberately:** the 12 `AlertDialog` bodies and all SnackBars stay opaque —
+both take a colour, not a widget, so neither can host a backdrop filter without
+reimplementing the widget. The right fix is migrating those dialogs onto
+`showAppConfirm`, which already renders the framework's real vibrancy. Also not done:
+the profile run to measure raster cost, and the on-device look itself.
+
+**Next:** owner's visual pass on the simulator; then the profile run; then either the
+`AlertDialog` migration or merging the branch.
+
+---
+
 ## 2026-08-11 — Platform-native UI split N0–N8 complete
 
 **Current task:** None — Epic N complete. Branch `feat/platform-native-ui` ready to merge.

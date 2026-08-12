@@ -8,6 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'bridge/native_chrome_service.dart';
 import 'core/date_utils.dart';
+import 'core/ios/glass.dart';
+import 'core/platform/glass_provider.dart';
 import 'core/theme.dart';
 import 'features/calendar/data/calendar_service.dart';
 import 'routing/routes.dart';
@@ -26,7 +28,8 @@ class WellnessApp extends ConsumerStatefulWidget {
   ConsumerState<WellnessApp> createState() => _WellnessAppState();
 }
 
-class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingObserver {
+class _WellnessAppState extends ConsumerState<WellnessApp>
+    with WidgetsBindingObserver {
   DateTime _lastKnownDay = AppDateUtils.startOfDay(DateTime.now());
   Timer? _midnightCheckTimer;
 
@@ -76,6 +79,10 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(backgroundRefreshServiceProvider).onAppResumed();
+      // Reduce Transparency and Reduce Motion are toggled in the Settings app,
+      // so by definition this app was backgrounded when they changed. Nothing
+      // else would ever notice.
+      ref.read(capabilitiesProvider.notifier).refresh();
     }
   }
 
@@ -137,14 +144,20 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
       ref.read(calendarStateProvider.notifier).rescheduleAllNotifications();
     });
     final prefs = ref.watch(preferencesServiceProvider);
-    
+
     return MaterialApp.router(
       title: 'Wellness App',
       theme: AppTheme.byKind(
         currentTheme,
-        customPrimary: currentTheme == AppThemeKind.custom ? prefs.customPrimaryColor : null,
-        customBackground: currentTheme == AppThemeKind.custom ? prefs.customBackgroundColor : null,
-        customSurface: currentTheme == AppThemeKind.custom ? prefs.customSurfaceColor : null,
+        customPrimary: currentTheme == AppThemeKind.custom
+            ? prefs.customPrimaryColor
+            : null,
+        customBackground: currentTheme == AppThemeKind.custom
+            ? prefs.customBackgroundColor
+            : null,
+        customSurface: currentTheme == AppThemeKind.custom
+            ? prefs.customSurfaceColor
+            : null,
       ).copyWith(
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
@@ -159,7 +172,7 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
       ),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      
+
       // Localization configuration
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -169,9 +182,13 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
       ],
       supportedLocales: AppLanguage.values.map((lang) => lang.locale),
       locale: currentLanguage.locale,
-      
+
       // RTL support - automatically handles text direction based on locale
       builder: (context, child) {
+        // First context under Localizations, so the earliest point the native
+        // tab bar's titles can be anything but the English fallback. Runs
+        // again on every language change, which is what keeps them in sync.
+        _syncNativeTabLabels(context);
         final media = MediaQuery.of(context);
         return MediaQuery(
           // Honour the user's Dynamic Type / font-size setting, but cap it.
@@ -189,10 +206,43 @@ class _WellnessAppState extends ConsumerState<WellnessApp> with WidgetsBindingOb
           child: Directionality(
             textDirection:
                 currentLanguage.isRTL ? TextDirection.rtl : TextDirection.ltr,
-            child: child!,
+            // Installed once, above every route: the glass recipe is read by
+            // widgets in lib/core/, which have no Riverpod dependency and are
+            // better off keeping none. Resolves to GlassSpec.none on Android
+            // and under Reduce Transparency, so those trees are unchanged.
+            child: GlassTheme(
+              spec: ref.watch(glassSpecProvider),
+              child: child!,
+            ),
           ),
         );
       },
     );
+  }
+
+  /// Pushes localized tab titles to the native tab bar.
+  ///
+  /// Deferred to after the frame: this runs inside `builder`, and crossing the
+  /// platform channel during build would reconfigure native chrome while
+  /// Flutter is still laying out the frame that asked for it.
+  void _syncNativeTabLabels(BuildContext context) {
+    // Same trip: keep the native bars' background in step with the glass
+    // level the Flutter surfaces are drawing at.
+    final glassOn = ref.watch(glassSpecProvider).enabled;
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+    final labels = [
+      l10n.navHome,
+      l10n.meals,
+      l10n.workouts,
+      l10n.sleep,
+      l10n.calendar,
+    ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(nativeChromeServiceProvider)
+        ?..setTabLabels(labels)
+        ..setChromeStyle(glass: glassOn);
+    });
   }
 }

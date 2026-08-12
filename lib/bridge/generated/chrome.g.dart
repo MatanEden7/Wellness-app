@@ -15,7 +15,8 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse(
+    {Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -426,7 +427,6 @@ class CapabilitiesSpec {
   }
 }
 
-
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -434,37 +434,37 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is TabSpec) {
+    } else if (value is TabSpec) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    }    else if (value is ChromeAction) {
+    } else if (value is ChromeAction) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    }    else if (value is PageChromeSpec) {
+    } else if (value is PageChromeSpec) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    }    else if (value is ChromeInsets) {
+    } else if (value is ChromeInsets) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    }    else if (value is ActionSheetItem) {
+    } else if (value is ActionSheetItem) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is ActionSheetSpec) {
+    } else if (value is ActionSheetSpec) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    }    else if (value is AlertSpec) {
+    } else if (value is AlertSpec) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    }    else if (value is MenuSpec) {
+    } else if (value is MenuSpec) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is AnchorRect) {
+    } else if (value is AnchorRect) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is DatePickerSpec) {
+    } else if (value is DatePickerSpec) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is CapabilitiesSpec) {
+    } else if (value is CapabilitiesSpec) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
     } else {
@@ -475,27 +475,27 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129: 
+      case 129:
         return TabSpec.decode(readValue(buffer)!);
-      case 130: 
+      case 130:
         return ChromeAction.decode(readValue(buffer)!);
-      case 131: 
+      case 131:
         return PageChromeSpec.decode(readValue(buffer)!);
-      case 132: 
+      case 132:
         return ChromeInsets.decode(readValue(buffer)!);
-      case 133: 
+      case 133:
         return ActionSheetItem.decode(readValue(buffer)!);
-      case 134: 
+      case 134:
         return ActionSheetSpec.decode(readValue(buffer)!);
-      case 135: 
+      case 135:
         return AlertSpec.decode(readValue(buffer)!);
-      case 136: 
+      case 136:
         return MenuSpec.decode(readValue(buffer)!);
-      case 137: 
+      case 137:
         return AnchorRect.decode(readValue(buffer)!);
-      case 138: 
+      case 138:
         return DatePickerSpec.decode(readValue(buffer)!);
-      case 139: 
+      case 139:
         return CapabilitiesSpec.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -507,9 +507,11 @@ class ChromeHostApi {
   /// Constructor for [ChromeHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  ChromeHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  ChromeHostApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -517,8 +519,10 @@ class ChromeHostApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<void> configureTabs(List<TabSpec> tabs) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.ChromeHostApi.configureTabs$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.ChromeHostApi.configureTabs$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -539,8 +543,10 @@ class ChromeHostApi {
   }
 
   Future<void> setSelectedTab(int index) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.ChromeHostApi.setSelectedTab$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.ChromeHostApi.setSelectedTab$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -561,8 +567,10 @@ class ChromeHostApi {
   }
 
   Future<void> setPageChrome(PageChromeSpec spec) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.ChromeHostApi.setPageChrome$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.ChromeHostApi.setPageChrome$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -583,14 +591,81 @@ class ChromeHostApi {
   }
 
   Future<void> setChromeVisible(bool navBar, bool tabBar) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.ChromeHostApi.setChromeVisible$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.ChromeHostApi.setChromeVisible$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_channel
+        .send(<Object?>[navBar, tabBar]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  /// 'glass' | 'opaque'.
+  ///
+  /// Semantics, not styling: Dart says which *kind* of background the bars
+  /// should ask the system for, and Swift picks between two system-provided
+  /// appearance configurations. No blur radius, tint or colour crosses this
+  /// wire — see PLATFORM_UI_ARCHITECTURE §10.
+  ///
+  /// Exists so the app's glass setting (and Reduce Transparency) reach the
+  /// native bars too. Without it, turning glass off produced solid content
+  /// under still-translucent chrome.
+  Future<void> setChromeStyle(String style) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.ChromeHostApi.setChromeStyle$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_channel.send(<Object?>[navBar, tabBar]) as List<Object?>?;
+        await pigeonVar_channel.send(<Object?>[style]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  /// Whether page content is currently underneath the bars.
+  ///
+  /// The missing half of iOS's scroll edge effect. UIKit normally derives this
+  /// itself from a connected `UIScrollView`, but Flutter owns the scroll view
+  /// here and the bars are standalone, so nothing could observe it — which is
+  /// why both bars were pinned to a single appearance and always showed their
+  /// material. Dart sends the fact; Swift picks the appearance.
+  Future<void> setScrollEdge(bool underContent) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.ChromeHostApi.setScrollEdge$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[underContent]) as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -609,9 +684,11 @@ class PresentationHostApi {
   /// Constructor for [PresentationHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PresentationHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  PresentationHostApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -619,8 +696,10 @@ class PresentationHostApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<String?> presentActionSheet(ActionSheetSpec spec) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentActionSheet$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentActionSheet$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -641,8 +720,10 @@ class PresentationHostApi {
   }
 
   Future<bool> presentAlert(AlertSpec spec) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentAlert$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentAlert$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -668,8 +749,10 @@ class PresentationHostApi {
   }
 
   Future<String?> presentMenu(MenuSpec spec, AnchorRect anchor) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentMenu$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentMenu$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -690,8 +773,10 @@ class PresentationHostApi {
   }
 
   Future<int?> presentDatePicker(DatePickerSpec spec) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentDatePicker$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentDatePicker$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -712,14 +797,16 @@ class PresentationHostApi {
   }
 
   Future<void> presentShare(List<String> paths, AnchorRect anchor) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentShare$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentShare$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_channel.send(<Object?>[paths, anchor]) as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_channel
+        .send(<Object?>[paths, anchor]) as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -734,8 +821,10 @@ class PresentationHostApi {
   }
 
   Future<void> haptic(String kind) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.PresentationHostApi.haptic$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.haptic$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -760,9 +849,11 @@ class CapabilitiesApi {
   /// Constructor for [CapabilitiesApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  CapabilitiesApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  CapabilitiesApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -770,8 +861,10 @@ class CapabilitiesApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<CapabilitiesSpec> read() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.wellness_app.CapabilitiesApi.read$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.CapabilitiesApi.read$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -808,18 +901,26 @@ abstract class ChromeFlutterApi {
 
   void onInsetsChanged(ChromeInsets insets);
 
-  static void setUp(ChromeFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(
+    ChromeFlutterApi? api, {
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) {
+    messageChannelSuffix =
+        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onTabSelected$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onTabSelected$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onTabSelected was null.');
+              'Argument for dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onTabSelected was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final int? arg_index = (args[0] as int?);
           assert(arg_index != null,
@@ -829,22 +930,26 @@ abstract class ChromeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onChromeAction$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onChromeAction$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onChromeAction was null.');
+              'Argument for dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onChromeAction was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_actionId = (args[0] as String?);
           assert(arg_actionId != null,
@@ -854,15 +959,19 @@ abstract class ChromeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onBackPressed$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onBackPressed$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -873,22 +982,26 @@ abstract class ChromeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onInsetsChanged$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onInsetsChanged$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onInsetsChanged was null.');
+              'Argument for dev.flutter.pigeon.wellness_app.ChromeFlutterApi.onInsetsChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ChromeInsets? arg_insets = (args[0] as ChromeInsets?);
           assert(arg_insets != null,
@@ -898,8 +1011,9 @@ abstract class ChromeFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }

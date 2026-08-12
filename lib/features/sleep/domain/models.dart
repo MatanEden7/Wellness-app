@@ -34,7 +34,7 @@ class SleepEntry with _$SleepEntry {
   }
 
   bool get isCompleted => endedAt != null;
-  
+
   Duration? get duration {
     if (endedAt == null) return null;
     return endedAt!.difference(startedAt);
@@ -51,5 +51,6 @@ class SleepEntry with _$SleepEntry {
   // Good" in the middle of an otherwise translated card. Use
   // `qualityLabel(l10n, quality)` from `sleep/ui/sleep_page.dart` instead.
 
-  factory SleepEntry.fromJson(Map<String, dynamic> json) => _$SleepEntryFromJson(json);
+  factory SleepEntry.fromJson(Map<String, dynamic> json) =>
+      _$SleepEntryFromJson(json);
 }

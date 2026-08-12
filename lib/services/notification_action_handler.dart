@@ -11,8 +11,10 @@ import '../routing/routes.dart';
 import 'notification_service.dart';
 
 // Provider for notification action handler
-final notificationActionHandlerProvider = Provider<NotificationActionHandler>((ref) {
-  throw UnimplementedError('NotificationActionHandler provider must be overridden');
+final notificationActionHandlerProvider =
+    Provider<NotificationActionHandler>((ref) {
+  throw UnimplementedError(
+      'NotificationActionHandler provider must be overridden');
 });
 
 class NotificationActionHandler {
@@ -29,7 +31,7 @@ class NotificationActionHandler {
     // Parse payload
     final notificationService = ref.read(notificationServiceProvider);
     final parsedPayload = notificationService.parsePayload(payload);
-    
+
     if (parsedPayload == null) return;
 
     // Handle based on action
@@ -43,7 +45,8 @@ class NotificationActionHandler {
   }
 
   // Handle specific actions
-  Future<void> _handleAction(String actionId, ({EventType type, String eventId, String? templateId}) payload) async {
+  Future<void> _handleAction(String actionId,
+      ({EventType type, String eventId, String? templateId}) payload) async {
     switch (actionId) {
       // Meal actions
       case 'meal_approve':
@@ -55,7 +58,7 @@ class NotificationActionHandler {
       case 'meal_snooze':
         await _handleSnooze(payload.eventId, 10);
         break;
-      
+
       // Workout actions
       case 'workout_start':
         await _handleWorkoutStart(payload.eventId, payload.templateId);
@@ -63,7 +66,7 @@ class NotificationActionHandler {
       case 'workout_snooze':
         await _handleSnooze(payload.eventId, 10);
         break;
-      
+
       // Sleep actions
       case 'sleep_start':
         await _handleSleepStart();
@@ -84,7 +87,8 @@ class NotificationActionHandler {
   // are never notified about. Scheduled events carry a uuid (or an occurrence
   // id), so neither branch could match and tapping a meal or workout
   // notification did nothing at all. Routing is by event type instead.
-  Future<void> _openEventDetail(({EventType type, String eventId, String? templateId}) payload) async {
+  Future<void> _openEventDetail(
+      ({EventType type, String eventId, String? templateId}) payload) async {
     if (context == null || !context!.mounted) return;
 
     switch (payload.type) {
@@ -93,7 +97,8 @@ class NotificationActionHandler {
         // Otherwise go to the meal list for the day so it can be added.
         final meal = await _mealForEvent(payload.eventId);
         if (context == null || !context!.mounted) return;
-        context!.push(meal == null ? Routes.meals : '${Routes.mealEditor}/${meal.id}');
+        context!.push(
+            meal == null ? Routes.meals : '${Routes.mealEditor}/${meal.id}');
         break;
       case EventType.workout:
         // A workout already under way reopens its session; otherwise this is
@@ -139,8 +144,9 @@ class NotificationActionHandler {
     // nothing at all -- Approve looked like a dead button, and in the
     // empty-template case would otherwise have logged a meal with no food in
     // it. Treated exactly like an unpinned event instead: open the editor.
-    final template =
-        templateId == null ? null : await database.getMealTemplateById(templateId);
+    final template = templateId == null
+        ? null
+        : await database.getMealTemplateById(templateId);
     final templateItems = template == null
         ? const <MealTemplateItemData>[]
         : await database.getMealTemplateItemsByTemplateId(template.id);
@@ -172,7 +178,8 @@ class NotificationActionHandler {
       for (final item in templateItems) {
         final food = await database.getFoodById(item.foodId);
         if (food != null) {
-          final nutrition = FoodNutritionMath.computeMacros(foodItemFromData(food), item.amount);
+          final nutrition = FoodNutritionMath.computeMacros(
+              foodItemFromData(food), item.amount);
           final mealItem = MealItemData(
             id: 'item_${DateTime.now().millisecondsSinceEpoch}_${item.foodId}',
             mealId: mealData.id,
@@ -188,7 +195,9 @@ class NotificationActionHandler {
       }
 
       // Mark event as completed
-      await ref.read(calendarStateProvider.notifier).markEventCompleted(eventId, now);
+      await ref
+          .read(calendarStateProvider.notifier)
+          .markEventCompleted(eventId, now);
     } catch (e) {
       debugPrint('Error auto-creating meal: $e');
     }
@@ -321,4 +330,3 @@ class NotificationActionHandler {
     }
   }
 }
-

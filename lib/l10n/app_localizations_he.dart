@@ -2441,4 +2441,19 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get nightlyAverage => 'ממוצע לילי';
+
+  @override
+  String get glassEffect => 'אפקט זכוכית';
+
+  @override
+  String get glassOff => 'כבוי';
+
+  @override
+  String get glassSubtle => 'עדין';
+
+  @override
+  String get glassFull => 'מלא';
+
+  @override
+  String get glassEffectReducedByAccessibility => 'כבוי — הפחתת שקיפות פעילה';
 }

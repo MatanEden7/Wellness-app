@@ -17,7 +17,7 @@ final currentTimezoneProvider = StateProvider<String>((ref) {
 class TimezoneService {
   String? _currentTimezone;
   final _timezoneController = StreamController<String>.broadcast();
-  
+
   Stream<String> get timezoneChanges => _timezoneController.stream;
   String? get currentTimezone => _currentTimezone;
 
@@ -25,10 +25,10 @@ class TimezoneService {
   Future<void> initialize() async {
     // Initialize timezone database with all timezones
     tz.initializeTimeZones();
-    
+
     // Get device timezone
     await updateTimezone();
-    
+
     // Start listening for timezone changes
     _startTimezoneMonitoring();
   }
@@ -38,10 +38,10 @@ class TimezoneService {
     try {
       final String timezone = await FlutterNativeTimezone.getLocalTimezone();
       _currentTimezone = timezone;
-      
+
       // Set as default timezone
       tz.setLocalLocation(tz.getLocation(timezone));
-      
+
       // Notify listeners
       _timezoneController.add(timezone);
     } catch (e) {
@@ -90,4 +90,3 @@ class TimezoneService {
     _timezoneController.close();
   }
 }
-

@@ -20,29 +20,31 @@ class DailyWorkouts {
 
   bool get isEmpty => planned.isEmpty && active.isEmpty && completed.isEmpty;
   bool get hasActive => active.isNotEmpty;
-  
+
   List<WorkoutSessionWithTemplate> get orderedList {
     return [...active, ...planned, ...completed.reversed];
   }
 }
 
 // Provider for daily workouts by selected date
-final dailyWorkoutsProvider = StreamProvider.family<DailyWorkouts, DateTime>((ref, selectedDate) async* {
+final dailyWorkoutsProvider =
+    StreamProvider.family<DailyWorkouts, DateTime>((ref, selectedDate) async* {
   final repository = ref.watch(workoutSessionsRepositoryProvider);
-  
+
   // Get all sessions for the day - using Drift watch queries for real-time updates
   final allSessionsStream = repository.watchRecentSessions(limit: 100);
-  
+
   // Always yield initial empty state first (no spinner)
   yield const DailyWorkouts(planned: [], active: [], completed: []);
-  
+
   await for (final allSessions in allSessionsStream) {
-    final targetDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    
+    final targetDate =
+        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+
     final planned = <WorkoutSessionWithTemplate>[];
     final active = <WorkoutSessionWithTemplate>[];
     final completed = <WorkoutSessionWithTemplate>[];
-    
+
     for (final sessionWithTemplate in allSessions) {
       final session = sessionWithTemplate.session;
       final sessionDate = DateTime(
@@ -50,7 +52,7 @@ final dailyWorkoutsProvider = StreamProvider.family<DailyWorkouts, DateTime>((re
         session.startedAt.month,
         session.startedAt.day,
       );
-      
+
       // Only include sessions from the target date
       if (sessionDate.isAtSameMomentAs(targetDate)) {
         if (session.endedAt == null) {
@@ -62,7 +64,7 @@ final dailyWorkoutsProvider = StreamProvider.family<DailyWorkouts, DateTime>((re
         }
       }
     }
-    
+
     // Planned workouts come from real scheduled calendar events for this day.
     //
     // This previously fabricated them: it took the first two workout
@@ -147,5 +149,6 @@ Future<List<_ScheduledWorkout>> _plannedFromCalendar(
 /// with its own stream subscription that was never reused.
 final todayWorkoutsProvider = Provider<AsyncValue<DailyWorkouts>>((ref) {
   final now = DateTime.now();
-  return ref.watch(dailyWorkoutsProvider(DateTime(now.year, now.month, now.day)));
+  return ref
+      .watch(dailyWorkoutsProvider(DateTime(now.year, now.month, now.day)));
 });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/ios/app_scaffold.dart' show PinnedBar;
+import '../../core/design/tokens.dart';
 import '../../core/ui_constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/routes.dart';
@@ -19,9 +20,11 @@ class _TabDest {
 const List<_TabDest> _kDests = [
   _TabDest(Icons.home_outlined, Icons.home, Routes.dashboard),
   _TabDest(Icons.restaurant_menu_outlined, Icons.restaurant_menu, Routes.meals),
-  _TabDest(Icons.fitness_center_outlined, Icons.fitness_center, Routes.workouts),
+  _TabDest(
+      Icons.fitness_center_outlined, Icons.fitness_center, Routes.workouts),
   _TabDest(Icons.bedtime_outlined, Icons.bedtime, Routes.sleep),
-  _TabDest(Icons.calendar_today_outlined, Icons.calendar_today, Routes.calendar),
+  _TabDest(
+      Icons.calendar_today_outlined, Icons.calendar_today, Routes.calendar),
 ];
 
 List<String> _destLabels(AppLocalizations l10n) => [
@@ -98,12 +101,13 @@ class MaterialPageShell extends StatelessWidget {
           ),
         ...contentSlivers,
         if (chrome.bottomBar != null)
-          const SliverToBoxAdapter(child: SizedBox(height: 76)),
+          SliverToBoxAdapter(
+            child: SizedBox(height: Sizes.tabBar + Space.xxl),
+          ),
         // Reserve space at the bottom for the NavigationBar so the last row
         // is always reachable (the bar overlays the scaffold body on some
         // screen sizes; padding avoids the overlap).
-        if (showNav)
-          const SliverToBoxAdapter(child: SizedBox(height: 8)),
+        if (showNav) const SliverToBoxAdapter(child: SizedBox(height: 8)),
       ],
     );
 
@@ -141,8 +145,7 @@ class MaterialPageShell extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildActions(BuildContext context) => chrome.actions
-      .map((a) {
+  List<Widget> _buildActions(BuildContext context) => chrome.actions.map((a) {
         if (a.label != null && a.icon == null) {
           // Text-only action (e.g. "Finish Workout")
           return Tooltip(
@@ -175,13 +178,13 @@ class MaterialPageShell extends StatelessWidget {
                   onPressed: a.onPressed,
                   style: a.isProminent
                       ? IconButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.primary,
                         )
                       : null,
                 ),
         );
-      })
-      .toList();
+      }).toList();
 }
 
 // ─── Non-scrolling (nav) shell ────────────────────────────────────────────────
@@ -208,33 +211,31 @@ class MaterialNavPageShell extends StatelessWidget {
         leading: canPop ? const _M3BackButton() : null,
         leadingWidth: canPop ? 56 : 0,
         actions: chrome.actions.map((a) {
-              if (a.label != null && a.icon == null) {
-                return Tooltip(
-                  key: a.key,
-                  message: a.tooltip,
-                  child: TextButton(
-                    onPressed: a.onPressed,
-                    style: a.isProminent
-                        ? TextButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            textStyle:
-                                const TextStyle(fontWeight: FontWeight.w600),
-                          )
-                        : null,
-                    child: Text(a.label!),
-                  ),
-                );
-              }
-              return Tooltip(
-                key: a.key,
-                message: a.tooltip,
-                child: IconButton(
-                  icon: Icon(a.icon ?? Icons.more_horiz),
-                  onPressed: a.onPressed,
-                ),
-              );
-            }).toList(),
+          if (a.label != null && a.icon == null) {
+            return Tooltip(
+              key: a.key,
+              message: a.tooltip,
+              child: TextButton(
+                onPressed: a.onPressed,
+                style: a.isProminent
+                    ? TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.primary,
+                        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                      )
+                    : null,
+                child: Text(a.label!),
+              ),
+            );
+          }
+          return Tooltip(
+            key: a.key,
+            message: a.tooltip,
+            child: IconButton(
+              icon: Icon(a.icon ?? Icons.more_horiz),
+              onPressed: a.onPressed,
+            ),
+          );
+        }).toList(),
       ),
       body: body,
       bottomNavigationBar: showNav

@@ -16,6 +16,9 @@ import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 /// Sleep history -- every logged night, plus the entry points that produce
 /// them (the live timer, and manual entry for a night you forgot to time).
@@ -57,63 +60,62 @@ class SleepPage extends ConsumerWidget {
       slivers: [
         SliverToBoxAdapter(
           child: StreamBuilder<List<SleepEntry>>(
-          stream: entriesStream,
-          builder: (context, snapshot) {
-            // Only show the spinner on the very first load -- on later
-            // rebuilds the previous list is still valid and flashing a
-            // spinner over it reads as data disappearing.
-            if (snapshot.connectionState == ConnectionState.waiting &&
-                !snapshot.hasData) {
-              return const LoadingIndicator();
-            }
+            stream: entriesStream,
+            builder: (context, snapshot) {
+              // Only show the spinner on the very first load -- on later
+              // rebuilds the previous list is still valid and flashing a
+              // spinner over it reads as data disappearing.
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const LoadingIndicator();
+              }
 
-            final entries = snapshot.data ?? [];
-            final active =
-                entries.where((e) => !e.isCompleted).firstOrNull;
+              final entries = snapshot.data ?? [];
+              final active = entries.where((e) => !e.isCompleted).firstOrNull;
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.md),
-                _SummaryCard(
-                  entries: entries,
-                  streak: streakAsync.valueOrNull ?? 0,
-                  color: sleepColor,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _TimerCard(active: active, color: sleepColor),
-                const SizedBox(height: AppSpacing.lg),
-                SectionHeader(title: l10n.sleepHistory),
-                const SizedBox(height: AppSpacing.md),
-                if (entries.isEmpty)
-                  EmptyState(
-                    title: l10n.sweetDreamsAwait,
-                    subtitle: l10n.trackSleepForInsights,
-                    icon: Icons.bedtime,
-                    actionText: l10n.startSleepTimer,
-                    actionIcon: Icons.bedtime,
-                    onAction: () => context.push(Routes.sleepTimer),
-                  )
-                else
-                  for (final entry in entries)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _SleepEntryCard(
-                        entry: entry,
-                        color: sleepColor,
-                        onEdit: () =>
-                            showAddSleepSheet(context, entry: entry),
-                        onDelete: () => _deleteSleepEntry(ref, entry),
-                      ),
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Space.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: AppSpacing.md),
+                    _SummaryCard(
+                      entries: entries,
+                      streak: streakAsync.valueOrNull ?? 0,
+                      color: sleepColor,
                     ),
-                const SizedBox(height: AppSpacing.lg),
-              ],
-              ),
-            );
-          },
-        ),
+                    const SizedBox(height: AppSpacing.md),
+                    _TimerCard(active: active, color: sleepColor),
+                    const SizedBox(height: AppSpacing.lg),
+                    SectionHeader(title: l10n.sleepHistory),
+                    const SizedBox(height: AppSpacing.md),
+                    if (entries.isEmpty)
+                      EmptyState(
+                        title: l10n.sweetDreamsAwait,
+                        subtitle: l10n.trackSleepForInsights,
+                        icon: Icons.bedtime,
+                        actionText: l10n.startSleepTimer,
+                        actionIcon: Icons.bedtime,
+                        onAction: () => context.push(Routes.sleepTimer),
+                      )
+                    else
+                      for (final entry in entries)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _SleepEntryCard(
+                            entry: entry,
+                            color: sleepColor,
+                            onEdit: () =>
+                                showAddSleepSheet(context, entry: entry),
+                            onDelete: () => _deleteSleepEntry(ref, entry),
+                          ),
+                        ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -147,8 +149,7 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final completed =
-        entries.where((e) => e.durationInHours != null).toList();
+    final completed = entries.where((e) => e.durationInHours != null).toList();
 
     final lastNight =
         completed.isEmpty ? null : completed.first.durationInHours;
@@ -161,9 +162,8 @@ class _SummaryCard extends StatelessWidget {
         : recent.fold<double>(0, (sum, e) => sum + e.durationInHours!) /
             recent.length;
 
-    String hours(double? value) => value == null
-        ? '--'
-        : l10n.hoursShortValue(value.toStringAsFixed(1));
+    String hours(double? value) =>
+        value == null ? '--' : l10n.hoursShortValue(value.toStringAsFixed(1));
 
     return SummaryStrip(
       stats: [
@@ -251,107 +251,107 @@ class _SleepEntryCard extends StatelessWidget {
         ),
       ],
       child: AppCard(
-      onTap: onEdit,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SettingsIconBadge(Icons.bedtime, color: color, size: 20),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppDateUtils.formatDate(entry.startedAt),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+        onTap: onEdit,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SettingsIconBadge(Icons.bedtime, color: color, size: 20),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppDateUtils.formatDate(entry.startedAt),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: 2),
+                      Text(
+                        entry.endedAt == null
+                            ? '${l10n.bedtime} ${AppDateUtils.formatTime(entry.startedAt)}'
+                            : '${AppDateUtils.formatTime(entry.startedAt)} → '
+                                '${AppDateUtils.formatTime(entry.endedAt!)}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _DurationChip(duration: duration, color: color),
+                AppRowMenuButton(
+                  title: AppDateUtils.formatDate(entry.startedAt),
+                  tooltip: l10n.sleep,
+                  actions: [
+                    AppAction(
+                      label: l10n.edit,
+                      icon: CupertinoIcons.pencil,
+                      onPressed: onEdit,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      entry.endedAt == null
-                          ? '${l10n.bedtime} ${AppDateUtils.formatTime(entry.startedAt)}'
-                          : '${AppDateUtils.formatTime(entry.startedAt)} → '
-                              '${AppDateUtils.formatTime(entry.endedAt!)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    AppAction(
+                      label: l10n.delete,
+                      icon: CupertinoIcons.delete,
+                      isDestructive: true,
+                      onPressed: () async {
+                        final confirmed = await showAppConfirm(
+                          context: context,
+                          title: l10n.deleteSleep,
+                          message: l10n.areYouSure,
+                          confirmLabel: l10n.delete,
+                        );
+                        if (confirmed) await onDelete();
+                      },
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _DurationChip(duration: duration, color: color),
-              AppRowMenuButton(
-                title: AppDateUtils.formatDate(entry.startedAt),
-                tooltip: l10n.sleep,
-                actions: [
-                  AppAction(
-                    label: l10n.edit,
-                    icon: CupertinoIcons.pencil,
-                    onPressed: onEdit,
-                  ),
-                  AppAction(
-                    label: l10n.delete,
-                    icon: CupertinoIcons.delete,
-                    isDestructive: true,
-                    onPressed: () async {
-                      final confirmed = await showAppConfirm(
-                        context: context,
-                        title: l10n.deleteSleep,
-                        message: l10n.areYouSure,
-                        confirmLabel: l10n.delete,
-                      );
-                      if (confirmed) await onDelete();
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          if (entry.quality != null || entry.note != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            if (entry.quality != null)
-              Row(
-                children: [
-                  ...List.generate(
-                    5,
-                    (index) => Icon(
-                      index < entry.quality! ? Icons.star : Icons.star_border,
-                      size: 16,
-                      color: Colors.amber,
+              ],
+            ),
+            if (entry.quality != null || entry.note != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              if (entry.quality != null)
+                Row(
+                  children: [
+                    ...List.generate(
+                      5,
+                      (index) => Icon(
+                        index < entry.quality! ? Icons.star : Icons.star_border,
+                        size: 16,
+                        color: Colors.amber,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    // Not `entry.qualityText` -- that getter hardcodes
-                    // English on the domain model.
-                    qualityLabel(l10n, entry.quality!),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            if (entry.note != null) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                entry.note!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      // Not `entry.qualityText` -- that getter hardcodes
+                      // English on the domain model.
+                      qualityLabel(l10n, entry.quality!),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ),
-              ),
+              if (entry.note != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  entry.note!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
             ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -369,23 +369,23 @@ class _DurationChip extends StatelessWidget {
     final inProgress = duration == null;
     final tint = inProgress ? Colors.orange : color;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        inProgress
-            ? l10n.inProgress
-            : l10n.hoursShortValue(duration!.toStringAsFixed(1)),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: tint,
-              fontWeight: FontWeight.w700,
-            ),
+    return ContentSurface.tinted(
+      color: tint.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        child: Text(
+          inProgress
+              ? l10n.inProgress
+              : l10n.hoursShortValue(duration!.toStringAsFixed(1)),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: tint,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
       ),
     );
   }
@@ -451,7 +451,6 @@ class AddSleepSheet extends HookConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-
           TextFormField(
             controller: startTimeController,
             decoration: InputDecoration(
@@ -463,7 +462,6 @@ class AddSleepSheet extends HookConsumerWidget {
             readOnly: true,
           ),
           const SizedBox(height: AppSpacing.md),
-
           TextFormField(
             controller: endTimeController,
             decoration: InputDecoration(
@@ -475,7 +473,6 @@ class AddSleepSheet extends HookConsumerWidget {
             readOnly: true,
           ),
           const SizedBox(height: AppSpacing.md),
-
           Text(
             l10n.sleepQuality,
             style: Theme.of(context).textTheme.titleMedium,
@@ -507,7 +504,6 @@ class AddSleepSheet extends HookConsumerWidget {
               ),
             ),
           const SizedBox(height: AppSpacing.md),
-
           TextFormField(
             controller: noteController,
             decoration: InputDecoration(
@@ -517,11 +513,14 @@ class AddSleepSheet extends HookConsumerWidget {
             maxLines: 2,
           ),
           const SizedBox(height: AppSpacing.lg),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(
+              GlassButton(
+                minHeight: Sizes.control,
+                borderRadius: BorderRadius.circular(18),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: Space.md, vertical: Space.sm),
                 onPressed:
                     isLoading.value ? null : () => Navigator.of(context).pop(),
                 child: Text(l10n.cancel),

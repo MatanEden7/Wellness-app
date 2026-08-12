@@ -68,15 +68,19 @@ class FoodItem with _$FoodItem {
     );
   }
 
-  factory FoodItem.fromJson(Map<String, dynamic> json) => _$FoodItemFromJson(json);
+  factory FoodItem.fromJson(Map<String, dynamic> json) =>
+      _$FoodItemFromJson(json);
 }
 
 extension FoodItemDisplayName on FoodItem {
   /// The name to show for [language]: Hebrew if selected and translated,
   /// English otherwise. Lets the catalog ship English-only today and grow
   /// Hebrew names later without any further UI changes.
-  String displayName(AppLanguage language) =>
-      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
+          nameHe != null &&
+          nameHe!.trim().isNotEmpty
+      ? nameHe!
+      : name;
 
   /// Whether this food should show up for [query] in a food picker.
   ///
@@ -128,7 +132,8 @@ class MealItem with _$MealItem {
     );
   }
 
-  factory MealItem.fromJson(Map<String, dynamic> json) => _$MealItemFromJson(json);
+  factory MealItem.fromJson(Map<String, dynamic> json) =>
+      _$MealItemFromJson(json);
 }
 
 @freezed
@@ -183,7 +188,8 @@ class DayTotals with _$DayTotals {
     required double fat,
   }) = _DayTotals;
 
-  factory DayTotals.fromJson(Map<String, dynamic> json) => _$DayTotalsFromJson(json);
+  factory DayTotals.fromJson(Map<String, dynamic> json) =>
+      _$DayTotalsFromJson(json);
 }
 
 @freezed
@@ -208,7 +214,8 @@ class MealTemplateItem with _$MealTemplateItem {
     );
   }
 
-  factory MealTemplateItem.fromJson(Map<String, dynamic> json) => _$MealTemplateItemFromJson(json);
+  factory MealTemplateItem.fromJson(Map<String, dynamic> json) =>
+      _$MealTemplateItemFromJson(json);
 }
 
 @freezed
@@ -247,15 +254,21 @@ class MealTemplate with _$MealTemplate {
     );
   }
 
-  factory MealTemplate.fromJson(Map<String, dynamic> json) => _$MealTemplateFromJson(json);
+  factory MealTemplate.fromJson(Map<String, dynamic> json) =>
+      _$MealTemplateFromJson(json);
 }
 
 extension MealTemplateDisplayName on MealTemplate {
-  String displayName(AppLanguage language) =>
-      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
+          nameHe != null &&
+          nameHe!.trim().isNotEmpty
+      ? nameHe!
+      : name;
 
   String? displayDescription(AppLanguage language) =>
-      language == AppLanguage.hebrew && descriptionHe != null && descriptionHe!.trim().isNotEmpty
+      language == AppLanguage.hebrew &&
+              descriptionHe != null &&
+              descriptionHe!.trim().isNotEmpty
           ? descriptionHe
           : description;
 }

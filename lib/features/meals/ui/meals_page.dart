@@ -19,6 +19,8 @@ import '../domain/models.dart';
 import 'quick_add_meal_dialog.dart';
 import '../../../services/preferences_service.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 /// The home of the meals area: pick a day, see the day's totals, see the
 /// meals, add another. The workouts home screen is deliberately the same
@@ -113,10 +115,11 @@ class MealsPage extends HookConsumerWidget {
                     children: [
                       Text(
                         l10n.dailyTotals,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       NutritionProgressGrid(
@@ -274,7 +277,8 @@ class _MealCard extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  SettingsIconBadge(Icons.restaurant, color: mealsColor, size: 20),
+                  SettingsIconBadge(Icons.restaurant,
+                      color: mealsColor, size: 20),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
@@ -387,19 +391,20 @@ class _MacroBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        '$label ${Formatters.formatMacros(grams)}${l10n.grams}',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+    return ContentSurface.tinted(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: Space.sm, vertical: Space.xs),
+        child: Text(
+          '$label ${Formatters.formatMacros(grams)}${l10n.grams}',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+        ),
       ),
     );
   }

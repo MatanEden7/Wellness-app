@@ -44,9 +44,16 @@ final class ChromeHostApiImpl: ChromeHostApi {
         container?.navBarHost?.setPageChrome(spec)
     }
 
+    func setChromeStyle(style: String) throws {
+        container?.setChromeStyle(ChromeStyle(wireValue: style))
+    }
+
+    func setScrollEdge(underContent: Bool) throws {
+        container?.setUnderContent(underContent)
+    }
+
     func setChromeVisible(navBar: Bool, tabBar: Bool) throws {
-        container?.navBarHost?.view.isHidden = !navBar
-        container?.tabBarHost?.view.isHidden = !tabBar
+        container?.setChromeVisible(navBar: navBar, tabBar: tabBar)
     }
 }
 

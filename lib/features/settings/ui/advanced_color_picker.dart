@@ -5,6 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/contrast.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/tokens.dart';
 
 class AdvancedColorPicker extends HookConsumerWidget {
   final String label;
@@ -39,10 +41,10 @@ class AdvancedColorPicker extends HookConsumerWidget {
       text: initialColor.blue.toString(),
     );
     final alphaValue = useState(initialColor.a);
-    
+
     // HSV values for the pickers
     final hsvColor = useState(HSVColor.fromColor(initialColor));
-    
+
     // Presets - curated accessible colors
     final presetColors = [
       // Reds
@@ -94,11 +96,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
+        return GlassSheet(
+          radius: 20,
           child: SafeArea(
             bottom: true,
             child: Column(
@@ -107,16 +106,17 @@ class AdvancedColorPicker extends HookConsumerWidget {
                 Container(
                   width: 40,
                   height: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  margin: const EdgeInsets.symmetric(vertical: Space.md),
                   decoration: BoxDecoration(
                     color: Colors.grey[400],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                
+
                 // Title
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: Space.xl, vertical: Space.sm),
                   child: Row(
                     children: [
                       Icon(icon, size: 24),
@@ -124,37 +124,39 @@ class AdvancedColorPicker extends HookConsumerWidget {
                       Text(
                         'Pick $label Color',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const Divider(),
-                
+
                 // Scrollable content
                 Expanded(
                   child: SingleChildScrollView(
                     controller: scrollController,
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(Space.xl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Preview Section
-                        _buildPreviewSection(context, selectedColor.value, previousColor),
+                        _buildPreviewSection(
+                            context, selectedColor.value, previousColor),
                         const SizedBox(height: 24),
-                        
+
                         // Contrast Indicator
                         _buildContrastIndicator(context, selectedColor.value),
                         const SizedBox(height: 24),
-                        
+
                         // Hue Picker
                         Text(
                           AppLocalizations.of(context)!.hue,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 12),
                         HuePicker(
@@ -166,13 +168,14 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           },
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Saturation-Brightness Picker
                         Text(
                           AppLocalizations.of(context)!.saturationAndBrightness,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 12),
                         SaturationBrightnessPicker(
@@ -191,13 +194,14 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           },
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // HSVA Sliders
                         Text(
                           AppLocalizations.of(context)!.preciseControls,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 12),
                         _HSVASlider(
@@ -231,14 +235,19 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           max: 100,
                           suffix: '%',
                           onChanged: (value) {
-                            final newHsv = hsvColor.value.withSaturation(value / 100);
+                            final newHsv =
+                                hsvColor.value.withSaturation(value / 100);
                             hsvColor.value = newHsv;
                             updateFromColor(newHsv.toColor());
                           },
                           gradientBuilder: (width) => LinearGradient(
                             colors: [
-                              HSVColor.fromAHSV(1, hsvColor.value.hue, 0, hsvColor.value.value).toColor(),
-                              HSVColor.fromAHSV(1, hsvColor.value.hue, 1, hsvColor.value.value).toColor(),
+                              HSVColor.fromAHSV(1, hsvColor.value.hue, 0,
+                                      hsvColor.value.value)
+                                  .toColor(),
+                              HSVColor.fromAHSV(1, hsvColor.value.hue, 1,
+                                      hsvColor.value.value)
+                                  .toColor(),
                             ],
                           ),
                         ),
@@ -250,14 +259,17 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           max: 100,
                           suffix: '%',
                           onChanged: (value) {
-                            final newHsv = hsvColor.value.withValue(value / 100);
+                            final newHsv =
+                                hsvColor.value.withValue(value / 100);
                             hsvColor.value = newHsv;
                             updateFromColor(newHsv.toColor());
                           },
                           gradientBuilder: (width) => LinearGradient(
                             colors: [
                               Colors.black,
-                              HSVColor.fromAHSV(1, hsvColor.value.hue, hsvColor.value.saturation, 1).toColor(),
+                              HSVColor.fromAHSV(1, hsvColor.value.hue,
+                                      hsvColor.value.saturation, 1)
+                                  .toColor(),
                             ],
                           ),
                         ),
@@ -270,7 +282,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           suffix: '%',
                           onChanged: (value) {
                             alphaValue.value = value / 100;
-                            updateFromColor(selectedColor.value.withValues(alpha: value / 100));
+                            updateFromColor(selectedColor.value
+                                .withValues(alpha: value / 100));
                           },
                           gradientBuilder: (width) {
                             final baseColor = selectedColor.value;
@@ -284,13 +297,14 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           showCheckerboard: true,
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Hex Input
                         Text(
                           AppLocalizations.of(context)!.hexCode,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 12),
                         TextField(
@@ -303,14 +317,16 @@ class AdvancedColorPicker extends HookConsumerWidget {
                             ),
                           ),
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[0-9A-Fa-f]')),
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9A-Fa-f]')),
                             LengthLimitingTextInputFormatter(6),
                             _UpperCaseTextFormatter(),
                           ],
                           onChanged: (value) {
                             if (value.length == 6) {
                               try {
-                                final color = Color(int.parse('FF$value', radix: 16));
+                                final color =
+                                    Color(int.parse('FF$value', radix: 16));
                                 updateFromColor(color);
                               } catch (e) {
                                 // Invalid hex, ignore
@@ -319,13 +335,14 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           },
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // RGB Inputs
                         Text(
                           AppLocalizations.of(context)!.rgbValues,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 12),
                         Row(
@@ -336,7 +353,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
                                 'R',
                                 redController,
                                 (value) {
-                                  final r = int.tryParse(value) ?? selectedColor.value.red;
+                                  final r = int.tryParse(value) ??
+                                      selectedColor.value.red;
                                   updateFromColor(Color.fromARGB(
                                     (alphaValue.value * 255).round(),
                                     r.clamp(0, 255),
@@ -353,7 +371,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
                                 'G',
                                 greenController,
                                 (value) {
-                                  final g = int.tryParse(value) ?? selectedColor.value.green;
+                                  final g = int.tryParse(value) ??
+                                      selectedColor.value.green;
                                   updateFromColor(Color.fromARGB(
                                     (alphaValue.value * 255).round(),
                                     selectedColor.value.red,
@@ -370,7 +389,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
                                 'B',
                                 blueController,
                                 (value) {
-                                  final b = int.tryParse(value) ?? selectedColor.value.blue;
+                                  final b = int.tryParse(value) ??
+                                      selectedColor.value.blue;
                                   updateFromColor(Color.fromARGB(
                                     (alphaValue.value * 255).round(),
                                     selectedColor.value.red,
@@ -383,20 +403,22 @@ class AdvancedColorPicker extends HookConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Presets
                         Text(
                           AppLocalizations.of(context)!.presets,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: presetColors.map((color) {
-                            final isSelected = color.toARGB32() == selectedColor.value.toARGB32();
+                            final isSelected = color.toARGB32() ==
+                                selectedColor.value.toARGB32();
                             return GestureDetector(
                               onTap: () => updateFromColor(color),
                               child: Container(
@@ -442,49 +464,33 @@ class AdvancedColorPicker extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                
+
                 // Fixed action buttons
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
+                GlassSurface(
+                  padding: const EdgeInsets.all(Space.xl),
+                  borderRadius: BorderRadius.zero,
+                  showEdgeHighlight: false,
+                  fallbackColor: Theme.of(context).scaffoldBackgroundColor,
                   child: Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton(
+                        child: GlassButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                          borderRadius: BorderRadius.circular(12),
                           child: Text(AppLocalizations.of(context)!.cancel),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: ElevatedButton(
+                        child: GlassButton(
+                          prominent: true,
+                          borderRadius: BorderRadius.circular(12),
                           onPressed: () async {
                             await onColorChanged(selectedColor.value);
                             if (context.mounted) {
                               Navigator.of(context).pop();
                             }
                           },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                           child: Text(AppLocalizations.of(context)!.apply),
                         ),
                       ),
@@ -499,7 +505,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
     );
   }
 
-  Widget _buildPreviewSection(BuildContext context, Color current, Color previous) {
+  Widget _buildPreviewSection(
+      BuildContext context, Color current, Color previous) {
     return Row(
       children: [
         Expanded(
@@ -542,8 +549,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
                 child: Center(
                   child: Icon(
                     Icons.check,
-                    color: current.computeLuminance() > 0.5 
-                        ? Colors.black 
+                    color: current.computeLuminance() > 0.5
+                        ? Colors.black
                         : Colors.white,
                   ),
                 ),
@@ -561,12 +568,13 @@ class AdvancedColorPicker extends HookConsumerWidget {
     final ratio = contrastRatio(color, textColor);
     final passesAA = ratio >= 4.5;
     final passesAAA = ratio >= 7.0;
-    
+
     return Container(
       height: 56, // Fixed height
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding:
+          const EdgeInsets.symmetric(horizontal: Space.md, vertical: Space.sm),
       decoration: BoxDecoration(
-        color: passesAA 
+        color: passesAA
             ? Colors.green.withValues(alpha: 0.1)
             : Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
@@ -601,15 +609,15 @@ class AdvancedColorPicker extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  passesAAA 
-                      ? 'Excellent (AAA)' 
-                      : passesAA 
-                          ? 'Good (AA)' 
+                  passesAAA
+                      ? 'Excellent (AAA)'
+                      : passesAA
+                          ? 'Good (AA)'
                           : 'Auto-adjusted for readability',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 11,
-                    height: 1.2,
-                  ),
+                        fontSize: 11,
+                        height: 1.2,
+                      ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -647,14 +655,14 @@ class AdvancedColorPicker extends HookConsumerWidget {
   String _colorToHex(Color color) {
     return color.toARGB32().toRadixString(16).substring(2, 8).toUpperCase();
   }
-
 }
 
 class HuePicker extends StatelessWidget {
   final double hue;
   final ValueChanged<double> onChanged;
 
-  const HuePicker({super.key, 
+  const HuePicker({
+    super.key,
     required this.hue,
     required this.onChanged,
   });
@@ -665,13 +673,15 @@ class HuePicker extends StatelessWidget {
       onPanUpdate: (details) {
         final RenderBox box = context.findRenderObject() as RenderBox;
         final localPosition = box.globalToLocal(details.globalPosition);
-        final hueValue = (localPosition.dx / box.size.width * 360).clamp(0.0, 360.0);
+        final hueValue =
+            (localPosition.dx / box.size.width * 360).clamp(0.0, 360.0);
         onChanged(hueValue);
       },
       onTapDown: (details) {
         final RenderBox box = context.findRenderObject() as RenderBox;
         final localPosition = box.globalToLocal(details.localPosition);
-        final hueValue = (localPosition.dx / box.size.width * 360).clamp(0.0, 360.0);
+        final hueValue =
+            (localPosition.dx / box.size.width * 360).clamp(0.0, 360.0);
         onChanged(hueValue);
       },
       child: Container(
@@ -719,17 +729,17 @@ class _HueThumbPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    
+
     canvas.drawCircle(
       Offset(position, size.height / 2),
       15,
       paint,
     );
-    
+
     final fillPaint = Paint()
       ..color = HSVColor.fromAHSV(1, hue, 1, 1).toColor()
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawCircle(
       Offset(position, size.height / 2),
       12,
@@ -749,7 +759,8 @@ class SaturationBrightnessPicker extends StatelessWidget {
   final double value;
   final Function(double, double) onChanged;
 
-  const SaturationBrightnessPicker({super.key, 
+  const SaturationBrightnessPicker({
+    super.key,
     required this.hue,
     required this.saturation,
     required this.value,
@@ -811,31 +822,33 @@ class _SaturationBrightnessPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Draw the gradient
     final baseColor = HSVColor.fromAHSV(1, hue, 1, 1).toColor();
-    
+
     // Horizontal gradient (saturation)
     final satGradient = LinearGradient(
       colors: [Colors.white, baseColor],
     );
     final satRect = Rect.fromLTWH(0, 0, size.width, size.height);
-    canvas.drawRect(satRect, Paint()..shader = satGradient.createShader(satRect));
-    
+    canvas.drawRect(
+        satRect, Paint()..shader = satGradient.createShader(satRect));
+
     // Vertical gradient (brightness)
     const brightGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [Colors.transparent, Colors.black],
     );
-    canvas.drawRect(satRect, Paint()..shader = brightGradient.createShader(satRect));
-    
+    canvas.drawRect(
+        satRect, Paint()..shader = brightGradient.createShader(satRect));
+
     // Draw crosshair
     final x = saturation * size.width;
     final y = (1 - value) * size.height;
-    
+
     final paint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-    
+
     canvas.drawCircle(Offset(x, y), 12, paint);
     canvas.drawLine(Offset(x, y - 20), Offset(x, y - 8), paint);
     canvas.drawLine(Offset(x, y + 8), Offset(x, y + 20), paint);
@@ -888,7 +901,7 @@ class _HSVASlider extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final sliderValue = useState(value);
-    
+
     // Sync external changes
     useEffect(() {
       sliderValue.value = value;
@@ -906,8 +919,8 @@ class _HSVASlider extends HookWidget {
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -919,108 +932,112 @@ class _HSVASlider extends HookWidget {
                   // row's context and subtracted hardcoded label/badge widths.
                   child: Builder(
                     builder: (trackContext) => GestureDetector(
-                    onPanStart: (details) {
-                      _updateValue(details.localPosition.dx, trackContext);
-                    },
-                    onPanUpdate: (details) {
-                      _updateValue(details.localPosition.dx, trackContext);
-                    },
-                    onTapDown: (details) {
-                      _updateValue(details.localPosition.dx, trackContext);
-                    },
-                    child: Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: Colors.grey[400]!,
-                          width: 2,
+                      onPanStart: (details) {
+                        _updateValue(details.localPosition.dx, trackContext);
+                      },
+                      onPanUpdate: (details) {
+                        _updateValue(details.localPosition.dx, trackContext);
+                      },
+                      onTapDown: (details) {
+                        _updateValue(details.localPosition.dx, trackContext);
+                      },
+                      child: Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.grey[400]!,
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        // One LayoutBuilder for the whole stack so the thumb is
-                        // positioned from the track's *actual* width. It used to
-                        // derive that from MediaQuery screen width minus a
-                        // hardcoded 108, which only matched one device and one
-                        // set of paddings -- and was wrong in RTL, where the
-                        // track doesn't start at the screen edge.
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            const thumbSize = 28.0;
-                            final trackWidth = constraints.maxWidth;
-                            final fraction =
-                                ((sliderValue.value - min) / (max - min)).clamp(0.0, 1.0);
-                            // Inset so the thumb stays fully on the track at
-                            // both extremes instead of hanging off the ends.
-                            final left =
-                                fraction * (trackWidth - thumbSize);
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          // One LayoutBuilder for the whole stack so the thumb is
+                          // positioned from the track's *actual* width. It used to
+                          // derive that from MediaQuery screen width minus a
+                          // hardcoded 108, which only matched one device and one
+                          // set of paddings -- and was wrong in RTL, where the
+                          // track doesn't start at the screen edge.
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              const thumbSize = 28.0;
+                              final trackWidth = constraints.maxWidth;
+                              final fraction =
+                                  ((sliderValue.value - min) / (max - min))
+                                      .clamp(0.0, 1.0);
+                              // Inset so the thumb stays fully on the track at
+                              // both extremes instead of hanging off the ends.
+                              final left = fraction * (trackWidth - thumbSize);
 
-                            return Stack(
-                              children: [
-                                // Checkerboard background for alpha
-                                if (showCheckerboard)
-                                  Positioned.fill(
-                                    child: CustomPaint(
-                                      painter: _CheckerboardPainter(),
-                                    ),
-                                  ),
-                                // Gradient
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: gradientBuilder(trackWidth),
-                                    ),
-                                  ),
-                                ),
-                                // Thumb
-                                PositionedDirectional(
-                                  start: left,
-                                  top: 4,
-                                  child: Container(
-                                    width: thumbSize,
-                                    height: thumbSize,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        width: 3,
+                              return Stack(
+                                children: [
+                                  // Checkerboard background for alpha
+                                  if (showCheckerboard)
+                                    Positioned.fill(
+                                      child: CustomPaint(
+                                        painter: _CheckerboardPainter(),
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
+                                    ),
+                                  // Gradient
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: gradientBuilder(trackWidth),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            );
-                          },
+                                  // Thumb
+                                  PositionedDirectional(
+                                    start: left,
+                                    top: 4,
+                                    child: Container(
+                                      width: thumbSize,
+                                      height: thumbSize,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          width: 3,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.2),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              Container(
-                width: 60,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${value.round()}$suffix',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+              GlassSurface.tinted(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: 60,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: Space.sm, vertical: Space.xs),
+                  child: Text(
+                    '${value.round()}$suffix',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ],
@@ -1057,7 +1074,8 @@ class _CheckerboardPainter extends CustomPainter {
 
     for (var y = 0.0; y < size.height; y += squareSize) {
       for (var x = 0.0; x < size.width; x += squareSize) {
-        final isEven = ((x / squareSize).floor() + (y / squareSize).floor()) % 2 == 0;
+        final isEven =
+            ((x / squareSize).floor() + (y / squareSize).floor()) % 2 == 0;
         canvas.drawRect(
           Rect.fromLTWH(x, y, squareSize, squareSize),
           isEven ? paint1 : paint2,
@@ -1069,4 +1087,3 @@ class _CheckerboardPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

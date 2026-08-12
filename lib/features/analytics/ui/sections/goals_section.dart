@@ -225,8 +225,7 @@ class _GoalsSectionState extends ConsumerState<GoalsSection> {
   /// never disagree. A goal already met reports a full ring even if the raw
   /// ratio is under 1 -- fat loss is met by staying *under* target, where a
   /// literal ratio would show a good day as an incomplete one.
-  double _progressFor(
-      WellnessGoal goal, AnalyticsView view, GoalDay? today) {
+  double _progressFor(WellnessGoal goal, AnalyticsView view, GoalDay? today) {
     if (today != null && today.met.contains(goal)) return 1;
 
     double ratio(MetricSeries series, double? target) {
@@ -237,8 +236,7 @@ class _GoalsSectionState extends ConsumerState<GoalsSection> {
     }
 
     return switch (goal) {
-      WellnessGoal.calories =>
-        ratio(view.calories, view.targets.calorieGoal),
+      WellnessGoal.calories => ratio(view.calories, view.targets.calorieGoal),
       WellnessGoal.protein => ratio(view.protein, view.targets.proteinGoal),
       WellnessGoal.sleep => ratio(view.sleepHours, view.targets.sleepGoalHours),
       // Against the week's target rather than the day's: training is a weekly
@@ -261,8 +259,7 @@ class _GoalsSectionState extends ConsumerState<GoalsSection> {
             ? points
             : points.sublist(points.length - 7)
         : [points.last];
-    final sessions =
-        window.fold<double>(0, (sum, p) => sum + (p.value ?? 0));
+    final sessions = window.fold<double>(0, (sum, p) => sum + (p.value ?? 0));
     return (sessions / target).clamp(0.0, 1.0);
   }
 }

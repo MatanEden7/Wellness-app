@@ -824,5 +824,10 @@
   "dashboardPeriodToday": "היום",
   "dashboardPeriodWeek": "השבוע",
   "workoutMinutes": "{minutes} דק׳",
-  "nightlyAverage": "ממוצע לילי"
+  "nightlyAverage": "ממוצע לילי",
+  "glassEffect": "אפקט זכוכית",
+  "glassOff": "כבוי",
+  "glassSubtle": "עדין",
+  "glassFull": "מלא",
+  "glassEffectReducedByAccessibility": "כבוי — הפחתת שקיפות פעילה"
 }

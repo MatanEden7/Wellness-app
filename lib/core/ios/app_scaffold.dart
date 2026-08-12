@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../ui_constants.dart';
+import 'glass.dart';
 import 'liquid_glass_tab_bar.dart';
+import '../design/tokens.dart';
 
 /// The one screen shell every page in the app is built on.
 ///
@@ -129,66 +131,82 @@ class AppScaffold extends StatelessWidget {
     final scrollView = SafeArea(
       bottom: false,
       child: CustomScrollView(
-          // iOS scrolls with a rubber band even when the content fits, and
-          // pull-to-refresh-style gestures depend on it.
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
+        // iOS scrolls with a rubber band even when the content fits, and
+        // pull-to-refresh-style gestures depend on it.
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        slivers: [
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _LargeTitleBar(
+              title: title,
+              actions: actions,
+              leading: leading ??
+                  (canPop
+                      ? _BackChevron(tooltip: backTooltip)
+                      : const SizedBox.shrink()),
+            ),
           ),
-          slivers: [
+          if (pinnedHeader != null)
             SliverPersistentHeader(
-              pinned: true,
-              delegate: _LargeTitleBar(
-                title: title,
-                actions: actions,
-                leading: leading ??
-                    (canPop
-                        ? _BackChevron(tooltip: backTooltip)
-                        : const SizedBox.shrink()),
+              // Scrolls away rather than pinning — see the twin comment in
+              // `platform_page.dart`. A transparent header that stays put is a
+              // collision waiting to happen.
+              pinned: false,
+              delegate: PinnedBar(
+                child: pinnedHeader!,
+                height: pinnedHeaderHeight,
               ),
             ),
-            if (pinnedHeader != null)
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: PinnedBar(
-                  child: pinnedHeader!,
-                  height: pinnedHeaderHeight,
-                ),
-              ),
-            ...slivers,
-            // Anything pinned to the bottom would otherwise sit on top of the
-            // last row.
-            if (bottomBar != null)
-              const SliverToBoxAdapter(child: SizedBox(height: 76)),
-            // The glass bar floats over the scroll view, so the viewport is
-            // full height and the last row would end up underneath it.
-            if (floatingTabBar != null)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: LiquidGlassTabBar.reservedHeight +
-                      MediaQuery.of(context).padding.bottom * 0.4,
-                ),
-              ),
-          ],
-        ),
-      );
+          ...slivers,
+          // Anything pinned to the bottom would otherwise sit on top of the
+          // last row.
+          if (bottomBar != null)
+            const SliverToBoxAdapter(
+              // The bar's own reserved height, not a copy of it: the two
+              // had drifted 10pt apart, so the last row sat under the bar.
+              child: SizedBox(height: LiquidGlassTabBar.reservedHeight),
+            ),
+          // Clearance for whichever tab bar is present. When this scaffold
+          // draws its own it floats over the viewport, so the height has to be
+          // reserved explicitly; when the *native* bar is there instead, iOS
+          // reports it as a bottom inset and the viewport ignores it, so it
+          // has to be reserved explicitly then too.
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: floatingTabBar != null
+                  ? LiquidGlassTabBar.reservedHeight +
+                      MediaQuery.of(context).padding.bottom * 0.4
+                  : MediaQuery.of(context).padding.bottom + Space.cardGap,
+            ),
+          ),
+        ],
+      ),
+    );
 
     return Scaffold(
-      body: floatingTabBar == null
-          ? scrollView
-          : Stack(
-              children: [
-                scrollView,
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: floatingTabBar!,
-                ),
-              ],
-            ),
-      bottomNavigationBar: bottomBar == null
-          ? null
-          : _BottomBar(child: bottomBar!),
+      // GlassLayer paints the page background: the flat scaffold colour when
+      // glass is off, a theme-derived wash when it is on, plus the single
+      // BackdropGroup every glass surface on this route shares.
+      backgroundColor: Colors.transparent,
+      body: GlassLayer(
+        child: floatingTabBar == null
+            ? scrollView
+            : Stack(
+                children: [
+                  scrollView,
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: floatingTabBar!,
+                  ),
+                ],
+              ),
+      ),
+      bottomNavigationBar:
+          bottomBar == null ? null : _BottomBar(child: bottomBar!),
     );
   }
 }
@@ -236,67 +254,71 @@ class AppNavScaffold extends StatelessWidget {
     final canPop = showBack && Navigator.of(context).canPop();
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44,
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: leading ??
-                        (canPop
-                            ? _BackChevron(tooltip: backTooltip)
-                            : const SizedBox.shrink()),
-                  ),
-                  Center(
-                    child: Padding(
-                      // Keeps a long title from running under the buttons.
-                      padding: const EdgeInsets.symmetric(horizontal: 96),
-                      child: Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
+      backgroundColor: Colors.transparent,
+      body: GlassLayer(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 44,
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: leading ??
+                          (canPop
+                              ? _BackChevron(tooltip: backTooltip)
+                              : const SizedBox.shrink()),
+                    ),
+                    Center(
+                      child: Padding(
+                        // Keeps a long title from running under the buttons.
+                        padding: const EdgeInsets.symmetric(horizontal: 96),
+                        child: Text(
+                          title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: actions),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Row(
+                            mainAxisSize: MainAxisSize.min, children: actions),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const AppHairline(),
-            Expanded(
-              child: floatingTabBar == null
-                  ? body
-                  : Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              bottom: LiquidGlassTabBar.reservedHeight),
-                          child: body,
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: floatingTabBar!,
-                        ),
-                      ],
-                    ),
-            ),
-          ],
+              const AppHairline(),
+              Expanded(
+                child: floatingTabBar == null
+                    ? body
+                    : Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: LiquidGlassTabBar.reservedHeight),
+                            child: body,
+                          ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: floatingTabBar!,
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar:
@@ -339,99 +361,116 @@ class _LargeTitleBar extends SliverPersistentHeaderDelegate {
     // 0 = fully expanded, 1 = fully collapsed.
     final t = (shrinkOffset / _largeTitleHeight).clamp(0.0, 1.0);
 
-    return Container(
-      color: theme.scaffoldBackgroundColor,
-      // Stack, not Column: the hairline is half a pixel tall and drawn *over*
-      // the bottom of the bar. In a Column it added its half-pixel to the
-      // delegate's height, which is fixed, and the bar overflowed by exactly
-      // that much on every screen.
-      child: Stack(
-        children: [
-          Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: _barHeight,
-            child: Stack(
-              children: [
-                Align(alignment: AlignmentDirectional.centerStart, child: leading),
-                // Only readable once the large title has gone. The horizontal
-                // inset keeps a long title (the dashboard's greeting) from
-                // running underneath the buttons on either side.
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 96),
-                    child: Opacity(
-                      opacity: t,
-                      child: Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
+    // The scroll edge effect: the bar carries no material while the content is
+    // at rest against it, and gains it once anything is underneath. `t` is
+    // already the collapse progress driving the title cross-fade and the
+    // hairline, so the material rides the same signal rather than inventing a
+    // second one.
+    // Stack, not Column: the hairline is half a pixel tall and drawn *over*
+    // the bottom of the bar. In a Column it added its half-pixel to the
+    // delegate's height, which is fixed, and the bar overflowed by exactly
+    // that much on every screen.
+    final content = Stack(
+      children: [
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: _barHeight,
+              child: Stack(
+                children: [
+                  Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: leading),
+                  // Only readable once the large title has gone. The horizontal
+                  // inset keeps a long title (the dashboard's greeting) from
+                  // running underneath the buttons on either side.
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 96),
+                      child: Opacity(
+                        opacity: t,
+                        child: Text(
+                          title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
-                ),
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: actions,
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: actions,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          // Clips rather than shrinks: see the class comment.
-          SizedBox(
-            height: _largeTitleHeight * (1 - t),
-            child: ClipRect(
-              child: OverflowBox(
-                alignment: AlignmentDirectional.topStart,
-                minHeight: _largeTitleHeight,
-                maxHeight: _largeTitleHeight,
-                child: Opacity(
-                  opacity: 1 - t,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        UIConstants.screenHorizontalPadding, 0, 16, 8),
-                    child: Align(
-                      alignment: AlignmentDirectional.bottomStart,
-                      child: Text(
-                        title,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.37,
+            // Clips rather than shrinks: see the class comment.
+            SizedBox(
+              height: _largeTitleHeight * (1 - t),
+              child: ClipRect(
+                child: OverflowBox(
+                  alignment: AlignmentDirectional.topStart,
+                  minHeight: _largeTitleHeight,
+                  maxHeight: _largeTitleHeight,
+                  child: Opacity(
+                    opacity: 1 - t,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                          UIConstants.screenHorizontalPadding, 0, 16, 8),
+                      child: Align(
+                        alignment: AlignmentDirectional.bottomStart,
+                        child: Text(
+                          title,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.37,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-          ),
-          // Shown only once collapsed -- iOS draws no separator until content
-          // is actually scrolled under the title.
-          PositionedDirectional(
-            start: 0,
-            end: 0,
-            bottom: 0,
-            child: Opacity(opacity: t, child: const AppHairline()),
-          ),
-        ],
-      ),
+          ],
+        ),
+        // Shown only once collapsed -- iOS draws no separator until content
+        // is actually scrolled under the title.
+        PositionedDirectional(
+          start: 0,
+          end: 0,
+          bottom: 0,
+          child: Opacity(opacity: t, child: const AppHairline()),
+        ),
+      ],
+    );
+
+    // The scroll edge effect: no material while the content is at rest against
+    // the bar — the page reads edge to edge — and the system material once
+    // anything is underneath. `t` already drives the title cross-fade and the
+    // hairline, so the material rides the same signal rather than a second one.
+    if (t == 0) return content;
+    return GlassSurface(
+      borderRadius: BorderRadius.zero,
+      showBorder: false,
+      showEdgeHighlight: false,
+      fallbackColor: theme.scaffoldBackgroundColor,
+      child: content,
     );
   }
 
@@ -459,11 +498,11 @@ class PinnedBar extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      height: height,
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: child,
-    );
+    // Transparent, matching the native tier's pinned header: the controls this
+    // bar holds (search field, segmented control, date strip) are floating
+    // capsules in their own right, so a band behind them would be a second pane
+    // of material over the same pixels.
+    return SizedBox(height: height, child: child);
   }
 
   @override
@@ -502,10 +541,15 @@ class NavBarAction extends StatelessWidget {
 
     return Tooltip(
       message: tooltip,
-      child: CupertinoButton(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        minimumSize: const Size(44, 44),
+      // A glass capsule, which is what iOS 26 gives a bar button. Only the
+      // Cupertino fallback tier renders this: on device the nav bar is UIKit
+      // and its buttons come with the real material.
+      child: GlassButton(
         onPressed: onPressed,
+        minHeight: Sizes.control,
+        borderRadius: BorderRadius.circular(18),
+        padding: const EdgeInsets.symmetric(
+            horizontal: Space.md, vertical: Space.sm),
         child: label == null
             ? Icon(icon, size: 22, color: color)
             : Row(
@@ -538,7 +582,8 @@ class _BackChevron extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = tooltip ?? MaterialLocalizations.of(context).backButtonTooltip;
+    final label =
+        tooltip ?? MaterialLocalizations.of(context).backButtonTooltip;
     return Tooltip(
       message: label,
       child: CupertinoButton(
@@ -592,8 +637,10 @@ class _BottomBar extends StatelessWidget {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                  UIConstants.screenHorizontalPadding, 10,
-                  UIConstants.screenHorizontalPadding, 10),
+                  UIConstants.screenHorizontalPadding,
+                  10,
+                  UIConstants.screenHorizontalPadding,
+                  10),
               child: child,
             ),
           ),

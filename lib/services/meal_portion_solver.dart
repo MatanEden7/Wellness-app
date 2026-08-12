@@ -233,7 +233,9 @@ abstract final class MealPortionSolver {
       for (var i = 0; i < basket.length; i++)
         _clampToBounds(
           basket[i],
-          coeffs[i][1] > 0 ? (proteinTarget / basket.length) / coeffs[i][1] : 1.0,
+          coeffs[i][1] > 0
+              ? (proteinTarget / basket.length) / coeffs[i][1]
+              : 1.0,
           roles[i],
         ),
     ];
@@ -312,5 +314,4 @@ abstract final class MealPortionSolver {
         return whole < 1 ? 1 : whole;
     }
   }
-
 }

@@ -178,8 +178,8 @@ class _SessionsBody extends ConsumerWidget {
                   WorkoutSessionCard(
                     sessionWithTemplate: entry,
                     color: workoutsColor,
-                    onTap: () => context
-                        .push('/workouts/session/${entry.session.id}'),
+                    onTap: () =>
+                        context.push('/workouts/session/${entry.session.id}'),
                     onDelete: () => _deleteSession(context, ref, entry),
                   ),
               ],
@@ -340,8 +340,8 @@ class WorkoutSessionCard extends StatelessWidget {
                           l10n.setsCompletedCount(session.sets.length),
                       ].join(' · '),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.6),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

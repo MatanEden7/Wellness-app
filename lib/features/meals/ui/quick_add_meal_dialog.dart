@@ -9,6 +9,7 @@ import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'meal_editor_page.dart' show FoodSelectorDialog;
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/design/tokens.dart';
 
 /// Sheet opened from the dashboard "+": name the meal, search/add foods via
 /// the same [FoodSelectorDialog] the full editor uses, and save directly --
@@ -24,8 +25,10 @@ class QuickAddMealDialog extends HookConsumerWidget {
     final isLoading = useState(false);
 
     final totalKcal = mealItems.value.fold(0.0, (sum, item) => sum + item.kcal);
-    final totalProtein = mealItems.value.fold(0.0, (sum, item) => sum + item.protein);
-    final totalCarbs = mealItems.value.fold(0.0, (sum, item) => sum + item.carbs);
+    final totalProtein =
+        mealItems.value.fold(0.0, (sum, item) => sum + item.protein);
+    final totalCarbs =
+        mealItems.value.fold(0.0, (sum, item) => sum + item.carbs);
     final totalFat = mealItems.value.fold(0.0, (sum, item) => sum + item.fat);
 
     return AppSheet(
@@ -45,7 +48,6 @@ class QuickAddMealDialog extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-
           if (mealItems.value.isNotEmpty) ...[
             AppCard(
               child: Row(
@@ -58,12 +60,14 @@ class QuickAddMealDialog extends HookConsumerWidget {
                   ),
                   _MacroColumn(
                     label: l10n.protein,
-                    value: '${Formatters.formatMacros(totalProtein)}${l10n.grams}',
+                    value:
+                        '${Formatters.formatMacros(totalProtein)}${l10n.grams}',
                     color: Colors.red,
                   ),
                   _MacroColumn(
                     label: l10n.carbs,
-                    value: '${Formatters.formatMacros(totalCarbs)}${l10n.grams}',
+                    value:
+                        '${Formatters.formatMacros(totalCarbs)}${l10n.grams}',
                     color: Colors.blue,
                   ),
                   _MacroColumn(
@@ -92,7 +96,6 @@ class QuickAddMealDialog extends HookConsumerWidget {
             }),
             const SizedBox(height: 4),
           ],
-
           AppButton(
             text: l10n.addFood,
             icon: Icons.add,
@@ -108,7 +111,6 @@ class QuickAddMealDialog extends HookConsumerWidget {
             },
           ),
           const SizedBox(height: 20),
-
           AppButton(
             text: l10n.save,
             isLoading: isLoading.value,
@@ -222,7 +224,8 @@ class _QuickMealItemRow extends HookConsumerWidget {
       stream: foodStream,
       builder: (context, snapshot) {
         return AppCard(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding:
+              const EdgeInsets.symmetric(horizontal: Space.md, vertical: 10),
           child: Row(
             children: [
               Expanded(

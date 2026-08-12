@@ -208,7 +208,8 @@ abstract final class WorkoutProgramming {
     // The last set needs no rest after it -- counting it inflates every
     // estimate by one full rest interval per exercise.
     final seconds = sets * work + (sets - 1) * rest.inSeconds;
-    final ramp = isCompound ? warmupSetsPerCompound * warmupSetCost.inSeconds : 0;
+    final ramp =
+        isCompound ? warmupSetsPerCompound * warmupSetCost.inSeconds : 0;
     return Duration(seconds: seconds.round() + ramp);
   }
 

@@ -3,7 +3,9 @@ import 'package:uuid/uuid.dart';
 const _uuid = Uuid();
 
 enum EventType { meal, workout, sleep }
+
 enum RecurrenceType { none, daily, weekly, monthly, custom }
+
 enum EventStatus { planned, completed, missed, active }
 
 class ScheduledEvent {
@@ -133,12 +135,17 @@ class ScheduledEvent {
       description: json['description'] as String?,
       type: EventType.values.firstWhere((e) => e.name == json['type']),
       scheduledAt: DateTime.parse(json['scheduledAt'] as String),
-      completedAt: json['completedAt'] != null ? DateTime.parse(json['completedAt'] as String) : null,
+      completedAt: json['completedAt'] != null
+          ? DateTime.parse(json['completedAt'] as String)
+          : null,
       status: EventStatus.values.firstWhere((e) => e.name == json['status']),
-      recurrenceType: RecurrenceType.values.firstWhere((e) => e.name == json['recurrenceType']),
+      recurrenceType: RecurrenceType.values
+          .firstWhere((e) => e.name == json['recurrenceType']),
       recurrenceDays: List<int>.from(json['recurrenceDays'] ?? []),
       customInterval: json['customInterval'] as int?,
-      recurrenceEndDate: json['recurrenceEndDate'] != null ? DateTime.parse(json['recurrenceEndDate'] as String) : null,
+      recurrenceEndDate: json['recurrenceEndDate'] != null
+          ? DateTime.parse(json['recurrenceEndDate'] as String)
+          : null,
       templateId: json['templateId'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
@@ -176,14 +183,20 @@ class CalendarDay {
     );
   }
 
-  List<ScheduledEvent> get plannedEvents => events.where((e) => e.isPlanned).toList();
-  List<ScheduledEvent> get completedEvents => events.where((e) => e.isCompleted).toList();
-  List<ScheduledEvent> get mealEvents => events.where((e) => e.type == EventType.meal).toList();
-  List<ScheduledEvent> get workoutEvents => events.where((e) => e.type == EventType.workout).toList();
-  List<ScheduledEvent> get sleepEvents => events.where((e) => e.type == EventType.sleep).toList();
+  List<ScheduledEvent> get plannedEvents =>
+      events.where((e) => e.isPlanned).toList();
+  List<ScheduledEvent> get completedEvents =>
+      events.where((e) => e.isCompleted).toList();
+  List<ScheduledEvent> get mealEvents =>
+      events.where((e) => e.type == EventType.meal).toList();
+  List<ScheduledEvent> get workoutEvents =>
+      events.where((e) => e.type == EventType.workout).toList();
+  List<ScheduledEvent> get sleepEvents =>
+      events.where((e) => e.type == EventType.sleep).toList();
 
   bool get hasAnyEvents => events.isNotEmpty;
-  bool get hasAnyLogged => hasLoggedMeals || hasLoggedWorkouts || hasLoggedSleep;
+  bool get hasAnyLogged =>
+      hasLoggedMeals || hasLoggedWorkouts || hasLoggedSleep;
 }
 
 enum CalendarViewMode { month, week, day }
@@ -204,7 +217,11 @@ class CalendarState {
     this.days = const {},
     this.showPlanned = true,
     this.showCompleted = true,
-    this.visibleTypes = const [EventType.meal, EventType.workout, EventType.sleep],
+    this.visibleTypes = const [
+      EventType.meal,
+      EventType.workout,
+      EventType.sleep
+    ],
   });
 
   CalendarState copyWith({

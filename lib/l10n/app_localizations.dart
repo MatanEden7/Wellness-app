@@ -4657,6 +4657,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'nightly average'**
   String get nightlyAverage;
+
+  /// Settings row: how translucent the app's surfaces are
+  ///
+  /// In en, this message translates to:
+  /// **'Glass Effect'**
+  String get glassEffect;
+
+  /// Glass level: solid surfaces
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get glassOff;
+
+  /// Glass level: light translucency
+  ///
+  /// In en, this message translates to:
+  /// **'Subtle'**
+  String get glassSubtle;
+
+  /// Glass level: the full Liquid Glass material
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get glassFull;
+
+  /// Shown instead of the glass level when iOS Reduce Transparency forces it off
+  ///
+  /// In en, this message translates to:
+  /// **'Off — Reduce Transparency is on'**
+  String get glassEffectReducedByAccessibility;
 }
 
 class _AppLocalizationsDelegate

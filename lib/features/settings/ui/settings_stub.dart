@@ -8,6 +8,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../shell/platform_page.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/platform/glass_provider.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../data/db/drift_database.dart';
@@ -25,6 +28,8 @@ import '../../../routing/routes.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 class SettingsStub extends ConsumerWidget {
   const SettingsStub({super.key});
@@ -43,165 +48,173 @@ class SettingsStub extends ConsumerWidget {
         backTooltip: l10n.backToDashboard,
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Profile card ────────────────────────────────────────────────
-            _ProfileCard(
-              weightKg: profile?.weightKg,
-              goal: profile?.goal,
-              onTap: () => context.push(Routes.profile),
-            ),
-            const SizedBox(height: 24),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Profile card ────────────────────────────────────────────────
+          _ProfileCard(
+            weightKg: profile?.weightKg,
+            goal: profile?.goal,
+            onTap: () => context.push(Routes.profile),
+          ),
+          const SizedBox(height: 24),
 
-            // ── Preferences ─────────────────────────────────────────────────
-            SettingsSection(
-              title: l10n.preferences,
-              children: [
-                SettingsRow(
-                  icon: Icons.local_fire_department,
-                  iconColor: Colors.orange,
-                  title: l10n.primaryNutritionMetric,
-                  value: _nutritionMetricLabel(l10n, prefs.primaryNutritionMetric),
-                  onTap: () => _showNutritionMetricDialog(context, ref),
-                ),
-                SettingsRow(
-                  icon: Icons.calendar_today,
-                  iconColor: Colors.blue,
-                  title: l10n.globalTimeframe,
-                  value: _timeframeModeLabel(l10n, prefs.globalTimeframeMode),
-                  onTap: () => _showTimeframeModeDialog(context, ref),
-                ),
-                SettingsRow(
-                  icon: Icons.fitness_center,
-                  iconColor: Colors.green,
-                  title: l10n.workoutMetricDisplay,
-                  value: _workoutMetricLabel(l10n, prefs.workoutMetricMode),
-                  onTap: () => _showWorkoutMetricDialog(context, ref),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // ── Preferences ─────────────────────────────────────────────────
+          SettingsSection(
+            title: l10n.preferences,
+            children: [
+              SettingsRow(
+                icon: Icons.local_fire_department,
+                iconColor: Colors.orange,
+                title: l10n.primaryNutritionMetric,
+                value:
+                    _nutritionMetricLabel(l10n, prefs.primaryNutritionMetric),
+                onTap: () => _showNutritionMetricDialog(context, ref),
+              ),
+              SettingsRow(
+                icon: Icons.calendar_today,
+                iconColor: Colors.blue,
+                title: l10n.globalTimeframe,
+                value: _timeframeModeLabel(l10n, prefs.globalTimeframeMode),
+                onTap: () => _showTimeframeModeDialog(context, ref),
+              ),
+              SettingsRow(
+                icon: Icons.fitness_center,
+                iconColor: Colors.green,
+                title: l10n.workoutMetricDisplay,
+                value: _workoutMetricLabel(l10n, prefs.workoutMetricMode),
+                onTap: () => _showWorkoutMetricDialog(context, ref),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // ── Appearance ──────────────────────────────────────────────────
-            SettingsSection(
-              title: l10n.appearance,
-              children: [
-                SettingsRow(
-                  icon: Icons.palette,
-                  iconColor: Colors.purple,
-                  title: l10n.theme,
-                  value: _themeLabel(l10n, currentTheme),
-                  onTap: () => context.push(Routes.themePage),
-                ),
-                SettingsRow(
-                  icon: Icons.color_lens,
-                  iconColor: Colors.pink,
-                  title: l10n.appearance,
-                  subtitle: currentTheme == AppThemeKind.custom
-                      ? l10n.customizeThemeAndColors
-                      : l10n.customizeSectionColors,
-                  onTap: () => context.push(Routes.appearanceEditor),
-                ),
-                SettingsRow(
-                  icon: Icons.language,
-                  iconColor: Colors.teal,
-                  title: l10n.language,
-                  value: currentLanguage.displayName,
-                  onTap: () => context.push(Routes.languagePage),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // ── Appearance ──────────────────────────────────────────────────
+          SettingsSection(
+            title: l10n.appearance,
+            children: [
+              SettingsRow(
+                icon: Icons.palette,
+                iconColor: Colors.purple,
+                title: l10n.theme,
+                value: _themeLabel(l10n, currentTheme),
+                onTap: () => context.push(Routes.themePage),
+              ),
+              SettingsRow(
+                icon: Icons.color_lens,
+                iconColor: Colors.pink,
+                title: l10n.appearance,
+                subtitle: currentTheme == AppThemeKind.custom
+                    ? l10n.customizeThemeAndColors
+                    : l10n.customizeSectionColors,
+                onTap: () => context.push(Routes.appearanceEditor),
+              ),
+              SettingsRow(
+                icon: Icons.blur_on,
+                iconColor: Colors.blueGrey,
+                title: l10n.glassEffect,
+                value: _glassLabel(l10n, ref),
+                onTap: () => _pickGlassLevel(context, ref),
+              ),
+              SettingsRow(
+                icon: Icons.language,
+                iconColor: Colors.teal,
+                title: l10n.language,
+                value: currentLanguage.displayName,
+                onTap: () => context.push(Routes.languagePage),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // ── Health ──────────────────────────────────────────────────────
-            SettingsSection(
-              title: 'Health',
-              children: [
-                SettingsRow(
-                  icon: Icons.notifications,
-                  iconColor: Colors.amber,
-                  title: l10n.notifications,
-                  onTap: () => context.push(Routes.notificationSettings),
-                ),
-                SettingsRow(
-                  icon: Icons.track_changes,
-                  iconColor: Colors.red,
-                  title: l10n.nutritionGoals,
-                  value: _nutritionGoalsSummary(prefs),
-                  onTap: () => context.push(Routes.nutritionGoals),
-                ),
-                // This row said "Workout Templates" and opened Workout
-                // Settings. Templates now have a screen of their own, so it
-                // is two rows, each going where it says.
-                SettingsRow(
-                  icon: Icons.sports_gymnastics,
-                  iconColor: Colors.indigo,
-                  title: l10n.workoutSettingsTitle,
-                  onTap: () => context.push(Routes.workoutSettings),
-                ),
-                SettingsRow(
-                  icon: Icons.list_alt,
-                  iconColor: Colors.indigo,
-                  title: l10n.workoutTemplates,
-                  onTap: () => context.push(Routes.workoutTemplates),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // ── Health ──────────────────────────────────────────────────────
+          SettingsSection(
+            title: 'Health',
+            children: [
+              SettingsRow(
+                icon: Icons.notifications,
+                iconColor: Colors.amber,
+                title: l10n.notifications,
+                onTap: () => context.push(Routes.notificationSettings),
+              ),
+              SettingsRow(
+                icon: Icons.track_changes,
+                iconColor: Colors.red,
+                title: l10n.nutritionGoals,
+                value: _nutritionGoalsSummary(prefs),
+                onTap: () => context.push(Routes.nutritionGoals),
+              ),
+              // This row said "Workout Templates" and opened Workout
+              // Settings. Templates now have a screen of their own, so it
+              // is two rows, each going where it says.
+              SettingsRow(
+                icon: Icons.sports_gymnastics,
+                iconColor: Colors.indigo,
+                title: l10n.workoutSettingsTitle,
+                onTap: () => context.push(Routes.workoutSettings),
+              ),
+              SettingsRow(
+                icon: Icons.list_alt,
+                iconColor: Colors.indigo,
+                title: l10n.workoutTemplates,
+                onTap: () => context.push(Routes.workoutTemplates),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // ── Data ────────────────────────────────────────────────────────
-            SettingsSection(
-              title: l10n.dataManagement,
-              children: [
-                SettingsRow(
-                  icon: Icons.file_download,
-                  iconColor: Theme.of(context).colorScheme.primary,
-                  title: l10n.exportData,
-                  subtitle: l10n.exportDataDescription,
-                  onTap: () => _exportData(context, ref),
-                ),
-                SettingsRow(
-                  icon: Icons.file_upload,
-                  iconColor: Theme.of(context).colorScheme.secondary,
-                  title: l10n.importData,
-                  subtitle: l10n.importDataDescription,
-                  onTap: () => _importData(context, ref),
-                ),
-                _CloudBackupTile(),
-                SettingsRow(
-                  icon: Icons.auto_delete,
-                  iconColor: Colors.orange,
-                  title: l10n.deleteOldData,
-                  subtitle: l10n.deleteOldDataDescription,
-                  onTap: () => _showDeleteOldDataDialog(context, ref),
-                ),
-                SettingsRow(
-                  icon: Icons.delete_forever,
-                  iconColor: Colors.red,
-                  title: l10n.resetAllData,
-                  onTap: () => _showResetDialog(context, ref),
-                  destructive: true,
-                  showChevron: false,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // ── Data ────────────────────────────────────────────────────────
+          SettingsSection(
+            title: l10n.dataManagement,
+            children: [
+              SettingsRow(
+                icon: Icons.file_download,
+                iconColor: Theme.of(context).colorScheme.primary,
+                title: l10n.exportData,
+                subtitle: l10n.exportDataDescription,
+                onTap: () => _exportData(context, ref),
+              ),
+              SettingsRow(
+                icon: Icons.file_upload,
+                iconColor: Theme.of(context).colorScheme.secondary,
+                title: l10n.importData,
+                subtitle: l10n.importDataDescription,
+                onTap: () => _importData(context, ref),
+              ),
+              _CloudBackupTile(),
+              SettingsRow(
+                icon: Icons.auto_delete,
+                iconColor: Colors.orange,
+                title: l10n.deleteOldData,
+                subtitle: l10n.deleteOldDataDescription,
+                onTap: () => _showDeleteOldDataDialog(context, ref),
+              ),
+              SettingsRow(
+                icon: Icons.delete_forever,
+                iconColor: Colors.red,
+                title: l10n.resetAllData,
+                onTap: () => _showResetDialog(context, ref),
+                destructive: true,
+                showChevron: false,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // ── About ───────────────────────────────────────────────────────
-            SettingsSection(
-              title: l10n.about,
-              children: [
-                SettingsRow(
-                  icon: Icons.info_outline,
-                  iconColor: Colors.cyan,
-                  title: l10n.appVersion,
-                  value: '1.0.0',
-                  showChevron: false,
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-          ],
+          // ── About ───────────────────────────────────────────────────────
+          SettingsSection(
+            title: l10n.about,
+            children: [
+              SettingsRow(
+                icon: Icons.info_outline,
+                iconColor: Colors.cyan,
+                title: l10n.appVersion,
+                value: '1.0.0',
+                showChevron: false,
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
@@ -228,14 +241,20 @@ class SettingsStub extends ConsumerWidget {
               .toList(),
         ),
         actions: [
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(l10n.cancel)),
         ],
       ),
     );
     if (result != null) {
-      await ref.read(preferencesServiceProvider).setPrimaryNutritionMetric(result);
+      await ref
+          .read(preferencesServiceProvider)
+          .setPrimaryNutritionMetric(result);
       ref.invalidate(preferencesServiceProvider);
     }
   }
@@ -260,7 +279,11 @@ class SettingsStub extends ConsumerWidget {
               .toList(),
         ),
         actions: [
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(l10n.cancel)),
         ],
@@ -292,7 +315,11 @@ class SettingsStub extends ConsumerWidget {
               .toList(),
         ),
         actions: [
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(l10n.cancel)),
         ],
@@ -336,8 +363,8 @@ class SettingsStub extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.exportFailed}: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('${l10n.exportFailed}: $e')));
       }
     }
   }
@@ -370,7 +397,11 @@ class SettingsStub extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () async {
               final result = await FilePicker.platform.pickFiles(
                 type: FileType.custom,
@@ -384,10 +415,18 @@ class SettingsStub extends ConsumerWidget {
             },
             child: Text(l10n.chooseFile),
           ),
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(l10n.cancel)),
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(textCtrl.text),
               child: Text(l10n.import)),
         ],
@@ -421,7 +460,8 @@ class SettingsStub extends ConsumerWidget {
     }
   }
 
-  Future<void> _showDeleteOldDataDialog(BuildContext context, WidgetRef ref) async {
+  Future<void> _showDeleteOldDataDialog(
+      BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final days = await showDialog<int>(
       context: context,
@@ -444,10 +484,18 @@ class SettingsStub extends ConsumerWidget {
         title: Text(l10n.deleteOldData),
         content: Text(l10n.deleteOldDataConfirmation(days)),
         actions: [
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(false),
               child: Text(l10n.cancel)),
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(l10n.deleteOldData,
                 style: const TextStyle(color: Colors.red)),
@@ -459,7 +507,8 @@ class SettingsStub extends ConsumerWidget {
 
     final cutoff = DateTime.now().subtract(Duration(days: days));
     var removed = await ref.read(databaseProvider).deleteDataOlderThan(cutoff);
-    removed += await ref.read(calendarServiceProvider).deleteEventsOlderThan(cutoff);
+    removed +=
+        await ref.read(calendarServiceProvider).deleteEventsOlderThan(cutoff);
     ref.invalidate(mealsRepositoryProvider);
     ref.invalidate(workoutSessionsRepositoryProvider);
     ref.invalidate(sleepRepositoryProvider);
@@ -479,10 +528,18 @@ class SettingsStub extends ConsumerWidget {
         title: Text(l10n.resetAllData),
         content: Text(l10n.resetDataWarningBody),
         actions: [
-          TextButton(
+          GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(ctx).pop(false),
               child: Text(l10n.cancel)),
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(l10n.resetAllData,
                 style: const TextStyle(color: Colors.red)),
@@ -499,10 +556,12 @@ class SettingsStub extends ConsumerWidget {
       await ref.read(databaseProvider).resetToFactoryState();
       await ref.read(calendarServiceProvider).clearAllEvents();
       await ref.read(calendarStateProvider.notifier).refresh();
-      await ref.read(calendarStateProvider.notifier).rescheduleAllNotifications();
+      await ref
+          .read(calendarStateProvider.notifier)
+          .rescheduleAllNotifications();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.resetAllDataDone)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.resetAllDataDone)));
       }
     }
   }
@@ -538,6 +597,43 @@ class SettingsStub extends ConsumerWidget {
       case WorkoutMetricMode.time:
         return l10n.timeSpent;
     }
+  }
+
+  /// The row's right-hand value. Reports the *effective* level, not the stored
+  /// one: with Reduce Transparency on, the app is opaque whatever the
+  /// preference says, and a row reading "Full" over a solid app is a bug
+  /// report waiting to happen.
+  String _glassLabel(AppLocalizations l10n, WidgetRef ref) {
+    if (ref.watch(capabilitiesProvider).reduceTransparency) {
+      return l10n.glassEffectReducedByAccessibility;
+    }
+    return switch (ref.watch(glassLevelProvider)) {
+      GlassLevel.off => l10n.glassOff,
+      GlassLevel.subtle => l10n.glassSubtle,
+      GlassLevel.full => l10n.glassFull,
+    };
+  }
+
+  Future<void> _pickGlassLevel(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = ref.read(glassLevelProvider);
+    return showAppActionSheet(
+      context: context,
+      title: l10n.glassEffect,
+      actions: [
+        for (final level in GlassLevel.values)
+          AppAction(
+            label: switch (level) {
+              GlassLevel.off => l10n.glassOff,
+              GlassLevel.subtle => l10n.glassSubtle,
+              GlassLevel.full => l10n.glassFull,
+            },
+            isDefault: level == current,
+            onPressed: () =>
+                ref.read(glassLevelProvider.notifier).setLevel(level),
+          ),
+      ],
+    );
   }
 
   String _themeLabel(AppLocalizations l10n, AppThemeKind t) {
@@ -610,7 +706,8 @@ class _ProfileCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.md),
           child: Row(
             children: [
               CircleAvatar(
@@ -633,8 +730,8 @@ class _ProfileCard extends StatelessWidget {
                       Text(
                         '${weightKg!.toStringAsFixed(1)} kg  ·  ${_goalLabel(goal!)}',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color:
-                              theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.55),
                         ),
                       ),
                     ] else
@@ -685,22 +782,22 @@ class _CloudBackupTileState extends ConsumerState<_CloudBackupTile> {
 
     return SwitchListTile(
       contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      secondary: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          enabled ? Icons.cloud_done : Icons.cloud_off,
-          color: Theme.of(context).colorScheme.tertiary,
-          size: 19,
+          const EdgeInsets.symmetric(horizontal: Space.lg, vertical: Space.xxs),
+      secondary: ContentSurface.tinted(
+        color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 34,
+          height: 34,
+          child: Icon(
+            enabled ? Icons.cloud_done : Icons.cloud_off,
+            color: Theme.of(context).colorScheme.tertiary,
+            size: 19,
+          ),
         ),
       ),
-      title: Text(l10n.cloudBackup,
-          style: Theme.of(context).textTheme.bodyLarge),
+      title:
+          Text(l10n.cloudBackup, style: Theme.of(context).textTheme.bodyLarge),
       subtitle: Text(subtitle,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context)
@@ -721,14 +818,12 @@ class _CloudBackupTileState extends ConsumerState<_CloudBackupTile> {
       await ref.read(databaseProvider).useSnapshotPath(newPath);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                AppLocalizations.of(context)!.backupSettingUpdated)));
+            content: Text(AppLocalizations.of(context)!.backupSettingUpdated)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:
-                Text('${AppLocalizations.of(context)!.error}: $e')));
+            content: Text('${AppLocalizations.of(context)!.error}: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

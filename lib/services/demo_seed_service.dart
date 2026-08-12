@@ -182,8 +182,7 @@ class DemoSeedService {
     //    all three shapes to render.
     if (templates.length > 1) {
       final second = templates[1];
-      final rows =
-          await _database.getTemplateExercisesByTemplateId(second.id);
+      final rows = await _database.getTemplateExercisesByTemplateId(second.id);
       if (rows.isNotEmpty) {
         await _database.updateTemplateExercise(TemplateExerciseData(
           id: rows.first.id,
@@ -333,12 +332,13 @@ class DemoSeedService {
     final targetKcal = profile.calorieTarget * factor;
 
     // Assemble first, weigh, then scale.
-    final planned = <({String mealName, DateTime at, FoodItemData food, double amount})>[];
+    final planned =
+        <({String mealName, DateTime at, FoodItemData food, double amount})>[];
     final mealCount = 3 + _random.nextInt(2);
     for (var i = 0; i < mealCount; i++) {
       final template = templates[_random.nextInt(templates.length)];
-      final at =
-          DateTime(day.year, day.month, day.day, 8 + i * 4, _random.nextInt(60));
+      final at = DateTime(
+          day.year, day.month, day.day, 8 + i * 4, _random.nextInt(60));
       final items =
           await _database.getMealTemplateItemsByTemplateId(template.id);
       for (final item in items) {
@@ -399,8 +399,8 @@ class DemoSeedService {
   ) async {
     // Rotate through the plan rather than picking at random, so the split
     // reads like a split.
-    final template = templates[day.difference(DateTime(2020)).inDays %
-        templates.length];
+    final template =
+        templates[day.difference(DateTime(2020)).inDays % templates.length];
     final rows = await _database.getTemplateExercisesByTemplateId(template.id);
     if (rows.isEmpty) return 0;
 
@@ -457,8 +457,8 @@ class DemoSeedService {
 
   Future<int> _seedNight(DateTime day, {bool guaranteedGood = false}) async {
     // Bedtime the evening before, waking on [day].
-    final bedtime = DateTime(day.year, day.month, day.day - 1, 22,
-        _random.nextInt(120));
+    final bedtime =
+        DateTime(day.year, day.month, day.day - 1, 22, _random.nextInt(120));
     // The sleep goal is 8h with half an hour of slack, so a guaranteed-good
     // night has to clear 7.5.
     final hours = guaranteedGood
@@ -473,8 +473,7 @@ class DemoSeedService {
     return 1;
   }
 
-  int _dateInt(DateTime day) =>
-      day.year * 10000 + day.month * 100 + day.day;
+  int _dateInt(DateTime day) => day.year * 10000 + day.month * 100 + day.day;
 
   // ------------------------------------------------------------ round-trip
 
@@ -511,8 +510,8 @@ class DemoSeedService {
         'mealTemplates': (await _database.getAllMealTemplates()).length,
         'exercises': (await _database.getAllExercises()).length,
         'workoutTemplates': (await _database.getAllWorkoutTemplates()).length,
-        'sessions': (await _database.getRecentWorkoutSessions(limit: 100000))
-            .length,
+        'sessions':
+            (await _database.getRecentWorkoutSessions(limit: 100000)).length,
         'sleep': (await _database.getRecentSleepEntries(limit: 100000)).length,
         'bodyWeight':
             (await _database.getRecentBodyWeightEntries(limit: 100000)).length,

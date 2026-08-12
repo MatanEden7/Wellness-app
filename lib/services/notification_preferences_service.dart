@@ -2,8 +2,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Provider for notification preferences
-final notificationPreferencesProvider = StateNotifierProvider<NotificationPreferencesNotifier, NotificationPreferences>((ref) {
-  throw UnimplementedError('NotificationPreferencesProvider must be overridden');
+final notificationPreferencesProvider = StateNotifierProvider<
+    NotificationPreferencesNotifier, NotificationPreferences>((ref) {
+  throw UnimplementedError(
+      'NotificationPreferencesProvider must be overridden');
 });
 
 class NotificationPreferences {
@@ -11,24 +13,25 @@ class NotificationPreferences {
   final bool mealsEnabled;
   final bool workoutsEnabled;
   final bool sleepEnabled;
-  
+
   // Lead time (minutes before event)
   final int mealLeadTime;
   final int workoutLeadTime;
   final int sleepLeadTime;
-  
+
   // Sleep settings
   final double sleepGoalHours;
-  final int sleepReminderHour; // If not logged, remind at this hour next day (24h format)
+  final int
+      sleepReminderHour; // If not logged, remind at this hour next day (24h format)
   final int sleepReminderMinute;
-  
+
   // Quiet hours
   final bool quietHoursEnabled;
   final int quietHoursStartHour; // 24h format
   final int quietHoursStartMinute;
   final int quietHoursEndHour;
   final int quietHoursEndMinute;
-  
+
   // Sound & vibration
   final bool soundEnabled;
   final bool vibrationEnabled;
@@ -82,7 +85,8 @@ class NotificationPreferences {
       sleepReminderMinute: sleepReminderMinute ?? this.sleepReminderMinute,
       quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
       quietHoursStartHour: quietHoursStartHour ?? this.quietHoursStartHour,
-      quietHoursStartMinute: quietHoursStartMinute ?? this.quietHoursStartMinute,
+      quietHoursStartMinute:
+          quietHoursStartMinute ?? this.quietHoursStartMinute,
       quietHoursEndHour: quietHoursEndHour ?? this.quietHoursEndHour,
       quietHoursEndMinute: quietHoursEndMinute ?? this.quietHoursEndMinute,
       soundEnabled: soundEnabled ?? this.soundEnabled,
@@ -93,11 +97,11 @@ class NotificationPreferences {
   // Check if current time is within quiet hours
   bool isQuietTime(DateTime time) {
     if (!quietHoursEnabled) return false;
-    
+
     final currentMinutes = time.hour * 60 + time.minute;
     final startMinutes = quietHoursStartHour * 60 + quietHoursStartMinute;
     final endMinutes = quietHoursEndHour * 60 + quietHoursEndMinute;
-    
+
     if (startMinutes < endMinutes) {
       // Same day range (e.g., 9:00 - 17:00)
       return currentMinutes >= startMinutes && currentMinutes < endMinutes;
@@ -108,7 +112,8 @@ class NotificationPreferences {
   }
 }
 
-class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferences> {
+class NotificationPreferencesNotifier
+    extends StateNotifier<NotificationPreferences> {
   final SharedPreferences _prefs;
 
   /// Invoked after any change that affects *already-scheduled* notifications.
@@ -135,13 +140,15 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
   static const String _keySleepReminderMinute = 'notif_sleep_reminder_minute';
   static const String _keyQuietHoursEnabled = 'notif_quiet_hours_enabled';
   static const String _keyQuietHoursStartHour = 'notif_quiet_hours_start_hour';
-  static const String _keyQuietHoursStartMinute = 'notif_quiet_hours_start_minute';
+  static const String _keyQuietHoursStartMinute =
+      'notif_quiet_hours_start_minute';
   static const String _keyQuietHoursEndHour = 'notif_quiet_hours_end_hour';
   static const String _keyQuietHoursEndMinute = 'notif_quiet_hours_end_minute';
   static const String _keySoundEnabled = 'notif_sound_enabled';
   static const String _keyVibrationEnabled = 'notif_vibration_enabled';
 
-  NotificationPreferencesNotifier(this._prefs) : super(const NotificationPreferences()) {
+  NotificationPreferencesNotifier(this._prefs)
+      : super(const NotificationPreferences()) {
     _loadPreferences();
   }
 
@@ -254,4 +261,3 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
     _resync();
   }
 }
-

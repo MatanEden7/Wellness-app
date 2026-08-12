@@ -208,7 +208,8 @@ class ExerciseLibraryPage extends HookConsumerWidget {
                           exercise: exercise,
                           language: language,
                           mismatchReason: reason,
-                          onEdit: () => _openEditor(context, exercise: exercise),
+                          onEdit: () =>
+                              _openEditor(context, exercise: exercise),
                           onDelete: () => _deleteExercise(ref, exercise),
                         );
                       },

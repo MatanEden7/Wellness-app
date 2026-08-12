@@ -41,9 +41,9 @@ void main() {
         ),
       ));
 
-      // The label is replaced by a spinner while loading, so the button
-      // itself (not the text) is the tap target here.
-      await tester.tap(find.byType(ElevatedButton));
+      // Tap the button itself rather than its label: the label shares the row
+      // with a spinner while loading, and the tap target is the whole pane.
+      await tester.tap(find.byType(AppButton));
       await tester.pump();
 
       expect(tapped, isFalse,

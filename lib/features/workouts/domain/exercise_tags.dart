@@ -207,6 +207,7 @@ enum MovementPattern {
   verticalPull,
   carry,
   coreBrace,
+
   /// Single-joint accessory work, and the safe default for anything
   /// untagged: an isolation movement is never chosen to open a session.
   isolation;

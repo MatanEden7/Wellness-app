@@ -99,9 +99,8 @@ class WorkoutTemplateGenerator {
     for (final injury in _profile.injuries) {
       final part = BodyPart.forProfileId(injury);
       if (part == null) continue; // 'none'
-      final rehab = all
-          .where((e) => e.rehabFor.contains(part) && _fits(e))
-          .toList();
+      final rehab =
+          all.where((e) => e.rehabFor.contains(part) && _fits(e)).toList();
       if (rehab.isEmpty) continue;
       created.add(await _write(
         'Physiotherapy — ${part.label}',
@@ -195,10 +194,8 @@ class WorkoutTemplateGenerator {
     List<WorkoutTemplateData> created,
     List<ExerciseData> available,
   ) {
-    final offered = available
-        .map((e) => e.primaryMuscle)
-        .whereType<String>()
-        .toSet();
+    final offered =
+        available.map((e) => e.primaryMuscle).whereType<String>().toSet();
 
     final trained = <String>{};
     for (final exercise in _lastPickedMuscles) {
@@ -276,17 +273,20 @@ class WorkoutTemplateGenerator {
     switch (count) {
       case 1:
         return const [
-          _SessionPlan('Full Body', 'Everything, once a week', _allPatterns, _allTrained),
+          _SessionPlan('Full Body', 'Everything, once a week', _allPatterns,
+              _allTrained),
         ];
       case 2:
         return const [
-          _SessionPlan('Full Body A', 'Every major pattern', _allPatterns, _allTrained),
+          _SessionPlan(
+              'Full Body A', 'Every major pattern', _allPatterns, _allTrained),
           _SessionPlan('Full Body B', 'Same coverage, different lifts',
               _allPatterns, _allTrained),
         ];
       case 3:
         return const [
-          _SessionPlan('Full Body A', 'Every major pattern', _allPatterns, _allTrained),
+          _SessionPlan(
+              'Full Body A', 'Every major pattern', _allPatterns, _allTrained),
           _SessionPlan('Full Body B', 'Same coverage, different lifts',
               _allPatterns, _allTrained),
           _SessionPlan('Full Body C', 'Third variation to keep it fresh',
@@ -309,8 +309,8 @@ class WorkoutTemplateGenerator {
               [..._pushPatterns, ..._pullPatterns], [..._push, ..._pull]),
           _SessionPlan('Lower Body', 'Legs and trunk',
               [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
-          _SessionPlan('Push Day', 'Chest, shoulders and triceps',
-              _pushPatterns, _push),
+          _SessionPlan(
+              'Push Day', 'Chest, shoulders and triceps', _pushPatterns, _push),
           _SessionPlan('Pull Day', 'Back and biceps', _pullPatterns, _pull),
           _SessionPlan('Leg Day', 'Quads, hamstrings, glutes and trunk',
               [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
@@ -322,8 +322,10 @@ class WorkoutTemplateGenerator {
           _SessionPlan('Pull Day A', 'Back and biceps', _pullPatterns, _pull),
           _SessionPlan('Leg Day A', 'Quads, hamstrings, glutes and trunk',
               [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
-          _SessionPlan('Push Day B', 'Push, second variation', _pushPatterns, _push),
-          _SessionPlan('Pull Day B', 'Pull, second variation', _pullPatterns, _pull),
+          _SessionPlan(
+              'Push Day B', 'Push, second variation', _pushPatterns, _push),
+          _SessionPlan(
+              'Pull Day B', 'Pull, second variation', _pullPatterns, _pull),
           _SessionPlan('Leg Day B', 'Legs, second variation',
               [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
         ];
@@ -334,8 +336,10 @@ class WorkoutTemplateGenerator {
           _SessionPlan('Pull Day A', 'Back and biceps', _pullPatterns, _pull),
           _SessionPlan('Leg Day A', 'Quads, hamstrings, glutes and trunk',
               [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
-          _SessionPlan('Push Day B', 'Push, second variation', _pushPatterns, _push),
-          _SessionPlan('Pull Day B', 'Pull, second variation', _pullPatterns, _pull),
+          _SessionPlan(
+              'Push Day B', 'Push, second variation', _pushPatterns, _push),
+          _SessionPlan(
+              'Pull Day B', 'Pull, second variation', _pullPatterns, _pull),
           _SessionPlan('Leg Day B', 'Legs, second variation',
               [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
           _SessionPlan('Mobility & Core', 'Light trunk and mobility work',
@@ -365,8 +369,9 @@ class WorkoutTemplateGenerator {
     /// an intermediate with a barbell rack was prescribed Push-ups purely
     /// because it sorts first in the catalog.
     List<ExerciseData> ofPattern(MovementPattern p, Mechanic m) {
-      final matches =
-          available.where((e) => e.pattern == p && e.mechanicOrDefault == m).toList();
+      final matches = available
+          .where((e) => e.pattern == p && e.mechanicOrDefault == m)
+          .toList();
       matches.sort((a, b) {
         final aLoadable = a.unit == 'kg' ? 0 : 1;
         final bLoadable = b.unit == 'kg' ? 0 : 1;
@@ -383,8 +388,8 @@ class WorkoutTemplateGenerator {
               e.mechanicOrDefault == Mechanic.isolation &&
               e.primaryMuscle == muscle)
           .toList();
-      matches.sort((a, b) =>
-          (a.unit == 'kg' ? 0 : 1).compareTo(b.unit == 'kg' ? 0 : 1));
+      matches.sort(
+          (a, b) => (a.unit == 'kg' ? 0 : 1).compareTo(b.unit == 'kg' ? 0 : 1));
       return matches;
     }
 
@@ -440,13 +445,11 @@ class WorkoutTemplateGenerator {
 
     // Session order: heaviest compounds first, trunk last. Fatigue ruins
     // technique on exactly the lifts where technique matters most.
-    picked.sort((a, b) => WorkoutProgramming.orderRank(
-                a.pattern, a.mechanicOrDefault)
-        .compareTo(
+    picked.sort((a, b) =>
+        WorkoutProgramming.orderRank(a.pattern, a.mechanicOrDefault).compareTo(
             WorkoutProgramming.orderRank(b.pattern, b.mechanicOrDefault)));
     return picked;
   }
-
 }
 
 class _SessionPlan {

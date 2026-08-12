@@ -67,8 +67,6 @@ class FileSnapshotStore implements SnapshotStore {
 
 // Local storage database implementation
 class AppDatabase {
-  
-  
   // In-memory storage for local data persistence
   static final List<FoodItemData> _foods = [];
   static final List<MealData> _meals = [];
@@ -103,13 +101,19 @@ class AppDatabase {
   static final Map<String, BodyWeightEntryData> _bodyWeightEntriesById = {};
 
   // Stream controllers for reactive updates
-  static final StreamController<void> _mealsController = StreamController<void>.broadcast();
-  static final StreamController<void> _foodsController = StreamController<void>.broadcast();
-  static final StreamController<void> _mealTemplatesController = StreamController<void>.broadcast();
-  static final StreamController<void> _workoutsController = StreamController<void>.broadcast();
-  static final StreamController<void> _sleepController = StreamController<void>.broadcast();
-  static final StreamController<void> _bodyWeightController = StreamController<void>.broadcast();
-  
+  static final StreamController<void> _mealsController =
+      StreamController<void>.broadcast();
+  static final StreamController<void> _foodsController =
+      StreamController<void>.broadcast();
+  static final StreamController<void> _mealTemplatesController =
+      StreamController<void>.broadcast();
+  static final StreamController<void> _workoutsController =
+      StreamController<void>.broadcast();
+  static final StreamController<void> _sleepController =
+      StreamController<void>.broadcast();
+  static final StreamController<void> _bodyWeightController =
+      StreamController<void>.broadcast();
+
   // Expose streams for reactive updates with immediate initial event.
   // isBroadcast: true is required here: Stream.multi() re-invokes onListen
   // per listener regardless of this flag, but any .asyncMap()/.map() chained
@@ -126,7 +130,7 @@ class AppDatabase {
       controller.onCancel = () => subscription.cancel();
     }, isBroadcast: true);
   }
-  
+
   Stream<void> watchFoodsStream() {
     return Stream.multi((controller) {
       controller.add(null); // Emit immediately
@@ -134,15 +138,16 @@ class AppDatabase {
       controller.onCancel = () => subscription.cancel();
     }, isBroadcast: true);
   }
-  
+
   Stream<void> watchMealTemplatesStream() {
     return Stream.multi((controller) {
       controller.add(null); // Emit immediately
-      final subscription = _mealTemplatesController.stream.listen(controller.add);
+      final subscription =
+          _mealTemplatesController.stream.listen(controller.add);
       controller.onCancel = () => subscription.cancel();
     }, isBroadcast: true);
   }
-  
+
   Stream<void> watchWorkoutsStream() {
     return Stream.multi((controller) {
       controller.add(null); // Emit immediately
@@ -150,7 +155,7 @@ class AppDatabase {
       controller.onCancel = () => subscription.cancel();
     }, isBroadcast: true);
   }
-  
+
   Stream<void> watchSleepStream() {
     return Stream.multi((controller) {
       controller.add(null); // Emit immediately
@@ -173,6 +178,7 @@ class AppDatabase {
   SnapshotStore? _store;
 
   Timer? _saveTimer;
+
   /// Serializes snapshot writes so a debounced save can't interleave with an
   /// explicit [flush] and produce a half-written file.
   Future<void> _writeChain = Future<void>.value();
@@ -234,11 +240,15 @@ class AppDatabase {
     final meals = decode('meals', MealData.fromJson);
     final mealItems = decode('mealItems', MealItemData.fromJson);
     final mealTemplates = decode('mealTemplates', MealTemplateData.fromJson);
-    final mealTemplateItems = decode('mealTemplateItems', MealTemplateItemData.fromJson);
+    final mealTemplateItems =
+        decode('mealTemplateItems', MealTemplateItemData.fromJson);
     final exercises = decode('exercises', ExerciseData.fromJson);
-    final workoutTemplates = decode('workoutTemplates', WorkoutTemplateData.fromJson);
-    final templateExercises = decode('templateExercises', TemplateExerciseData.fromJson);
-    final workoutSessions = decode('workoutSessions', WorkoutSessionData.fromJson);
+    final workoutTemplates =
+        decode('workoutTemplates', WorkoutTemplateData.fromJson);
+    final templateExercises =
+        decode('templateExercises', TemplateExerciseData.fromJson);
+    final workoutSessions =
+        decode('workoutSessions', WorkoutSessionData.fromJson);
     final setEntries = decode('setEntries', SetEntryData.fromJson);
     final sleepEntries = decode('sleepEntries', SleepEntryData.fromJson);
     // Absent from every snapshot written before body-weight logging existed;
@@ -259,11 +269,13 @@ class AppDatabase {
       ..clear()
       ..addAll(mealTemplateItems);
     _replaceAll(_exercises, exercises, _exercisesById, (e) => e.id);
-    _replaceAll(_workoutTemplates, workoutTemplates, _workoutTemplatesById, (t) => t.id);
+    _replaceAll(_workoutTemplates, workoutTemplates, _workoutTemplatesById,
+        (t) => t.id);
     _templateExercises
       ..clear()
       ..addAll(templateExercises);
-    _replaceAll(_workoutSessions, workoutSessions, _workoutSessionsById, (s) => s.id);
+    _replaceAll(
+        _workoutSessions, workoutSessions, _workoutSessionsById, (s) => s.id);
     _setEntries
       ..clear()
       ..addAll(setEntries);
@@ -365,7 +377,6 @@ class AppDatabase {
         'existing catalog');
   }
 
-
   /// Fills fields added to the catalog after a snapshot was written, on the
   /// seeded rows restored from it.
   ///
@@ -399,7 +410,6 @@ class AppDatabase {
       _foodsById[filled.id] = filled;
     }
   }
-
 
   /// Fills movement/mechanic/load metadata on seeded exercises restored from a
   /// snapshot written before those fields existed.
@@ -483,8 +493,7 @@ class AppDatabase {
         'workoutSessions': _workoutSessions.map((e) => e.toJson()).toList(),
         'setEntries': _setEntries.map((e) => e.toJson()).toList(),
         'sleepEntries': _sleepEntries.map((e) => e.toJson()).toList(),
-        'bodyWeightEntries':
-            _bodyWeightEntries.map((e) => e.toJson()).toList(),
+        'bodyWeightEntries': _bodyWeightEntries.map((e) => e.toJson()).toList(),
         // Which starter foods this install has ever been offered. Not the same
         // as which it currently holds -- see [_mergeNewStarterFoods].
         'introducedFoodIds': _introducedFoodIds.toList()..sort(),
@@ -619,6 +628,7 @@ class AppDatabase {
 
   // Foods methods - with local storage
   Future<List<FoodItemData>> getAllFoods() async => List.from(_foods);
+
   /// Every starter food id this install has ever been offered.
   ///
   /// Exposed for the backup: a restore that did not carry this forward would
@@ -641,17 +651,21 @@ class AppDatabase {
   void restoreIntroducedExerciseIds(Iterable<String> ids) =>
       _introducedExerciseIds.addAll(ids);
 
-  Future<List<FoodItemData>> getStarterFoods() async => _foods.where((f) => f.isStarter).toList();
-  Future<List<FoodItemData>> getUserFoods() async => _foods.where((f) => !f.isStarter).toList();
+  Future<List<FoodItemData>> getStarterFoods() async =>
+      _foods.where((f) => f.isStarter).toList();
+  Future<List<FoodItemData>> getUserFoods() async =>
+      _foods.where((f) => !f.isStarter).toList();
   Future<FoodItemData?> getFoodById(String id) async => _foodsById[id];
   Future<int> insertFood(FoodItemData food) async {
-    debugPrint('[FOOD] ➕ Creating food: "${food.name}" (${food.kcalPerUnit} kcal per ${food.unit})');
+    debugPrint(
+        '[FOOD] ➕ Creating food: "${food.name}" (${food.kcalPerUnit} kcal per ${food.unit})');
     _foods.add(food);
     _foodsById[food.id] = food; // Update O(1) lookup map
     _touch(_foodsController); // Trigger stream update
     debugPrint('[FOOD] ✅ Food created. Total foods: ${_foods.length}');
     return 1;
   }
+
   Future<bool> updateFood(FoodItemData food) async {
     debugPrint('[FOOD] 🔄 Updating food: "${food.name}"');
     final index = _foods.indexWhere((f) => f.id == food.id);
@@ -665,6 +679,7 @@ class AppDatabase {
     debugPrint('[FOOD] ❌ Food not found for update');
     return false;
   }
+
   Future<int> deleteFood(String id) async {
     final initialLength = _foods.length;
     _foods.removeWhere((f) => f.id == id);
@@ -693,12 +708,13 @@ class AppDatabase {
     // Removed debug print - this is called every 500ms by reactive stream
     return _meals.where((m) => m.date == date).toList();
   }
-  
+
   Future<List<MealData>> getRecentMeals({int limit = 20}) async {
-    final sortedMeals = _meals.toList()..sort((a, b) => b.date.compareTo(a.date));
+    final sortedMeals = _meals.toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
     return sortedMeals.take(limit).toList();
   }
-  
+
   Future<MealData?> getMealById(String id) async => _mealsById[id];
   Future<int> insertMeal(MealData meal) async {
     debugPrint('[MEALS] ➕ Creating meal: "${meal.name}" for date ${meal.date}');
@@ -708,6 +724,7 @@ class AppDatabase {
     debugPrint('[MEALS] ✅ Meal created. Total meals: ${_meals.length}');
     return 1;
   }
+
   Future<bool> updateMeal(MealData meal) async {
     debugPrint('[MEALS] 🔄 Updating meal: "${meal.name}"');
     final index = _meals.indexWhere((m) => m.id == meal.id);
@@ -721,6 +738,7 @@ class AppDatabase {
     debugPrint('[MEALS] ❌ Meal not found for update');
     return false;
   }
+
   Future<int> deleteMeal(String id) async {
     debugPrint('[MEALS] 🗑️ Deleting meal ID: $id');
     final initialLength = _meals.length;
@@ -730,19 +748,23 @@ class AppDatabase {
     final itemsRemoved = _mealItems.where((item) => item.mealId == id).length;
     _mealItems.removeWhere((item) => item.mealId == id);
     _touch(_mealsController); // Trigger stream update
-    debugPrint('[MEALS] ✅ Deleted meal and $itemsRemoved items. Total meals: ${_meals.length}');
+    debugPrint(
+        '[MEALS] ✅ Deleted meal and $itemsRemoved items. Total meals: ${_meals.length}');
     return _meals.length < initialLength ? 1 : 0;
   }
 
   // Meal items methods - with local storage
   Future<List<MealItemData>> getAllMealItems() async => List.from(_mealItems);
-  Future<List<MealItemData>> getMealItemsByMealId(String mealId) async => _mealItems.where((item) => item.mealId == mealId).toList();
+  Future<List<MealItemData>> getMealItemsByMealId(String mealId) async =>
+      _mealItems.where((item) => item.mealId == mealId).toList();
   Future<int> insertMealItem(MealItemData mealItem) async {
-    debugPrint('[MEALS] ➕ Adding food item: ${mealItem.amount} units, ${mealItem.kcal.toInt()} kcal');
+    debugPrint(
+        '[MEALS] ➕ Adding food item: ${mealItem.amount} units, ${mealItem.kcal.toInt()} kcal');
     _mealItems.add(mealItem);
     _touch(_mealsController); // Trigger stream update
     return 1;
   }
+
   Future<bool> updateMealItem(MealItemData mealItem) async {
     debugPrint('[MEALS] 🔄 Updating meal item');
     final index = _mealItems.indexWhere((item) => item.id == mealItem.id);
@@ -754,6 +776,7 @@ class AppDatabase {
     }
     return false;
   }
+
   Future<int> deleteMealItem(String id) async {
     debugPrint('[MEALS] 🗑️ Deleting meal item');
     final initialLength = _mealItems.length;
@@ -770,19 +793,27 @@ class AppDatabase {
     // This is called every 500ms by reactive stream - don't log here
     return List.from(_mealTemplates);
   }
-  Future<MealTemplateData?> getMealTemplateById(String id) async => _mealTemplatesById[id];
+
+  Future<MealTemplateData?> getMealTemplateById(String id) async =>
+      _mealTemplatesById[id];
   Future<int> insertMealTemplate(MealTemplateData template) async {
-    debugPrint('[TEMPLATES] ➕ Creating meal template: "${template.name}" with ID: ${template.id}');
+    debugPrint(
+        '[TEMPLATES] ➕ Creating meal template: "${template.name}" with ID: ${template.id}');
     _mealTemplates.add(template);
     _mealTemplatesById[template.id] = template; // O(1) lookup
     _touch(_mealTemplatesController); // Trigger stream update
-    debugPrint('[TEMPLATES] ✅ Template created. Total templates: ${_mealTemplates.length}');
-    debugPrint('[TEMPLATES] 📋 Current templates: ${_mealTemplates.map((t) => '${t.name} (${t.id})').join(', ')}');
+    debugPrint(
+        '[TEMPLATES] ✅ Template created. Total templates: ${_mealTemplates.length}');
+    debugPrint(
+        '[TEMPLATES] 📋 Current templates: ${_mealTemplates.map((t) => '${t.name} (${t.id})').join(', ')}');
     return 1;
   }
+
   Future<bool> updateMealTemplate(MealTemplateData template) async {
-    debugPrint('[TEMPLATES] 🔄 Updating template: "${template.name}" with ID: ${template.id}');
-    debugPrint('[TEMPLATES] 📋 Current templates in memory: ${_mealTemplates.map((t) => '${t.name} (${t.id})').join(', ')}');
+    debugPrint(
+        '[TEMPLATES] 🔄 Updating template: "${template.name}" with ID: ${template.id}');
+    debugPrint(
+        '[TEMPLATES] 📋 Current templates in memory: ${_mealTemplates.map((t) => '${t.name} (${t.id})').join(', ')}');
     final index = _mealTemplates.indexWhere((t) => t.id == template.id);
     if (index != -1) {
       _mealTemplates[index] = template;
@@ -791,39 +822,52 @@ class AppDatabase {
       debugPrint('[TEMPLATES] ✅ Template updated successfully at index $index');
       return true;
     }
-    debugPrint('[TEMPLATES] ❌ Template not found for update. Looking for ID: ${template.id}');
-    debugPrint('[TEMPLATES] 📋 Available IDs: ${_mealTemplates.map((t) => t.id).join(', ')}');
+    debugPrint(
+        '[TEMPLATES] ❌ Template not found for update. Looking for ID: ${template.id}');
+    debugPrint(
+        '[TEMPLATES] 📋 Available IDs: ${_mealTemplates.map((t) => t.id).join(', ')}');
     return false;
   }
+
   Future<int> deleteMealTemplate(String id) async {
     debugPrint('[TEMPLATES] 🗑️ Deleting template ID: $id');
     final initialLength = _mealTemplates.length;
     _mealTemplates.removeWhere((t) => t.id == id);
     _mealTemplatesById.remove(id); // O(1) lookup
     // Also remove associated template items
-    final itemsRemoved = _mealTemplateItems.where((item) => item.templateId == id).length;
+    final itemsRemoved =
+        _mealTemplateItems.where((item) => item.templateId == id).length;
     _mealTemplateItems.removeWhere((item) => item.templateId == id);
     if (_mealTemplates.length < initialLength) {
       _touch(_mealTemplatesController); // Trigger stream update
     }
-    debugPrint('[TEMPLATES] ✅ Deleted template and $itemsRemoved items. Total templates: ${_mealTemplates.length}');
+    debugPrint(
+        '[TEMPLATES] ✅ Deleted template and $itemsRemoved items. Total templates: ${_mealTemplates.length}');
     return _mealTemplates.length < initialLength ? 1 : 0;
   }
 
   // Meal template items methods - with local storage
-  Future<List<MealTemplateItemData>> getAllMealTemplateItems() async => List.from(_mealTemplateItems);
-  Future<List<MealTemplateItemData>> getMealTemplateItemsByTemplateId(String templateId) async {
+  Future<List<MealTemplateItemData>> getAllMealTemplateItems() async =>
+      List.from(_mealTemplateItems);
+  Future<List<MealTemplateItemData>> getMealTemplateItemsByTemplateId(
+      String templateId) async {
     // Removed debug print - this is called every 500ms by reactive stream
-    final items = _mealTemplateItems.where((item) => item.templateId == templateId).toList();
+    final items = _mealTemplateItems
+        .where((item) => item.templateId == templateId)
+        .toList();
     return items;
   }
+
   Future<int> insertMealTemplateItem(MealTemplateItemData item) async {
-    debugPrint('[TEMPLATES] ➕ Adding food to template: ${item.amount} units (templateId: ${item.templateId}, foodId: ${item.foodId})');
+    debugPrint(
+        '[TEMPLATES] ➕ Adding food to template: ${item.amount} units (templateId: ${item.templateId}, foodId: ${item.foodId})');
     _mealTemplateItems.add(item);
     _touch(_mealTemplatesController); // Trigger stream update
-    debugPrint('[TEMPLATES] ✅ Template item added. Total items: ${_mealTemplateItems.length}');
+    debugPrint(
+        '[TEMPLATES] ✅ Template item added. Total items: ${_mealTemplateItems.length}');
     return 1;
   }
+
   Future<bool> updateMealTemplateItem(MealTemplateItemData item) async {
     debugPrint('[TEMPLATES] 🔄 Updating template item');
     final index = _mealTemplateItems.indexWhere((i) => i.id == item.id);
@@ -835,6 +879,7 @@ class AppDatabase {
     }
     return false;
   }
+
   Future<int> deleteMealTemplateItem(String id) async {
     debugPrint('[TEMPLATES] 🗑️ Deleting template item');
     final initialLength = _mealTemplateItems.length;
@@ -855,6 +900,7 @@ class AppDatabase {
     _touch(_workoutsController);
     return 1;
   }
+
   Future<bool> updateExercise(ExerciseData exercise) async {
     final index = _exercises.indexWhere((e) => e.id == exercise.id);
     if (index != -1) {
@@ -865,6 +911,7 @@ class AppDatabase {
     }
     return false;
   }
+
   Future<int> deleteExercise(String id) async {
     final initialLength = _exercises.length;
     _exercises.removeWhere((e) => e.id == id);
@@ -879,16 +926,21 @@ class AppDatabase {
   }
 
   // Workout templates methods - with local storage
-  Future<List<WorkoutTemplateData>> getAllWorkoutTemplates() async => List.from(_workoutTemplates);
-  Future<WorkoutTemplateData?> getWorkoutTemplateById(String id) async => _workoutTemplatesById[id];
+  Future<List<WorkoutTemplateData>> getAllWorkoutTemplates() async =>
+      List.from(_workoutTemplates);
+  Future<WorkoutTemplateData?> getWorkoutTemplateById(String id) async =>
+      _workoutTemplatesById[id];
   Future<int> insertWorkoutTemplate(WorkoutTemplateData template) async {
-    debugPrint('[WORKOUT-TEMPLATES] ➕ Creating workout template: "${template.name}"');
+    debugPrint(
+        '[WORKOUT-TEMPLATES] ➕ Creating workout template: "${template.name}"');
     _workoutTemplates.add(template);
     _workoutTemplatesById[template.id] = template; // O(1) lookup
     _touch(_workoutsController); // Trigger stream update
-    debugPrint('[WORKOUT-TEMPLATES] ✅ Template created. Total templates: ${_workoutTemplates.length}');
+    debugPrint(
+        '[WORKOUT-TEMPLATES] ✅ Template created. Total templates: ${_workoutTemplates.length}');
     return 1;
   }
+
   Future<bool> updateWorkoutTemplate(WorkoutTemplateData template) async {
     final index = _workoutTemplates.indexWhere((t) => t.id == template.id);
     if (index == -1) return false;
@@ -898,6 +950,7 @@ class AppDatabase {
     _touch(_workoutsController); // Trigger stream update
     return true;
   }
+
   Future<int> deleteWorkoutTemplate(String id) async {
     final initialLength = _workoutTemplates.length;
     _workoutTemplates.removeWhere((t) => t.id == id);
@@ -911,15 +964,22 @@ class AppDatabase {
   }
 
   // Template exercises methods - with local storage
-  Future<List<TemplateExerciseData>> getAllTemplateExercises() async => List.from(_templateExercises);
-  Future<List<TemplateExerciseData>> getTemplateExercisesByTemplateId(String templateId) async => _templateExercises.where((ex) => ex.templateId == templateId).toList();
-  Future<int> insertTemplateExercise(TemplateExerciseData templateExercise) async {
+  Future<List<TemplateExerciseData>> getAllTemplateExercises() async =>
+      List.from(_templateExercises);
+  Future<List<TemplateExerciseData>> getTemplateExercisesByTemplateId(
+          String templateId) async =>
+      _templateExercises.where((ex) => ex.templateId == templateId).toList();
+  Future<int> insertTemplateExercise(
+      TemplateExerciseData templateExercise) async {
     _templateExercises.add(templateExercise);
     _touch(_workoutsController); // Trigger stream update
     return 1;
   }
-  Future<bool> updateTemplateExercise(TemplateExerciseData templateExercise) async {
-    final index = _templateExercises.indexWhere((ex) => ex.id == templateExercise.id);
+
+  Future<bool> updateTemplateExercise(
+      TemplateExerciseData templateExercise) async {
+    final index =
+        _templateExercises.indexWhere((ex) => ex.id == templateExercise.id);
     if (index != -1) {
       _templateExercises[index] = templateExercise;
       _touch(_workoutsController); // Trigger stream update
@@ -927,6 +987,7 @@ class AppDatabase {
     }
     return false;
   }
+
   Future<int> deleteTemplateExercise(String id) async {
     final initialLength = _templateExercises.length;
     _templateExercises.removeWhere((ex) => ex.id == id);
@@ -937,21 +998,27 @@ class AppDatabase {
   }
 
   // Workout sessions methods - with local storage
-  Future<List<WorkoutSessionData>> getAllWorkoutSessions() async => List.from(_workoutSessions);
-  Future<List<WorkoutSessionData>> getRecentWorkoutSessions({int limit = 10}) async {
-    final sorted = List<WorkoutSessionData>.from(_workoutSessions)..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+  Future<List<WorkoutSessionData>> getAllWorkoutSessions() async =>
+      List.from(_workoutSessions);
+  Future<List<WorkoutSessionData>> getRecentWorkoutSessions(
+      {int limit = 10}) async {
+    final sorted = List<WorkoutSessionData>.from(_workoutSessions)
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     return sorted.take(limit).toList();
   }
-  
-  Future<WorkoutSessionData?> getWorkoutSessionById(String id) async => _workoutSessionsById[id];
+
+  Future<WorkoutSessionData?> getWorkoutSessionById(String id) async =>
+      _workoutSessionsById[id];
   Future<int> insertWorkoutSession(WorkoutSessionData session) async {
     debugPrint('[WORKOUTS] ➕ Starting workout session');
     _workoutSessions.add(session);
     _workoutSessionsById[session.id] = session; // O(1) lookup
     _touch(_workoutsController); // Trigger stream update
-    debugPrint('[WORKOUTS] ✅ Session created. Total sessions: ${_workoutSessions.length}');
+    debugPrint(
+        '[WORKOUTS] ✅ Session created. Total sessions: ${_workoutSessions.length}');
     return 1;
   }
+
   Future<bool> updateWorkoutSession(WorkoutSessionData session) async {
     final index = _workoutSessions.indexWhere((s) => s.id == session.id);
     if (index == -1) return false;
@@ -961,6 +1028,7 @@ class AppDatabase {
     _touch(_workoutsController); // Trigger stream update
     return true;
   }
+
   Future<int> deleteWorkoutSession(String id) async {
     debugPrint('[WORKOUTS] 🗑️ Deleting workout session');
     final initialLength = _workoutSessions.length;
@@ -972,19 +1040,23 @@ class AppDatabase {
     if (_workoutSessions.length < initialLength) {
       _touch(_workoutsController); // Trigger stream update
     }
-    debugPrint('[WORKOUTS] ✅ Deleted session and $setsRemoved sets. Total sessions: ${_workoutSessions.length}');
+    debugPrint(
+        '[WORKOUTS] ✅ Deleted session and $setsRemoved sets. Total sessions: ${_workoutSessions.length}');
     return _workoutSessions.length < initialLength ? 1 : 0;
   }
 
   // Set entries methods - with local storage
   Future<List<SetEntryData>> getAllSetEntries() async => List.from(_setEntries);
-  Future<List<SetEntryData>> getSetEntriesBySessionId(String sessionId) async => _setEntries.where((set) => set.sessionId == sessionId).toList();
+  Future<List<SetEntryData>> getSetEntriesBySessionId(String sessionId) async =>
+      _setEntries.where((set) => set.sessionId == sessionId).toList();
   Future<int> insertSetEntry(SetEntryData setEntry) async {
-    debugPrint('[WORKOUTS] ➕ Recording set: ${setEntry.reps} reps @ ${setEntry.weight ?? 0}kg');
+    debugPrint(
+        '[WORKOUTS] ➕ Recording set: ${setEntry.reps} reps @ ${setEntry.weight ?? 0}kg');
     _setEntries.add(setEntry);
     _touch(_workoutsController); // Trigger stream update
     return 1;
   }
+
   Future<bool> updateSetEntry(SetEntryData setEntry) async {
     final index = _setEntries.indexWhere((set) => set.id == setEntry.id);
     if (index != -1) {
@@ -994,6 +1066,7 @@ class AppDatabase {
     }
     return false;
   }
+
   Future<int> deleteSetEntry(String id) async {
     final initialLength = _setEntries.length;
     _setEntries.removeWhere((set) => set.id == id);
@@ -1004,12 +1077,16 @@ class AppDatabase {
   }
 
   // Sleep entries methods - with local storage
-  Future<List<SleepEntryData>> getAllSleepEntries() async => List.from(_sleepEntries);
+  Future<List<SleepEntryData>> getAllSleepEntries() async =>
+      List.from(_sleepEntries);
   Future<List<SleepEntryData>> getRecentSleepEntries({int limit = 30}) async {
-    final sorted = List<SleepEntryData>.from(_sleepEntries)..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    final sorted = List<SleepEntryData>.from(_sleepEntries)
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     return sorted.take(limit).toList();
   }
-  Future<SleepEntryData?> getSleepEntryById(String id) async => _sleepEntriesById[id];
+
+  Future<SleepEntryData?> getSleepEntryById(String id) async =>
+      _sleepEntriesById[id];
   Future<int> insertSleepEntry(SleepEntryData sleepEntry) async {
     debugPrint('[SLEEP] ➕ Starting sleep tracking');
     _sleepEntries.add(sleepEntry);
@@ -1018,6 +1095,7 @@ class AppDatabase {
     debugPrint('[SLEEP] ✅ Sleep entry created');
     return 1;
   }
+
   Future<bool> updateSleepEntry(SleepEntryData sleepEntry) async {
     final index = _sleepEntries.indexWhere((s) => s.id == sleepEntry.id);
     if (index == -1) return false;
@@ -1027,6 +1105,7 @@ class AppDatabase {
     _touch(_sleepController); // Trigger stream update
     return true;
   }
+
   Future<int> deleteSleepEntry(String id) async {
     debugPrint('[SLEEP] 🗑️ Deleting sleep entry');
     final initialLength = _sleepEntries.length;
@@ -1049,7 +1128,8 @@ class AppDatabase {
       List.from(_bodyWeightEntries);
 
   /// Newest first.
-  Future<List<BodyWeightEntryData>> getRecentBodyWeightEntries({int limit = 90}) async {
+  Future<List<BodyWeightEntryData>> getRecentBodyWeightEntries(
+      {int limit = 90}) async {
     final sorted = List<BodyWeightEntryData>.from(_bodyWeightEntries)
       ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
     return sorted.take(limit).toList();
@@ -1102,14 +1182,19 @@ class AppDatabase {
   // Clear all user data (keeps starter foods and exercises)
   Future<void> clearAllUserData() async {
     debugPrint('[DATABASE] 🗑️ Clearing all user data...');
-    
+
     // Clear meals and user meal templates (keep built-in meal templates)
     _meals.clear();
     _mealItems.clear();
-    final builtInMealTemplateIds = _mealTemplates.where((t) => t.id.startsWith('builtin-meal-')).map((t) => t.id).toSet();
+    final builtInMealTemplateIds = _mealTemplates
+        .where((t) => t.id.startsWith('builtin-meal-'))
+        .map((t) => t.id)
+        .toSet();
     _mealTemplates.removeWhere((t) => !builtInMealTemplateIds.contains(t.id));
-    _mealTemplateItems.removeWhere((item) => !builtInMealTemplateIds.contains(item.templateId));
-    debugPrint('[DATABASE] ✅ Cleared meals and user meal templates (kept built-in meal templates)');
+    _mealTemplateItems.removeWhere(
+        (item) => !builtInMealTemplateIds.contains(item.templateId));
+    debugPrint(
+        '[DATABASE] ✅ Cleared meals and user meal templates (kept built-in meal templates)');
 
     // Clear user-created foods (keep starter foods)
     _foods.removeWhere((food) => !food.isStarter);
@@ -1118,16 +1203,23 @@ class AppDatabase {
     // Clear workout sessions and user workout templates (keep built-in ones)
     _workoutSessions.clear();
     _setEntries.clear();
-    final builtInWorkoutTemplateIds = _workoutTemplates.where((t) => t.id.startsWith('builtin-workout-')).map((t) => t.id).toSet();
-    _workoutTemplates.removeWhere((t) => !builtInWorkoutTemplateIds.contains(t.id));
-    _templateExercises.removeWhere((ex) => !builtInWorkoutTemplateIds.contains(ex.templateId));
-    debugPrint('[DATABASE] ✅ Cleared workouts and sessions (kept built-in workout templates)');
-    
+    final builtInWorkoutTemplateIds = _workoutTemplates
+        .where((t) => t.id.startsWith('builtin-workout-'))
+        .map((t) => t.id)
+        .toSet();
+    _workoutTemplates
+        .removeWhere((t) => !builtInWorkoutTemplateIds.contains(t.id));
+    _templateExercises.removeWhere(
+        (ex) => !builtInWorkoutTemplateIds.contains(ex.templateId));
+    debugPrint(
+        '[DATABASE] ✅ Cleared workouts and sessions (kept built-in workout templates)');
+
     // Clear user-created exercises (keep sample exercises)
     final sampleExerciseIds = _getSampleExercises().map((e) => e.id).toSet();
-    _exercises.removeWhere((exercise) => !sampleExerciseIds.contains(exercise.id));
+    _exercises
+        .removeWhere((exercise) => !sampleExerciseIds.contains(exercise.id));
     debugPrint('[DATABASE] ✅ Cleared user exercises (kept sample exercises)');
-    
+
     // Clear sleep entries
     _sleepEntries.clear();
     _sleepEntriesById.clear();
@@ -1146,15 +1238,17 @@ class AppDatabase {
 
     debugPrint('[DATABASE] ✅ All user data cleared successfully!');
   }
-  
+
   // Method to get calendar-safe event data (only recent, not all history)
-  Future<List<WorkoutSessionData>> getWorkoutSessionsInRange(DateTime start, DateTime end) async {
+  Future<List<WorkoutSessionData>> getWorkoutSessionsInRange(
+      DateTime start, DateTime end) async {
     return _workoutSessions.where((session) {
-      return session.startedAt.isAfter(start.subtract(const Duration(days: 1))) &&
-             session.startedAt.isBefore(end.add(const Duration(days: 1)));
+      return session.startedAt
+              .isAfter(start.subtract(const Duration(days: 1))) &&
+          session.startedAt.isBefore(end.add(const Duration(days: 1)));
     }).toList();
   }
-  
+
   Future<List<MealData>> getMealsInRange(DateTime start, DateTime end) async {
     final startInt = _dateToInt(start);
     final endInt = _dateToInt(end);
@@ -1162,12 +1256,13 @@ class AppDatabase {
       return meal.date >= startInt && meal.date <= endInt;
     }).toList();
   }
-  
-  Future<List<SleepEntryData>> getSleepEntriesInRange(DateTime start, DateTime end) async {
+
+  Future<List<SleepEntryData>> getSleepEntriesInRange(
+      DateTime start, DateTime end) async {
     return _sleepEntries.where((sleep) {
       final sleepDate = sleep.endedAt ?? sleep.startedAt;
       return sleepDate.isAfter(start.subtract(const Duration(days: 1))) &&
-             sleepDate.isBefore(end.add(const Duration(days: 1)));
+          sleepDate.isBefore(end.add(const Duration(days: 1)));
     }).toList();
   }
 
@@ -1201,7 +1296,7 @@ class AppDatabase {
       totalCarbs += item.carbs;
       totalFat += item.fat;
     }
-    
+
     return {
       'kcal': totalKcal,
       'protein': totalProtein,
@@ -1223,15 +1318,16 @@ class AppDatabase {
 
   Future<double?> getLastNightSleepHours() async {
     if (_sleepEntries.isEmpty) return null;
-    
+
     // Filter completed sleep entries and sort by ended_at (or started_at if no ended_at)
     final completedEntries = _sleepEntries
         .where((entry) => entry.endedAt != null)
         .toList()
-      ..sort((a, b) => (b.endedAt ?? b.startedAt).compareTo(a.endedAt ?? a.startedAt));
-    
+      ..sort((a, b) =>
+          (b.endedAt ?? b.startedAt).compareTo(a.endedAt ?? a.startedAt));
+
     if (completedEntries.isEmpty) return null;
-    
+
     final lastEntry = completedEntries.first;
     final duration = lastEntry.endedAt!.difference(lastEntry.startedAt);
     return duration.inMinutes / 60.0;
@@ -1240,21 +1336,23 @@ class AppDatabase {
   // Weekly aggregation methods
   Future<Map<String, double>> getWeekTotals(int startDate) async {
     // Removed debug prints - this can be called frequently
-    
+
     // Calculate end date (7 days later)
     final startDateTime = _intToDate(startDate);
     final endDateTime = startDateTime.add(const Duration(days: 7));
     final endDate = _dateToInt(endDateTime);
-    
-    final mealsInWeek = _meals.where((m) => m.date >= startDate && m.date < endDate).toList();
-    
+
+    final mealsInWeek =
+        _meals.where((m) => m.date >= startDate && m.date < endDate).toList();
+
     double totalKcal = 0;
     double totalProtein = 0;
     double totalCarbs = 0;
     double totalFat = 0;
-    
+
     for (final meal in mealsInWeek) {
-      final mealItems = _mealItems.where((item) => item.mealId == meal.id).toList();
+      final mealItems =
+          _mealItems.where((item) => item.mealId == meal.id).toList();
       for (final item in mealItems) {
         totalKcal += item.kcal;
         totalProtein += item.protein;
@@ -1262,7 +1360,7 @@ class AppDatabase {
         totalFat += item.fat;
       }
     }
-    
+
     return {
       'kcal': totalKcal,
       'protein': totalProtein,
@@ -1372,17 +1470,17 @@ class AppDatabase {
             entry.endedAt != null &&
             AppDateUtils.isInRange(entry.endedAt!, weekStart, weekEnd))
         .toList();
-    
+
     if (weekSleepEntries.isEmpty) {
       return {'totalHours': 0.0, 'averageHours': 0.0, 'nightsCount': 0.0};
     }
-    
+
     double totalHours = 0;
     for (final entry in weekSleepEntries) {
       final duration = entry.endedAt!.difference(entry.startedAt);
       totalHours += duration.inMinutes / 60.0;
     }
-    
+
     return {
       'totalHours': totalHours,
       'averageHours': totalHours / weekSleepEntries.length,
@@ -1476,8 +1574,9 @@ class AppDatabase {
     for (final meal in _meals.where((m) => m.date < cutoffDateInt).toList()) {
       removed += await deleteMeal(meal.id);
     }
-    for (final session
-        in _workoutSessions.where((s) => s.startedAt.isBefore(cutoff)).toList()) {
+    for (final session in _workoutSessions
+        .where((s) => s.startedAt.isBefore(cutoff))
+        .toList()) {
       removed += await deleteWorkoutSession(session.id);
     }
     for (final entry
@@ -1544,15 +1643,16 @@ class AppDatabase {
     ];
   }
 
-
   // Built-in workout templates so the Workouts tab has real content on
   // first launch, not just an empty state -- built entirely from the
   // exercise library above (ids '1'-'16').
-  List<({WorkoutTemplateData template, List<TemplateExerciseData> exercises})> _getBuiltInWorkoutTemplates() {
+  List<({WorkoutTemplateData template, List<TemplateExerciseData> exercises})>
+      _getBuiltInWorkoutTemplates() {
     var nextTemplateId = 1;
     var nextExerciseEntryId = 1;
 
-    ({WorkoutTemplateData template, List<TemplateExerciseData> exercises}) template(
+    ({WorkoutTemplateData template, List<TemplateExerciseData> exercises})
+        template(
       String name, {
       required String notes,
       required List<String> exerciseIds,
@@ -1575,7 +1675,11 @@ class AppDatabase {
         // Seeded before any profile exists, so it is neither generated nor
         // the user's -- see TemplateOrigin. Marking it correctly keeps it
         // out of anything regeneration replaces.
-        template: WorkoutTemplateData(id: templateId, name: name, notes: notes, origin: TemplateOrigin.builtin),
+        template: WorkoutTemplateData(
+            id: templateId,
+            name: name,
+            notes: notes,
+            origin: TemplateOrigin.builtin),
         exercises: exercises,
       );
     }
@@ -1583,36 +1687,71 @@ class AppDatabase {
     return [
       template(
         'Full-Body Beginner',
-        notes: 'A simple 3x/week starting point covering every major muscle group.',
-        exerciseIds: ['8', '1', '6', '12', '16'], // Squats, Push-ups, Barbell Rows, Overhead Press, Plank
+        notes:
+            'A simple 3x/week starting point covering every major muscle group.',
+        exerciseIds: [
+          '8',
+          '1',
+          '6',
+          '12',
+          '16'
+        ], // Squats, Push-ups, Barbell Rows, Overhead Press, Plank
         reps: 10,
       ),
       template(
         'Upper Body (Upper/Lower Split)',
         notes: 'Pair with "Lower Body" on alternating days.',
-        exerciseIds: ['2', '6', '12', '14', '15'], // Bench Press, Barbell Rows, Overhead Press, Bicep Curls, Dips
+        exerciseIds: [
+          '2',
+          '6',
+          '12',
+          '14',
+          '15'
+        ], // Bench Press, Barbell Rows, Overhead Press, Bicep Curls, Dips
       ),
       template(
         'Lower Body (Upper/Lower Split)',
         notes: 'Pair with "Upper Body" on alternating days.',
-        exerciseIds: ['8', '9', '10', '11'], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
+        exerciseIds: [
+          '8',
+          '9',
+          '10',
+          '11'
+        ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
       ),
       template(
         'Push Day (Push/Pull/Legs)',
         notes: 'Chest, shoulders, triceps.',
-        exerciseIds: ['2', '12', '3', '13', '15'], // Bench Press, Overhead Press, Chest Fly, Lateral Raises, Dips
+        exerciseIds: [
+          '2',
+          '12',
+          '3',
+          '13',
+          '15'
+        ], // Bench Press, Overhead Press, Chest Fly, Lateral Raises, Dips
       ),
       template(
         'Pull Day (Push/Pull/Legs)',
         notes: 'Back and biceps.',
-        exerciseIds: ['5', '4', '6', '7', '14'], // Deadlift, Pull-ups, Barbell Rows, Lat Pulldown, Bicep Curls
+        exerciseIds: [
+          '5',
+          '4',
+          '6',
+          '7',
+          '14'
+        ], // Deadlift, Pull-ups, Barbell Rows, Lat Pulldown, Bicep Curls
         sets: 3,
         reps: 8,
       ),
       template(
         'Leg Day (Push/Pull/Legs)',
         notes: 'Quads, hamstrings, glutes, calves.',
-        exerciseIds: ['8', '9', '10', '11'], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
+        exerciseIds: [
+          '8',
+          '9',
+          '10',
+          '11'
+        ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
         sets: 4,
         reps: 8,
       ),
@@ -1623,7 +1762,8 @@ class AppDatabase {
   // on first launch -- built entirely from the food catalog above.
   // Amounts are stored quantities (see FoodServingKind): for "100g"-unit
   // foods, 1.0 = 100g; for piece/tbsp-unit foods, 1.0 = one piece/tbsp.
-  List<({MealTemplateData template, List<MealTemplateItemData> items})> _getBuiltInMealTemplates() {
+  List<({MealTemplateData template, List<MealTemplateItemData> items})>
+      _getBuiltInMealTemplates() {
     var nextTemplateId = 1;
     var nextItemId = 1;
 
@@ -1644,7 +1784,13 @@ class AppDatabase {
           .toList();
       return (
         // See the workout equivalent above.
-        template: MealTemplateData(id: templateId, name: name, description: description, origin: TemplateOrigin.builtin, createdAt: now, updatedAt: now),
+        template: MealTemplateData(
+            id: templateId,
+            name: name,
+            description: description,
+            origin: TemplateOrigin.builtin,
+            createdAt: now,
+            updatedAt: now),
         items: items,
       );
     }
@@ -1692,9 +1838,11 @@ class FoodItemData {
   final double carbsPerUnit;
   final double fatPerUnit;
   final bool isStarter;
+
   /// What this food contains -- allergens and animal origin. Drives the
   /// diet/exclusion filtering in `ProfileFit`. Empty means untagged.
   final Set<FoodTag> tags;
+
   /// Where a browsing user would look for this. A separate axis from [tags]:
   /// see the note in `StarterFoodCatalog`. Defaults to `other`, which is what
   /// a food the user added without choosing gets.
@@ -1720,41 +1868,41 @@ class FoodItemData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'nameHe': nameHe,
-    'brand': brand,
-    'unit': unit,
-    'kcalPerUnit': kcalPerUnit,
-    'proteinPerUnit': proteinPerUnit,
-    'carbsPerUnit': carbsPerUnit,
-    'fatPerUnit': fatPerUnit,
-    'isStarter': isStarter,
-    'tags': FoodTagCodec.encode(tags),
-    'category': category.key,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
-  };
+        'id': id,
+        'name': name,
+        'nameHe': nameHe,
+        'brand': brand,
+        'unit': unit,
+        'kcalPerUnit': kcalPerUnit,
+        'proteinPerUnit': proteinPerUnit,
+        'carbsPerUnit': carbsPerUnit,
+        'fatPerUnit': fatPerUnit,
+        'isStarter': isStarter,
+        'tags': FoodTagCodec.encode(tags),
+        'category': category.key,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+      };
 
   factory FoodItemData.fromJson(Map<String, dynamic> json) => FoodItemData(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    nameHe: json['nameHe'] as String?,
-    brand: json['brand'] as String?,
-    unit: json['unit'] as String,
-    kcalPerUnit: (json['kcalPerUnit'] as num).toDouble(),
-    proteinPerUnit: (json['proteinPerUnit'] as num).toDouble(),
-    carbsPerUnit: (json['carbsPerUnit'] as num).toDouble(),
-    fatPerUnit: (json['fatPerUnit'] as num).toDouble(),
-    isStarter: json['isStarter'] as bool,
-    // Absent on rows written before tags existed -> decodes to empty.
-    tags: FoodTagCodec.decode(json['tags']),
-    // Absent on rows written before categories existed -> `other`, then
-    // corrected for seeded rows by _backfillFoodCategories.
-    category: FoodCategory.fromKey(json['category']),
-    createdAt: DateTime.parse(json['createdAt'] as String),
-    updatedAt: DateTime.parse(json['updatedAt'] as String),
-  );
+        id: json['id'] as String,
+        name: json['name'] as String,
+        nameHe: json['nameHe'] as String?,
+        brand: json['brand'] as String?,
+        unit: json['unit'] as String,
+        kcalPerUnit: (json['kcalPerUnit'] as num).toDouble(),
+        proteinPerUnit: (json['proteinPerUnit'] as num).toDouble(),
+        carbsPerUnit: (json['carbsPerUnit'] as num).toDouble(),
+        fatPerUnit: (json['fatPerUnit'] as num).toDouble(),
+        isStarter: json['isStarter'] as bool,
+        // Absent on rows written before tags existed -> decodes to empty.
+        tags: FoodTagCodec.decode(json['tags']),
+        // Absent on rows written before categories existed -> `other`, then
+        // corrected for seeded rows by _backfillFoodCategories.
+        category: FoodCategory.fromKey(json['category']),
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+      );
 
   /// A copy carrying seed-provided values for fields this row is missing.
   ///
@@ -1788,6 +1936,7 @@ class MealData {
   final String? note;
   final DateTime createdAt;
   final DateTime updatedAt;
+
   /// The scheduled calendar event this entry was created from, when it was
   /// logged by completing one (via the agenda or a notification action).
   ///
@@ -1796,6 +1945,7 @@ class MealData {
   /// completing an event visibly duplicated its row. Null for anything the
   /// user logged directly, which is shown on its own as before.
   final String? sourceEventId;
+
   /// The real time of day the meal was eaten, when the user set it
   /// explicitly. Previously the calendar guessed a time from [createdAt] or
   /// by keyword-matching the meal name -- null here means "no explicit time
@@ -1814,28 +1964,28 @@ class MealData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'date': date,
-    'name': name,
-    'note': note,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
-    'sourceEventId': sourceEventId,
-    'loggedAt': loggedAt?.toIso8601String(),
-  };
+        'id': id,
+        'date': date,
+        'name': name,
+        'note': note,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+        'sourceEventId': sourceEventId,
+        'loggedAt': loggedAt?.toIso8601String(),
+      };
 
   factory MealData.fromJson(Map<String, dynamic> json) => MealData(
-    id: json['id'] as String,
-    date: json['date'] as int,
-    name: json['name'] as String,
-    note: json['note'] as String?,
-    createdAt: DateTime.parse(json['createdAt'] as String),
-    updatedAt: DateTime.parse(json['updatedAt'] as String),
-    sourceEventId: json['sourceEventId'] as String?,
-    loggedAt: json['loggedAt'] != null
-        ? DateTime.parse(json['loggedAt'] as String)
-        : null,
-  );
+        id: json['id'] as String,
+        date: json['date'] as int,
+        name: json['name'] as String,
+        note: json['note'] as String?,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+        sourceEventId: json['sourceEventId'] as String?,
+        loggedAt: json['loggedAt'] != null
+            ? DateTime.parse(json['loggedAt'] as String)
+            : null,
+      );
 
   MealData copyWith({
     String? id,
@@ -1847,16 +1997,17 @@ class MealData {
     String? sourceEventId,
     DateTime? loggedAt,
     bool clearLoggedAt = false,
-  }) => MealData(
-    id: id ?? this.id,
-    date: date ?? this.date,
-    name: name ?? this.name,
-    note: note ?? this.note,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    sourceEventId: sourceEventId ?? this.sourceEventId,
-    loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
-  );
+  }) =>
+      MealData(
+        id: id ?? this.id,
+        date: date ?? this.date,
+        name: name ?? this.name,
+        note: note ?? this.note,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        sourceEventId: sourceEventId ?? this.sourceEventId,
+        loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
+      );
 }
 
 class MealItemData {
@@ -1881,26 +2032,26 @@ class MealItemData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'mealId': mealId,
-    'foodId': foodId,
-    'amount': amount,
-    'kcal': kcal,
-    'protein': protein,
-    'carbs': carbs,
-    'fat': fat,
-  };
+        'id': id,
+        'mealId': mealId,
+        'foodId': foodId,
+        'amount': amount,
+        'kcal': kcal,
+        'protein': protein,
+        'carbs': carbs,
+        'fat': fat,
+      };
 
   factory MealItemData.fromJson(Map<String, dynamic> json) => MealItemData(
-    id: json['id'] as String,
-    mealId: json['mealId'] as String,
-    foodId: json['foodId'] as String,
-    amount: (json['amount'] as num).toDouble(),
-    kcal: (json['kcal'] as num).toDouble(),
-    protein: (json['protein'] as num).toDouble(),
-    carbs: (json['carbs'] as num).toDouble(),
-    fat: (json['fat'] as num).toDouble(),
-  );
+        id: json['id'] as String,
+        mealId: json['mealId'] as String,
+        foodId: json['foodId'] as String,
+        amount: (json['amount'] as num).toDouble(),
+        kcal: (json['kcal'] as num).toDouble(),
+        protein: (json['protein'] as num).toDouble(),
+        carbs: (json['carbs'] as num).toDouble(),
+        fat: (json['fat'] as num).toDouble(),
+      );
 }
 
 class MealTemplateData {
@@ -1909,6 +2060,7 @@ class MealTemplateData {
   final String? nameHe;
   final String? description;
   final String? descriptionHe;
+
   /// See [WorkoutTemplateData.origin].
   final TemplateOrigin origin;
   final DateTime createdAt;
@@ -1926,28 +2078,29 @@ class MealTemplateData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'nameHe': nameHe,
-    'description': description,
-    'descriptionHe': descriptionHe,
-    'origin': origin.key,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
-  };
+        'id': id,
+        'name': name,
+        'nameHe': nameHe,
+        'description': description,
+        'descriptionHe': descriptionHe,
+        'origin': origin.key,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+      };
 
-  factory MealTemplateData.fromJson(Map<String, dynamic> json) => MealTemplateData(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    nameHe: json['nameHe'] as String?,
-    description: json['description'] as String?,
-    descriptionHe: json['descriptionHe'] as String?,
-    // Absent on rows predating this field -> TemplateOrigin.user, which
-    // regeneration never replaces.
-    origin: TemplateOrigin.fromKey(json['origin']),
-    createdAt: DateTime.parse(json['createdAt'] as String),
-    updatedAt: DateTime.parse(json['updatedAt'] as String),
-  );
+  factory MealTemplateData.fromJson(Map<String, dynamic> json) =>
+      MealTemplateData(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        nameHe: json['nameHe'] as String?,
+        description: json['description'] as String?,
+        descriptionHe: json['descriptionHe'] as String?,
+        // Absent on rows predating this field -> TemplateOrigin.user, which
+        // regeneration never replaces.
+        origin: TemplateOrigin.fromKey(json['origin']),
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+      );
 }
 
 class MealTemplateItemData {
@@ -1964,18 +2117,19 @@ class MealTemplateItemData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'templateId': templateId,
-    'foodId': foodId,
-    'amount': amount,
-  };
+        'id': id,
+        'templateId': templateId,
+        'foodId': foodId,
+        'amount': amount,
+      };
 
-  factory MealTemplateItemData.fromJson(Map<String, dynamic> json) => MealTemplateItemData(
-    id: json['id'] as String,
-    templateId: json['templateId'] as String,
-    foodId: json['foodId'] as String,
-    amount: (json['amount'] as num).toDouble(),
-  );
+  factory MealTemplateItemData.fromJson(Map<String, dynamic> json) =>
+      MealTemplateItemData(
+        id: json['id'] as String,
+        templateId: json['templateId'] as String,
+        foodId: json['foodId'] as String,
+        amount: (json['amount'] as num).toDouble(),
+      );
 }
 
 class ExerciseData {
@@ -1986,10 +2140,12 @@ class ExerciseData {
   final String? primaryMuscleHe;
   final String unit;
   final String? notes;
+
   /// Equipment this exercise requires, and body parts it is unsafe for.
   /// Both drive `ProfileFit`; empty means unspecified.
   final Set<Equipment> equipment;
   final Set<BodyPart> contraindicatedFor;
+
   /// Body parts this exercise helps rehabilitate -- the pool physiotherapy
   /// sessions are built from.
   final Set<BodyPart> rehabFor;
@@ -2031,40 +2187,40 @@ class ExerciseData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'nameHe': nameHe,
-    'primaryMuscle': primaryMuscle,
-    'primaryMuscleHe': primaryMuscleHe,
-    'unit': unit,
-    'notes': notes,
-    'equipment': EquipmentCodec.encode(equipment),
-    'contraindicatedFor': BodyPartCodec.encode(contraindicatedFor),
-    'rehabFor': BodyPartCodec.encode(rehabFor),
-    'movementPattern': MovementPatternCodec.encode(movementPattern),
-    'mechanic': MechanicCodec.encode(mechanic),
-    'loadClass': LoadClassCodec.encode(loadClass),
-  };
+        'id': id,
+        'name': name,
+        'nameHe': nameHe,
+        'primaryMuscle': primaryMuscle,
+        'primaryMuscleHe': primaryMuscleHe,
+        'unit': unit,
+        'notes': notes,
+        'equipment': EquipmentCodec.encode(equipment),
+        'contraindicatedFor': BodyPartCodec.encode(contraindicatedFor),
+        'rehabFor': BodyPartCodec.encode(rehabFor),
+        'movementPattern': MovementPatternCodec.encode(movementPattern),
+        'mechanic': MechanicCodec.encode(mechanic),
+        'loadClass': LoadClassCodec.encode(loadClass),
+      };
 
   factory ExerciseData.fromJson(Map<String, dynamic> json) => ExerciseData(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    nameHe: json['nameHe'] as String?,
-    primaryMuscle: json['primaryMuscle'] as String?,
-    primaryMuscleHe: json['primaryMuscleHe'] as String?,
-    unit: json['unit'] as String,
-    notes: json['notes'] as String?,
-    // Absent on rows written before these fields existed -> empty.
-    equipment: EquipmentCodec.decode(json['equipment']),
-    contraindicatedFor: BodyPartCodec.decode(json['contraindicatedFor']),
-    rehabFor: BodyPartCodec.decode(json['rehabFor']),
-    // Null on rows written before these existed. Left null rather than
-    // defaulted so `_backfillExerciseMetadata` can tell "never tagged" from
-    // "tagged as the default", and only fill the former.
-    movementPattern: MovementPatternCodec.decode(json['movementPattern']),
-    mechanic: MechanicCodec.decode(json['mechanic']),
-    loadClass: LoadClassCodec.decode(json['loadClass']),
-  );
+        id: json['id'] as String,
+        name: json['name'] as String,
+        nameHe: json['nameHe'] as String?,
+        primaryMuscle: json['primaryMuscle'] as String?,
+        primaryMuscleHe: json['primaryMuscleHe'] as String?,
+        unit: json['unit'] as String,
+        notes: json['notes'] as String?,
+        // Absent on rows written before these fields existed -> empty.
+        equipment: EquipmentCodec.decode(json['equipment']),
+        contraindicatedFor: BodyPartCodec.decode(json['contraindicatedFor']),
+        rehabFor: BodyPartCodec.decode(json['rehabFor']),
+        // Null on rows written before these existed. Left null rather than
+        // defaulted so `_backfillExerciseMetadata` can tell "never tagged" from
+        // "tagged as the default", and only fill the former.
+        movementPattern: MovementPatternCodec.decode(json['movementPattern']),
+        mechanic: MechanicCodec.decode(json['mechanic']),
+        loadClass: LoadClassCodec.decode(json['loadClass']),
+      );
 
   /// A copy with only the metadata fields that are currently null filled in.
   /// Never overwrites a value the user or a newer seed already set.
@@ -2098,6 +2254,7 @@ class WorkoutTemplateData {
   final String? nameHe;
   final String? notes;
   final String? notesHe;
+
   /// Whether this template was seeded, generated from the profile, or built
   /// by the user -- regeneration only ever replaces [TemplateOrigin.generated].
   final TemplateOrigin origin;
@@ -2118,25 +2275,26 @@ class WorkoutTemplateData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'nameHe': nameHe,
-    'notes': notes,
-    'notesHe': notesHe,
-    'origin': origin.key,
-    'customRest': customRest,
-  };
+        'id': id,
+        'name': name,
+        'nameHe': nameHe,
+        'notes': notes,
+        'notesHe': notesHe,
+        'origin': origin.key,
+        'customRest': customRest,
+      };
 
-  factory WorkoutTemplateData.fromJson(Map<String, dynamic> json) => WorkoutTemplateData(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    nameHe: json['nameHe'] as String?,
-    notes: json['notes'] as String?,
-    notesHe: json['notesHe'] as String?,
-    // See MealTemplateData.fromJson.
-    origin: TemplateOrigin.fromKey(json['origin']),
-    customRest: json['customRest'] as bool? ?? false,
-  );
+  factory WorkoutTemplateData.fromJson(Map<String, dynamic> json) =>
+      WorkoutTemplateData(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        nameHe: json['nameHe'] as String?,
+        notes: json['notes'] as String?,
+        notesHe: json['notesHe'] as String?,
+        // See MealTemplateData.fromJson.
+        origin: TemplateOrigin.fromKey(json['origin']),
+        customRest: json['customRest'] as bool? ?? false,
+      );
 }
 
 class TemplateExerciseData {
@@ -2188,30 +2346,31 @@ class TemplateExerciseData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'templateId': templateId,
-    'exerciseId': exerciseId,
-    'orderIndex': orderIndex,
-    'defaultSets': defaultSets,
-    'defaultReps': defaultReps,
-    'defaultWeight': defaultWeight,
-    'defaultRestSeconds': defaultRestSeconds,
-    'isRest': isRest,
-  };
+        'id': id,
+        'templateId': templateId,
+        'exerciseId': exerciseId,
+        'orderIndex': orderIndex,
+        'defaultSets': defaultSets,
+        'defaultReps': defaultReps,
+        'defaultWeight': defaultWeight,
+        'defaultRestSeconds': defaultRestSeconds,
+        'isRest': isRest,
+      };
 
-  factory TemplateExerciseData.fromJson(Map<String, dynamic> json) => TemplateExerciseData(
-    id: json['id'] as String,
-    templateId: json['templateId'] as String,
-    exerciseId: json['exerciseId'] as String,
-    orderIndex: json['orderIndex'] as int,
-    defaultSets: json['defaultSets'] as int,
-    defaultReps: json['defaultReps'] as int?,
-    defaultWeight: (json['defaultWeight'] as num?)?.toDouble(),
-    // Absent on rows written before this field existed; `restSeconds` derives
-    // a value from the rep count in that case.
-    defaultRestSeconds: (json['defaultRestSeconds'] as num?)?.toInt(),
-    isRest: json['isRest'] as bool? ?? false,
-  );
+  factory TemplateExerciseData.fromJson(Map<String, dynamic> json) =>
+      TemplateExerciseData(
+        id: json['id'] as String,
+        templateId: json['templateId'] as String,
+        exerciseId: json['exerciseId'] as String,
+        orderIndex: json['orderIndex'] as int,
+        defaultSets: json['defaultSets'] as int,
+        defaultReps: json['defaultReps'] as int?,
+        defaultWeight: (json['defaultWeight'] as num?)?.toDouble(),
+        // Absent on rows written before this field existed; `restSeconds` derives
+        // a value from the rep count in that case.
+        defaultRestSeconds: (json['defaultRestSeconds'] as num?)?.toInt(),
+        isRest: json['isRest'] as bool? ?? false,
+      );
 }
 
 class WorkoutSessionData {
@@ -2220,6 +2379,7 @@ class WorkoutSessionData {
   final DateTime startedAt;
   final DateTime? endedAt;
   final String? note;
+
   /// The scheduled calendar event this entry was created from, when it was
   /// logged by completing one (via the agenda or a notification action).
   ///
@@ -2239,22 +2399,25 @@ class WorkoutSessionData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'templateId': templateId,
-    'startedAt': startedAt.toIso8601String(),
-    'endedAt': endedAt?.toIso8601String(),
-    'note': note,
-    'sourceEventId': sourceEventId,
-  };
+        'id': id,
+        'templateId': templateId,
+        'startedAt': startedAt.toIso8601String(),
+        'endedAt': endedAt?.toIso8601String(),
+        'note': note,
+        'sourceEventId': sourceEventId,
+      };
 
-  factory WorkoutSessionData.fromJson(Map<String, dynamic> json) => WorkoutSessionData(
-    id: json['id'] as String,
-    templateId: json['templateId'] as String?,
-    startedAt: DateTime.parse(json['startedAt'] as String),
-    endedAt: json['endedAt'] != null ? DateTime.parse(json['endedAt'] as String) : null,
-    note: json['note'] as String?,
-    sourceEventId: json['sourceEventId'] as String?,
-  );
+  factory WorkoutSessionData.fromJson(Map<String, dynamic> json) =>
+      WorkoutSessionData(
+        id: json['id'] as String,
+        templateId: json['templateId'] as String?,
+        startedAt: DateTime.parse(json['startedAt'] as String),
+        endedAt: json['endedAt'] != null
+            ? DateTime.parse(json['endedAt'] as String)
+            : null,
+        note: json['note'] as String?,
+        sourceEventId: json['sourceEventId'] as String?,
+      );
 }
 
 class SetEntryData {
@@ -2277,24 +2440,24 @@ class SetEntryData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'sessionId': sessionId,
-    'exerciseId': exerciseId,
-    'orderIndex': orderIndex,
-    'reps': reps,
-    'weight': weight,
-    'restSeconds': restSeconds,
-  };
+        'id': id,
+        'sessionId': sessionId,
+        'exerciseId': exerciseId,
+        'orderIndex': orderIndex,
+        'reps': reps,
+        'weight': weight,
+        'restSeconds': restSeconds,
+      };
 
   factory SetEntryData.fromJson(Map<String, dynamic> json) => SetEntryData(
-    id: json['id'] as String,
-    sessionId: json['sessionId'] as String,
-    exerciseId: json['exerciseId'] as String,
-    orderIndex: json['orderIndex'] as int,
-    reps: json['reps'] as int,
-    weight: (json['weight'] as num?)?.toDouble(),
-    restSeconds: json['restSeconds'] as int?,
-  );
+        id: json['id'] as String,
+        sessionId: json['sessionId'] as String,
+        exerciseId: json['exerciseId'] as String,
+        orderIndex: json['orderIndex'] as int,
+        reps: json['reps'] as int,
+        weight: (json['weight'] as num?)?.toDouble(),
+        restSeconds: json['restSeconds'] as int?,
+      );
 }
 
 class SleepRangeData {
@@ -2315,6 +2478,7 @@ class SleepEntryData {
   final DateTime? endedAt;
   final int? quality;
   final String? note;
+
   /// The scheduled calendar event this entry was created from, when it was
   /// logged by completing one (via the agenda or a notification action).
   ///
@@ -2334,22 +2498,24 @@ class SleepEntryData {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'startedAt': startedAt.toIso8601String(),
-    'endedAt': endedAt?.toIso8601String(),
-    'quality': quality,
-    'note': note,
-    'sourceEventId': sourceEventId,
-  };
+        'id': id,
+        'startedAt': startedAt.toIso8601String(),
+        'endedAt': endedAt?.toIso8601String(),
+        'quality': quality,
+        'note': note,
+        'sourceEventId': sourceEventId,
+      };
 
   factory SleepEntryData.fromJson(Map<String, dynamic> json) => SleepEntryData(
-    id: json['id'] as String,
-    startedAt: DateTime.parse(json['startedAt'] as String),
-    endedAt: json['endedAt'] != null ? DateTime.parse(json['endedAt'] as String) : null,
-    quality: json['quality'] as int?,
-    note: json['note'] as String?,
-    sourceEventId: json['sourceEventId'] as String?,
-  );
+        id: json['id'] as String,
+        startedAt: DateTime.parse(json['startedAt'] as String),
+        endedAt: json['endedAt'] != null
+            ? DateTime.parse(json['endedAt'] as String)
+            : null,
+        quality: json['quality'] as int?,
+        note: json['note'] as String?,
+        sourceEventId: json['sourceEventId'] as String?,
+      );
 }
 
 /// One weigh-in.

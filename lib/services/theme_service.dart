@@ -8,7 +8,8 @@ final themeServiceProvider = Provider<ThemeService>((ref) {
 });
 
 // Provider for the current theme
-final currentThemeProvider = StateNotifierProvider<ThemeNotifier, AppThemeKind>((ref) {
+final currentThemeProvider =
+    StateNotifierProvider<ThemeNotifier, AppThemeKind>((ref) {
   final themeService = ref.watch(themeServiceProvider);
   return ThemeNotifier(themeService);
 });

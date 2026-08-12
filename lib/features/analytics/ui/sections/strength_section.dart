@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../services/language_service.dart';
 import '../../../../services/preferences_service.dart';
+import '../../../../core/ios/glass.dart';
 import '../../data/providers.dart';
 import '../../domain/analytics_range.dart';
 import '../../domain/analytics_view.dart';
@@ -14,6 +15,7 @@ import '../analytics_format.dart';
 import '../charts/line_chart.dart';
 import '../charts/chart_semantics.dart';
 import '../widgets/analytics_card.dart';
+import '../../../../core/design/tokens.dart';
 
 /// Strength progression, and the direct answer to "am I using the same weight
 /// for a while".
@@ -153,20 +155,23 @@ class _StrengthSectionState extends ConsumerState<StrengthSection> {
     final picked = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            for (final id in ids)
-              ListTile(
-                title: Text(
-                    AnalyticsFormat.exerciseName(view.exercises[id], language)),
-                subtitle: Text(AppLocalizations.of(context)!
-                    .analyticsSessionCount(
-                        '${view.strength[id]!.sessionCount}')),
-                onTap: () => Navigator.of(context).pop(id),
-              ),
-          ],
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassSheet(
+        child: SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              for (final id in ids)
+                ListTile(
+                  title: Text(AnalyticsFormat.exerciseName(
+                      view.exercises[id], language)),
+                  subtitle: Text(AppLocalizations.of(context)!
+                      .analyticsSessionCount(
+                          '${view.strength[id]!.sessionCount}')),
+                  onTap: () => Navigator.of(context).pop(id),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -206,7 +211,7 @@ class _PlateauStrip extends StatelessWidget {
           InkWell(
             onTap: () => onTap(status.exerciseId),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.symmetric(vertical: Space.xs),
               child: Row(
                 children: [
                   Expanded(

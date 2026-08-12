@@ -19,7 +19,8 @@ final recentSleepEntriesStreamProvider =
 
 /// Recomputes whenever a sleep entry changes, by riding the same stream the
 /// entry list already watches -- cheaper than a bespoke invalidation path.
-final sleepStreakProvider = StreamProvider.family<int, double>((ref, goalHours) {
+final sleepStreakProvider =
+    StreamProvider.family<int, double>((ref, goalHours) {
   final repo = ref.read(sleepRepositoryProvider);
   return repo
       .watchRecentEntries(limit: 90)
@@ -124,7 +125,8 @@ class SleepRepository {
   /// [sourceEventId] has no counterpart on the domain model, so callers that
   /// are updating an existing row must read it off that row and pass it back
   /// in -- otherwise the calendar link is dropped. See [updateEntry].
-  SleepEntryData _sleepEntryModelToData(SleepEntry model, {String? sourceEventId}) {
+  SleepEntryData _sleepEntryModelToData(SleepEntry model,
+      {String? sourceEventId}) {
     return SleepEntryData(
       id: model.id,
       startedAt: model.startedAt,

@@ -90,8 +90,8 @@ class WorkoutTemplatesPage extends ConsumerWidget {
                     language: language,
                     color: workoutsColor,
                     onStart: () => _startWorkout(context, ref, template),
-                    onEdit: () =>
-                        context.push('${Routes.workoutTemplates}/${template.id}'),
+                    onEdit: () => context
+                        .push('${Routes.workoutTemplates}/${template.id}'),
                     onDelete: () => _deleteTemplate(ref, template),
                   );
                 },

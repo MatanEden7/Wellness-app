@@ -7,11 +7,11 @@ final timeServiceProvider = Provider<TimeService>((ref) {
 
 class TimeService {
   DateTime now() => DateTime.now();
-  
+
   Stream<DateTime> get timeStream {
     return Stream.periodic(const Duration(seconds: 1), (_) => now());
   }
-  
+
   Stream<int> createCountdownStream(int seconds) {
     return Stream.periodic(const Duration(seconds: 1), (count) {
       final remaining = seconds - count - 1;
@@ -62,15 +62,15 @@ class RestTimerController extends StateNotifier<RestTimerState> {
 
   void start() {
     if (state.isRunning || state.isCompleted) return;
-    
+
     state = state.copyWith(isRunning: true);
-    
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.remainingSeconds <= 0) {
         _complete();
         return;
       }
-      
+
       state = state.copyWith(
         remainingSeconds: state.remainingSeconds - 1,
       );

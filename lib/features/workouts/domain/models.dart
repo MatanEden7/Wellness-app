@@ -53,18 +53,24 @@ class Exercise with _$Exercise {
     );
   }
 
-  factory Exercise.fromJson(Map<String, dynamic> json) => _$ExerciseFromJson(json);
+  factory Exercise.fromJson(Map<String, dynamic> json) =>
+      _$ExerciseFromJson(json);
 }
 
 extension ExerciseDisplayName on Exercise {
   /// The name to show for [language]: Hebrew if selected and translated,
   /// English otherwise. Lets the library ship English-only today and grow
   /// Hebrew names later without any further UI changes.
-  String displayName(AppLanguage language) =>
-      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
+          nameHe != null &&
+          nameHe!.trim().isNotEmpty
+      ? nameHe!
+      : name;
 
   String? displayPrimaryMuscle(AppLanguage language) =>
-      language == AppLanguage.hebrew && primaryMuscleHe != null && primaryMuscleHe!.trim().isNotEmpty
+      language == AppLanguage.hebrew &&
+              primaryMuscleHe != null &&
+              primaryMuscleHe!.trim().isNotEmpty
           ? primaryMuscleHe
           : primaryMuscle;
 }
@@ -79,6 +85,7 @@ class WorkoutTemplate with _$WorkoutTemplate {
     String? notesHe,
     // See MealTemplate.origin -- same contract, same safe default.
     @Default(TemplateOrigin.user) TemplateOrigin origin,
+
     /// Whether this template manages its own breaks.
     ///
     /// False (the default, and what every existing template stays on) means
@@ -106,15 +113,23 @@ class WorkoutTemplate with _$WorkoutTemplate {
     );
   }
 
-  factory WorkoutTemplate.fromJson(Map<String, dynamic> json) => _$WorkoutTemplateFromJson(json);
+  factory WorkoutTemplate.fromJson(Map<String, dynamic> json) =>
+      _$WorkoutTemplateFromJson(json);
 }
 
 extension WorkoutTemplateDisplayName on WorkoutTemplate {
-  String displayName(AppLanguage language) =>
-      language == AppLanguage.hebrew && nameHe != null && nameHe!.trim().isNotEmpty ? nameHe! : name;
+  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
+          nameHe != null &&
+          nameHe!.trim().isNotEmpty
+      ? nameHe!
+      : name;
 
   String? displayNotes(AppLanguage language) =>
-      language == AppLanguage.hebrew && notesHe != null && notesHe!.trim().isNotEmpty ? notesHe : notes;
+      language == AppLanguage.hebrew &&
+              notesHe != null &&
+              notesHe!.trim().isNotEmpty
+          ? notesHe
+          : notes;
 }
 
 @freezed
@@ -127,11 +142,13 @@ class TemplateExercise with _$TemplateExercise {
     @Default(3) int defaultSets,
     int? defaultReps,
     double? defaultWeight,
+
     /// Rest between sets. Null falls back to a value derived from the rep
     /// count -- see `TemplateExerciseData.restSeconds`. Carried on the domain
     /// model as well as the row because `updateTemplate` rebuilds every child
     /// from the model, so a field missing here is silently wiped on any edit.
     int? defaultRestSeconds,
+
     /// Marks this entry as a standalone break rather than an exercise.
     ///
     /// A rest row is an ordinary row in the same ordered list -- that is what
@@ -185,7 +202,8 @@ class TemplateExercise with _$TemplateExercise {
     );
   }
 
-  factory TemplateExercise.fromJson(Map<String, dynamic> json) => _$TemplateExerciseFromJson(json);
+  factory TemplateExercise.fromJson(Map<String, dynamic> json) =>
+      _$TemplateExerciseFromJson(json);
 }
 
 @freezed
@@ -214,13 +232,14 @@ class WorkoutSession with _$WorkoutSession {
   }
 
   bool get isCompleted => endedAt != null;
-  
+
   Duration? get duration {
     if (endedAt == null) return null;
     return endedAt!.difference(startedAt);
   }
 
-  factory WorkoutSession.fromJson(Map<String, dynamic> json) => _$WorkoutSessionFromJson(json);
+  factory WorkoutSession.fromJson(Map<String, dynamic> json) =>
+      _$WorkoutSessionFromJson(json);
 }
 
 @freezed
@@ -254,7 +273,8 @@ class SetEntry with _$SetEntry {
     );
   }
 
-  factory SetEntry.fromJson(Map<String, dynamic> json) => _$SetEntryFromJson(json);
+  factory SetEntry.fromJson(Map<String, dynamic> json) =>
+      _$SetEntryFromJson(json);
 }
 
 @freezed
@@ -271,7 +291,8 @@ class WorkoutExercise with _$WorkoutExercise {
   int get remainingSets => templateExercise.defaultSets - completedSetsCount;
   bool get isCompleted => completedSetsCount >= templateExercise.defaultSets;
 
-  factory WorkoutExercise.fromJson(Map<String, dynamic> json) => _$WorkoutExerciseFromJson(json);
+  factory WorkoutExercise.fromJson(Map<String, dynamic> json) =>
+      _$WorkoutExerciseFromJson(json);
 }
 
 // Helper class for dashboard display

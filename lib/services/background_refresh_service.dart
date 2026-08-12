@@ -11,13 +11,13 @@ class BackgroundRefreshService {
   final Ref _ref;
   Timer? _debounceTimer;
   bool _isRefreshing = false;
-  
+
   BackgroundRefreshService(this._ref);
 
   // Step 3: Background refresh triggers
   void triggerRefresh({String? reason}) {
     if (_isRefreshing) return; // Prevent multiple simultaneous refreshes
-    
+
     // Step 5: Debounce rapid refreshes (250ms)
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 250), () {
@@ -50,7 +50,7 @@ class BackgroundRefreshService {
     Timer(const Duration(milliseconds: 500), () {
       _isRefreshing = false;
     });
-    
+
     debugPrint('Background refresh triggered: ${reason ?? 'manual'}');
   }
 
@@ -75,7 +75,8 @@ class BackgroundRefreshService {
 }
 
 // Provider for background refresh service
-final backgroundRefreshServiceProvider = Provider<BackgroundRefreshService>((ref) {
+final backgroundRefreshServiceProvider =
+    Provider<BackgroundRefreshService>((ref) {
   final service = BackgroundRefreshService(ref);
   ref.onDispose(() => service.dispose());
   return service;

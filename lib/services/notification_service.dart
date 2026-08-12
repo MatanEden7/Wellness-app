@@ -17,23 +17,23 @@ enum NotificationAction {
   mealApprove,
   mealRemove,
   mealSnooze,
-  
+
   // Workout actions
   workoutStart,
   workoutSnooze,
-  
+
   // Sleep actions
   sleepStart,
   sleepStop,
   sleepSnooze,
-  
+
   // Generic
   open,
 }
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _notifications;
-  
+
   // Callback for handling notification taps and actions
   Function(NotificationResponse)? onNotificationTap;
 
@@ -80,7 +80,7 @@ class NotificationService {
             DarwinNotificationCategoryOption.customDismissAction,
           },
         ),
-        
+
         // Workout category
         DarwinNotificationCategory(
           'workout_category',
@@ -100,7 +100,7 @@ class NotificationService {
             DarwinNotificationCategoryOption.customDismissAction,
           },
         ),
-        
+
         // Sleep category
         DarwinNotificationCategory(
           'sleep_category',
@@ -120,7 +120,7 @@ class NotificationService {
             DarwinNotificationCategoryOption.customDismissAction,
           },
         ),
-        
+
         // Sleep stop category (shown when sleep is active)
         DarwinNotificationCategory(
           'sleep_stop_category',
@@ -148,7 +148,8 @@ class NotificationService {
     );
 
     // Android initialization
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     final initSettings = InitializationSettings(
       iOS: iosSettings,
@@ -158,7 +159,8 @@ class NotificationService {
     await _notifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: _handleNotificationResponse,
-      onDidReceiveBackgroundNotificationResponse: _handleBackgroundNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse:
+          _handleBackgroundNotificationResponse,
     );
   }
 
@@ -173,15 +175,17 @@ class NotificationService {
   // Request notification permissions
   Future<bool> requestPermissions() async {
     final iOS = await _notifications
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(
           alert: true,
           badge: true,
           sound: true,
         );
-    
+
     final android = await _notifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
 
     return iOS ?? android ?? false;
@@ -202,7 +206,8 @@ class NotificationService {
   // safety net -- a background isolate has no ProviderContainer, no open
   // database and no navigator, so it deliberately does not try to act.
   @pragma('vm:entry-point')
-  static void _handleBackgroundNotificationResponse(NotificationResponse response) {
+  static void _handleBackgroundNotificationResponse(
+      NotificationResponse response) {
     debugPrint('Background notification response (not actionable): '
         '${response.actionId}');
   }
@@ -217,14 +222,16 @@ class NotificationService {
   }) async {
     debugPrint('🔔 NotificationService.scheduleEventNotification called');
     debugPrint('🔔 Event: ${event.title}, Type: ${event.type}');
-    debugPrint('🔔 Scheduled at: ${event.scheduledAt}, Lead time: $leadTimeMinutes min');
-    
-    final scheduleTime = event.scheduledAt.subtract(Duration(minutes: leadTimeMinutes));
+    debugPrint(
+        '🔔 Scheduled at: ${event.scheduledAt}, Lead time: $leadTimeMinutes min');
+
+    final scheduleTime =
+        event.scheduledAt.subtract(Duration(minutes: leadTimeMinutes));
     final now = DateTime.now();
-    
+
     debugPrint('🔔 Schedule time: $scheduleTime');
     debugPrint('🔔 Current time: $now');
-    
+
     if (scheduleTime.isBefore(now)) {
       debugPrint('🔔 ⚠️  Schedule time is in the past, skipping notification');
       return;
@@ -232,18 +239,19 @@ class NotificationService {
 
     final tzScheduleTime = tz.TZDateTime.from(scheduleTime, tz.local);
     debugPrint('🔔 TZ schedule time: $tzScheduleTime');
-    
+
     // Get notification details based on event type
     final details = _getNotificationDetails(event, l10n);
-    debugPrint('🔔 Notification details - Title: ${details.title}, Body: ${details.body}');
-    
+    debugPrint(
+        '🔔 Notification details - Title: ${details.title}, Body: ${details.body}');
+
     // Generate stable ID from event
     final notificationId = _generateNotificationId(event.id);
     debugPrint('🔔 Notification ID: $notificationId');
-    
+
     final payload = _createPayload(event);
     debugPrint('🔔 Payload: $payload');
-    
+
     try {
       await _notifications.zonedSchedule(
         notificationId,
@@ -353,7 +361,7 @@ class NotificationService {
   ) {
     String title;
     String body;
-    
+
     switch (event.type) {
       case EventType.meal:
         title = l10n.mealReminderNotification(event.title);
@@ -368,7 +376,7 @@ class NotificationService {
         body = l10n.sleepReminderBodyNotification;
         break;
     }
-    
+
     return (title: title, body: body);
   }
 
@@ -435,17 +443,18 @@ class NotificationService {
   }
 
   // Parse payload
-  ({EventType type, String eventId, String? templateId})? parsePayload(String? payload) {
+  ({EventType type, String eventId, String? templateId})? parsePayload(
+      String? payload) {
     if (payload == null) return null;
-    
+
     final parts = payload.split('|');
     if (parts.length < 2) return null;
-    
+
     final type = EventType.values.firstWhere(
       (e) => e.name == parts[0],
       orElse: () => EventType.meal,
     );
-    
+
     return (
       type: type,
       eventId: parts[1],
@@ -460,4 +469,3 @@ class NotificationService {
   // CalendarNotifier.rescheduleAllNotifications() is the real one -- it goes
   // through the same _scheduleNotification() path as every other write.
 }
-

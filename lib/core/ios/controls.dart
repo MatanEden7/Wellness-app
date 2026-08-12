@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../ui_constants.dart';
+import 'glass.dart';
+import '../design/tokens.dart';
 
 /// The iOS sliding segmented control, themed from the app's colour scheme.
 ///
@@ -25,33 +27,41 @@ class AppSegmented<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SizedBox(
-      width: double.infinity,
-      child: CupertinoSlidingSegmentedControl<T>(
-        groupValue: value,
-        backgroundColor:
-            theme.colorScheme.onSurface.withValues(alpha: 0.08),
-        thumbColor: theme.cardTheme.color ?? theme.colorScheme.surface,
-        onValueChanged: (next) {
-          if (next != null) onChanged(next);
-        },
-        children: {
-          for (final entry in segments.entries)
-            entry.key: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text(
-                entry.value,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
-                  fontWeight:
-                      entry.key == value ? FontWeight.w600 : FontWeight.w400,
-                  color: theme.colorScheme.onSurface,
+    // The track becomes a glass pane and the control goes transparent over it:
+    // `CupertinoSlidingSegmentedControl` takes colours, not children, so the
+    // material has to sit on the outside. The sliding thumb stays solid — the
+    // control paints that itself, and a translucent thumb over a translucent
+    // track stops reading as a selection.
+    return GlassSurface.tinted(
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(Radii.capsule(Sizes.control)),
+      child: SizedBox(
+        width: double.infinity,
+        child: CupertinoSlidingSegmentedControl<T>(
+          groupValue: value,
+          backgroundColor: Colors.transparent,
+          thumbColor: theme.cardTheme.color ?? theme.colorScheme.surface,
+          onValueChanged: (next) {
+            if (next != null) onChanged(next);
+          },
+          children: {
+            for (final entry in segments.entries)
+              entry.key: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Text(
+                  entry.value,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                    fontWeight:
+                        entry.key == value ? FontWeight.w600 : FontWeight.w400,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-        },
+          },
+        ),
       ),
     );
   }
@@ -72,20 +82,26 @@ class AppSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return CupertinoSearchTextField(
-      controller: controller,
-      placeholder: placeholder,
-      style: theme.textTheme.bodyLarge?.copyWith(fontSize: 17),
-      placeholderStyle: theme.textTheme.bodyLarge?.copyWith(
-        fontSize: 17,
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
-      ),
-      backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.07),
-      itemColor: theme.colorScheme.onSurface.withValues(alpha: 0.45),
-      prefixIcon: Icon(
-        CupertinoIcons.search,
-        size: 18,
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+    // Same shape as the segmented control: the field's fill moves to a glass
+    // pane behind it so the search bar blurs what scrolls under it.
+    return GlassSurface.tinted(
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.07),
+      borderRadius: BorderRadius.circular(Radii.capsule(Sizes.control)),
+      child: CupertinoSearchTextField(
+        controller: controller,
+        placeholder: placeholder,
+        style: theme.textTheme.bodyLarge?.copyWith(fontSize: 17),
+        placeholderStyle: theme.textTheme.bodyLarge?.copyWith(
+          fontSize: 17,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+        ),
+        backgroundColor: Colors.transparent,
+        itemColor: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+        prefixIcon: Icon(
+          CupertinoIcons.search,
+          size: 18,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+        ),
       ),
     );
   }
@@ -165,11 +181,11 @@ class FilterBanner extends StatelessWidget {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
-    return Container(
-      width: double.infinity,
+    return GlassSurface.tinted(
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.04),
+      borderRadius: BorderRadius.zero,
       padding: const EdgeInsets.fromLTRB(
           UIConstants.screenHorizontalPadding, 8, 8, 8),
-      color: theme.colorScheme.onSurface.withValues(alpha: 0.04),
       child: Row(
         children: [
           Icon(icon, size: 18, color: muted),
@@ -177,10 +193,12 @@ class FilterBanner extends StatelessWidget {
           Expanded(
             child: Text(message, style: theme.textTheme.bodySmall),
           ),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            minimumSize: const Size(44, 36),
+          GlassButton(
             onPressed: onAction,
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(16),
+            padding:
+                const EdgeInsets.symmetric(horizontal: Space.md, vertical: 6),
             child: Text(
               actionLabel,
               style: TextStyle(fontSize: 15, color: theme.colorScheme.primary),
@@ -208,26 +226,21 @@ class _FilterPill extends StatelessWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: selected
-              ? primary
-              : theme.colorScheme.onSurface.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 15,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-            color: selected
-                ? theme.colorScheme.onPrimary
-                : theme.colorScheme.onSurface,
-          ),
+    // A filter pill is a button, so it takes the same two weights every other
+    // button does: selected reads as the accent, unselected as plain glass.
+    // The pill height comes from the bar around it, so minHeight is 0 here.
+    return GlassButton(
+      onPressed: onTap,
+      prominent: selected,
+      minHeight: 0,
+      borderRadius: BorderRadius.circular(18),
+      padding: const EdgeInsets.symmetric(horizontal: Space.md),
+      child: Text(
+        label,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontSize: 15,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+          color: selected ? theme.colorScheme.onPrimary : primary,
         ),
       ),
     );

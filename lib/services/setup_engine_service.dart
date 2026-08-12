@@ -79,7 +79,8 @@ class SetupEngineService {
   /// different things. 20% down / 10% up keeps the rate of change proportional
   /// to body size, and the result is floored at [minimumSafeCalories] so a
   /// small sedentary profile can no longer be handed a ~950 kcal target.
-  double calculateCalorieTarget(double tdee, String goal, {String sex = 'male'}) {
+  double calculateCalorieTarget(double tdee, String goal,
+      {String sex = 'male'}) {
     final double raw;
     switch (goal) {
       case 'fat_loss':
@@ -105,7 +106,8 @@ class SetupEngineService {
   }
 
   /// Grams of protein per kg of [referenceWeight], by goal.
-  static double proteinPerKgForGoal(String goal) => const {
+  static double proteinPerKgForGoal(String goal) =>
+      const {
         'fat_loss': 2.2,
         'muscle_gain': 2.0,
         'maintenance': 1.8,
@@ -147,7 +149,8 @@ class SetupEngineService {
   }
 
   /// Share of calories that comes from fat, by goal.
-  static double fatFractionForGoal(String goal) => const {
+  static double fatFractionForGoal(String goal) =>
+      const {
         'fat_loss': 0.28,
         'muscle_gain': 0.25,
         'maintenance': 0.28,
@@ -165,17 +168,20 @@ class SetupEngineService {
   /// calorie target was, so fat came out at 13-16% of intake and every calorie
   /// it did not claim was dumped into carbs. An 80 kg maintenance profile got
   /// 48 g of fat and ~370 g of carbs -- a plan nobody would write.
-  double calculateFatTarget(double weightKg, double calorieTarget, String goal) {
+  double calculateFatTarget(
+      double weightKg, double calorieTarget, String goal) {
     final fromCalories = calorieTarget * fatFractionForGoal(goal) / 9;
     final floor = minimumFatGrams(weightKg);
     return fromCalories < floor ? floor : fromCalories;
   }
 
   // Calculate carbs target in grams (fills remaining calories)
-  double calculateCarbsTarget(double calorieTarget, double proteinG, double fatG) {
+  double calculateCarbsTarget(
+      double calorieTarget, double proteinG, double fatG) {
     final caloriesFromProtein = proteinG * 4;
     final caloriesFromFat = fatG * 9;
-    final remainingCalories = calorieTarget - caloriesFromProtein - caloriesFromFat;
+    final remainingCalories =
+        calorieTarget - caloriesFromProtein - caloriesFromFat;
     final carbsG = remainingCalories / 4;
     return carbsG > 0 ? carbsG : 0;
   }
@@ -304,7 +310,7 @@ class SetupEngineService {
       carbsTargetG: targets.carbsG,
     );
   }
-  
+
   // Get workout split recommendation based on training days
   String getWorkoutSplit(int daysPerWeek) {
     if (daysPerWeek >= 5) {
@@ -315,7 +321,7 @@ class SetupEngineService {
       return 'full_body_3d'; // Default to 3-day even if they chose 2
     }
   }
-  
+
   // Get meal distribution based on meal count
   List<double> getMealDistribution(String mealCount) {
     switch (mealCount) {
@@ -331,7 +337,7 @@ class SetupEngineService {
         return [0.30, 0.40, 0.30];
     }
   }
-  
+
   // Get workout schedule days
   List<String> getWorkoutScheduleDays(int daysPerWeek) {
     if (daysPerWeek >= 5) {
@@ -342,7 +348,7 @@ class SetupEngineService {
       return ['Mon', 'Thu'];
     }
   }
-  
+
   // Get exercises filtered by equipment availability
   List<Map<String, dynamic>> getAvailableExercises(List<String> equipment) {
     // Return exercises that match the available equipment
@@ -351,10 +357,14 @@ class SetupEngineService {
       {'name': 'Push-ups', 'equipment': 'none', 'muscle': 'Chest'},
       {'name': 'Squats', 'equipment': 'none', 'muscle': 'Quadriceps'},
       {'name': 'Dumbbell Press', 'equipment': 'dumbbells', 'muscle': 'Chest'},
-      {'name': 'Barbell Squat', 'equipment': 'barbell_rack', 'muscle': 'Quadriceps'},
+      {
+        'name': 'Barbell Squat',
+        'equipment': 'barbell_rack',
+        'muscle': 'Quadriceps'
+      },
     ];
   }
-  
+
   // Rehab exercises used to be hardcoded here, as name strings with sets and
   // reps, covering three of the seven body parts. Nothing ever called it. The
   // real physiotherapy path is `rehabFor` on the exercise library, which
@@ -362,20 +372,45 @@ class SetupEngineService {
   // covers all seven. Keeping a second, wronger answer next to it was an
   // invitation to wire up the wrong one.
 
-
-  
   // Get food suggestions based on diet type
   List<String> getFoodSuggestions(String dietType, List<String> exclusions) {
-    final omnivoreProteins = ['Chicken Breast', 'Turkey', 'Eggs', 'Greek Yogurt', 'Salmon', 'Tuna'];
-    final carnivoreProteins = ['Ribeye Steak', 'Ground Beef', 'Eggs', 'Salmon', 'Beef Liver'];
-    final herbivoreProteins = ['Firm Tofu', 'Tempeh', 'Lentils', 'Chickpeas', 'Black Beans'];
-    
-    final carbs = ['Rice', 'Oats', 'Pasta', 'Bread', 'Potato', 'Sweet Potato', 'Quinoa'];
+    final omnivoreProteins = [
+      'Chicken Breast',
+      'Turkey',
+      'Eggs',
+      'Greek Yogurt',
+      'Salmon',
+      'Tuna'
+    ];
+    final carnivoreProteins = [
+      'Ribeye Steak',
+      'Ground Beef',
+      'Eggs',
+      'Salmon',
+      'Beef Liver'
+    ];
+    final herbivoreProteins = [
+      'Firm Tofu',
+      'Tempeh',
+      'Lentils',
+      'Chickpeas',
+      'Black Beans'
+    ];
+
+    final carbs = [
+      'Rice',
+      'Oats',
+      'Pasta',
+      'Bread',
+      'Potato',
+      'Sweet Potato',
+      'Quinoa'
+    ];
     final fats = ['Olive Oil', 'Avocado', 'Almonds', 'Peanut Butter', 'Tahini'];
     final veggies = ['Broccoli', 'Spinach', 'Mixed Veg', 'Tomato', 'Cucumber'];
-    
+
     List<String> foods = [];
-    
+
     // Add proteins based on diet type
     switch (dietType) {
       case 'omnivore':
@@ -388,7 +423,7 @@ class SetupEngineService {
         foods.addAll(herbivoreProteins);
         break;
     }
-    
+
     // Add carbs and fats (except for strict carnivore)
     if (dietType != 'carnivore') {
       foods.addAll(carbs);
@@ -398,16 +433,19 @@ class SetupEngineService {
       // Carnivore gets limited options
       foods.addAll(['Butter', 'Ghee']);
     }
-    
+
     // Filter by exclusions
     foods.removeWhere((food) {
-      if (exclusions.contains('dairy') && ['Greek Yogurt', 'Milk', 'Butter', 'Ghee'].contains(food)) {
+      if (exclusions.contains('dairy') &&
+          ['Greek Yogurt', 'Milk', 'Butter', 'Ghee'].contains(food)) {
         return true;
       }
-      if (exclusions.contains('gluten') && ['Bread', 'Pasta', 'Oats'].contains(food)) {
+      if (exclusions.contains('gluten') &&
+          ['Bread', 'Pasta', 'Oats'].contains(food)) {
         return true;
       }
-      if (exclusions.contains('nuts') && ['Almonds', 'Peanut Butter'].contains(food)) {
+      if (exclusions.contains('nuts') &&
+          ['Almonds', 'Peanut Butter'].contains(food)) {
         return true;
       }
       if (exclusions.contains('eggs') && food == 'Eggs') {
@@ -418,8 +456,7 @@ class SetupEngineService {
       }
       return false;
     });
-    
+
     return foods;
   }
 }
-

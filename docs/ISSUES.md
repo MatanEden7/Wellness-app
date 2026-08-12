@@ -109,11 +109,22 @@ remaining work is a translator/designer decision, not engineering effort.
 | 89 | Five horizontal overflows on settings/editor screens | Medium | Fixed | ~30min |
 | 90 | Settings' "Global Timeframe" changes nothing on the dashboard | High | Fixed | ~1h |
 | 91 | Settings' "Workout Metric" changes nothing on the dashboard | Medium | Fixed | ~1h |
+| 92 | Liquid Glass never rendered: standalone bars stay in their transparent scroll-edge state | High | Fixed | ~1h |
+| 93 | The last row of every screen sat under the native tab bar | High | Fixed | ~30min |
+| 94 | The native tab bar never followed router navigation | Medium | Fixed | ~30min |
+| 95 | Nav bar and tab bar floated over onboarding, and over pushed detail pages | High | Fixed | ~45min |
+| 96 | Native tab labels were hardcoded English in a bilingual app | Medium | Fixed | ~30min |
+| 97 | A hidden bar still reserved its inset, leaving a blank strip | Low | Fixed | ~15min |
+| 98 | `PlatformChildPage`/`PlatformNavPage` ignored the app theme's background | Medium | Fixed | ~10min |
+| 99 | Bridge calls fail asynchronously; the `try/catch` around them caught nothing | Medium | Fixed | ~20min |
+| 100 | Deferred chrome sync leaked a listener per popped route, and pushed stale chrome | Low | Fixed | ~20min |
+| 101 | Analytics screen is a red error page: one `GlobalKey` used twice in a child list | Critical | **Open** | TBD |
 
-**Totals:** 74 fixed, 1 partly fixed, 4 open. **Every remaining item needs you**
-again -- a keystore (#49), a bundle-ID decision (#51), a product decision (#14),
-a translator (#31, which now also covers the Hebrew wording added by #72), and
-one 15-minute device check (#9).
+**Totals:** 83 fixed, 1 partly fixed, 5 open. Four remaining items need you --
+a keystore (#49), a bundle-ID decision (#51), a product decision (#14), a
+translator (#31, which now also covers the Hebrew wording added by #72), and
+one 15-minute device check (#9). #101 is ordinary engineering work, not blocked
+on anything.
 
 ---
 
@@ -1436,3 +1447,148 @@ Both are covered by `test/widget/dashboard_preferences_test.dart`, which sets
 the preference and reads the dashboard. That is the only kind of test that can
 catch this class of bug: a setting nothing reads still analyses, still persists,
 still round-trips through backup -- it just does nothing.
+
+---
+
+## Native iOS chrome, found while making Liquid Glass actually appear (2026-08-12)
+
+Nine defects, all pre-existing on `feat/platform-native-ui`, all found by reading
+the chrome layer rather than by any test — the fast suite was green at 1032
+throughout and `flutter analyze` was clean.
+
+### 92. Liquid Glass never rendered  **[FIXED]**
+
+Reported as "make sure the liquid glass is presented". It was not, and the reason is
+not obvious from the code: `NavBarHostController` and `TabBarHostController` build a
+**standalone** `UINavigationBar` / `UITabBar` over the Flutter view. A bar chooses
+between `standardAppearance` and `scrollEdgeAppearance` by tracking a scroll view —
+and these bars have none, because Flutter's scroll views are not `UIScrollView`s.
+So both sat in their scroll-edge state permanently, and that state is **transparent**.
+The app asked for no material and got none.
+
+Fixed by assigning one `configureWithDefaultBackground()` appearance to *every*
+state on both bars. That call resolves to whatever the running OS considers standard,
+which is Liquid Glass on iOS 26 and the correct blur below it — including the Reduce
+Transparency fallback, for free.
+
+Second half of the same bug: the shells wrapped their scroll view in a `SafeArea`, so
+the viewport was the gap *between* the bars. Even with the material rendering there
+was nothing behind it but flat background. The bar insets now go on the scrolled
+content, so content passes under the glass.
+
+`shell_guardrail_test.dart` now asserts both bars set `scrollEdgeAppearance`, because
+the failure mode here is silence: nothing crashes, nothing logs, the glass is just
+absent.
+
+### 93. The last row of every screen sat under the tab bar  **[FIXED]**
+
+The native shells applied `SafeArea(bottom: false)` with `extendBody: true` and added
+no bottom padding of their own, while the Cupertino tier had always reserved
+`LiquidGlassTabBar.reservedHeight`. Every list in the app ended underneath the bar.
+
+### 94. The native tab bar never followed navigation  **[FIXED]**
+
+`ChromeHostApi.setSelectedTab` existed on both sides of the bridge and was **never
+called from Dart**. The highlight only moved when a tab was *tapped*; navigating by
+any other route (a shortcut tile, a deep link, a back gesture) left it on the previous
+tab. `NativeChromeService` now listens to `routerDelegate` and syncs from the location.
+
+### 95. Nav bar and tab bar floated over onboarding  **[FIXED]**
+
+`setChromeVisible` was never called either, so both bars were permanently visible —
+including over the onboarding flow, which is a bare `Scaffold` with its own buttons and
+its own escape rules. The tab bar also showed on pushed detail pages, where the Flutter
+path hides it. Both now follow the route.
+
+### 96. Native tab labels were hardcoded English  **[FIXED]**
+
+`const _tabLabels = ['Home', 'Meals', ...]` in a bilingual, RTL-capable app: the native
+bar read English inside an otherwise Hebrew UI. Labels are now pushed from
+`AppLocalizations` at the first frame that has them, and again on every language
+change. The English list survives only as the pre-first-frame fallback.
+
+### 97. A hidden bar still reserved its inset  **[FIXED]**
+
+`barHeight` returned the bar's frame height regardless of `isHidden`, so hiding a bar
+left Flutter padding content around a bar that was no longer on screen. Both hosts now
+report 0 while hidden, and `setChromeVisible` forces the layout pass that re-derives
+the insets.
+
+### 98. Two of the three native shells ignored the app theme  **[FIXED]**
+
+`PlatformChildPage` and `PlatformNavPage` rendered on `Colors.transparent`, which
+showed the container's `.systemBackground` — so every settings and editor screen used
+the *iOS* background rather than the theme the user picked. Only the sliver shell was
+correct.
+
+### 99. Bridge failures were unhandled  **[FIXED]**
+
+Every Pigeon call was wrapped in `try/catch`, but Pigeon's methods return futures and
+fail *asynchronously* — the catch never saw anything. On the pre-iOS-15 fallback path
+(a plain `FlutterViewController`, no host API registered) that is an unhandled
+`PlatformException` on every page build. Now handled with `catchError` at each call.
+
+### 100. Deferred chrome sync leaked, and pushed stale chrome  **[FIXED]**
+
+The in-progress work on the branch deferred the nav-bar sync until a route's push
+animation completed. A route popped mid-push never completes, so its entry and its
+status listener outlived it; and the closure captured the chrome from the page's
+*first* build, so a page whose title resolved later pushed the wrong one. Now keyed by
+animation with the latest chrome as the value, and unhooked on `dismissed` as well as
+`completed`.
+
+### The glass pass itself
+
+Not a bug — the whole-app Liquid Glass conversion the owner asked for. See
+`docs/CHANGELOG.md` (2026-08-12) for what changed, and
+`docs/PLATFORM_UI_ARCHITECTURE.md` §4 for the design rule it deliberately reverses.
+
+**Two things it does not cover**, recorded here rather than left to be discovered:
+
+  * **`AlertDialog` bodies (12 sites) are still opaque.** Material's `AlertDialog`
+    builds its own surface and offers no way to put a backdrop filter behind it
+    without reimplementing the widget. The six *custom* `Dialog(child: Container(…))`
+    bodies did convert, because those have a bounded size to paint behind. The right
+    fix for the rest is to migrate them onto `showAppConfirm`, which is Cupertino and
+    already renders the framework's real vibrancy material — a separate, mechanical
+    pass.
+  * **SnackBars are still opaque**, for the same reason: `SnackBar` takes a colour,
+    not a widget.
+
+---
+
+### 101. The Analytics screen is a red error page  **[OPEN]**
+
+Found on device (screenshot, 21:06). Opening **Analytics** renders nothing but
+the framework's red error screen under the nav bar — the whole screen body is
+gone; only the native nav bar and tab bar survive.
+
+```
+A GlobalKey was used multiple times inside one widget's child list.
+The offending GlobalKey was: [GlobalKey#21486]
+The parent of the widgets with that key was:
+  NotificationListener<ScrollMetricsNotification>
+The first child to get instantiated with that key became:
+  _ScrollSemantics-[GlobalKey#21486]
+The second child that was to be instantiated with that key was:
+  NotificationListener<ScrollMetricsNotification>
+```
+
+The key belongs to a `Scrollable` (`_ScrollSemantics` is `Scrollable`'s own
+internal `GlobalKey`), so this is one scroll view's element being asked to
+exist in two places in the same child list at once — the usual causes being a
+single scrollable *widget instance* stored in a field or a `const`/cached list
+and inserted twice, or a `ScrollController`/key shared between two live
+scrollables on the page.
+
+Almost certainly fallout from the platform-native UI work on this branch
+(#92–#100), which reworked how pages nest inside scaffolds and scroll views —
+Analytics was rendering before that pass. Not yet scoped: needs the widget tree
+for `analytics_page.dart` walked to find where the scrollable is duplicated.
+
+**Why nothing caught it:** `test/widget/page_smoke_test.dart` (added by #87)
+renders all screens and fails on layout exceptions — worth checking whether
+Analytics is in its list, and if it is, why this build error didn't trip it.
+
+Owner: unmarked (mine).
+

@@ -11,6 +11,10 @@ import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/calendar/data/calendar_service.dart';
 import 'package:wellness_app/services/backup_location_service.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import 'package:wellness_app/bridge/native_chrome_service.dart';
+import 'package:wellness_app/core/ios/glass.dart';
+import 'package:wellness_app/core/platform/shell_kind.dart';
+import 'package:wellness_app/core/platform/shell_provider.dart';
 import 'package:wellness_app/services/language_service.dart';
 import 'package:wellness_app/services/notification_preferences_service.dart';
 import 'package:wellness_app/services/preferences_service.dart';
@@ -59,7 +63,12 @@ void main() {
 
   /// The pages under test are pumped in isolation, so any of them that
   /// navigates on tap has no router -- fine, nothing is tapped here.
-  Future<void> pumpPage(WidgetTester tester, Widget page) async {
+  Future<void> pumpPage(
+    WidgetTester tester,
+    Widget page, {
+    ShellKind shell = ShellKind.material,
+    GlassLevel glass = GlassLevel.off,
+  }) async {
     // iPhone 15/17 logical size. The bugs this catches are all
     // constraint-shaped, so the numbers matter.
     tester.view.physicalSize = const Size(402 * 3, 874 * 3);
@@ -90,6 +99,13 @@ void main() {
               .overrideWithValue(CalendarService(prefs, database)),
           backupLocationServiceProvider
               .overrideWithValue(BackupLocationService(prefs)),
+          // Without these the shell resolves from defaultTargetPlatform,
+          // which is android under `flutter test` -- so every page here used
+          // to be pumped through MaterialPageShell only, and the entire
+          // Cupertino/glass branch of platform_page.dart had no coverage at
+          // all. The Cupertino pass below is what exercises it.
+          shellKindProvider.overrideWithValue(shell),
+          nativeChromeActiveProvider.overrideWithValue(false),
         ],
         child: MaterialApp(
           localizationsDelegates: const [
@@ -99,7 +115,7 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: page,
+          home: GlassTheme(spec: GlassSpec.resolve(glass), child: page),
         ),
       ),
     );
@@ -139,6 +155,22 @@ void main() {
   for (final entry in pages.entries) {
     testWidgets('${entry.key} page renders', (tester) async {
       await pumpPage(tester, entry.value());
+    });
+  }
+
+  // The same 21 pages on the iOS shell, with glass at full strength. Glass
+  // replaces a plain `Container` with a clip + backdrop filter + stack on
+  // every card, list group and bar in the app -- a constraint-shaped change
+  // to every screen, which is exactly what this file exists to catch.
+  for (final entry in pages.entries) {
+    testWidgets('${entry.key} page renders on the iOS shell with glass',
+        (tester) async {
+      await pumpPage(
+        tester,
+        entry.value(),
+        shell: ShellKind.cupertino,
+        glass: GlassLevel.full,
+      );
     });
   }
 

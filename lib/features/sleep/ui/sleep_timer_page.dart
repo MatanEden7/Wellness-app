@@ -14,6 +14,9 @@ import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'sleep_page.dart' show qualityLabel;
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 class SleepTimerPage extends HookConsumerWidget {
   const SleepTimerPage({super.key});
@@ -33,20 +36,22 @@ class SleepTimerPage extends HookConsumerWidget {
     return PlatformNavPage(
       chrome: PageChrome(title: l10n.sleepTimer),
       body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: currentEntry.value == null
-                ? _StartSleepView(
-                    onStart: () => _startSleep(ref, currentEntry, isLoading),
-                    isLoading: isLoading.value,
-                  )
-                : _ActiveSleepView(
-                    entry: currentEntry.value!,
-                    onStop: () => _stopSleep(context, ref, currentEntry, isLoading, l10n),
-                    onEdit: () => _editSleep(context, ref, currentEntry),
-                    isLoading: isLoading.value,
-                  ),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.xxl, vertical: Space.xxxl),
+          child: currentEntry.value == null
+              ? _StartSleepView(
+                  onStart: () => _startSleep(ref, currentEntry, isLoading),
+                  isLoading: isLoading.value,
+                )
+              : _ActiveSleepView(
+                  entry: currentEntry.value!,
+                  onStop: () =>
+                      _stopSleep(context, ref, currentEntry, isLoading, l10n),
+                  onEdit: () => _editSleep(context, ref, currentEntry),
+                  isLoading: isLoading.value,
+                ),
+        ),
       ),
     );
   }
@@ -56,7 +61,10 @@ class SleepTimerPage extends HookConsumerWidget {
     ValueNotifier<SleepEntry?> currentEntry,
   ) async {
     // Check if there's an active sleep session (started but not ended)
-    final entries = await ref.read(sleepRepositoryProvider).watchRecentEntries(limit: 1).first;
+    final entries = await ref
+        .read(sleepRepositoryProvider)
+        .watchRecentEntries(limit: 1)
+        .first;
     if (entries.isNotEmpty && !entries.first.isCompleted) {
       currentEntry.value = entries.first;
     }
@@ -68,7 +76,7 @@ class SleepTimerPage extends HookConsumerWidget {
     ValueNotifier<bool> isLoading,
   ) async {
     isLoading.value = true;
-    
+
     try {
       final entry = SleepEntry.create();
       await ref.read(sleepRepositoryProvider).createEntry(entry);
@@ -171,44 +179,48 @@ class SleepTimerPage extends HookConsumerWidget {
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-        title: Text(l10n.sleepComplete),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.wb_sunny,
-              size: 64,
-              color: Colors.orange,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l10n.youSleptForHours(
-                entry.durationInHours!.toStringAsFixed(1),
+          title: Text(l10n.sleepComplete),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.wb_sunny,
+                size: 64,
+                color: Colors.orange,
               ),
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l10n.fromTimeToTime(
-                AppDateUtils.formatTime(entry.startedAt),
-                AppDateUtils.formatTime(entry.endedAt!),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.youSleptForHours(
+                  entry.durationInHours!.toStringAsFixed(1),
+                ),
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
               ),
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                l10n.fromTimeToTime(
+                  AppDateUtils.formatTime(entry.startedAt),
+                  AppDateUtils.formatTime(entry.endedAt!),
+                ),
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.pop(); // Go back to sleep page
+              },
+              child: Text(l10n.done),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.pop(); // Go back to sleep page
-            },
-            child: Text(l10n.done),
-          ),
-        ],
-      );
+        );
       },
     );
   }
@@ -235,27 +247,27 @@ class _StartSleepView extends StatelessWidget {
           color: Theme.of(context).colorScheme.primary,
         ),
         const SizedBox(height: 48),
-        
         Text(
           AppLocalizations.of(context)!.readyForSleep,
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
-        
         Text(
           AppLocalizations.of(context)!.readyForSleepSubtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontSize: 17,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
+                fontSize: 17,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 48),
-        
         SizedBox(
           width: 220,
           height: 56,
@@ -267,13 +279,15 @@ class _StartSleepView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-        
         Text(
           l10n.currentTimeLabel(AppDateUtils.formatTime(DateTime.now())),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontSize: 15,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
+                fontSize: 15,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
+              ),
         ),
       ],
     );
@@ -298,10 +312,11 @@ class _ActiveSleepView extends HookWidget {
     final l10n = AppLocalizations.of(context)!;
     // Update every second to show live duration
     final currentTime = useState(DateTime.now());
-    
+
     useEffect(() {
-      final timer = Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now())
-          .listen((time) => currentTime.value = time);
+      final timer =
+          Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now())
+              .listen((time) => currentTime.value = time);
       return timer.cancel;
     }, []);
 
@@ -318,53 +333,57 @@ class _ActiveSleepView extends HookWidget {
           color: Theme.of(context).colorScheme.primary,
         ),
         const SizedBox(height: 32),
-        
+
         Text(
           AppLocalizations.of(context)!.sleepingEllipsis,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        
+
         // Sleep Duration
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-              width: 2,
-            ),
+        ContentSurface.tinted(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            width: 2,
           ),
-          child: Column(
-            children: [
-              Text(
-                '${hours}h ${minutes}m',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 56,
-                  letterSpacing: -1,
-                  color: Theme.of(context).colorScheme.primary,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+                vertical: Space.xxxl, horizontal: Space.xxl),
+            child: Column(
+              children: [
+                Text(
+                  '${hours}h ${minutes}m',
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 56,
+                        letterSpacing: -1,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context)!.sleepDuration,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 17,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                const SizedBox(height: 12),
+                Text(
+                  AppLocalizations.of(context)!.sleepDuration,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 32),
-        
+
         // Sleep Start Time
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -372,20 +391,26 @@ class _ActiveSleepView extends HookWidget {
             Icon(
               Icons.bedtime,
               size: 20,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6),
             ),
             const SizedBox(width: 8),
             Text(
               l10n.startedAtLabel(AppDateUtils.formatTime(entry.startedAt)),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontSize: 16,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    fontSize: 16,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
             ),
           ],
         ),
         const SizedBox(height: 40),
-        
+
         // Actions
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -414,13 +439,16 @@ class _ActiveSleepView extends HookWidget {
           ],
         ),
         const SizedBox(height: 24),
-        
+
         Text(
           l10n.currentTimeLabel(AppDateUtils.formatTime(currentTime.value)),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
+                fontSize: 14,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.5),
+              ),
         ),
       ],
     );
@@ -443,120 +471,131 @@ class _EditActiveSleepDialog extends HookWidget {
     final selectedQuality = useState<int?>(entry.quality);
 
     return Dialog(
-      child: Container(
-        width: 400,
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context)!.editSleepSession,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppSpacing.lg),
+      backgroundColor: Colors.transparent,
+      child: ContentSurface(
+        borderRadius: BorderRadius.circular(14),
+        showBorder: false,
+        child: Container(
+          width: 400,
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.editSleepSession,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Date
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${l10n.date}: ${AppDateUtils.formatDate(selectedDate.value)}',
-                    style: Theme.of(context).textTheme.titleMedium,
+              // Date
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${l10n.date}: ${AppDateUtils.formatDate(selectedDate.value)}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.calendar_today),
+                    label: Text(l10n.change),
+                    onPressed: () => _selectDate(context, selectedDate),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Start Time
+              TextFormField(
+                controller: startTimeController,
+                decoration: InputDecoration(
+                  labelText: l10n.sleepStartTime,
+                  suffixIcon: const Icon(Icons.bedtime),
                 ),
-                TextButton.icon(
-                  icon: const Icon(Icons.calendar_today),
-                  label: Text(l10n.change),
-                  onPressed: () => _selectDate(context, selectedDate),
+                onTap: () => _selectTime(context, startTimeController),
+                readOnly: true,
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Quality Rating
+              Text(
+                AppLocalizations.of(context)!.sleepQualityOptional,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(5, (index) {
+                  final rating = index + 1;
+                  final isSelected = selectedQuality.value == rating;
+                  return GestureDetector(
+                    onTap: () =>
+                        selectedQuality.value = isSelected ? null : rating,
+                    child: Icon(
+                      isSelected ? Icons.star : Icons.star_border,
+                      size: 32,
+                      color: Colors.amber,
+                    ),
+                  );
+                }),
+              ),
+              if (selectedQuality.value != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Center(
+                  child: Text(
+                    qualityLabel(l10n, selectedQuality.value!),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
 
-            // Start Time
-            TextFormField(
-              controller: startTimeController,
-              decoration: InputDecoration(
-                labelText: l10n.sleepStartTime,
-                suffixIcon: const Icon(Icons.bedtime),
-              ),
-              onTap: () => _selectTime(context, startTimeController),
-              readOnly: true,
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            // Quality Rating
-            Text(
-              AppLocalizations.of(context)!.sleepQualityOptional,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(5, (index) {
-                final rating = index + 1;
-                final isSelected = selectedQuality.value == rating;
-                return GestureDetector(
-                  onTap: () => selectedQuality.value = isSelected ? null : rating,
-                  child: Icon(
-                    isSelected ? Icons.star : Icons.star_border,
-                    size: 32,
-                    color: Colors.amber,
-                  ),
-                );
-              }),
-            ),
-            if (selectedQuality.value != null) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Center(
-                child: Text(
-                  qualityLabel(l10n, selectedQuality.value!),
-                  style: Theme.of(context).textTheme.bodySmall,
+              // Notes
+              TextFormField(
+                controller: noteController,
+                decoration: InputDecoration(
+                  labelText: l10n.notesOptional,
+                  hintText: l10n.howAreYouFeeling,
                 ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GlassButton(
+                    minHeight: Sizes.control,
+                    borderRadius: BorderRadius.circular(18),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Space.md, vertical: Space.sm),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.cancel),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  AppButton(
+                    text: l10n.save,
+                    onPressed: () => _saveSleepEntry(
+                      context,
+                      selectedDate.value,
+                      startTimeController.text,
+                      selectedQuality.value,
+                      noteController.text,
+                    ),
+                  ),
+                ],
               ),
             ],
-            const SizedBox(height: AppSpacing.md),
-
-            // Notes
-            TextFormField(
-              controller: noteController,
-              decoration: InputDecoration(
-                labelText: l10n.notesOptional,
-                hintText: l10n.howAreYouFeeling,
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.cancel),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                AppButton(
-                  text: l10n.save,
-                  onPressed: () => _saveSleepEntry(
-                    context,
-                    selectedDate.value,
-                    startTimeController.text,
-                    selectedQuality.value,
-                    noteController.text,
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Future<void> _selectDate(BuildContext context, ValueNotifier<DateTime> selectedDate) async {
+  Future<void> _selectDate(
+      BuildContext context, ValueNotifier<DateTime> selectedDate) async {
     final date = await showDatePicker(
       context: context,
       initialDate: selectedDate.value,
@@ -568,17 +607,18 @@ class _EditActiveSleepDialog extends HookWidget {
     }
   }
 
-  Future<void> _selectTime(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
     final currentTime = TimeOfDay.fromDateTime(entry.startedAt);
     final time = await showTimePicker(
       context: context,
       initialTime: currentTime,
     );
     if (time != null) {
-      controller.text = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+      controller.text =
+          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     }
   }
-
 
   void _saveSleepEntry(
     BuildContext context,

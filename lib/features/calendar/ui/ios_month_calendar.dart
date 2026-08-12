@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/date_utils.dart';
 import '../domain/models.dart';
+import '../../../core/design/tokens.dart';
 
 /// A continuously-scrolling month grid modelled on the iOS Calendar app.
 ///
@@ -72,8 +72,10 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _firstMonth = _monthOf(widget.firstMonth ?? DateTime(now.year - 3, now.month));
-    _lastMonth = _monthOf(widget.lastMonth ?? DateTime(now.year + 3, now.month));
+    _firstMonth =
+        _monthOf(widget.firstMonth ?? DateTime(now.year - 3, now.month));
+    _lastMonth =
+        _monthOf(widget.lastMonth ?? DateTime(now.year + 3, now.month));
     _monthCount = _monthsBetween(_firstMonth, _lastMonth) + 1;
   }
 
@@ -164,9 +166,13 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
     return Column(
       children: [
         const _WeekdayHeader(height: _weekdayHeaderHeight),
-        Divider(height: 1, thickness: 1, color: theme.dividerColor.withValues(alpha: 0.5)),
+        Divider(
+            height: 1,
+            thickness: 1,
+            color: theme.dividerColor.withValues(alpha: 0.5)),
         Expanded(
-          child: widget.weekView ? _buildWeek(context) : _buildMonthList(context),
+          child:
+              widget.weekView ? _buildWeek(context) : _buildMonthList(context),
         ),
       ],
     );
@@ -234,7 +240,7 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
         SizedBox(
           height: _monthHeaderHeight,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: Space.lg),
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
@@ -275,7 +281,8 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
     );
   }
 
-  Widget _buildDay(BuildContext context, DateTime day, {required bool inMonth}) {
+  Widget _buildDay(BuildContext context, DateTime day,
+      {required bool inMonth}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final today = AppDateUtils.startOfDay(DateTime.now());
@@ -335,9 +342,8 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
                 style: TextStyle(
                   fontSize: 19,
                   // iOS bolds today and the selection, nothing else.
-                  fontWeight: isToday || isSelected
-                      ? FontWeight.w600
-                      : FontWeight.w400,
+                  fontWeight:
+                      isToday || isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: numberColor,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
@@ -378,8 +384,6 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
       ],
     );
   }
-
-
 }
 
 /// Pinned S M T W T F S row, iOS-style: short, uppercase, letterspaced.
@@ -400,8 +404,8 @@ class _WeekdayHeader extends StatelessWidget {
       child: Row(
         children: List.generate(7, (i) {
           final day = sunday.add(Duration(days: i));
-          final isWeekend =
-              day.weekday == DateTime.friday || day.weekday == DateTime.saturday;
+          final isWeekend = day.weekday == DateTime.friday ||
+              day.weekday == DateTime.saturday;
           return Expanded(
             child: Center(
               child: Text(

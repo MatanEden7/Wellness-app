@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'glass.dart';
 import 'sheets.dart';
+import '../design/tokens.dart';
 
 /// A list row that can be swiped from the trailing edge to delete, swiped
 /// from the leading edge to edit, and long-pressed for its full set of
@@ -168,7 +170,7 @@ class _SwipeBackground extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       alignment: alignment,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: Space.xxl),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(16),
@@ -213,9 +215,11 @@ class AppRowMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Tooltip(
       message: tooltip,
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        minimumSize: const Size(36, 36),
+      child: GlassButton(
+        minHeight: Sizes.control,
+        borderRadius: BorderRadius.circular(18),
+        padding: const EdgeInsets.symmetric(
+            horizontal: Space.sm, vertical: Space.sm),
         onPressed: () => showAppActionSheet(
           context: context,
           title: title,

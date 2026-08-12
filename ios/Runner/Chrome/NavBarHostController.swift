@@ -29,6 +29,55 @@ final class NavBarHostController: UIViewController {
     private let navBar = UINavigationBar()
     private let navItem = UINavigationItem()
     private var currentSpec: PageChromeSpec?
+    private var currentStyle: ChromeStyle = .glass
+    private var underContent = false
+
+    /// Which background the bar asks the system for.
+    ///
+    /// Two system-provided configurations, chosen by name — this is a
+    /// capability choice, not styling. Nothing here says what glass looks
+    /// like; `configureWithDefaultBackground()` resolves to whatever the
+    /// running OS calls standard, which on iOS 26 is Liquid Glass.
+    func applyStyle(_ style: ChromeStyle) {
+        currentStyle = style
+        refreshAppearance()
+    }
+
+    /// Whether page content is currently underneath the bar.
+    ///
+    /// iOS derives this itself when a bar is connected to a scroll view. This
+    /// one is standalone over a Flutter canvas, so Dart observes the scroll and
+    /// tells us — see `setScrollEdge` on the Pigeon API.
+    func setUnderContent(_ under: Bool) {
+        guard under != underContent else { return }
+        underContent = under
+        refreshAppearance()
+    }
+
+    private func refreshAppearance() {
+        let appearance = UINavigationBarAppearance()
+        switch currentStyle {
+        case .glass:
+            // The scroll edge effect: no material while content rests against
+            // the bar, the system material once anything is under it. This is
+            // what a real iOS 26 bar does, and what the app could not express
+            // until Dart started reporting the scroll offset.
+            if underContent {
+                appearance.configureWithDefaultBackground()
+            } else {
+                appearance.configureWithTransparentBackground()
+            }
+        case .opaque:
+            appearance.configureWithOpaqueBackground()
+        }
+        // All three states, not just `standard`: a standalone bar with no
+        // scroll view to track never leaves its `scrollEdgeAppearance`, and
+        // that state is transparent by default — the bar would render no
+        // material at all.
+        navBar.standardAppearance = appearance
+        navBar.scrollEdgeAppearance = appearance
+        navBar.compactAppearance = appearance
+    }
 
     // MARK: - Lifecycle
 
@@ -48,6 +97,8 @@ final class NavBarHostController: UIViewController {
         navBar.isTranslucent = true
         navBar.translatesAutoresizingMaskIntoConstraints = false
         navBar.delegate = self
+
+        applyStyle(currentStyle)
 
         view.addSubview(navBar)
         NSLayoutConstraint.activate([
@@ -69,7 +120,9 @@ final class NavBarHostController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        barHeight = navBar.frame.maxY
+        // Zero while hidden, so Flutter doesn't reserve a top inset for a bar
+        // that isn't on screen (onboarding).
+        barHeight = view.isHidden ? 0 : navBar.frame.maxY
     }
 
     // MARK: - Chrome update

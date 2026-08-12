@@ -5,6 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../bridge/generated/chrome.g.dart' as pigeon;
 import '../bridge/native_chrome_service.dart';
 import '../core/ios/app_scaffold.dart';
+import '../core/design/scroll_edge.dart';
+import '../core/design/tokens.dart';
+import '../core/ios/glass.dart';
 import '../core/ios/liquid_glass_tab_bar.dart';
 import '../core/platform/shell_kind.dart';
 import '../core/platform/shell_provider.dart';
@@ -114,8 +117,7 @@ class PlatformPage extends ConsumerWidget {
     if (nativeActive) ref.watch(chromeResyncProvider);
     _maybeSyncChrome(context, ref, chrome);
     return switch (shell) {
-      ShellKind.material =>
-        MaterialPageShell(chrome: chrome, slivers: slivers),
+      ShellKind.material => MaterialPageShell(chrome: chrome, slivers: slivers),
       ShellKind.cupertino when nativeActive =>
         _NativeSliverShell(chrome: chrome, slivers: slivers),
       ShellKind.cupertino =>
@@ -146,6 +148,11 @@ class PlatformChildPage extends ConsumerWidget {
     _maybeSyncChrome(context, ref, chrome);
     return switch (shell) {
       ShellKind.material => MaterialPageShell.child(
+          chrome: chrome,
+          child: child,
+          padding: padding,
+        ),
+      ShellKind.cupertino when nativeActive => _NativeChildShell(
           chrome: chrome,
           child: child,
           padding: padding,
@@ -186,6 +193,8 @@ class PlatformNavPage extends ConsumerWidget {
       ShellKind.material => MaterialNavPageShell(chrome: chrome, body: body),
       ShellKind.cupertino when nativeActive =>
         _NativeNavShell(chrome: chrome, body: body),
+      ShellKind.cupertino when nativeActive =>
+        _NativeNavShell(chrome: chrome, body: body),
       ShellKind.cupertino => _CupertinoNavShell(chrome: chrome, body: body),
     };
   }
@@ -207,30 +216,76 @@ final Map<String, VoidCallback?> currentChromeActions = {};
 
 // ─── Chrome sync helper ───────────────────────────────────────────────────────
 
+/// Chrome waiting for a route's push animation to settle, keyed by that
+/// animation.  The *value* is replaced on every rebuild so the bar always
+/// receives the page's latest chrome, not whatever it declared on its first
+/// frame; the *key* is what stops us registering a second listener.
+final _pendingChrome = <Animation<double>, PageChrome>{};
+
 /// Sends the current [PageChrome] to the native nav bar on iOS.
 /// No-op on Android, in tests, and when this route is not the active one
 /// (e.g. a page that is animating out after a pop).
+///
+/// If the push animation is still in progress the sync is deferred via a
+/// one-shot status listener so the nav bar doesn't jump ahead of the slide.
 void _maybeSyncChrome(BuildContext context, WidgetRef ref, PageChrome chrome) {
   if (!ref.read(nativeChromeActiveProvider)) return;
   // Skip if this page is not the current (top-most) route — handles the case
   // where chromeResyncProvider rebuilds a page that is animating out.
   final route = ModalRoute.of(context);
   if (route != null && !route.isCurrent) return;
+
+  final animation = route?.animation;
+  if (animation != null && !animation.isCompleted) {
+    // Animation in progress: register a one-shot listener so the nav bar
+    // updates exactly when the push animation settles.
+    final alreadyPending = _pendingChrome.containsKey(animation);
+    _pendingChrome[animation] = chrome;
+    if (alreadyPending) return;
+
+    late final void Function(AnimationStatus) onStatus;
+    onStatus = (status) {
+      // `dismissed` matters as much as `completed`: a route popped mid-push
+      // never completes, and without this branch its entry — and this
+      // listener — would outlive the route.
+      if (status != AnimationStatus.completed &&
+          status != AnimationStatus.dismissed) {
+        return;
+      }
+      animation.removeStatusListener(onStatus);
+      final pending = _pendingChrome.remove(animation);
+      if (status == AnimationStatus.completed && pending != null) {
+        _pushChromeToNative(pending);
+      }
+    };
+    animation.addStatusListener(onStatus);
+    return;
+  }
+
+  _pushChromeToNative(chrome);
+}
+
+void _pushChromeToNative(PageChrome chrome) {
   // Update the global action map so onChromeAction can dispatch to the right
   // callback. Plain map write — safe during build (no Riverpod notifier).
   currentChromeActions
     ..clear()
     ..addAll({for (final a in chrome.actions) a.tooltip: a.onPressed});
   try {
-    pigeon.ChromeHostApi().setPageChrome(pigeon.PageChromeSpec(
-      title: chrome.title,
-      largeTitle: chrome.largeTitle,
-      showBack: chrome.showBack,
-      backLabel: chrome.backTooltip,
-      actions: chrome.actions
-          .map((a) {
-            final sf = a.sfSymbolName ??
-                (a.icon != null ? _sfSymbol(a.icon!) : null);
+    // The result is a Future, so a `catch` here only ever saw synchronous
+    // failures. The interesting failure is asynchronous: on iOS < 15 the app
+    // falls back to a plain FlutterViewController and no host API is
+    // registered, so every page build would raise an unhandled
+    // PlatformException. Missing chrome is survivable; a crash per build is not.
+    pigeon.ChromeHostApi()
+        .setPageChrome(pigeon.PageChromeSpec(
+          title: chrome.title,
+          largeTitle: chrome.largeTitle,
+          showBack: chrome.showBack,
+          backLabel: chrome.backTooltip,
+          actions: chrome.actions.map((a) {
+            final sf =
+                a.sfSymbolName ?? (a.icon != null ? _sfSymbol(a.icon!) : null);
             // '' signals Swift to use title text instead of an SF Symbol.
             return pigeon.ChromeAction(
               id: a.tooltip,
@@ -238,10 +293,10 @@ void _maybeSyncChrome(BuildContext context, WidgetRef ref, PageChrome chrome) {
               title: a.label ?? a.tooltip,
               isDestructive: false,
             );
-          })
-          .toList(),
-      toolbarActions: [],
-    ));
+          }).toList(),
+          toolbarActions: [],
+        ))
+        .catchError((_) {});
   } catch (_) {}
 }
 
@@ -251,14 +306,15 @@ void _maybeSyncChrome(BuildContext context, WidgetRef ref, PageChrome chrome) {
 String _sfSymbol(IconData icon) {
   const m = {
     // CupertinoIcons (preferred — most pages use these)
-    0xf489: 'plus',                    // CupertinoIcons.add
-    0xf411: 'gearshape',               // CupertinoIcons.settings
-    0xf430: 'flask',                   // CupertinoIcons.lab_flask
-    0xf21c: 'arrow.counterclockwise',  // CupertinoIcons.arrow_counterclockwise
-    0xf5b0: 'calendar',                // CupertinoIcons.calendar
-    0xf8b7: 'chart.bar.fill',          // CupertinoIcons.chart_bar_alt_fill
-    0xf6e2: 'line.3.horizontal.decrease', // CupertinoIcons.line_horizontal_3_decrease
-    0xf804: 'square.grid.2x2',         // CupertinoIcons.square_grid_2x2
+    0xf489: 'plus', // CupertinoIcons.add
+    0xf411: 'gearshape', // CupertinoIcons.settings
+    0xf430: 'flask', // CupertinoIcons.lab_flask
+    0xf21c: 'arrow.counterclockwise', // CupertinoIcons.arrow_counterclockwise
+    0xf5b0: 'calendar', // CupertinoIcons.calendar
+    0xf8b7: 'chart.bar.fill', // CupertinoIcons.chart_bar_alt_fill
+    0xf6e2:
+        'line.3.horizontal.decrease', // CupertinoIcons.line_horizontal_3_decrease
+    0xf804: 'square.grid.2x2', // CupertinoIcons.square_grid_2x2
     // Material icons
     0xe047: 'plus',
     0xe5c3: 'pencil',
@@ -285,6 +341,22 @@ String _sfSymbol(IconData icon) {
 // tab bar (N3). Content renders edge-to-edge; SafeArea picks up the insets
 // that iOS sets via additionalSafeAreaInsets on the FlutterViewController.
 
+class _ScrollEdgeReporter extends ConsumerWidget {
+  const _ScrollEdgeReporter({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ScrollEdgeObserver(
+      onChanged: (under) => ref
+          .read(nativeChromeServiceProvider)
+          ?.setScrollEdge(underContent: under),
+      child: child,
+    );
+  }
+}
+
 class _NativeSliverShell extends StatelessWidget {
   const _NativeSliverShell({required this.chrome, required this.slivers});
 
@@ -294,24 +366,36 @@ class _NativeSliverShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pinnedHeader = chrome.pinnedHeader;
+    final insets = MediaQuery.paddingOf(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            if (pinnedHeader != null)
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _FixedHeightDelegate(
-                  height: chrome.pinnedHeaderHeight,
-                  child: pinnedHeader,
-                ),
+      body: GlassLayer(
+        child: _ScrollEdgeReporter(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: [
+              if (pinnedHeader != null)
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _FixedHeightDelegate(
+                    height: chrome.pinnedHeaderHeight,
+                    topInset: insets.top,
+                    child: pinnedHeader,
+                  ),
+                )
+              else
+                SliverToBoxAdapter(child: SizedBox(height: insets.top)),
+              ...slivers,
+              // Clears the tab bar, which floats over the viewport.
+              SliverToBoxAdapter(
+                child: SizedBox(height: insets.bottom + Space.cardGap),
               ),
-            ...slivers,
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -332,20 +416,28 @@ class _NativeChildShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pad = padding ??
-        EdgeInsets.fromLTRB(
-          UIConstants.screenHorizontalPadding,
-          UIConstants.cardSpacing,
-          UIConstants.screenHorizontalPadding,
-          UIConstants.sectionSpacing,
+        const EdgeInsets.fromLTRB(
+          Space.screen,
+          Space.cardGap,
+          Space.screen,
+          Space.section,
         );
+    final insets = MediaQuery.paddingOf(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       extendBody: true,
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          padding: pad,
-          child: child,
+      body: GlassLayer(
+        child: _ScrollEdgeReporter(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            padding: pad.add(
+              EdgeInsets.only(top: insets.top, bottom: insets.bottom),
+            ),
+            child: child,
+          ),
         ),
       ),
     );
@@ -358,25 +450,40 @@ class _NativeNavShell extends StatelessWidget {
   final PageChrome chrome;
   final Widget body;
 
+  // A non-scrolling body has nothing to scroll under the bars, so here the
+  // insets do belong on the viewport — including the bottom one, without which
+  // the body's last row sits underneath the native tab bar.
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
         extendBody: true,
-        body: SafeArea(bottom: false, child: body),
+        body: GlassLayer(child: SafeArea(child: body)),
       );
 }
 
-/// Fixed-height [SliverPersistentHeaderDelegate] for pinned widgets like DateStrip.
+/// Fixed-height [SliverPersistentHeaderDelegate] for pinned controls like
+/// `DateStrip`, sitting directly below the native nav bar.
+///
+/// [topInset] is the nav-bar inset: the header reserves it inside its own
+/// extent so the strip starts below the bar rather than behind it. Nothing here
+/// paints a background — the control inside is a floating capsule and carries
+/// the material itself.
 class _FixedHeightDelegate extends SliverPersistentHeaderDelegate {
-  const _FixedHeightDelegate({required this.height, required this.child});
+  const _FixedHeightDelegate({
+    required this.height,
+    required this.child,
+    this.topInset = 0,
+  });
 
   final double height;
+  final double topInset;
   final Widget child;
 
   @override
-  double get minExtent => height;
+  double get minExtent => height + topInset;
   @override
-  double get maxExtent => height;
+  double get maxExtent => height + topInset;
 
   @override
   Widget build(
@@ -384,17 +491,23 @@ class _FixedHeightDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) =>
-      SizedBox.expand(child: child);
+      Column(
+        children: [
+          SizedBox(height: topInset),
+          SizedBox(height: height, child: child),
+        ],
+      );
 
   @override
   bool shouldRebuild(_FixedHeightDelegate old) =>
-      old.height != height || old.child != child;
+      old.height != height || old.child != child || old.topInset != topInset;
 }
 
 // ─── Cupertino shells (thin wrappers around AppScaffold) ─────────────────────
 
-Widget? _tabBarForChrome(PageChrome chrome) =>
-    chrome.isTabDestination ? LiquidGlassTabBar(currentIndex: chrome.tabIndex) : null;
+Widget? _tabBarForChrome(PageChrome chrome) => chrome.isTabDestination
+    ? LiquidGlassTabBar(currentIndex: chrome.tabIndex)
+    : null;
 
 List<Widget> _navBarActions(List<ChromeAction> actions) => actions
     .map((a) => NavBarAction(

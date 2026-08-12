@@ -19,7 +19,6 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('SharedPreferences must be overridden');
 });
 
-
 // User profile data model
 class UserProfile {
   // Basic info
@@ -27,7 +26,7 @@ class UserProfile {
   final int ageYears;
   final int heightCm;
   final double weightKg;
-  
+
   // Goals
   final String goal; // fat_loss, muscle_gain, maintenance, mobility_rehab
   final String activityLevel; // sedentary, light, moderate, active, very_active
@@ -44,18 +43,18 @@ class UserProfile {
   /// this field existed. That default is deliberate: it produces the lightest
   /// prescriptions, so an unknown user is never over-loaded.
   final String trainingExperience;
-  
+
   // Equipment & preferences
   final List<String> equipment;
   final String dietType; // omnivore, carnivore, herbivore
   final String mealCountPerDay; // 2, 3, 4, intermittent_fasting_16_8
   final List<String> exclusions;
   final List<String> injuries;
-  
+
   // Units
   final String energyUnit; // kcal, kJ
   final String weightUnit; // g, oz
-  
+
   // Calculated values (from formulas)
   final double bmr;
   final double tdee;
@@ -89,53 +88,53 @@ class UserProfile {
   });
 
   Map<String, dynamic> toJson() => {
-    'sex': sex,
-    'ageYears': ageYears,
-    'heightCm': heightCm,
-    'weightKg': weightKg,
-    'goal': goal,
-    'activityLevel': activityLevel,
-    'trainingDaysPerWeek': trainingDaysPerWeek,
-    'trainingExperience': trainingExperience,
-    'equipment': equipment,
-    'dietType': dietType,
-    'mealCountPerDay': mealCountPerDay,
-    'exclusions': exclusions,
-    'injuries': injuries,
-    'energyUnit': energyUnit,
-    'weightUnit': weightUnit,
-    'bmr': bmr,
-    'tdee': tdee,
-    'calorieTarget': calorieTarget,
-    'proteinTargetG': proteinTargetG,
-    'fatTargetG': fatTargetG,
-    'carbsTargetG': carbsTargetG,
-  };
+        'sex': sex,
+        'ageYears': ageYears,
+        'heightCm': heightCm,
+        'weightKg': weightKg,
+        'goal': goal,
+        'activityLevel': activityLevel,
+        'trainingDaysPerWeek': trainingDaysPerWeek,
+        'trainingExperience': trainingExperience,
+        'equipment': equipment,
+        'dietType': dietType,
+        'mealCountPerDay': mealCountPerDay,
+        'exclusions': exclusions,
+        'injuries': injuries,
+        'energyUnit': energyUnit,
+        'weightUnit': weightUnit,
+        'bmr': bmr,
+        'tdee': tdee,
+        'calorieTarget': calorieTarget,
+        'proteinTargetG': proteinTargetG,
+        'fatTargetG': fatTargetG,
+        'carbsTargetG': carbsTargetG,
+      };
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
-    sex: json['sex'] as String,
-    ageYears: json['ageYears'] as int,
-    heightCm: json['heightCm'] as int,
-    weightKg: (json['weightKg'] as num).toDouble(),
-    goal: json['goal'] as String,
-    activityLevel: json['activityLevel'] as String,
-    trainingDaysPerWeek: json['trainingDaysPerWeek'] as int,
-    // Absent on every profile saved before this field existed.
-    trainingExperience: json['trainingExperience'] as String? ?? 'beginner',
-    equipment: List<String>.from(json['equipment'] as List),
-    dietType: json['dietType'] as String,
-    mealCountPerDay: json['mealCountPerDay'] as String,
-    exclusions: List<String>.from(json['exclusions'] as List),
-    injuries: List<String>.from(json['injuries'] as List),
-    energyUnit: json['energyUnit'] as String,
-    weightUnit: json['weightUnit'] as String,
-    bmr: (json['bmr'] as num).toDouble(),
-    tdee: (json['tdee'] as num).toDouble(),
-    calorieTarget: (json['calorieTarget'] as num).toDouble(),
-    proteinTargetG: (json['proteinTargetG'] as num).toDouble(),
-    fatTargetG: (json['fatTargetG'] as num).toDouble(),
-    carbsTargetG: (json['carbsTargetG'] as num).toDouble(),
-  );
+        sex: json['sex'] as String,
+        ageYears: json['ageYears'] as int,
+        heightCm: json['heightCm'] as int,
+        weightKg: (json['weightKg'] as num).toDouble(),
+        goal: json['goal'] as String,
+        activityLevel: json['activityLevel'] as String,
+        trainingDaysPerWeek: json['trainingDaysPerWeek'] as int,
+        // Absent on every profile saved before this field existed.
+        trainingExperience: json['trainingExperience'] as String? ?? 'beginner',
+        equipment: List<String>.from(json['equipment'] as List),
+        dietType: json['dietType'] as String,
+        mealCountPerDay: json['mealCountPerDay'] as String,
+        exclusions: List<String>.from(json['exclusions'] as List),
+        injuries: List<String>.from(json['injuries'] as List),
+        energyUnit: json['energyUnit'] as String,
+        weightUnit: json['weightUnit'] as String,
+        bmr: (json['bmr'] as num).toDouble(),
+        tdee: (json['tdee'] as num).toDouble(),
+        calorieTarget: (json['calorieTarget'] as num).toDouble(),
+        proteinTargetG: (json['proteinTargetG'] as num).toDouble(),
+        fatTargetG: (json['fatTargetG'] as num).toDouble(),
+        carbsTargetG: (json['carbsTargetG'] as num).toDouble(),
+      );
 
   UserProfile copyWith({
     String? sex,
@@ -188,19 +187,19 @@ class UserProfile {
 
 class UserProfileService extends ChangeNotifier {
   final SharedPreferences _prefs;
-  
+
   static const String _profileKey = 'user_profile';
   static const String _setupCompletedKey = 'setup_completed';
-  
+
   UserProfileService(this._prefs);
-  
+
   // Check if user has completed setup
   bool get isSetupCompleted => _prefs.getBool(_setupCompletedKey) ?? false;
-  
+
   Future<void> setSetupCompleted(bool completed) async {
     await _prefs.setBool(_setupCompletedKey, completed);
   }
-  
+
   /// Loads the saved profile, or null when setup has not run yet.
   ///
   /// Note this used to be unrecoverable: the profile was written as
@@ -233,4 +232,3 @@ class UserProfileService extends ChangeNotifier {
     notifyListeners(); // Notify router to refresh and redirect to onboarding
   }
 }
-

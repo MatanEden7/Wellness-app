@@ -105,7 +105,9 @@ class FoodServingKindParser {
       return FoodServingKind.perGram;
     }
 
-    if (unitLower == 'ml' || unitLower == 'milliliter' || unitLower == 'milliliters') {
+    if (unitLower == 'ml' ||
+        unitLower == 'milliliter' ||
+        unitLower == 'milliliters') {
       return FoodServingKind.perMl;
     }
 

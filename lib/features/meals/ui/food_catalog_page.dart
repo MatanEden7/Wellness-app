@@ -22,6 +22,8 @@ import '../domain/food_category.dart';
 import '../domain/food_tags.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 /// Which half of the catalog is showing.
 enum _CatalogScope { user, starter }
@@ -57,35 +59,36 @@ class FoodCatalogPage extends HookConsumerWidget {
           ChromeAction(
             icon: CupertinoIcons.add,
             tooltip: l10n.addFood,
-            onPressed: () => pushModalPage<void>(context, const FoodEditorPage()),
+            onPressed: () =>
+                pushModalPage<void>(context, const FoodEditorPage()),
           ),
         ],
         pinnedHeaderHeight: 104,
         pinnedHeader: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          UIConstants.screenHorizontalPadding,
-          2,
-          UIConstants.screenHorizontalPadding,
-          8,
+          padding: const EdgeInsets.fromLTRB(
+            UIConstants.screenHorizontalPadding,
+            2,
+            UIConstants.screenHorizontalPadding,
+            8,
+          ),
+          child: Column(
+            children: [
+              AppSegmented<_CatalogScope>(
+                value: scope.value,
+                onChanged: (next) => scope.value = next,
+                segments: {
+                  _CatalogScope.user: l10n.yourFoods,
+                  _CatalogScope.starter: l10n.starterList,
+                },
+              ),
+              const SizedBox(height: 8),
+              AppSearchField(
+                controller: searchController,
+                placeholder: l10n.searchFoods,
+              ),
+            ],
+          ),
         ),
-        child: Column(
-          children: [
-            AppSegmented<_CatalogScope>(
-              value: scope.value,
-              onChanged: (next) => scope.value = next,
-              segments: {
-                _CatalogScope.user: l10n.yourFoods,
-                _CatalogScope.starter: l10n.starterList,
-              },
-            ),
-            const SizedBox(height: 8),
-            AppSearchField(
-              controller: searchController,
-              placeholder: l10n.searchFoods,
-            ),
-          ],
-        ),
-      ),
       ),
       slivers: [
         _FoodList(
@@ -178,7 +181,8 @@ class _FoodList extends ConsumerWidget {
             : null;
 
         final foods = fitting
-            .where((f) => activeCategory == null || f.category == activeCategory)
+            .where(
+                (f) => activeCategory == null || f.category == activeCategory)
             .where((f) => f.matchesSearch(search))
             .toList();
 
@@ -221,7 +225,7 @@ class _FoodList extends ConsumerWidget {
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(Space.xxxl),
                   child: Text(
                     l10n.noFoodsAvailable,
                     textAlign: TextAlign.center,
@@ -252,8 +256,7 @@ class _FoodList extends ConsumerWidget {
                         context,
                         FoodEditorPage(food: food),
                       ),
-                      onDelete:
-                          isStarter ? null : () => _deleteFood(ref, food),
+                      onDelete: isStarter ? null : () => _deleteFood(ref, food),
                     );
                   },
                 ),
@@ -504,19 +507,17 @@ class FoodEditorPage extends HookConsumerWidget {
                 Expanded(
                   child: TextFormField(
                     controller: kcalController,
-                    decoration:
-                        InputDecoration(labelText: l10n.caloriesLabel),
+                    decoration: InputDecoration(labelText: l10n.caloriesLabel),
                     keyboardType: TextInputType.number,
-                    validator: (value) => Validators.nonNegativeNumber(
-                        value, l10n.caloriesLabel),
+                    validator: (value) =>
+                        Validators.nonNegativeNumber(value, l10n.caloriesLabel),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: TextFormField(
                     controller: proteinController,
-                    decoration:
-                        InputDecoration(labelText: l10n.proteinGrams),
+                    decoration: InputDecoration(labelText: l10n.proteinGrams),
                     keyboardType: TextInputType.number,
                     validator: (value) =>
                         Validators.nonNegativeNumber(value, 'Protein'),
@@ -654,16 +655,17 @@ class MismatchBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        reason,
-        style: theme.textTheme.labelSmall
-            ?.copyWith(color: theme.colorScheme.onErrorContainer),
+    return ContentSurface.tinted(
+      color: theme.colorScheme.errorContainer,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: Space.sm, vertical: Space.xxs),
+        child: Text(
+          reason,
+          style: theme.textTheme.labelSmall
+              ?.copyWith(color: theme.colorScheme.onErrorContainer),
+        ),
       ),
     );
   }

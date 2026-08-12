@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'ios/glass.dart';
 import 'theme.dart';
 import 'utils.dart';
 import '../services/preferences_service.dart';
+import '../core/design/surfaces.dart';
+import 'design/tokens.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -19,37 +22,45 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.isSecondary = false,
     this.icon,
+    this.color,
   });
+
+  /// A tint for the whole button — a destructive red, or a section colour.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    if (isSecondary) {
-      return TextButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        icon: isLoading
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : (icon != null ? Icon(icon, size: 18) : const SizedBox.shrink()),
-        label: Text(text),
-      );
-    }
+    final scheme = Theme.of(context).colorScheme;
+    // The spinner has to be legible on whichever fill this button ends up
+    // with, and those differ: accent-tinted for primary, surface for
+    // secondary.
+    final spinnerColor =
+        isSecondary ? (color ?? scheme.primary) : scheme.onPrimary;
 
-    return ElevatedButton.icon(
+    final leading = isLoading
+        ? SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(spinnerColor),
+            ),
+          )
+        : (icon != null ? Icon(icon, size: 18) : null);
+
+    return GlassButton(
       onPressed: isLoading ? null : onPressed,
-      icon: isLoading
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : (icon != null ? Icon(icon, size: 18) : const SizedBox.shrink()),
-      label: Text(text),
+      prominent: !isSecondary,
+      tint: color,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (leading != null) ...[leading, const SizedBox(width: 8)],
+          Flexible(
+            child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -59,22 +70,45 @@ class AppCard extends StatelessWidget {
   final EdgeInsets? padding;
   final VoidCallback? onTap;
 
+  /// Corner radius, for the handful of cards that were deliberately rounder
+  /// than the default 12.
+  final BorderRadius? borderRadius;
+
   const AppCard({
     super.key,
     required this.child,
     this.padding,
     this.onTap,
+    this.borderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: padding ?? const EdgeInsets.all(AppSpacing.md),
-          child: child,
+    final cardTheme = Theme.of(context).cardTheme;
+    final radius = borderRadius ?? BorderRadius.circular(12);
+    // Was a `Card`. The margin and radius are read from / kept at the same
+    // values the card theme used, so converting to glass changes the material
+    // and nothing about the layout.
+    return Padding(
+      // `Card`'s own default when the theme sets none — every app theme does
+      // set one, but a bare ThemeData (widget tests) does not, and inventing a
+      // wider default there narrowed the content enough to overflow rows.
+      padding: cardTheme.margin ?? const EdgeInsets.all(Space.xs),
+      child: ContentSurface(
+        borderRadius: radius,
+        color: cardTheme.color,
+        child: Material(
+          // Transparent: the glass underneath is the surface. A Material with
+          // a colour here would paint over it and the blur would be invisible.
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: radius,
+            child: Padding(
+              padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+              child: child,
+            ),
+          ),
         ),
       ),
     );
@@ -102,11 +136,11 @@ class StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return AppCard(
-      padding: isCompact 
-        ? const EdgeInsets.all(AppSpacing.sm)
-        : const EdgeInsets.all(AppSpacing.md),
+      padding: isCompact
+          ? const EdgeInsets.all(AppSpacing.sm)
+          : const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -123,7 +157,10 @@ class StatTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: (isCompact ? theme.textTheme.bodySmall : theme.textTheme.bodyMedium)?.copyWith(
+                  style: (isCompact
+                          ? theme.textTheme.bodySmall
+                          : theme.textTheme.bodyMedium)
+                      ?.copyWith(
                     color: theme.textTheme.bodySmall?.color,
                   ),
                 ),
@@ -133,7 +170,10 @@ class StatTile extends StatelessWidget {
           SizedBox(height: isCompact ? AppSpacing.xs : AppSpacing.sm),
           Text(
             value,
-            style: (isCompact ? theme.textTheme.headlineSmall : theme.textTheme.headlineMedium)?.copyWith(
+            style: (isCompact
+                    ? theme.textTheme.headlineSmall
+                    : theme.textTheme.headlineMedium)
+                ?.copyWith(
               color: color ?? theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
@@ -142,7 +182,9 @@ class StatTile extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             Text(
               subtitle!,
-              style: isCompact ? theme.textTheme.bodySmall?.copyWith(fontSize: 10) : theme.textTheme.bodySmall,
+              style: isCompact
+                  ? theme.textTheme.bodySmall?.copyWith(fontSize: 10)
+                  : theme.textTheme.bodySmall,
               maxLines: isCompact ? 1 : null,
               overflow: isCompact ? TextOverflow.ellipsis : null,
             ),
@@ -174,7 +216,7 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Center(
       child: SingleChildScrollView(
         child: Padding(
@@ -183,17 +225,17 @@ class EmptyState extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
+              ContentSurface.tinted(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -285,59 +327,71 @@ class NutritionMetricsRow extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final prefs = ref.watch(preferencesServiceProvider);
     final themeColor = Theme.of(context).colorScheme.primary;
-    
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth - 32; // Account for padding
-        
+
         // Create list of all metrics
         final allMetrics = [
           {
             'key': 'calories',
             'label': useShortLabels ? l10n.caloriesShort : l10n.calories,
             'value': '${Formatters.formatCalories(calories)} ${l10n.kcal}',
-            'color': prefs.getColorForMetric(NutritionMetric.calories, themeColor: themeColor),
+            'color': prefs.getColorForMetric(NutritionMetric.calories,
+                themeColor: themeColor),
           },
           {
             'key': 'protein',
             'label': useShortLabels ? l10n.proteinShort : l10n.protein,
-            'value': '${Formatters.formatMacros(protein)}${useShortLabels ? l10n.grams : ' ${l10n.grams}'}',
-            'color': prefs.getColorForMetric(NutritionMetric.protein, themeColor: themeColor),
+            'value':
+                '${Formatters.formatMacros(protein)}${useShortLabels ? l10n.grams : ' ${l10n.grams}'}',
+            'color': prefs.getColorForMetric(NutritionMetric.protein,
+                themeColor: themeColor),
           },
           {
             'key': 'carbs',
             'label': useShortLabels ? l10n.carbsShort : l10n.carbs,
-            'value': '${Formatters.formatMacros(carbs)}${useShortLabels ? l10n.grams : ' ${l10n.grams}'}',
-            'color': prefs.getColorForMetric(NutritionMetric.carbs, themeColor: themeColor),
+            'value':
+                '${Formatters.formatMacros(carbs)}${useShortLabels ? l10n.grams : ' ${l10n.grams}'}',
+            'color': prefs.getColorForMetric(NutritionMetric.carbs,
+                themeColor: themeColor),
           },
           {
             'key': 'fat',
             'label': useShortLabels ? l10n.fatShort : l10n.fat,
-            'value': '${Formatters.formatMacros(fat)}${useShortLabels ? l10n.grams : ' ${l10n.grams}'}',
-            'color': prefs.getColorForMetric(NutritionMetric.fat, themeColor: themeColor),
+            'value':
+                '${Formatters.formatMacros(fat)}${useShortLabels ? l10n.grams : ' ${l10n.grams}'}',
+            'color': prefs.getColorForMetric(NutritionMetric.fat,
+                themeColor: themeColor),
           },
         ];
-        
+
         // Filter out the primary metric to avoid duplication
-        final displayMetrics = allMetrics.where((metric) => metric['key'] != primaryMetric).toList();
-        
+        final displayMetrics = allMetrics
+            .where((metric) => metric['key'] != primaryMetric)
+            .toList();
+
         // Calculate chip width for 3 chips instead of 4
         final chipWidth = (availableWidth / 3).clamp(88.0, 160.0);
-        
+
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: Space.lg),
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: displayMetrics.map((metric) => 
-              _NutritionChip(
-                label: metric['label'] as String,
-                value: metric['value'] as String,
-                color: metric['color'] as Color,
-                isPrimary: false, // None are primary since we excluded the primary metric
-                maxWidth: chipWidth,
-              ),
-            ).toList(),
+            children: displayMetrics
+                .map(
+                  (metric) => _NutritionChip(
+                    label: metric['label'] as String,
+                    value: metric['value'] as String,
+                    color: metric['color'] as Color,
+                    isPrimary:
+                        false, // None are primary since we excluded the primary metric
+                    maxWidth: chipWidth,
+                  ),
+                )
+                .toList(),
           ),
         );
       },
@@ -362,51 +416,49 @@ class _NutritionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        minWidth: 88,
-        maxWidth: maxWidth,
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
-      decoration: BoxDecoration(
-        color: isPrimary 
-            ? color.withValues(alpha: 0.2)
-            : color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: isPrimary 
-            ? Border.all(color: color, width: 1.5)
-            : null,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: isPrimary ? FontWeight.bold : FontWeight.w500,
-              letterSpacing: -0.2,
+    return ContentSurface.tinted(
+      color: isPrimary
+          ? color.withValues(alpha: 0.2)
+          : color.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(12),
+      border: isPrimary ? Border.all(color: color, width: 1.5) : null,
+      child: Container(
+        constraints: BoxConstraints(
+          minWidth: 88,
+          maxWidth: maxWidth,
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Space.md,
+          vertical: Space.sm,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: color,
+                    fontWeight: isPrimary ? FontWeight.bold : FontWeight.w500,
+                    letterSpacing: -0.2,
+                  ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w400,
+                  ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -433,16 +485,11 @@ class PrimaryMetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cardColor = color ?? theme.colorScheme.primary;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-      ),
+
+    return ContentSurface(
+      padding: const EdgeInsets.all(Space.lg),
+      borderRadius: BorderRadius.circular(12),
+      color: theme.colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -518,64 +565,60 @@ class NutritionProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     if (goal == null || goal! <= 0) {
       // No goal set - show simple current value
-      return Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
+      return ContentSurface.tinted(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Label on its own line
-            Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.visible, // Allow full text to show
-            ),
-            const SizedBox(height: 4),
-            // Value on second line, right-aligned
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                '${Formatters.formatMacros(current)}$unit',
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label on its own line
+              Text(
+                label,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: color,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.visible, // Allow full text to show
+              ),
+              const SizedBox(height: 4),
+              // Value on second line, right-aligned
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '${Formatters.formatMacros(current)}$unit',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
 
-    final progress = (current / goal!).clamp(0.0, 2.0); // Allow up to 200% for visual feedback
+    final progress = (current / goal!)
+        .clamp(0.0, 2.0); // Allow up to 200% for visual feedback
     final percentage = (progress * 100).round();
     final isOverGoal = current > goal!;
     final progressColor = isOverGoal ? Colors.red : color;
     final textColor = isOverGoal ? Colors.red : color;
 
-    return Container(
+    return ContentSurface(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-      ),
+      borderRadius: BorderRadius.circular(8),
+      color: theme.colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -611,7 +654,7 @@ class NutritionProgressBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          
+
           // Progress bar
           Stack(
             children: [
@@ -637,7 +680,7 @@ class NutritionProgressBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          
+
           // Percentage text
           Align(
             alignment: Alignment.centerRight,
@@ -685,7 +728,7 @@ class NutritionProgressGrid extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final prefs = ref.watch(preferencesServiceProvider);
     final themeColor = Theme.of(context).colorScheme.primary;
-    
+
     return Column(
       children: [
         // Calories and Protein row
@@ -697,7 +740,8 @@ class NutritionProgressGrid extends ConsumerWidget {
                 current: calories,
                 goal: calorieGoal,
                 unit: ' ${l10n.kcal}',
-                color: prefs.getColorForMetric(NutritionMetric.calories, themeColor: themeColor),
+                color: prefs.getColorForMetric(NutritionMetric.calories,
+                    themeColor: themeColor),
                 useShortLabel: useShortLabels,
               ),
             ),
@@ -708,14 +752,15 @@ class NutritionProgressGrid extends ConsumerWidget {
                 current: protein,
                 goal: proteinGoal,
                 unit: useShortLabels ? l10n.grams : ' ${l10n.grams}',
-                color: prefs.getColorForMetric(NutritionMetric.protein, themeColor: themeColor),
+                color: prefs.getColorForMetric(NutritionMetric.protein,
+                    themeColor: themeColor),
                 useShortLabel: useShortLabels,
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Carbs and Fat row
         Row(
           children: [
@@ -725,7 +770,8 @@ class NutritionProgressGrid extends ConsumerWidget {
                 current: carbs,
                 goal: carbsGoal,
                 unit: useShortLabels ? l10n.grams : ' ${l10n.grams}',
-                color: prefs.getColorForMetric(NutritionMetric.carbs, themeColor: themeColor),
+                color: prefs.getColorForMetric(NutritionMetric.carbs,
+                    themeColor: themeColor),
                 useShortLabel: useShortLabels,
               ),
             ),
@@ -736,7 +782,8 @@ class NutritionProgressGrid extends ConsumerWidget {
                 current: fat,
                 goal: fatGoal,
                 unit: useShortLabels ? l10n.grams : ' ${l10n.grams}',
-                color: prefs.getColorForMetric(NutritionMetric.fat, themeColor: themeColor),
+                color: prefs.getColorForMetric(NutritionMetric.fat,
+                    themeColor: themeColor),
                 useShortLabel: useShortLabels,
               ),
             ),
@@ -771,13 +818,13 @@ class SettingsIconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = color ?? Theme.of(context).colorScheme.primary;
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
+    return ContentSurface.tinted(
+      color: tint.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(Space.sm),
+        child: Icon(icon, color: tint, size: size),
       ),
-      child: Icon(icon, color: tint, size: size),
     );
   }
 }
@@ -804,7 +851,9 @@ Future<T?> showAppSheet<T>({
     // Respect additionalSafeAreaInsets (set by native nav bar on iOS) so a
     // tall sheet never renders behind the native chrome.
     useSafeArea: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
+    // Transparent: [AppSheet] paints the surface, as glass when glass is on.
+    // A colour here would sit on top of the blur and hide it.
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -866,15 +915,17 @@ class AppSheet extends StatelessWidget {
       ],
     );
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          12,
-          20,
-          24 + MediaQuery.of(context).viewInsets.bottom,
+    return GlassSheet(
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            24 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(child: content),
         ),
-        child: SingleChildScrollView(child: content),
       ),
     );
   }
@@ -1010,57 +1061,59 @@ class IconRowTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
+        child: ContentSurface.tinted(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: Space.md),
+            child: Row(
+              children: [
+                ContentSurface.tinted(
                   color: color.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    child: Icon(icon, color: color, size: 24),
+                  ),
                 ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    if (subtitle != null)
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        subtitle!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6),
+                        label,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
                             ),
                       ),
-                  ],
+                      if (subtitle != null)
+                        Text(
+                          subtitle!,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.35),
-              ),
-            ],
+                Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.35),
+                ),
+              ],
+            ),
           ),
         ),
       ),

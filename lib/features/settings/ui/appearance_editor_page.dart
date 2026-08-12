@@ -8,6 +8,9 @@ import '../../../core/theme.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/theme_service.dart';
 import 'advanced_color_picker.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 class AppearanceEditorPage extends ConsumerWidget {
   const AppearanceEditorPage({super.key});
@@ -29,204 +32,204 @@ class AppearanceEditorPage extends ConsumerWidget {
         ],
       ),
       child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Info banner
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Info banner
+          ContentSurface.tinted(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(Space.md),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    currentTheme == AppThemeKind.custom
+                        ? 'Customize all app colors. Changes apply immediately.'
+                        : 'Customize section colors. Switch to Custom theme to edit theme colors.',
+                    style: TextStyle(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        currentTheme == AppThemeKind.custom
-                            ? 'Customize all app colors. Changes apply immediately.'
-                            : 'Customize section colors. Switch to Custom theme to edit theme colors.',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Theme Colors Section (only show if custom theme is selected)
-              if (currentTheme == AppThemeKind.custom) ...[
-                _buildSectionHeader(context, 'Theme Colors', Icons.palette),
-                const SizedBox(height: 12),
-                _ColorPickerTile(
-                  label: 'Primary',
-                  icon: Icons.circle,
-                  currentColor: prefs.customPrimaryColor,
-                  onColorChanged: (color) async {
-                    await prefs.setCustomPrimaryColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                _ColorPickerTile(
-                  label: 'Background',
-                  icon: Icons.square,
-                  currentColor: prefs.customBackgroundColor,
-                  onColorChanged: (color) async {
-                    await prefs.setCustomBackgroundColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                _ColorPickerTile(
-                  label: 'Surface',
-                  icon: Icons.layers,
-                  currentColor: prefs.customSurfaceColor,
-                  onColorChanged: (color) async {
-                    await prefs.setCustomSurfaceColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: () async {
-                    await prefs.resetThemeColors();
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(AppLocalizations.of(context)!.resetThemeColors),
-                ),
-                const SizedBox(height: 32),
-              ],
-              
-              // Section Colors
-              _buildSectionHeader(context, 'Section Colors', Icons.category),
-              const SizedBox(height: 12),
-              _ColorPickerTile(
-                label: AppLocalizations.of(context)!.meals,
-                icon: Icons.restaurant,
-                currentColor: prefs.mealsColor,
-                onColorChanged: (color) async {
-                  await prefs.setMealsColor(color);
-                  ref.invalidate(preferencesServiceProvider);
-                },
-              ),
-              const SizedBox(height: 8),
-              _ColorPickerTile(
-                label: AppLocalizations.of(context)!.workouts,
-                icon: Icons.fitness_center,
-                currentColor: prefs.workoutsColor,
-                onColorChanged: (color) async {
-                  await prefs.setWorkoutsColor(color);
-                  ref.invalidate(preferencesServiceProvider);
-                },
-              ),
-              const SizedBox(height: 8),
-              _ColorPickerTile(
-                label: AppLocalizations.of(context)!.sleep,
-                icon: Icons.bedtime,
-                currentColor: prefs.sleepColor,
-                onColorChanged: (color) async {
-                  await prefs.setSleepColor(color);
-                  ref.invalidate(preferencesServiceProvider);
-                },
-              ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: () async {
-                  await prefs.resetSectionColors();
-                  ref.invalidate(preferencesServiceProvider);
-                },
-                icon: const Icon(Icons.refresh, size: 18),
-                label: Text(AppLocalizations.of(context)!.resetSectionColors),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Nutrition Colors
-              _buildSectionHeader(context, 'Nutrition Colors', Icons.local_fire_department),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.followTheme),
-                subtitle: Text(AppLocalizations.of(context)!.followThemeDesc),
-                value: prefs.useThemeColors,
-                onChanged: (value) async {
-                  await prefs.setUseThemeColors(value);
-                  ref.invalidate(preferencesServiceProvider);
-                },
-              ),
-              if (!prefs.useThemeColors) ...[
-                const SizedBox(height: 8),
-                _ColorPickerTile(
-                  label: AppLocalizations.of(context)!.calories,
-                  icon: Icons.local_fire_department,
-                  currentColor: prefs.calorieColor,
-                  onColorChanged: (color) async {
-                    await prefs.setCalorieColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                _ColorPickerTile(
-                  label: AppLocalizations.of(context)!.protein,
-                  icon: Icons.egg,
-                  currentColor: prefs.proteinColor,
-                  onColorChanged: (color) async {
-                    await prefs.setProteinColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                _ColorPickerTile(
-                  label: AppLocalizations.of(context)!.carbs,
-                  icon: Icons.grain,
-                  currentColor: prefs.carbsColor,
-                  onColorChanged: (color) async {
-                    await prefs.setCarbsColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                _ColorPickerTile(
-                  label: AppLocalizations.of(context)!.fat,
-                  icon: Icons.water_drop,
-                  currentColor: prefs.fatColor,
-                  onColorChanged: (color) async {
-                    await prefs.setFatColor(color);
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: () async {
-                    await prefs.resetColors();
-                    ref.invalidate(preferencesServiceProvider);
-                  },
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(AppLocalizations.of(context)!.resetNutritionColors),
+                  ),
                 ),
               ],
-              
-              const SizedBox(height: 32),
-              
-              // Preview Section
-              _buildSectionHeader(context, 'Preview', Icons.visibility),
-              const SizedBox(height: 12),
-              _PreviewPanel(),
-              
-              const SizedBox(height: 24),
-            ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Theme Colors Section (only show if custom theme is selected)
+          if (currentTheme == AppThemeKind.custom) ...[
+            _buildSectionHeader(context, 'Theme Colors', Icons.palette),
+            const SizedBox(height: 12),
+            _ColorPickerTile(
+              label: 'Primary',
+              icon: Icons.circle,
+              currentColor: prefs.customPrimaryColor,
+              onColorChanged: (color) async {
+                await prefs.setCustomPrimaryColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            _ColorPickerTile(
+              label: 'Background',
+              icon: Icons.square,
+              currentColor: prefs.customBackgroundColor,
+              onColorChanged: (color) async {
+                await prefs.setCustomBackgroundColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            _ColorPickerTile(
+              label: 'Surface',
+              icon: Icons.layers,
+              currentColor: prefs.customSurfaceColor,
+              onColorChanged: (color) async {
+                await prefs.setCustomSurfaceColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () async {
+                await prefs.resetThemeColors();
+                ref.invalidate(preferencesServiceProvider);
+              },
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(AppLocalizations.of(context)!.resetThemeColors),
+            ),
+            const SizedBox(height: 32),
+          ],
+
+          // Section Colors
+          _buildSectionHeader(context, 'Section Colors', Icons.category),
+          const SizedBox(height: 12),
+          _ColorPickerTile(
+            label: AppLocalizations.of(context)!.meals,
+            icon: Icons.restaurant,
+            currentColor: prefs.mealsColor,
+            onColorChanged: (color) async {
+              await prefs.setMealsColor(color);
+              ref.invalidate(preferencesServiceProvider);
+            },
+          ),
+          const SizedBox(height: 8),
+          _ColorPickerTile(
+            label: AppLocalizations.of(context)!.workouts,
+            icon: Icons.fitness_center,
+            currentColor: prefs.workoutsColor,
+            onColorChanged: (color) async {
+              await prefs.setWorkoutsColor(color);
+              ref.invalidate(preferencesServiceProvider);
+            },
+          ),
+          const SizedBox(height: 8),
+          _ColorPickerTile(
+            label: AppLocalizations.of(context)!.sleep,
+            icon: Icons.bedtime,
+            currentColor: prefs.sleepColor,
+            onColorChanged: (color) async {
+              await prefs.setSleepColor(color);
+              ref.invalidate(preferencesServiceProvider);
+            },
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: () async {
+              await prefs.resetSectionColors();
+              ref.invalidate(preferencesServiceProvider);
+            },
+            icon: const Icon(Icons.refresh, size: 18),
+            label: Text(AppLocalizations.of(context)!.resetSectionColors),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Nutrition Colors
+          _buildSectionHeader(
+              context, 'Nutrition Colors', Icons.local_fire_department),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.followTheme),
+            subtitle: Text(AppLocalizations.of(context)!.followThemeDesc),
+            value: prefs.useThemeColors,
+            onChanged: (value) async {
+              await prefs.setUseThemeColors(value);
+              ref.invalidate(preferencesServiceProvider);
+            },
+          ),
+          if (!prefs.useThemeColors) ...[
+            const SizedBox(height: 8),
+            _ColorPickerTile(
+              label: AppLocalizations.of(context)!.calories,
+              icon: Icons.local_fire_department,
+              currentColor: prefs.calorieColor,
+              onColorChanged: (color) async {
+                await prefs.setCalorieColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            _ColorPickerTile(
+              label: AppLocalizations.of(context)!.protein,
+              icon: Icons.egg,
+              currentColor: prefs.proteinColor,
+              onColorChanged: (color) async {
+                await prefs.setProteinColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            _ColorPickerTile(
+              label: AppLocalizations.of(context)!.carbs,
+              icon: Icons.grain,
+              currentColor: prefs.carbsColor,
+              onColorChanged: (color) async {
+                await prefs.setCarbsColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            _ColorPickerTile(
+              label: AppLocalizations.of(context)!.fat,
+              icon: Icons.water_drop,
+              currentColor: prefs.fatColor,
+              onColorChanged: (color) async {
+                await prefs.setFatColor(color);
+                ref.invalidate(preferencesServiceProvider);
+              },
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () async {
+                await prefs.resetColors();
+                ref.invalidate(preferencesServiceProvider);
+              },
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(AppLocalizations.of(context)!.resetNutritionColors),
+            ),
+          ],
+
+          const SizedBox(height: 32),
+
+          // Preview Section
+          _buildSectionHeader(context, 'Preview', Icons.visibility),
+          const SizedBox(height: 12),
+          _PreviewPanel(),
+
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
+  Widget _buildSectionHeader(
+      BuildContext context, String title, IconData icon) {
     return Row(
       children: [
         Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
@@ -235,8 +238,8 @@ class AppearanceEditorPage extends ConsumerWidget {
           child: Text(
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -254,11 +257,19 @@ class AppearanceEditorPage extends ConsumerWidget {
           AppLocalizations.of(context)!.resetColorsWarningBody,
         ),
         actions: [
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(AppLocalizations.of(context)!.reset,
                 style: const TextStyle(color: Colors.red)),
@@ -293,13 +304,11 @@ class _ColorPickerTile extends StatelessWidget {
     return InkWell(
       onTap: () => _showColorPicker(context),
       borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          borderRadius: BorderRadius.circular(12),
+      child: ContentSurface(
+        padding: const EdgeInsets.all(Space.lg),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
         child: Row(
           children: [
@@ -313,8 +322,8 @@ class _ColorPickerTile extends StatelessWidget {
               ),
               child: Icon(
                 icon,
-                color: currentColor.computeLuminance() > 0.5 
-                    ? Colors.black 
+                color: currentColor.computeLuminance() > 0.5
+                    ? Colors.black
                     : Colors.white,
                 size: 20,
               ),
@@ -329,7 +338,10 @@ class _ColorPickerTile extends StatelessWidget {
             Icon(
               Icons.edit,
               size: 18,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -357,9 +369,9 @@ class _PreviewPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(preferencesServiceProvider);
-    
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(Space.lg),
       decoration: BoxDecoration(
         color: prefs.customSurfaceColor,
         borderRadius: BorderRadius.circular(12),
@@ -373,27 +385,23 @@ class _PreviewPanel extends ConsumerWidget {
           Text(
             AppLocalizations.of(context)!.preview,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 16),
-          
+
           // Primary button
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: GlassButton(
+              prominent: true,
+              tint: prefs.customPrimaryColor,
               onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: prefs.customPrimaryColor,
-                foregroundColor: prefs.customPrimaryColor.computeLuminance() > 0.5 
-                    ? Colors.black 
-                    : Colors.white,
-              ),
               child: Text(AppLocalizations.of(context)!.primaryButton),
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Section chips
           // Wrap, not Row: three chips of translated text do not fit on one
           // line at 402pt in either language.
@@ -420,7 +428,7 @@ class _PreviewPanel extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Nutrition progress sample
           if (!prefs.useThemeColors) ...[
             _sampleProgressBar(context, 'Calories', prefs.calorieColor, 0.7),
@@ -432,16 +440,17 @@ class _PreviewPanel extends ConsumerWidget {
     );
   }
 
-  Widget _sampleProgressBar(BuildContext context, String label, Color color, double progress) {
+  Widget _sampleProgressBar(
+      BuildContext context, String label, Color color, double progress) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w600,
-          ),
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
         ),
         const SizedBox(height: 4),
         LinearProgressIndicator(
@@ -453,4 +462,3 @@ class _PreviewPanel extends ConsumerWidget {
     );
   }
 }
-

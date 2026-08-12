@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../widgets.dart';
 import 'app_scaffold.dart';
+import '../../core/design/surfaces.dart';
+import '../design/tokens.dart';
 
 /// An iOS inset-grouped section: an optional caps header, then rows sharing
 /// one rounded container with hairlines between them.
@@ -47,11 +49,9 @@ class InsetSection extends StatelessWidget {
               ),
             ),
           ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.cardTheme.color ?? theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
+        ContentSurface(
+          borderRadius: BorderRadius.circular(12),
+          color: theme.cardTheme.color ?? theme.colorScheme.surface,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -120,7 +120,8 @@ class InsetRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          padding: const EdgeInsets.symmetric(
+              horizontal: Space.lg, vertical: Space.md),
           child: Row(
             children: [
               if (icon != null) ...[
@@ -147,8 +148,8 @@ class InsetRow extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle!,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: muted),
+                        style:
+                            theme.textTheme.bodySmall?.copyWith(color: muted),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -174,8 +175,8 @@ class InsetRow extends StatelessWidget {
                     child: Icon(
                       CupertinoIcons.chevron_forward,
                       size: 16,
-                      color: theme.colorScheme.onSurface
-                          .withValues(alpha: 0.28),
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.28),
                     ),
                   ),
               ],

@@ -115,8 +115,8 @@ class MealTemplateGenerator {
   }
 
   bool _canMake(MealRecipe recipe, Map<String, FoodItemData> byName) =>
-      recipe.slots.every((slot) =>
-          !slot.required || slot.candidates.any(byName.containsKey));
+      recipe.slots.every(
+          (slot) => !slot.required || slot.candidates.any(byName.containsKey));
 
   /// Resolves each slot to the first candidate food the profile allows.
   Map<RecipeRole, FoodItemData> _resolve(

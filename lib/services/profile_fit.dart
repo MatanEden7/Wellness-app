@@ -98,7 +98,11 @@ abstract final class ProfileFit {
   /// - `omnivore` rejects nothing.
   static FoodTag? _dietFailure(Set<FoodTag> tags, String dietType) {
     if (dietType != 'herbivore') return null;
-    for (final tag in const [FoodTag.meat, FoodTag.fish, FoodTag.animalProduct]) {
+    for (final tag in const [
+      FoodTag.meat,
+      FoodTag.fish,
+      FoodTag.animalProduct
+    ]) {
       if (tags.contains(tag)) return tag;
     }
     return null;
@@ -211,7 +215,8 @@ abstract final class ProfileFit {
   /// Per the product decision, `goal` is deliberately absent: it drives
   /// calories and macros only, not template selection. Weight, height, age
   /// and activity level are likewise target-only.
-  static bool contentAffectingFieldsChanged(UserProfile before, UserProfile after) =>
+  static bool contentAffectingFieldsChanged(
+          UserProfile before, UserProfile after) =>
       before.dietType != after.dietType ||
       !_sameSet(before.exclusions, after.exclusions) ||
       !_sameSet(before.equipment, after.equipment) ||

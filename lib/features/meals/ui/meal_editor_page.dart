@@ -13,6 +13,9 @@ import '../data/repositories.dart';
 import '../domain/food_nutrition_math.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 class MealEditorPage extends HookConsumerWidget {
   final String? mealId;
@@ -40,8 +43,10 @@ class MealEditorPage extends HookConsumerWidget {
     }, [mealId]);
 
     final totalKcal = mealItems.value.fold(0.0, (sum, item) => sum + item.kcal);
-    final totalProtein = mealItems.value.fold(0.0, (sum, item) => sum + item.protein);
-    final totalCarbs = mealItems.value.fold(0.0, (sum, item) => sum + item.carbs);
+    final totalProtein =
+        mealItems.value.fold(0.0, (sum, item) => sum + item.protein);
+    final totalCarbs =
+        mealItems.value.fold(0.0, (sum, item) => sum + item.carbs);
     final totalFat = mealItems.value.fold(0.0, (sum, item) => sum + item.fat);
 
     // The title used to read "Add Food"/"Edit Food" -- copy-pasted from the
@@ -72,235 +77,242 @@ class MealEditorPage extends HookConsumerWidget {
         ],
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-              // Meal Name
-              Text(
-                l10n.mealName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Meal Name
+          Text(
+            l10n.mealName,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.mealName,
-                  hintText: l10n.mealNameHint,
-                  counterText: '${nameController.text.length}/${TextLimits.mealNameMaxLength}',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                ),
-                style: const TextStyle(fontSize: 16),
-                maxLength: TextLimits.mealNameMaxLength,
-                validator: TextLimits.validateMealName,
-              ),
-              const SizedBox(height: 20),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: nameController,
+            decoration: InputDecoration(
+              labelText: l10n.mealName,
+              hintText: l10n.mealNameHint,
+              counterText:
+                  '${nameController.text.length}/${TextLimits.mealNameMaxLength}',
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: Space.lg, vertical: Space.lg),
+            ),
+            style: const TextStyle(fontSize: 16),
+            maxLength: TextLimits.mealNameMaxLength,
+            validator: TextLimits.validateMealName,
+          ),
+          const SizedBox(height: 20),
 
-              // Date Selector
-              Text(
-                AppLocalizations.of(context)!.date,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          // Date Selector
+          Text(
+            AppLocalizations.of(context)!.date,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        AppDateUtils.formatDate(selectedDate.value),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => _selectDate(context, selectedDate),
-                      child: Text(l10n.change),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Time (optional) -- when set, the calendar shows this meal at
-              // this exact time instead of guessing from createdAt/keywords.
-              Text(
-                l10n.mealTimeOptional,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        selectedTime.value?.format(context) ?? l10n.notSet,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    if (selectedTime.value != null)
-                      IconButton(
-                        icon: const Icon(Icons.clear, size: 20),
-                        tooltip: l10n.clear,
-                        onPressed: () => selectedTime.value = null,
-                      ),
-                    TextButton(
-                      onPressed: () => _selectTime(context, selectedTime),
-                      child: Text(l10n.change),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Notes
-              Text(
-                l10n.notesOptional,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: noteController,
-                decoration: InputDecoration(
-                  labelText: l10n.notesOptional,
-                  hintText: 'Any additional notes about this meal',
-                  counterText: '${noteController.text.length}/${TextLimits.generalNoteMaxLength}',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                ),
-                style: const TextStyle(fontSize: 16),
-                maxLines: 3,
-                maxLength: TextLimits.generalNoteMaxLength,
-                validator: TextLimits.validateGeneralNote,
-              ),
-              const SizedBox(height: 24),
-
-              // Meal Totals
-              Text(
-                AppLocalizations.of(context)!.nutritionTotals,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              AppCard(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _MacroColumn(
-                      label: l10n.caloriesLabel,
-                      value: Formatters.formatCalories(totalKcal),
-                      color: Colors.orange,
-                    ),
-                    _MacroColumn(
-                      label: l10n.protein,
-                      value: '${Formatters.formatMacros(totalProtein)}${l10n.grams}',
-                      color: Colors.red,
-                    ),
-                    _MacroColumn(
-                      label: l10n.carbs,
-                      value: '${Formatters.formatMacros(totalCarbs)}${l10n.grams}',
-                      color: Colors.blue,
-                    ),
-                    _MacroColumn(
-                      label: l10n.fat,
-                      value: '${Formatters.formatMacros(totalFat)}${l10n.grams}',
-                      color: Colors.green,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Meal Items Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
+          ),
+          const SizedBox(height: 12),
+          ContentSurface(
+            borderRadius: BorderRadius.circular(12),
+            color: Theme.of(context).colorScheme.surface,
+            child: Container(
+              padding: const EdgeInsets.all(Space.lg),
+              child: Row(
                 children: [
-                  Text(
-                    l10n.addFood,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  Icon(
+                    Icons.calendar_today,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppDateUtils.formatDate(selectedDate.value),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ),
-                  AppButton(
-                    text: l10n.add,
-                    onPressed: () => _addMealItem(context, ref, mealItems),
-                    isSecondary: true,
-                    icon: Icons.add,
+                  GlassButton(
+                    minHeight: Sizes.control,
+                    borderRadius: BorderRadius.circular(18),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Space.md, vertical: Space.sm),
+                    onPressed: () => _selectDate(context, selectedDate),
+                    child: Text(l10n.change),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+            ),
+          ),
+          const SizedBox(height: 20),
 
-              // Meal Items List
-              if (mealItems.value.isEmpty)
-                EmptyState(
-                  title: l10n.buildYourFoodLibrary,
-                  subtitle: l10n.createCustomFoods,
-                  icon: Icons.restaurant,
-                  actionText: l10n.addFirstFood,
-                  actionIcon: Icons.add,
-                  onAction: () => _addMealItem(context, ref, mealItems),
-                )
-              else
-                ...mealItems.value.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _MealItemCard(
-                      item: item,
-                      onEdit: () => _editMealItem(context, ref, mealItems, index),
-                      onDelete: () => _deleteMealItem(mealItems, index),
+          // Time (optional) -- when set, the calendar shows this meal at
+          // this exact time instead of guessing from createdAt/keywords.
+          Text(
+            l10n.mealTimeOptional,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 12),
+          ContentSurface(
+            borderRadius: BorderRadius.circular(12),
+            color: Theme.of(context).colorScheme.surface,
+            child: Container(
+              padding: const EdgeInsets.all(Space.lg),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      selectedTime.value?.format(context) ?? l10n.notSet,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
-                  );
-                }),
-            const SizedBox(height: 16),
-          ],
+                  ),
+                  if (selectedTime.value != null)
+                    IconButton(
+                      icon: const Icon(Icons.clear, size: 20),
+                      tooltip: l10n.clear,
+                      onPressed: () => selectedTime.value = null,
+                    ),
+                  GlassButton(
+                    minHeight: Sizes.control,
+                    borderRadius: BorderRadius.circular(18),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Space.md, vertical: Space.sm),
+                    onPressed: () => _selectTime(context, selectedTime),
+                    child: Text(l10n.change),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Notes
+          Text(
+            l10n.notesOptional,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: noteController,
+            decoration: InputDecoration(
+              labelText: l10n.notesOptional,
+              hintText: 'Any additional notes about this meal',
+              counterText:
+                  '${noteController.text.length}/${TextLimits.generalNoteMaxLength}',
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: Space.lg, vertical: Space.lg),
+            ),
+            style: const TextStyle(fontSize: 16),
+            maxLines: 3,
+            maxLength: TextLimits.generalNoteMaxLength,
+            validator: TextLimits.validateGeneralNote,
+          ),
+          const SizedBox(height: 24),
+
+          // Meal Totals
+          Text(
+            AppLocalizations.of(context)!.nutritionTotals,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 12),
+          AppCard(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _MacroColumn(
+                  label: l10n.caloriesLabel,
+                  value: Formatters.formatCalories(totalKcal),
+                  color: Colors.orange,
+                ),
+                _MacroColumn(
+                  label: l10n.protein,
+                  value:
+                      '${Formatters.formatMacros(totalProtein)}${l10n.grams}',
+                  color: Colors.red,
+                ),
+                _MacroColumn(
+                  label: l10n.carbs,
+                  value: '${Formatters.formatMacros(totalCarbs)}${l10n.grams}',
+                  color: Colors.blue,
+                ),
+                _MacroColumn(
+                  label: l10n.fat,
+                  value: '${Formatters.formatMacros(totalFat)}${l10n.grams}',
+                  color: Colors.green,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Meal Items Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.addFood,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              AppButton(
+                text: l10n.add,
+                onPressed: () => _addMealItem(context, ref, mealItems),
+                isSecondary: true,
+                icon: Icons.add,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Meal Items List
+          if (mealItems.value.isEmpty)
+            EmptyState(
+              title: l10n.buildYourFoodLibrary,
+              subtitle: l10n.createCustomFoods,
+              icon: Icons.restaurant,
+              actionText: l10n.addFirstFood,
+              actionIcon: Icons.add,
+              onAction: () => _addMealItem(context, ref, mealItems),
+            )
+          else
+            ...mealItems.value.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _MealItemCard(
+                  item: item,
+                  onEdit: () => _editMealItem(context, ref, mealItems, index),
+                  onDelete: () => _deleteMealItem(mealItems, index),
+                ),
+              );
+            }),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
@@ -319,14 +331,14 @@ class MealEditorPage extends HookConsumerWidget {
       nameController.text = meal.name;
       noteController.text = meal.note ?? '';
       selectedDate.value = AppDateUtils.intToDate(meal.date);
-      selectedTime.value = meal.loggedAt != null
-          ? TimeOfDay.fromDateTime(meal.loggedAt!)
-          : null;
+      selectedTime.value =
+          meal.loggedAt != null ? TimeOfDay.fromDateTime(meal.loggedAt!) : null;
       mealItems.value = meal.items;
     }
   }
 
-  Future<void> _selectDate(BuildContext context, ValueNotifier<DateTime> selectedDate) async {
+  Future<void> _selectDate(
+      BuildContext context, ValueNotifier<DateTime> selectedDate) async {
     final date = await showDatePicker(
       context: context,
       initialDate: selectedDate.value,
@@ -394,16 +406,18 @@ class MealEditorPage extends HookConsumerWidget {
             ).copyWith(loggedAt: loggedAt);
 
       // Update meal items with the correct meal ID
-      final updatedItems = items.map((item) => MealItem(
-        id: item.id,
-        mealId: meal.id, // Set the correct meal ID
-        foodId: item.foodId,
-        amount: item.amount,
-        kcal: item.kcal,
-        protein: item.protein,
-        carbs: item.carbs,
-        fat: item.fat,
-      )).toList();
+      final updatedItems = items
+          .map((item) => MealItem(
+                id: item.id,
+                mealId: meal.id, // Set the correct meal ID
+                foodId: item.foodId,
+                amount: item.amount,
+                kcal: item.kcal,
+                protein: item.protein,
+                carbs: item.carbs,
+                fat: item.fat,
+              ))
+          .toList();
 
       final finalMeal = meal.copyWith(items: updatedItems);
 
@@ -450,10 +464,12 @@ class MealEditorPage extends HookConsumerWidget {
     int index,
   ) async {
     final currentItem = mealItems.value[index];
-    final food = await ref.read(mealsRepositoryProvider).getFoodById(currentItem.foodId);
+    final food =
+        await ref.read(mealsRepositoryProvider).getFoodById(currentItem.foodId);
     if (food == null) return;
 
-    final result = await _showFoodSelector(context, ref, food: food, currentAmount: currentItem.amount);
+    final result = await _showFoodSelector(context, ref,
+        food: food, currentAmount: currentItem.amount);
     if (result != null) {
       final newItems = List<MealItem>.from(mealItems.value);
       newItems[index] = result;
@@ -501,9 +517,9 @@ class _MacroColumn extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         Text(
           label,
@@ -555,13 +571,13 @@ class _MealItemCard extends HookConsumerWidget {
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: onEdit,
-            tooltip: AppLocalizations.of(context)!.edit,
-          ),
+                    tooltip: AppLocalizations.of(context)!.edit,
+                  ),
                   IconButton(
                     icon: const Icon(Icons.delete, size: 20, color: Colors.red),
                     onPressed: onDelete,
-            tooltip: AppLocalizations.of(context)!.delete,
-          ),
+                    tooltip: AppLocalizations.of(context)!.delete,
+                  ),
                 ],
               ),
             ],
@@ -577,7 +593,8 @@ class _MealItemCard extends HookConsumerWidget {
                 );
               }
               // Convert to display amount (grams for 100g units)
-              final displayAmount = FoodNutritionMath.displayQuantity(food, item.amount);
+              final displayAmount =
+                  FoodNutritionMath.displayQuantity(food, item.amount);
               final displayUnit = FoodNutritionMath.displayUnitLabel(food);
               return Text(
                 'Amount: ${Formatters.formatNumber(displayAmount)} $displayUnit',
@@ -624,175 +641,192 @@ class FoodSelectorDialog extends HookConsumerWidget {
     final displayAmount = currentAmount != null && selectedFood != null
         ? FoodNutritionMath.displayQuantity(selectedFood!, currentAmount!)
         : 100.0;
-    
+
     final amountController = useTextEditingController(
       text: displayAmount.toString(),
     );
-    
+
     final allFoods = ref.watch(allFoodsStreamProvider);
 
     return Dialog(
+      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Container(
-        width: 400,
-        height: 600,
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const SettingsIconBadge(Icons.restaurant, color: Colors.orange),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  AppLocalizations.of(context)!.selectFoodItem,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            
-            // Search
-            TextFormField(
-              controller: searchController,
-              decoration: InputDecoration(
-                labelText: l10n.searchFoods,
-                prefixIcon: const Icon(Icons.search),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            // Food List
-            Expanded(
-              // AnimatedBuilder (not a plain StreamBuilder alone) so this
-              // rebuilds when searchController's text changes -- see the
-              // identical fix in meal_template_editor_page.dart's
-              // _TemplateItemDialog for why a bare StreamBuilder here never
-              // actually refilters as you type.
-              child: AnimatedBuilder(
-                animation: searchController,
-                builder: (context, _) {
-                  return StreamBuilder<List<FoodItem>>(
-                    stream: allFoods,
-                    builder: (context, snapshot) {
-                      final foods = snapshot.data ?? [];
-                      final filteredFoods = foods.where((food) {
-                        // Matches the Hebrew name too -- see
-                        // FoodItemDisplayName.matchesSearch.
-                        return food.matchesSearch(searchController.text);
-                      }).toList();
-
-                      return ListView.builder(
-                        itemCount: filteredFoods.length,
-                        itemBuilder: (context, index) {
-                          final food = filteredFoods[index];
-                          final isSelected = selectedFoodState.value?.id == food.id;
-
-                          return ListTile(
-                            title: Text(food.displayName(language)),
-                            subtitle: Text(
-                              '${food.brand ?? 'Generic'} • ${Formatters.formatCalories(food.kcalPerUnit)} cal/${food.unit}',
-                            ),
-                            selected: isSelected,
-                            onTap: () => selectedFoodState.value = food,
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-
-            if (selectedFoodState.value != null) ...[
-              const Divider(),
-              Text(
-                'Amount (${FoodNutritionMath.displayUnitLabel(selectedFoodState.value!)})',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              TextFormField(
-                controller: amountController,
-                decoration: InputDecoration(
-                  labelText: l10n.amount,
-                  suffixText: FoodNutritionMath.displayUnitLabel(selectedFoodState.value!),
-                ),
-                keyboardType: TextInputType.number,
+      child: ContentSurface(
+        borderRadius: BorderRadius.circular(24),
+        showBorder: false,
+        child: Container(
+          width: 400,
+          height: 600,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SettingsIconBadge(Icons.restaurant,
+                      color: Colors.orange),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    AppLocalizations.of(context)!.selectFoodItem,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.md),
 
-              // Preview -- AnimatedBuilder (not Builder) so this rebuilds
-              // when amountController's text changes; a plain Builder never
-              // gets notified of the controller changing and just kept
-              // showing the macros for whatever amount was set when the
-              // dialog opened.
-              AnimatedBuilder(
-                animation: amountController,
-                builder: (context, _) {
-                  final displayAmount = double.tryParse(amountController.text) ?? 0;
-                  final food = selectedFoodState.value!;
-                  final nutrition = FoodNutritionMath.computeMacrosFromDisplay(food, displayAmount);
-                  final kcal = nutrition.kcal;
-                  final protein = nutrition.protein;
-                  final carbs = nutrition.carbs;
-                  final fat = nutrition.fat;
-
-                  return Container(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text('${Formatters.formatCalories(kcal)} cal'),
-                        Text('P: ${Formatters.formatMacros(protein)}g'),
-                        Text('C: ${Formatters.formatMacros(carbs)}g'),
-                        Text('F: ${Formatters.formatMacros(fat)}g'),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-
-            const SizedBox(height: AppSpacing.md),
-            
-            // Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.cancel),
+              // Search
+              TextFormField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  labelText: l10n.searchFoods,
+                  prefixIcon: const Icon(Icons.search),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                AppButton(
-                  text: 'Add',
-                  onPressed: selectedFoodState.value != null
-                      ? () {
-                          final displayAmount = double.tryParse(amountController.text) ?? 0;
-                          if (displayAmount > 0) {
-                            // Convert display amount back to stored amount
-                            final storedAmount = FoodNutritionMath.storedQuantity(
-                              selectedFoodState.value!,
-                              displayAmount,
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Food List
+              Expanded(
+                // AnimatedBuilder (not a plain StreamBuilder alone) so this
+                // rebuilds when searchController's text changes -- see the
+                // identical fix in meal_template_editor_page.dart's
+                // _TemplateItemDialog for why a bare StreamBuilder here never
+                // actually refilters as you type.
+                child: AnimatedBuilder(
+                  animation: searchController,
+                  builder: (context, _) {
+                    return StreamBuilder<List<FoodItem>>(
+                      stream: allFoods,
+                      builder: (context, snapshot) {
+                        final foods = snapshot.data ?? [];
+                        final filteredFoods = foods.where((food) {
+                          // Matches the Hebrew name too -- see
+                          // FoodItemDisplayName.matchesSearch.
+                          return food.matchesSearch(searchController.text);
+                        }).toList();
+
+                        return ListView.builder(
+                          itemCount: filteredFoods.length,
+                          itemBuilder: (context, index) {
+                            final food = filteredFoods[index];
+                            final isSelected =
+                                selectedFoodState.value?.id == food.id;
+
+                            return ListTile(
+                              title: Text(food.displayName(language)),
+                              subtitle: Text(
+                                '${food.brand ?? 'Generic'} • ${Formatters.formatCalories(food.kcalPerUnit)} cal/${food.unit}',
+                              ),
+                              selected: isSelected,
+                              onTap: () => selectedFoodState.value = food,
                             );
-                            final mealItem = MealItem.create(
-                              mealId: '', // Will be set by parent
-                              foodId: selectedFoodState.value!.id,
-                              amount: storedAmount,
-                              food: selectedFoodState.value!,
-                            );
-                            Navigator.of(context).pop(mealItem);
-                          }
-                        }
-                      : null,
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              if (selectedFoodState.value != null) ...[
+                const Divider(),
+                Text(
+                  'Amount (${FoodNutritionMath.displayUnitLabel(selectedFoodState.value!)})',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextFormField(
+                  controller: amountController,
+                  decoration: InputDecoration(
+                    labelText: l10n.amount,
+                    suffixText: FoodNutritionMath.displayUnitLabel(
+                        selectedFoodState.value!),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Preview -- AnimatedBuilder (not Builder) so this rebuilds
+                // when amountController's text changes; a plain Builder never
+                // gets notified of the controller changing and just kept
+                // showing the macros for whatever amount was set when the
+                // dialog opened.
+                AnimatedBuilder(
+                  animation: amountController,
+                  builder: (context, _) {
+                    final displayAmount =
+                        double.tryParse(amountController.text) ?? 0;
+                    final food = selectedFoodState.value!;
+                    final nutrition =
+                        FoodNutritionMath.computeMacrosFromDisplay(
+                            food, displayAmount);
+                    final kcal = nutrition.kcal;
+                    final protein = nutrition.protein;
+                    final carbs = nutrition.carbs;
+                    final fat = nutrition.fat;
+
+                    return ContentSurface(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text('${Formatters.formatCalories(kcal)} cal'),
+                            Text('P: ${Formatters.formatMacros(protein)}g'),
+                            Text('C: ${Formatters.formatMacros(carbs)}g'),
+                            Text('F: ${Formatters.formatMacros(fat)}g'),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
-            ),
-          ],
+
+              const SizedBox(height: AppSpacing.md),
+
+              // Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GlassButton(
+                    minHeight: Sizes.control,
+                    borderRadius: BorderRadius.circular(18),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Space.md, vertical: Space.sm),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.cancel),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  AppButton(
+                    text: 'Add',
+                    onPressed: selectedFoodState.value != null
+                        ? () {
+                            final displayAmount =
+                                double.tryParse(amountController.text) ?? 0;
+                            if (displayAmount > 0) {
+                              // Convert display amount back to stored amount
+                              final storedAmount =
+                                  FoodNutritionMath.storedQuantity(
+                                selectedFoodState.value!,
+                                displayAmount,
+                              );
+                              final mealItem = MealItem.create(
+                                mealId: '', // Will be set by parent
+                                foodId: selectedFoodState.value!.id,
+                                amount: storedAmount,
+                                food: selectedFoodState.value!,
+                              );
+                              Navigator.of(context).pop(mealItem);
+                            }
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

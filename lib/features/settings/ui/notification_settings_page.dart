@@ -6,6 +6,8 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../shell/platform_page.dart';
 import '../../../core/theme.dart';
 import '../../../services/notification_preferences_service.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/design/tokens.dart';
 
 class NotificationSettingsPage extends ConsumerWidget {
   const NotificationSettingsPage({super.key});
@@ -25,7 +27,8 @@ class NotificationSettingsPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Category Toggles
-          Card(
+          AppCard(
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -39,30 +42,36 @@ class NotificationSettingsPage extends ConsumerWidget {
                 SwitchListTile(
                   title: Text(l10n.meals),
                   subtitle: Text(l10n.mealsNotificationDesc),
-                  secondary: const SettingsIconBadge(Icons.restaurant, color: Colors.orange),
+                  secondary: const SettingsIconBadge(Icons.restaurant,
+                      color: Colors.orange),
                   value: prefs.mealsEnabled,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setMealsEnabled(value);
                   },
                 ),
                 SwitchListTile(
                   title: Text(l10n.workouts),
                   subtitle: Text(l10n.workoutsNotificationDesc),
-                  secondary: const SettingsIconBadge(Icons.fitness_center, color: Colors.blue),
+                  secondary: const SettingsIconBadge(Icons.fitness_center,
+                      color: Colors.blue),
                   value: prefs.workoutsEnabled,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setWorkoutsEnabled(value);
                   },
                 ),
                 SwitchListTile(
                   title: Text(l10n.sleep),
                   subtitle: Text(l10n.sleepNotificationDesc),
-                  secondary: const SettingsIconBadge(Icons.bedtime, color: Colors.purple),
+                  secondary: const SettingsIconBadge(Icons.bedtime,
+                      color: Colors.purple),
                   value: prefs.sleepEnabled,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setSleepEnabled(value);
                   },
                 ),
@@ -72,7 +81,8 @@ class NotificationSettingsPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
 
           // Lead Time Settings
-          Card(
+          AppCard(
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -89,7 +99,8 @@ class NotificationSettingsPage extends ConsumerWidget {
                   iconColor: Colors.orange,
                   value: prefs.mealLeadTime,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setMealLeadTime(value);
                   },
                 ),
@@ -99,7 +110,8 @@ class NotificationSettingsPage extends ConsumerWidget {
                   iconColor: Colors.blue,
                   value: prefs.workoutLeadTime,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setWorkoutLeadTime(value);
                   },
                 ),
@@ -109,7 +121,8 @@ class NotificationSettingsPage extends ConsumerWidget {
                   iconColor: Colors.purple,
                   value: prefs.sleepLeadTime,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setSleepLeadTime(value);
                   },
                 ),
@@ -119,7 +132,8 @@ class NotificationSettingsPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
 
           // Sleep Settings
-          Card(
+          AppCard(
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -131,24 +145,32 @@ class NotificationSettingsPage extends ConsumerWidget {
                   ),
                 ),
                 ListTile(
-                  leading: const SettingsIconBadge(Icons.hotel, color: Colors.indigo),
+                  leading: const SettingsIconBadge(Icons.hotel,
+                      color: Colors.indigo),
                   title: Text(l10n.sleepGoal),
-                  subtitle: Text('${prefs.sleepGoalHours.toStringAsFixed(1)} ${l10n.hours}'),
+                  subtitle: Text(
+                      '${prefs.sleepGoalHours.toStringAsFixed(1)} ${l10n.hours}'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showSleepGoalDialog(context, ref, prefs.sleepGoalHours),
+                  onTap: () =>
+                      _showSleepGoalDialog(context, ref, prefs.sleepGoalHours),
                 ),
                 ListTile(
-                  leading: const SettingsIconBadge(Icons.alarm, color: Colors.teal),
+                  leading:
+                      const SettingsIconBadge(Icons.alarm, color: Colors.teal),
                   title: Text(l10n.sleepLogReminder),
                   subtitle: Text(l10n.sleepLogReminderDesc(
-                    TimeOfDay(hour: prefs.sleepReminderHour, minute: prefs.sleepReminderMinute)
+                    TimeOfDay(
+                            hour: prefs.sleepReminderHour,
+                            minute: prefs.sleepReminderMinute)
                         .format(context),
                   )),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showSleepReminderTimeDialog(
                     context,
                     ref,
-                    TimeOfDay(hour: prefs.sleepReminderHour, minute: prefs.sleepReminderMinute),
+                    TimeOfDay(
+                        hour: prefs.sleepReminderHour,
+                        minute: prefs.sleepReminderMinute),
                   ),
                 ),
               ],
@@ -157,47 +179,60 @@ class NotificationSettingsPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
 
           // Quiet Hours
-          Card(
+          AppCard(
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SwitchListTile(
                   title: Text(l10n.quietHours),
                   subtitle: Text(l10n.quietHoursDesc),
-                  secondary: const SettingsIconBadge(Icons.do_not_disturb, color: Colors.redAccent),
+                  secondary: const SettingsIconBadge(Icons.do_not_disturb,
+                      color: Colors.redAccent),
                   value: prefs.quietHoursEnabled,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setQuietHoursEnabled(value);
                   },
                 ),
                 if (prefs.quietHoursEnabled) ...[
                   ListTile(
-                    leading: const SettingsIconBadge(Icons.bedtime, color: Colors.purple),
+                    leading: const SettingsIconBadge(Icons.bedtime,
+                        color: Colors.purple),
                     title: Text(l10n.startTime),
                     subtitle: Text(
-                      TimeOfDay(hour: prefs.quietHoursStartHour, minute: prefs.quietHoursStartMinute)
+                      TimeOfDay(
+                              hour: prefs.quietHoursStartHour,
+                              minute: prefs.quietHoursStartMinute)
                           .format(context),
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _showQuietHoursStartDialog(
                       context,
                       ref,
-                      TimeOfDay(hour: prefs.quietHoursStartHour, minute: prefs.quietHoursStartMinute),
+                      TimeOfDay(
+                          hour: prefs.quietHoursStartHour,
+                          minute: prefs.quietHoursStartMinute),
                     ),
                   ),
                   ListTile(
-                    leading: const SettingsIconBadge(Icons.wb_sunny, color: Colors.amber),
+                    leading: const SettingsIconBadge(Icons.wb_sunny,
+                        color: Colors.amber),
                     title: Text(l10n.endTime),
                     subtitle: Text(
-                      TimeOfDay(hour: prefs.quietHoursEndHour, minute: prefs.quietHoursEndMinute)
+                      TimeOfDay(
+                              hour: prefs.quietHoursEndHour,
+                              minute: prefs.quietHoursEndMinute)
                           .format(context),
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _showQuietHoursEndDialog(
                       context,
                       ref,
-                      TimeOfDay(hour: prefs.quietHoursEndHour, minute: prefs.quietHoursEndMinute),
+                      TimeOfDay(
+                          hour: prefs.quietHoursEndHour,
+                          minute: prefs.quietHoursEndMinute),
                     ),
                   ),
                 ],
@@ -207,26 +242,31 @@ class NotificationSettingsPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
 
           // Sound & Vibration
-          Card(
+          AppCard(
+            padding: EdgeInsets.zero,
             child: Column(
               children: [
                 SwitchListTile(
                   title: Text(l10n.sound),
                   subtitle: Text(l10n.soundDesc),
-                  secondary: const SettingsIconBadge(Icons.volume_up, color: Colors.green),
+                  secondary: const SettingsIconBadge(Icons.volume_up,
+                      color: Colors.green),
                   value: prefs.soundEnabled,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setSoundEnabled(value);
                   },
                 ),
                 SwitchListTile(
                   title: Text(l10n.vibration),
                   subtitle: Text(l10n.vibrationDesc),
-                  secondary: const SettingsIconBadge(Icons.vibration, color: Colors.blueGrey),
+                  secondary: const SettingsIconBadge(Icons.vibration,
+                      color: Colors.blueGrey),
                   value: prefs.vibrationEnabled,
                   onChanged: (value) {
-                    ref.read(notificationPreferencesProvider.notifier)
+                    ref
+                        .read(notificationPreferencesProvider.notifier)
                         .setVibrationEnabled(value);
                   },
                 ),
@@ -238,7 +278,8 @@ class NotificationSettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showSleepGoalDialog(BuildContext context, WidgetRef ref, double currentHours) async {
+  void _showSleepGoalDialog(
+      BuildContext context, WidgetRef ref, double currentHours) async {
     final l10n = AppLocalizations.of(context)!;
     double selectedHours = currentHours;
 
@@ -267,13 +308,19 @@ class NotificationSettingsPage extends ConsumerWidget {
             ],
           ),
           actions: [
-            TextButton(
+            GlassButton(
+              minHeight: Sizes.control,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md, vertical: Space.sm),
               onPressed: () => Navigator.of(context).pop(),
               child: Text(l10n.cancel),
             ),
-            FilledButton(
+            GlassButton(
+              prominent: true,
               onPressed: () {
-                ref.read(notificationPreferencesProvider.notifier)
+                ref
+                    .read(notificationPreferencesProvider.notifier)
                     .setSleepGoalHours(selectedHours);
                 Navigator.of(context).pop();
               },
@@ -285,38 +332,44 @@ class NotificationSettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showSleepReminderTimeDialog(BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
+  void _showSleepReminderTimeDialog(
+      BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: currentTime,
     );
-    
+
     if (picked != null) {
-      ref.read(notificationPreferencesProvider.notifier)
+      ref
+          .read(notificationPreferencesProvider.notifier)
           .setSleepReminderTime(picked.hour, picked.minute);
     }
   }
 
-  void _showQuietHoursStartDialog(BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
+  void _showQuietHoursStartDialog(
+      BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: currentTime,
     );
-    
+
     if (picked != null) {
-      ref.read(notificationPreferencesProvider.notifier)
+      ref
+          .read(notificationPreferencesProvider.notifier)
           .setQuietHoursStart(picked.hour, picked.minute);
     }
   }
 
-  void _showQuietHoursEndDialog(BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
+  void _showQuietHoursEndDialog(
+      BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: currentTime,
     );
-    
+
     if (picked != null) {
-      ref.read(notificationPreferencesProvider.notifier)
+      ref
+          .read(notificationPreferencesProvider.notifier)
           .setQuietHoursEnd(picked.hour, picked.minute);
     }
   }
@@ -340,7 +393,7 @@ class _LeadTimeSetting extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return ListTile(
       leading: SettingsIconBadge(icon, color: iconColor),
       title: Text(title),
@@ -366,7 +419,7 @@ class _LeadTimeSetting extends ConsumerWidget {
     AppLocalizations l10n,
   ) async {
     final options = [0, 5, 10, 15, 30];
-    
+
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -388,7 +441,11 @@ class _LeadTimeSetting extends ConsumerWidget {
           }).toList(),
         ),
         actions: [
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(context).pop(),
             child: Text(l10n.cancel),
           ),
@@ -397,4 +454,3 @@ class _LeadTimeSetting extends ConsumerWidget {
     );
   }
 }
-

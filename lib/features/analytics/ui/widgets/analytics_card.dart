@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/ios/glass.dart';
 import '../../../../core/ui_constants.dart';
 import '../../domain/analytics_range.dart';
 import '../../domain/series.dart';
 import '../analytics_format.dart';
 import '../charts/chart_geometry.dart';
+import '../../../../core/design/surfaces.dart';
+import '../../../../core/design/tokens.dart';
 
 /// The single card shape every analytics section uses.
 ///
@@ -35,52 +38,54 @@ class AnalyticsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: UIConstants.cardSpacing),
-      padding: const EdgeInsets.all(UIConstants.cardPadding),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: UIConstants.cardSpacing),
+      child: ContentSurface(
         borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: onTitleTap,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.textTheme.bodySmall?.color,
+        // `cardTheme.color`, not the legacy `theme.cardColor` alias this used to
+        // read — it was the one card in the app resolving its surface by a third
+        // route, which is why analytics drifted a shade off the dashboard.
+        color: theme.cardTheme.color ?? theme.colorScheme.surface,
+        padding: const EdgeInsets.all(UIConstants.cardPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: onTitleTap,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.textTheme.bodySmall?.color,
+                      ),
                     ),
                   ),
-                ),
-                if (trailing != null)
-                  Text(
-                    trailing!,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                  if (trailing != null)
+                    Text(
+                      trailing!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
-                  ),
-                if (onTitleTap != null) ...[
-                  const SizedBox(width: 4),
-                  Icon(Icons.expand_more,
-                      size: 18, color: theme.textTheme.bodySmall?.color),
+                  if (onTitleTap != null) ...[
+                    const SizedBox(width: 4),
+                    Icon(Icons.expand_more,
+                        size: 18, color: theme.textTheme.bodySmall?.color),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          child,
-          if (footer != null) ...[
             const SizedBox(height: 12),
-            footer!,
+            child,
+            if (footer != null) ...[
+              const SizedBox(height: 12),
+              footer!,
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -210,7 +215,7 @@ class CardEmptyState extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 18),
+      padding: const EdgeInsets.symmetric(vertical: Space.lg),
       child: Column(
         children: [
           Icon(icon, size: 26, color: theme.dividerColor),
@@ -222,7 +227,13 @@ class CardEmptyState extends StatelessWidget {
           ),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 8),
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
+            GlassButton(
+                minHeight: Sizes.control,
+                borderRadius: BorderRadius.circular(18),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: Space.md, vertical: Space.sm),
+                onPressed: onAction,
+                child: Text(actionLabel!)),
           ],
         ],
       ),

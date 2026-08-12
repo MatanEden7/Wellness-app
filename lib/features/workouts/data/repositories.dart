@@ -25,7 +25,8 @@ final exercisesStreamProvider = Provider<Stream<List<Exercise>>>((ref) {
   return ref.read(exercisesRepositoryProvider).watchAllExercises();
 });
 
-final workoutTemplatesRepositoryProvider = Provider<WorkoutTemplatesRepository>((ref) {
+final workoutTemplatesRepositoryProvider =
+    Provider<WorkoutTemplatesRepository>((ref) {
   final database = ref.read(databaseProvider);
   return WorkoutTemplatesRepository(database);
 });
@@ -41,8 +42,11 @@ final workoutTemplatesStreamProvider =
 /// Cached, limit-keyed stream of recent sessions -- same reasoning as
 /// `workoutTemplatesStreamProvider`.
 final recentSessionsStreamProvider =
-    Provider.family<Stream<List<WorkoutSessionWithTemplate>>, int>((ref, limit) {
-  return ref.read(workoutSessionsRepositoryProvider).watchRecentSessions(limit: limit);
+    Provider.family<Stream<List<WorkoutSessionWithTemplate>>, int>(
+        (ref, limit) {
+  return ref
+      .read(workoutSessionsRepositoryProvider)
+      .watchRecentSessions(limit: limit);
 });
 
 /// Cached, date-keyed stream of one day's sessions.
@@ -56,7 +60,8 @@ final sessionsByDateStreamProvider =
   return ref.read(workoutSessionsRepositoryProvider).watchSessionsByDate(date);
 });
 
-final workoutSessionsRepositoryProvider = Provider<WorkoutSessionsRepository>((ref) {
+final workoutSessionsRepositoryProvider =
+    Provider<WorkoutSessionsRepository>((ref) {
   final database = ref.read(databaseProvider);
   return WorkoutSessionsRepository(database);
 });
@@ -131,7 +136,8 @@ class WorkoutTemplatesRepository {
       final templates = await _database.getAllWorkoutTemplates();
       final List<WorkoutTemplate> result = [];
       for (final template in templates) {
-        final exercises = await _database.getTemplateExercisesByTemplateId(template.id);
+        final exercises =
+            await _database.getTemplateExercisesByTemplateId(template.id);
         result.add(_templateDataToModel(template).copyWith(
           exercises: exercises.map(_templateExerciseDataToModel).toList(),
         ));
@@ -160,7 +166,8 @@ class WorkoutTemplatesRepository {
           templateId: template.id,
           orderIndex: i,
         );
-        await _database.insertTemplateExercise(_templateExerciseModelToData(correctedExercise));
+        await _database.insertTemplateExercise(
+            _templateExerciseModelToData(correctedExercise));
       }
     });
   }
@@ -168,13 +175,14 @@ class WorkoutTemplatesRepository {
   Future<void> updateTemplate(WorkoutTemplate template) async {
     await _database.transaction(() async {
       await _database.updateWorkoutTemplate(_templateModelToData(template));
-      
+
       // Delete existing exercises and re-insert
-      final existingExercises = await _database.getTemplateExercisesByTemplateId(template.id);
+      final existingExercises =
+          await _database.getTemplateExercisesByTemplateId(template.id);
       for (final exercise in existingExercises) {
         await _database.deleteTemplateExercise(exercise.id);
       }
-      
+
       for (int i = 0; i < template.exercises.length; i++) {
         final exercise = template.exercises[i];
         // Ensure the templateId matches and set correct order
@@ -182,7 +190,8 @@ class WorkoutTemplatesRepository {
           templateId: template.id,
           orderIndex: i,
         );
-        await _database.insertTemplateExercise(_templateExerciseModelToData(correctedExercise));
+        await _database.insertTemplateExercise(
+            _templateExerciseModelToData(correctedExercise));
       }
     });
   }
@@ -249,7 +258,8 @@ class WorkoutSessionsRepository {
 
   WorkoutSessionsRepository(this._database);
 
-  Stream<List<WorkoutSessionWithTemplate>> watchRecentSessions({int limit = 10}) {
+  Stream<List<WorkoutSessionWithTemplate>> watchRecentSessions(
+      {int limit = 10}) {
     return _database.watchWorkoutsStream().asyncMap((_) async {
       final sessions = await _database.getRecentWorkoutSessions(limit: limit);
       return _withTemplateNames(sessions);
@@ -366,7 +376,8 @@ class WorkoutSessionsRepository {
   /// [sourceEventId] has no counterpart on the domain model, so callers that
   /// are updating an existing row must read it off that row and pass it back
   /// in -- otherwise the calendar link is dropped. See [updateSession].
-  WorkoutSessionData _sessionModelToData(WorkoutSession model, {String? sourceEventId}) {
+  WorkoutSessionData _sessionModelToData(WorkoutSession model,
+      {String? sourceEventId}) {
     return WorkoutSessionData(
       id: model.id,
       templateId: model.templateId,

@@ -132,12 +132,14 @@ abstract final class FoodMacroAudit {
     }
     if (problems.isNotEmpty) return problems;
 
-    if (!containsAlcohol && !energyAgrees(kcal, protein, carbs, fat, unit: unit)) {
+    if (!containsAlcohol &&
+        !energyAgrees(kcal, protein, carbs, fat, unit: unit)) {
       final implied = atwaterKcal(protein, carbs, fat);
       fail('$kcal kcal does not match its macros '
           '(4x$protein + 4x$carbs + 9x$fat = ${implied.toStringAsFixed(1)})');
     }
-    if (containsAlcohol && energyAgrees(kcal, protein, carbs, fat, unit: unit)) {
+    if (containsAlcohol &&
+        energyAgrees(kcal, protein, carbs, fat, unit: unit)) {
       // The exemption should only be claimed where it is needed. A row whose
       // macros *do* reconstruct its energy has no alcohol worth modelling, and
       // leaving the flag set would silently disable the check if the numbers

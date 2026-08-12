@@ -162,6 +162,27 @@ abstract class ChromeHostApi {
   void setSelectedTab(int index);
   void setPageChrome(PageChromeSpec spec);
   void setChromeVisible(bool navBar, bool tabBar);
+
+  /// 'glass' | 'opaque'.
+  ///
+  /// Semantics, not styling: Dart says which *kind* of background the bars
+  /// should ask the system for, and Swift picks between two system-provided
+  /// appearance configurations. No blur radius, tint or colour crosses this
+  /// wire — see PLATFORM_UI_ARCHITECTURE §10.
+  ///
+  /// Exists so the app's glass setting (and Reduce Transparency) reach the
+  /// native bars too. Without it, turning glass off produced solid content
+  /// under still-translucent chrome.
+  void setChromeStyle(String style);
+
+  /// Whether page content is currently underneath the bars.
+  ///
+  /// The missing half of iOS's scroll edge effect. UIKit normally derives this
+  /// itself from a connected `UIScrollView`, but Flutter owns the scroll view
+  /// here and the bars are standalone, so nothing could observe it — which is
+  /// why both bars were pinned to a single appearance and always showed their
+  /// material. Dart sends the fact; Swift picks the appearance.
+  void setScrollEdge(bool underContent);
 }
 
 @HostApi()

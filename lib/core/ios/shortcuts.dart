@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/surfaces.dart';
+
 /// One tile in a [ShortcutRow].
 class AppShortcut {
   final IconData icon;
@@ -65,31 +67,34 @@ class _ShortcutTile extends StatelessWidget {
 
     return Tooltip(
       message: shortcut.label,
-      child: Material(
-        color: theme.cardTheme.color ?? theme.colorScheme.surface,
+      child: ContentSurface(
         borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          onTap: shortcut.onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(shortcut.icon, size: 24, color: tint),
-                const SizedBox(height: 8),
-                Text(
-                  shortcut.label,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: theme.colorScheme.onSurface,
+        color: theme.cardTheme.color ?? theme.colorScheme.surface,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: shortcut.onTap,
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(shortcut.icon, size: 24, color: tint),
+                  const SizedBox(height: 8),
+                  Text(
+                    shortcut.label,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

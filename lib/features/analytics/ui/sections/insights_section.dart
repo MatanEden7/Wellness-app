@@ -8,6 +8,8 @@ import '../../domain/analytics_view.dart';
 import '../../domain/insights.dart';
 import '../analytics_format.dart';
 import '../widgets/analytics_card.dart';
+import '../../../../core/design/surfaces.dart';
+import '../../../../core/design/tokens.dart';
 
 /// The generated observations.
 ///
@@ -60,21 +62,21 @@ class _InsightRow extends StatelessWidget {
       InsightTone.neutral => theme.colorScheme.primary,
     };
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(insightIcon(insight.kind), size: 18, color: accent),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(text, style: theme.textTheme.bodySmall),
-          ),
-        ],
+    return ContentSurface.tinted(
+      color: accent.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(Space.md),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(insightIcon(insight.kind), size: 18, color: accent),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(text, style: theme.textTheme.bodySmall),
+            ),
+          ],
+        ),
       ),
     );
   }

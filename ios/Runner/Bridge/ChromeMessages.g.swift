@@ -517,6 +517,25 @@ protocol ChromeHostApi {
   func setSelectedTab(index: Int64) throws
   func setPageChrome(spec: PageChromeSpec) throws
   func setChromeVisible(navBar: Bool, tabBar: Bool) throws
+  /// 'glass' | 'opaque'.
+  ///
+  /// Semantics, not styling: Dart says which *kind* of background the bars
+  /// should ask the system for, and Swift picks between two system-provided
+  /// appearance configurations. No blur radius, tint or colour crosses this
+  /// wire — see PLATFORM_UI_ARCHITECTURE §10.
+  ///
+  /// Exists so the app's glass setting (and Reduce Transparency) reach the
+  /// native bars too. Without it, turning glass off produced solid content
+  /// under still-translucent chrome.
+  func setChromeStyle(style: String) throws
+  /// Whether page content is currently underneath the bars.
+  ///
+  /// The missing half of iOS's scroll edge effect. UIKit normally derives this
+  /// itself from a connected `UIScrollView`, but Flutter owns the scroll view
+  /// here and the bars are standalone, so nothing could observe it — which is
+  /// why both bars were pinned to a single appearance and always showed their
+  /// material. Dart sends the fact; Swift picks the appearance.
+  func setScrollEdge(underContent: Bool) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -585,6 +604,53 @@ class ChromeHostApiSetup {
       }
     } else {
       setChromeVisibleChannel.setMessageHandler(nil)
+    }
+    /// 'glass' | 'opaque'.
+    ///
+    /// Semantics, not styling: Dart says which *kind* of background the bars
+    /// should ask the system for, and Swift picks between two system-provided
+    /// appearance configurations. No blur radius, tint or colour crosses this
+    /// wire — see PLATFORM_UI_ARCHITECTURE §10.
+    ///
+    /// Exists so the app's glass setting (and Reduce Transparency) reach the
+    /// native bars too. Without it, turning glass off produced solid content
+    /// under still-translucent chrome.
+    let setChromeStyleChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.wellness_app.ChromeHostApi.setChromeStyle\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setChromeStyleChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let styleArg = args[0] as! String
+        do {
+          try api.setChromeStyle(style: styleArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setChromeStyleChannel.setMessageHandler(nil)
+    }
+    /// Whether page content is currently underneath the bars.
+    ///
+    /// The missing half of iOS's scroll edge effect. UIKit normally derives this
+    /// itself from a connected `UIScrollView`, but Flutter owns the scroll view
+    /// here and the bars are standalone, so nothing could observe it — which is
+    /// why both bars were pinned to a single appearance and always showed their
+    /// material. Dart sends the fact; Swift picks the appearance.
+    let setScrollEdgeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.wellness_app.ChromeHostApi.setScrollEdge\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setScrollEdgeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let underContentArg = args[0] as! Bool
+        do {
+          try api.setScrollEdge(underContent: underContentArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setScrollEdgeChannel.setMessageHandler(nil)
     }
   }
 }

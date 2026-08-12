@@ -33,12 +33,13 @@ import '../services/user_profile_service.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   // Get the profile service once
   final profileService = ref.read(userProfileServiceProvider);
-  
+
   return GoRouter(
     initialLocation: '/',
     // Enable back swipe gesture on iOS/macOS
     observers: [
-      if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS)
+      if (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.macOS)
         HeroController(),
     ],
     // Make router refresh when profile service changes
@@ -47,21 +48,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Read isSetupCompleted fresh each time redirect runs
       final isSetupComplete = profileService.isSetupCompleted;
       final isOnOnboarding = state.matchedLocation == '/onboarding';
-      
-      debugPrint('[ROUTER] Redirect check: isSetupComplete=$isSetupComplete, location=${state.matchedLocation}');
-      
+
+      debugPrint(
+          '[ROUTER] Redirect check: isSetupComplete=$isSetupComplete, location=${state.matchedLocation}');
+
       // If setup is not complete and not already on onboarding, redirect
       if (!isSetupComplete && !isOnOnboarding) {
         debugPrint('[ROUTER] Redirecting to onboarding');
         return '/onboarding';
       }
-      
+
       // If setup is complete and on onboarding, redirect to dashboard
       if (isSetupComplete && isOnOnboarding) {
         debugPrint('[ROUTER] Redirecting to dashboard');
         return '/';
       }
-      
+
       return null; // No redirect needed
     },
     routes: [
@@ -91,30 +93,35 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'edit',
             name: 'meal_editor_new',
-            pageBuilder: (context, state) => _platformPage(const MealEditorPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const MealEditorPage()),
           ),
           GoRoute(
             path: 'foods',
             name: 'food_catalog',
-            pageBuilder: (context, state) => _platformPage(const FoodCatalogPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const FoodCatalogPage()),
           ),
           GoRoute(
             path: 'templates',
             name: 'meal_templates',
-            pageBuilder: (context, state) => _platformPage(const MealTemplatesPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const MealTemplatesPage()),
             routes: [
               // IMPORTANT: Specific routes must come BEFORE parameterized routes
               GoRoute(
                 path: 'new',
                 name: 'meal_template_editor_new',
-                pageBuilder: (context, state) => _platformPage(const MealTemplateEditorPage()),
+                pageBuilder: (context, state) =>
+                    _platformPage(const MealTemplateEditorPage()),
               ),
               GoRoute(
                 path: ':templateId',
                 name: 'meal_template_editor_with_id',
                 pageBuilder: (context, state) {
                   final templateId = state.pathParameters['templateId']!;
-                  return _platformPage(MealTemplateEditorPage(templateId: templateId));
+                  return _platformPage(
+                      MealTemplateEditorPage(templateId: templateId));
                 },
               ),
             ],
@@ -129,7 +136,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'exercises',
             name: 'exercise_library',
-            pageBuilder: (context, state) => _platformPage(const ExerciseLibraryPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const ExerciseLibraryPage()),
           ),
           // Same shape as /meals/templates: the bare path is the list, 'new'
           // and ':id' are the editor. It used to be the editor itself, with
@@ -177,7 +185,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'timer',
             name: 'sleep_timer',
-            pageBuilder: (context, state) => _platformPage(const SleepTimerPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const SleepTimerPage()),
           ),
         ],
       ),
@@ -199,17 +208,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'appearance',
             name: 'appearance_editor',
-            pageBuilder: (context, state) => _platformPage(const AppearanceEditorPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const AppearanceEditorPage()),
           ),
           GoRoute(
             path: 'notifications',
             name: 'notification_settings',
-            pageBuilder: (context, state) => _platformPage(const NotificationSettingsPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const NotificationSettingsPage()),
           ),
           GoRoute(
             path: 'workouts',
             name: 'workout_settings',
-            pageBuilder: (context, state) => _platformPage(const WorkoutSettingsPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const WorkoutSettingsPage()),
           ),
           GoRoute(
             path: 'profile',
@@ -219,7 +231,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'nutrition-goals',
             name: 'nutrition_goals',
-            pageBuilder: (context, state) => _platformPage(const NutritionGoalsPage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const NutritionGoalsPage()),
           ),
           GoRoute(
             path: 'theme',
@@ -229,7 +242,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'language',
             name: 'language_page',
-            pageBuilder: (context, state) => _platformPage(const LanguagePage()),
+            pageBuilder: (context, state) =>
+                _platformPage(const LanguagePage()),
           ),
         ],
       ),
@@ -290,7 +304,8 @@ extension GoRouterExtension on GoRouter {
 
 // Use CupertinoPage on iOS/macOS to enable edge-swipe back gesture, Material elsewhere
 Page<dynamic> _platformPage(Widget child, {bool fullscreenDialog = false}) {
-  if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+  if (defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS) {
     return CupertinoPage<dynamic>(
       child: child,
       fullscreenDialog: fullscreenDialog,

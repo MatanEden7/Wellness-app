@@ -26,7 +26,8 @@ final backupLocationServiceProvider = Provider<BackupLocationService>((ref) {
 /// Either way the caller just asks for a path and gets one that already
 /// matches the user's preference.
 class BackupLocationService {
-  BackupLocationService(this._prefs, {@visibleForTesting MethodChannel? channel})
+  BackupLocationService(this._prefs,
+      {@visibleForTesting MethodChannel? channel})
       : _channel = channel ?? const MethodChannel(_channelName);
 
   static const String _channelName = 'wellness_app/backup';

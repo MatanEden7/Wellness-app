@@ -5,6 +5,171 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Liquid Glass across the app, and nine native-chrome bugs (2026-08-12)
+
+Branch `feat/platform-native-ui`. Two pieces: the native chrome bugs found by
+reading the Epic N code, then the glass pass the owner asked for on top.
+
+**Glass was never actually rendering.** A standalone `UINavigationBar`/`UITabBar`
+has no scroll view to track, so it never leaves its `scrollEdgeAppearance` — and
+that state is transparent. Both bars now assign a `configureWithDefaultBackground()`
+appearance to *every* state, which on iOS 26 is Liquid Glass. Separately, the shells
+wrapped their scroll view in a `SafeArea`, so content stopped at the bar edge and the
+glass had nothing behind it to blur; bar insets now go on the scrolled content.
+
+**Nine bugs fixed in the native chrome**, all pre-existing on this branch:
+
+| | |
+|---|---|
+| Last row of every screen sat under the tab bar | the native shells dropped the bottom inset entirely |
+| Tab bar never followed navigation | `setSelectedTab` was never called from Dart |
+| Nav + tab bar floated over onboarding | `setChromeVisible` was never called either; the tab bar also showed on pushed detail pages, unlike the Flutter path |
+| Tab labels were hardcoded English | now localized, and re-pushed on language change |
+| Hidden bars still reserved their inset | a blank strip where the bar used to be |
+| `PlatformChildPage`/`PlatformNavPage` ignored the app theme | rendered on `Colors.transparent` → iOS `systemBackground` |
+| Native back button could throw | `router.pop()` with no `canPop` guard |
+| Bridge failures were unhandled | the calls fail *asynchronously*; the `try/catch` around them caught nothing — an unhandled exception per page build on the pre-iOS-15 fallback path |
+| Deferred chrome sync leaked | a status listener per route popped mid-push, and it pushed first-frame chrome instead of the latest |
+
+**The glass pass** (iOS only — Android keeps the Material 3 shell from Epic N):
+
+- `lib/core/ios/glass.dart`: `GlassLevel`, `GlassSpec`, `GlassTheme`, `GlassSurface`,
+  `GlassSheet`, `GlassLayer`, `GlassBackdrop`. One recipe, one file.
+- Converted: `AppCard`, `InsetSection`, `_ShortcutTile`, `AnalyticsCard`,
+  `PrimaryMetricCard`, `NutritionProgressBar`, the Cupertino-tier nav bar and pinned
+  bar, all bottom sheets, the six custom dialogs, and ~15 one-off panels across
+  dashboard / calendar / meals / workouts / settings. Nine bare `Card(`s became
+  `AppCard`.
+- `GlassBackdrop` paints a theme-derived gradient behind content, because blurring a
+  flat colour returns the same flat colour — without it the whole pass is invisible.
+- **Settings → Appearance → Glass Effect**: Off / Subtle / Full, persisted. Reduce
+  Transparency forces Off and drives the native bars opaque through a new
+  `setChromeStyle` bridge method, so chrome and content never disagree. This also
+  wires `CapabilitiesApi` into Dart for the first time — it had zero readers.
+- `docs/PLATFORM_UI_ARCHITECTURE.md` §4 said content must never be glass. That rule
+  is now explicitly reversed, with the reasoning and the mitigations recorded there.
+
+**Coverage.** `glass_surface_test.dart` (12); `theme_contrast_test.dart` extended to
+every theme × every glass level × the coloured page wash — that is what pins the tint
+alphas; `page_smoke_test.dart` gained a second pass that renders all 21 screens on the
+**Cupertino shell with glass at full strength** (the entire Cupertino branch had no
+coverage before); `shell_guardrail_test.dart` now enforces §10 instead of claiming to.
+1100 fast tests green, `flutter analyze` clean.
+
+### The UI design pass: a real Liquid Glass system (2026-08-12)
+
+The glass was everywhere and the screens still looked wrong. An audit found why,
+and it was not the glass — it was the system underneath: two conflicting spacing
+scales with 86% of paddings written as raw literals, 18 font sizes with no 17pt
+slot, 13 corner radii arranged anti-concentrically, six tap heights, and nine
+themes whose background and surface were too close for any surface to read at
+all. Then Apple's own material said the design was wrong too: glass is the layer
+that *floats*, and putting it on content is a listed anti-pattern.
+
+Four decisions, all the owner's: Apple's layer model, real scroll-edge behaviour
+piped to native, all nine themes re-derived, full 44pt spec.
+
+**Tokens** — `lib/core/design/tokens.dart`. The iOS type ramp as a `TextTheme`,
+so features keep writing `theme.textTheme.bodyLarge` and get iOS Body; one 4pt
+spacing scale; `Radii.inner(parent, padding)` implementing Apple's concentricity
+rule; Apple's 44pt floor. `UIConstants` now forwards to it rather than holding a
+second, disagreeing set of values. **`AppThemeKind.custom` had no `textTheme` at
+all** — choosing it silently dropped the whole app onto Roboto's scale.
+
+**Nine themes re-derived** — background → surface → elevated with measured
+separation. `dark` and `gold` were *byte-identical* palettes; `dark` had
+primary = secondary = tertiary = white; three themes fell back to 87% white for
+their hairlines; the light family sat at 1.05:1, where a surface is invisible.
+Four new assertions per theme pin all of it and **caught eight real failures**
+during the pass — the numbers were set by the tests, not by eye.
+
+**The layer split** — new opaque `ContentSurface` for cards, list groups, tiles,
+badges and banners across 22 files. Glass stays on bars, sheets, dialogs,
+buttons, chips, the date strip, search and segmented controls. Glass tints from
+the *elevated* rung now, so a bar reads as floating above the cards rather than
+level with them. `glass_coverage_test.dart` was inverted to enforce the split.
+
+**The scroll edge effect** — new `setScrollEdge` Pigeon call and
+`ScrollEdgeObserver`. Bars are bare while content rests against them and gain
+the material once anything is underneath, exactly as iOS does. **This is what
+finally made the date strip work**: it pins again, bare at rest, glass once
+content passes under — the band / no-band / unpinned cycle was three workarounds
+for this missing signal.
+
+**Sizing** — 44pt floor across 18 files (24+ controls had been at 36 or 32),
+capsule radii for large controls, the tab bar's 86-vs-76 clearance mismatch
+resolved to one source, and ~250 spacing literals migrated to the scale.
+
+1168 fast tests green, `flutter analyze` clean.
+
+### Exhaustive glass sweep — every surface and control (2026-08-12)
+
+Third pass, after "still a lot of missing glass". The first two passes converted the
+*cards*; this one converted everything else and then made the coverage enforceable.
+
+- **`GlassSurface.tinted`** — a glass pane carrying an accent instead of the theme
+  surface, which is the shape every badge, chip, pill, banner and status panel in the
+  app already had. Passing the same colour as both tint and fallback is what makes the
+  conversion safe: glass off is byte-identical to the `Container` it replaced.
+- **36 tinted panels converted app-wide** by a scripted sweep, then reviewed
+  individually — dashboard banners and status rows, the workout session header and
+  its panels, calendar chips, meal macro strips, sleep tiles, settings badges,
+  onboarding option cards, the analytics insight strips, the exercise picker, the
+  template editor's break rows and "+ Break" pill.
+- **The controls, which had been the real gap**: the search field, the segmented
+  control, the filter banner, the whole **date strip** (the day breadcrumb on meals
+  and workouts — label pill, both chevrons and Today), `NavBarAction`, the row
+  ellipsis menu, and `TagChips`, which stopped being Material `FilterChip`s (a chip
+  brings its own opaque surface that cannot be made translucent from outside).
+- **All 29 remaining `TextButton`s** across settings, meals, sleep, workouts,
+  calendar, dashboard, onboarding and analytics are now glass capsules. The previous
+  pass had argued for leaving them as text links; the owner asked for all of them.
+- **The colour picker's action bar and value badges**, and the appearance editor's
+  info banner and colour rows.
+
+**`test/architecture/glass_coverage_test.dart` is the point of the pass.** It walks
+every file in `lib/` and fails on any `Container(decoration: BoxDecoration(color:))`
+or coloured `Material(` outside a documented exemption list. It caught three surfaces
+this sweep had missed — two in the template editor, one in onboarding — after the
+sweep was believed complete. The exemptions each carry their reason: the fallback
+glass bar paints the material itself, colour swatches must render the literal colour,
+6pt progress tracks and 1px dividers are too thin to hold a material, the swipe reveal
+sits *under* its row, and Android's Material shell must never get the iOS imitation.
+
+1129 fast tests green, `flutter analyze` clean.
+
+### Buttons on glass, and the last cards (2026-08-12)
+
+Follow-up pass over every screen: the card sweep had left the *controls* alone.
+
+- **`GlassButton`** in `lib/core/ios/glass.dart`, in two weights. **Prominent** is
+  the accent at `prominentTintAlpha` with an `onPrimary` label; **plain** is the same
+  surface tint the cards use with an accent label. Both fall back to the solid fill
+  they had before when glass is off.
+- **`AppButton` (19 call sites) now renders through it**, and gained a `color` for a
+  destructive or section-tinted action.
+- **24 direct button sites converted** across onboarding (7 Continue/Complete
+  buttons), the workout session (Next Exercise / Finish Workout / Complete Set, which
+  keep their green, orange and accent tints), nutrition goals, notification settings,
+  profile, the event dialog, the weigh-in sheet, the appearance preview and the colour
+  picker's Cancel/Apply pair.
+- **Filter pills** are buttons too, so `_FilterPill` is now `GlassButton` — prominent
+  when selected, plain when not.
+- **Last two cards**: the calendar agenda's event rows and the workout session's
+  completed-sets panel.
+
+**The contrast test earned its keep.** A prominent button's fill is the accent
+*diluted towards the page*, which the existing `onPrimary`/`primary` check does not
+cover. Extending it to the composited fill failed immediately on Forest, Sunset and
+Lavender at 4.16–4.34:1 — `prominentTintAlpha` went from 0.86 to **0.93** because of
+those three numbers, not because of how it looked.
+
+Deliberately left alone: `TextButton` (31 sites — a plain tinted text link is the iOS
+idiom, and a glass capsule behind each one is the "soup" the architecture doc warns
+about), `IconButton`, and `AppSegmented`/`AppSearchField`, which are Cupertino widgets
+taking a *colour* rather than a child and already translucent over whatever is behind
+them. 1128 fast tests green.
+
 ### Platform-native UI split N0–N8 complete (2026-08-11)
 
 Epic N: branch `feat/platform-native-ui`. All 9 milestones (N0–N8) shipped together.

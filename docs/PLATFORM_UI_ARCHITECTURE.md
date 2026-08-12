@@ -207,10 +207,105 @@ Everything that is *this app* rather than *this OS*:
   on both platforms — see §6).
 - All 25 services, all domain logic, all models, all localisation.
 
-**Nothing in this list is wrapped in glass.** Per Apple's guidance and the explicit
-requirement: glass belongs to the functional navigation layer. Content sits *under*
-the glass and stays legible; it does not become glass. The existing app already has
-171 `Card`s — if those became glass the design would collapse into soup.
+### Glass on content — reversed, then reversed back (2026-08-12)
+
+**Current rule: content is opaque. Glass belongs to the layer that floats.**
+
+The reversal recorded below stood for one working session. It was undone after
+reading Apple's own material rather than reasoning from the screenshots: the
+WWDC25 session *Get to know the new design system* names three layers — content,
+functional, navigation — and lists **"applying Liquid Glass directly to
+content"** as an anti-pattern, with the rule that controls sit *on* system
+material and never straight on content.
+
+That is also, precisely, what was wrong on screen. With every card translucent
+there was nothing left for the glass to float over, so the material stopped
+carrying meaning and the screens read as washed out. The owner asked for the
+whole UI to be redesigned properly; this is the load-bearing half of that.
+
+| Layer | What is in it | Material |
+|---|---|---|
+| Content | cards, list groups, rows, charts, editors | opaque `ContentSurface` |
+| Functional | bars, pinned headers, sheets, dialogs, buttons, chips, the date strip, search and segmented controls | `GlassSurface` / `GlassButton` |
+| Navigation | native nav bar and tab bar | real UIKit glass |
+
+Enforced, not remembered: `test/architecture/glass_coverage_test.dart` fails the
+build if a glass surface appears outside a documented functional file, and if a
+surface is hand-painted outside either material.
+
+Three supporting pieces landed with it, each fixing something the audit measured:
+
+* **`lib/core/design/tokens.dart`** — the iOS type ramp (including the 17pt slot
+  the theme never had, which is why 20 sites hardcoded it), one 4pt spacing
+  scale replacing two that disagreed, concentric radii, and Apple's 44pt tap
+  floor.
+* **All nine theme ramps re-derived** — background → surface → elevated with
+  measured separation. `dark` and `gold` had been byte-identical; `dark` had one
+  accent repeated three times; three themes drew their hairlines in 87% white.
+  `theme_contrast_test.dart` now pins all of it.
+* **The scroll edge effect** (§4a below) — the thing that made a *correct*
+  pinned header possible for the first time.
+
+### 4a. Scroll edge
+
+A bar carries no material while content rests against it, and gains the system
+material once anything is underneath. iOS derives this from a connected
+`UIScrollView`; ours are standalone over a Flutter canvas, so nothing could
+observe it — which is why both bars were pinned to a single appearance and the
+date strip went through a band, no band, and unpinned before this existed.
+
+`ScrollEdgeObserver` (`lib/core/design/scroll_edge.dart`) reduces the page's
+scroll offset to one bit and publishes it two ways: `ScrollEdgeScope` for the
+Flutter-drawn bars, and the Pigeon call `setScrollEdge(bool)` for the native
+ones, where Swift switches between `configureWithTransparentBackground()` and
+`configureWithDefaultBackground()`. The bit is deduped at both ends — it crosses
+a platform channel, and one message per scroll frame would be the most expensive
+thing in the app.
+
+---
+
+### Superseded: glass on content (the 2026-08-12 reversal)
+
+This section used to read: *"Nothing in this list is wrapped in glass. Per Apple's
+guidance and the explicit requirement: glass belongs to the functional navigation
+layer. Content sits under the glass and stays legible; it does not become glass. The
+existing app already has 171 Cards — if those became glass the design would collapse
+into soup."*
+
+**That rule no longer holds.** The owner asked for the whole app to read as glass,
+was shown this paragraph and the trade-off it describes, and chose the wider scope
+anyway. It is their call, and the reversal is recorded here rather than left as a
+silent contradiction between the doc and the code.
+
+What changed in the design so the "soup" risk is actually managed, rather than
+ignored:
+
+1. **One material, one file.** `lib/core/ios/glass.dart` is the only place blur,
+   saturation, tint and rim highlight are expressed. Every card, list group, sheet
+   and Cupertino-tier bar calls `GlassSurface`. There is no second recipe anywhere.
+2. **The tint is the theme's own `surface`, at an alpha.** Not a grey film. This is
+   what keeps nine themes looking like themselves, and it makes legibility provable:
+   the composite of `surface` over `scaffoldBackground` has a luminance between the
+   two, and `theme_contrast_test.dart` already pins `onSurface` at ≥ 4.5:1 against
+   both — so it clears the bar against everything in between. That test now runs for
+   every theme × every glass level, plus the coloured page wash.
+3. **The user can turn it down or off.** Settings → Appearance → Glass Effect
+   (Off / Subtle / Full). Reduce Transparency forces Off regardless, and drives the
+   native bars opaque through `setChromeStyle` too, so chrome and content never
+   disagree.
+4. **Small tinted things stay opaque**: macro chips, icon badges, progress tracks,
+   colour swatches, calendar day dots, chart surfaces. Those are where "everything is
+   glass" would genuinely become unreadable, and they are listed as out of scope in
+   the plan rather than left to taste.
+5. **One `BackdropGroup` per route**, via `GlassLayer`. Every surface uses
+   `BackdropFilter.grouped`, so the engine reads the backdrop once per screen instead
+   of once per card.
+
+The one rule from this section that did **not** change: this is all still Flutter
+painting an imitation. §10's "ask for the material, never draw it" continues to bind
+the Swift layer absolutely — the hand-tuned numbers live in Dart, where there is no
+system material to ask for, and they must never migrate into `ios/Runner/`.
+`shell_guardrail_test.dart` now enforces that rather than merely claiming to.
 
 ---
 

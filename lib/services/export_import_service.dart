@@ -121,7 +121,8 @@ class ExportImportService {
         // high-water mark and the next launch resurrects every catalog food
         // the user deleted.
         'introducedFoodIds': _database.introducedFoodIds.toList()..sort(),
-        'introducedExerciseIds': _database.introducedExerciseIds.toList()..sort(),
+        'introducedExerciseIds': _database.introducedExerciseIds.toList()
+          ..sort(),
         'meals': meals.map((m) => m.toJson()).toList(),
         'mealItems': mealItems.map((mi) => mi.toJson()).toList(),
         // Added in 1.1.0 -- meal templates were previously missing from the
@@ -130,7 +131,8 @@ class ExportImportService {
         'mealTemplateItems': mealTemplateItems.map((i) => i.toJson()).toList(),
         'exercises': exercises.map((e) => e.toJson()).toList(),
         'workoutTemplates': templates.map((t) => t.toJson()).toList(),
-        'templateExercises': templateExercises.map((te) => te.toJson()).toList(),
+        'templateExercises':
+            templateExercises.map((te) => te.toJson()).toList(),
         'workoutSessions': sessions.map((s) => s.toJson()).toList(),
         'setEntries': setEntries.map((se) => se.toJson()).toList(),
         'sleepEntries': sleepEntries.map((se) => se.toJson()).toList(),
@@ -157,9 +159,10 @@ class ExportImportService {
   Future<File> exportToFile() async {
     final jsonData = await exportToJson();
     final directory = await getApplicationDocumentsDirectory();
-    final fileName = 'wellness_export_${DateTime.now().millisecondsSinceEpoch}.json';
+    final fileName =
+        'wellness_export_${DateTime.now().millisecondsSinceEpoch}.json';
     final file = File(path.join(directory.path, fileName));
-    
+
     await file.writeAsString(jsonData);
     return file;
   }
@@ -182,10 +185,13 @@ class ExportImportService {
     final meals = read('meals', MealData.fromJson);
     final mealItems = read('mealItems', MealItemData.fromJson);
     final mealTemplates = read('mealTemplates', MealTemplateData.fromJson);
-    final mealTemplateItems = read('mealTemplateItems', MealTemplateItemData.fromJson);
+    final mealTemplateItems =
+        read('mealTemplateItems', MealTemplateItemData.fromJson);
     final exercises = read('exercises', ExerciseData.fromJson);
-    final workoutTemplates = read('workoutTemplates', WorkoutTemplateData.fromJson);
-    final templateExercises = read('templateExercises', TemplateExerciseData.fromJson);
+    final workoutTemplates =
+        read('workoutTemplates', WorkoutTemplateData.fromJson);
+    final templateExercises =
+        read('templateExercises', TemplateExerciseData.fromJson);
     final sessions = read('workoutSessions', WorkoutSessionData.fromJson);
     final setEntries = read('setEntries', SetEntryData.fromJson);
     final sleepEntries = read('sleepEntries', SleepEntryData.fromJson);

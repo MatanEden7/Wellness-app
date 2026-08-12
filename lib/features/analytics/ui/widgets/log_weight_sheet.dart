@@ -4,6 +4,7 @@ import '../../../../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../../core/ios/glass.dart';
 import '../../data/body_weight_repository.dart';
 
 /// Quick weigh-in entry.
@@ -20,15 +21,18 @@ Future<void> showLogWeightSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      child: _LogWeightForm(
-        initialKg: latest?.kg,
-        onSubmit: (kg) => repository.log(kg),
+    backgroundColor: Colors.transparent,
+    builder: (context) => GlassSheet(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: _LogWeightForm(
+          initialKg: latest?.kg,
+          onSubmit: (kg) => repository.log(kg),
+        ),
       ),
     ),
   );
@@ -104,7 +108,11 @@ class _LogWeightFormState extends State<_LogWeightForm> {
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
-          child: FilledButton(onPressed: _submit, child: Text(l10n.save)),
+          child: GlassButton(
+            prominent: true,
+            onPressed: _submit,
+            child: Text(l10n.save),
+          ),
         ),
         const SizedBox(height: 8),
       ],

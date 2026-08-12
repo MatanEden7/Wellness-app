@@ -16,6 +16,7 @@ export 'generated/chrome.g.dart'
         AnchorRect,
         DatePickerSpec,
         CapabilitiesSpec,
+        CapabilitiesApi,
         ChromeFlutterApi;
 
 /// Resolves to `true` when the native chrome bridge is available (iOS ≥ 15).

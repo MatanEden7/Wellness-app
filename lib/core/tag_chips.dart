@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'ios/glass.dart';
+import 'design/tokens.dart';
+
 /// A labelled wrap of filter chips for editing a `Set<T>` of enum tags.
 ///
 /// Used by the food and exercise editors so user-created content can be
@@ -48,10 +51,17 @@ class TagChips<T> extends StatelessWidget {
           runSpacing: 4,
           children: [
             for (final option in options)
-              FilterChip(
-                label: Text(labelOf(option)),
-                selected: selected.contains(option),
-                onSelected: (isSelected) {
+              // A glass pill rather than a Material `FilterChip`: the chip
+              // brings its own opaque surface and its own selected colour,
+              // neither of which can be made translucent from the outside.
+              GlassButton(
+                prominent: selected.contains(option),
+                minHeight: Sizes.control,
+                borderRadius: BorderRadius.circular(17),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                onPressed: () {
+                  final isSelected = !selected.contains(option);
                   final next = Set<T>.from(selected);
                   if (isSelected) {
                     next.add(option);
@@ -60,6 +70,15 @@ class TagChips<T> extends StatelessWidget {
                   }
                   onChanged(next);
                 },
+                child: Text(
+                  labelOf(option),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: selected.contains(option)
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onSurface,
+                  ),
+                ),
               ),
           ],
         ),

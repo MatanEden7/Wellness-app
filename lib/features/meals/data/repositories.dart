@@ -47,7 +47,8 @@ final dayTotalsStreamProvider =
   return ref.read(mealsRepositoryProvider).watchDayTotals(date);
 });
 
-final allMealTemplatesStreamProvider = Provider<Stream<List<MealTemplate>>>((ref) {
+final allMealTemplatesStreamProvider =
+    Provider<Stream<List<MealTemplate>>>((ref) {
   return ref.read(mealsRepositoryProvider).watchAllMealTemplates();
 });
 
@@ -202,7 +203,7 @@ class MealsRepository {
       for (final item in existingItems) {
         await _database.deleteMealItem(item.id);
       }
-      
+
       for (final item in meal.items) {
         await _database.insertMealItem(_mealItemModelToData(item));
       }
@@ -261,7 +262,8 @@ class MealsRepository {
       final templates = await _database.getAllMealTemplates();
       final List<MealTemplate> result = [];
       for (final template in templates) {
-        final items = await _database.getMealTemplateItemsByTemplateId(template.id);
+        final items =
+            await _database.getMealTemplateItemsByTemplateId(template.id);
         result.add(_mealTemplateDataToModel(template).copyWith(
           items: items.map(_mealTemplateItemDataToModel).toList(),
         ));
@@ -302,18 +304,21 @@ class MealsRepository {
   }
 
   Future<void> updateMealTemplate(MealTemplate template) async {
-    await _database.updateMealTemplate(_mealTemplateModelToData(template.copyWith(
+    await _database
+        .updateMealTemplate(_mealTemplateModelToData(template.copyWith(
       updatedAt: DateTime.now(),
     )));
-    
+
     // Delete existing items and re-insert
-    final existingItems = await _database.getMealTemplateItemsByTemplateId(template.id);
+    final existingItems =
+        await _database.getMealTemplateItemsByTemplateId(template.id);
     for (final item in existingItems) {
       await _database.deleteMealTemplateItem(item.id);
     }
-    
+
     for (final item in template.items) {
-      await _database.insertMealTemplateItem(_mealTemplateItemModelToData(item));
+      await _database
+          .insertMealTemplateItem(_mealTemplateItemModelToData(item));
     }
   }
 

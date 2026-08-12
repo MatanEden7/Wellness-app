@@ -44,7 +44,8 @@ class CalendarScheduleGenerator {
     final mainTemplates = generated.isNotEmpty ? generated : templates;
 
     if (mainTemplates.isEmpty) {
-      debugPrint('[CALENDAR-GEN] No workout templates, skipping workout events');
+      debugPrint(
+          '[CALENDAR-GEN] No workout templates, skipping workout events');
       return const [];
     }
 
@@ -94,8 +95,8 @@ class CalendarScheduleGenerator {
       events.add(ScheduledEvent.create(
         title: template?.name ?? slot.label,
         type: EventType.meal,
-        scheduledAt:
-            DateTime(today.year, today.month, today.day, slot.hour, slot.minute),
+        scheduledAt: DateTime(
+            today.year, today.month, today.day, slot.hour, slot.minute),
         recurrenceType: RecurrenceType.daily,
         templateId: template?.id,
       ));

@@ -17,6 +17,7 @@ import 'sections/sleep_section.dart';
 import 'sections/strength_section.dart';
 import 'sections/training_section.dart';
 import 'widgets/analytics_card.dart';
+import '../../../core/design/tokens.dart';
 
 /// The analytics screen.
 ///
@@ -41,7 +42,7 @@ class AnalyticsPage extends ConsumerWidget {
         pinnedHeader: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: UIConstants.screenHorizontalPadding,
-            vertical: 8,
+            vertical: Space.sm,
           ),
           child: AppSegmented<AnalyticsRange>(
             value: range,
@@ -54,34 +55,34 @@ class AnalyticsPage extends ConsumerWidget {
         ),
       ),
       slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                UIConstants.screenHorizontalPadding,
-                UIConstants.cardSpacing,
-                UIConstants.screenHorizontalPadding,
-                UIConstants.sectionSpacing,
-              ),
-              sliver: viewAsync.when(
-                data: (view) => _Sections(view: view),
-                // Keeps the last good view on screen while a recomputation
-                // runs, rather than flashing a spinner every time a set is
-                // logged in another tab.
-                loading: () => viewAsync.hasValue
-                    ? _Sections(view: viewAsync.value!)
-                    : const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 80),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                      ),
-                error: (error, _) => SliverToBoxAdapter(
-                  child: CardEmptyState(
-                    icon: Icons.error_outline,
-                    message: l10n.analyticsLoadError('$error'),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            UIConstants.screenHorizontalPadding,
+            UIConstants.cardSpacing,
+            UIConstants.screenHorizontalPadding,
+            UIConstants.sectionSpacing,
+          ),
+          sliver: viewAsync.when(
+            data: (view) => _Sections(view: view),
+            // Keeps the last good view on screen while a recomputation
+            // runs, rather than flashing a spinner every time a set is
+            // logged in another tab.
+            loading: () => viewAsync.hasValue
+                ? _Sections(view: viewAsync.value!)
+                : const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 80),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                   ),
-                ),
+            error: (error, _) => SliverToBoxAdapter(
+              child: CardEmptyState(
+                icon: Icons.error_outline,
+                message: l10n.analyticsLoadError('$error'),
               ),
             ),
+          ),
+        ),
       ],
     );
   }

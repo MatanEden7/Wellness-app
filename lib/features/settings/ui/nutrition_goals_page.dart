@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 
 import '../../../services/preferences_service.dart';
+import '../../../core/ios/glass.dart';
 
 class NutritionGoalsPage extends ConsumerStatefulWidget {
   const NutritionGoalsPage({super.key});
@@ -31,8 +32,8 @@ class _NutritionGoalsPageState extends ConsumerState<NutritionGoalsPage> {
         text: prefs.calorieGoal?.toInt().toString() ?? '');
     _proteinCtrl = TextEditingController(
         text: prefs.proteinGoal?.toInt().toString() ?? '');
-    _carbsCtrl = TextEditingController(
-        text: prefs.carbsGoal?.toInt().toString() ?? '');
+    _carbsCtrl =
+        TextEditingController(text: prefs.carbsGoal?.toInt().toString() ?? '');
     _fatCtrl =
         TextEditingController(text: prefs.fatGoal?.toInt().toString() ?? '');
     for (final c in [_calorieCtrl, _proteinCtrl, _carbsCtrl, _fatCtrl]) {
@@ -84,58 +85,59 @@ class _NutritionGoalsPageState extends ConsumerState<NutritionGoalsPage> {
         ],
       ),
       child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Set your daily nutrition targets. Leave a field empty to disable that goal.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
-              ),
-              const SizedBox(height: 24),
-              _GoalField(
-                controller: _calorieCtrl,
-                label: l10n.calorieGoal,
-                suffix: l10n.kcal,
-                min: 800,
-                max: 20000,
-              ),
-              const SizedBox(height: 16),
-              _GoalField(
-                controller: _proteinCtrl,
-                label: l10n.proteinGoal,
-                suffix: l10n.grams,
-                min: 10,
-                max: 600,
-              ),
-              const SizedBox(height: 16),
-              _GoalField(
-                controller: _carbsCtrl,
-                label: l10n.carbsGoal,
-                suffix: l10n.grams,
-                min: 10,
-                max: 600,
-              ),
-              const SizedBox(height: 16),
-              _GoalField(
-                controller: _fatCtrl,
-                label: l10n.fatGoal,
-                suffix: l10n.grams,
-                min: 10,
-                max: 600,
-              ),
-              const SizedBox(height: 32),
-              FilledButton(
-                onPressed: _dirty ? _save : null,
-                child: Text(l10n.save),
-              ),
-            ],
-          ),
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Set your daily nutrition targets. Leave a field empty to disable that goal.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+            ),
+            const SizedBox(height: 24),
+            _GoalField(
+              controller: _calorieCtrl,
+              label: l10n.calorieGoal,
+              suffix: l10n.kcal,
+              min: 800,
+              max: 20000,
+            ),
+            const SizedBox(height: 16),
+            _GoalField(
+              controller: _proteinCtrl,
+              label: l10n.proteinGoal,
+              suffix: l10n.grams,
+              min: 10,
+              max: 600,
+            ),
+            const SizedBox(height: 16),
+            _GoalField(
+              controller: _carbsCtrl,
+              label: l10n.carbsGoal,
+              suffix: l10n.grams,
+              min: 10,
+              max: 600,
+            ),
+            const SizedBox(height: 16),
+            _GoalField(
+              controller: _fatCtrl,
+              label: l10n.fatGoal,
+              suffix: l10n.grams,
+              min: 10,
+              max: 600,
+            ),
+            const SizedBox(height: 32),
+            GlassButton(
+              prominent: true,
+              onPressed: _dirty ? _save : null,
+              child: Text(l10n.save),
+            ),
+          ],
+        ),
       ),
     );
   }

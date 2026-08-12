@@ -13,8 +13,12 @@ import '../../../services/content_regeneration_service.dart';
 import '../../../services/profile_fit.dart';
 import '../../../data/db/drift_database.dart';
 import '../../calendar/data/calendar_service.dart';
+import '../../../core/ios/glass.dart';
+import '../../../core/widgets.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
+import '../../../core/design/surfaces.dart';
+import '../../../core/design/tokens.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -80,11 +84,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           'template(s). Anything you created or edited yourself is kept.',
         ),
         actions: [
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Keep as is'),
           ),
-          TextButton(
+          GlassButton(
+            minHeight: Sizes.control,
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(
+                horizontal: Space.md, vertical: Space.sm),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Rebuild'),
           ),
@@ -530,11 +542,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.person_outline, size: 64, color: Colors.grey),
+                  const Icon(Icons.person_outline,
+                      size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
                   const Text('Profile setup not completed'),
                   const SizedBox(height: 24),
-                  FilledButton(
+                  GlassButton(
+                    prominent: true,
                     onPressed: () => context.go('/onboarding'),
                     child: const Text('Complete Setup'),
                   ),
@@ -553,262 +567,260 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         // slot, since PageChrome actions are typed data, not widgets.
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header card
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.15),
-                      child: Icon(Icons.person,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.primary),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header card
+          AppCard(
+            borderRadius: BorderRadius.circular(16),
+            padding: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(Space.xl),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.15),
+                    child: Icon(Icons.person,
+                        size: 32, color: Theme.of(context).colorScheme.primary),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${p.weightKg.toStringAsFixed(1)} kg  ·  ${p.heightCm} cm',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_goalLabel(p.goal)}  ·  ${p.ageYears} yr',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${p.weightKg.toStringAsFixed(1)} kg  ·  ${p.heightCm} cm',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${_goalLabel(p.goal)}  ·  ${p.ageYears} yr',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.6),
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 24),
 
-            // Body
-            SettingsSection(
-              title: 'Body',
-              children: [
-                SettingsRow(
-                  icon: Icons.wc,
-                  iconColor: Colors.blue,
-                  title: 'Sex',
-                  value: p.sex == 'male' ? 'Male' : 'Female',
-                  onTap: _editSex,
-                ),
-                SettingsRow(
-                  icon: Icons.cake,
-                  iconColor: Colors.orange,
-                  title: 'Age',
-                  value: '${p.ageYears} yr',
-                  onTap: _editAge,
-                ),
-                SettingsRow(
-                  icon: Icons.height,
-                  iconColor: Colors.teal,
-                  title: 'Height',
-                  value: '${p.heightCm} cm',
-                  onTap: _editHeight,
-                ),
-                SettingsRow(
-                  icon: Icons.monitor_weight,
-                  iconColor: Colors.green,
-                  title: 'Weight',
-                  value: '${p.weightKg.toStringAsFixed(1)} kg',
-                  onTap: _editWeight,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // Body
+          SettingsSection(
+            title: 'Body',
+            children: [
+              SettingsRow(
+                icon: Icons.wc,
+                iconColor: Colors.blue,
+                title: 'Sex',
+                value: p.sex == 'male' ? 'Male' : 'Female',
+                onTap: _editSex,
+              ),
+              SettingsRow(
+                icon: Icons.cake,
+                iconColor: Colors.orange,
+                title: 'Age',
+                value: '${p.ageYears} yr',
+                onTap: _editAge,
+              ),
+              SettingsRow(
+                icon: Icons.height,
+                iconColor: Colors.teal,
+                title: 'Height',
+                value: '${p.heightCm} cm',
+                onTap: _editHeight,
+              ),
+              SettingsRow(
+                icon: Icons.monitor_weight,
+                iconColor: Colors.green,
+                title: 'Weight',
+                value: '${p.weightKg.toStringAsFixed(1)} kg',
+                onTap: _editWeight,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // Goal & Activity
-            SettingsSection(
-              title: 'Goal & Activity',
-              children: [
-                SettingsRow(
-                  icon: Icons.flag,
-                  iconColor: Colors.red,
-                  title: 'Goal',
-                  value: _goalLabel(p.goal),
-                  onTap: _editGoal,
-                ),
-                SettingsRow(
-                  icon: Icons.directions_run,
-                  iconColor: Colors.deepOrange,
-                  title: 'Activity Level',
-                  value: _activityLabel(p.activityLevel),
-                  onTap: _editActivityLevel,
-                ),
-                SettingsRow(
-                  icon: Icons.event_repeat,
-                  iconColor: Colors.purple,
-                  title: 'Training Days / Week',
-                  value: '${p.trainingDaysPerWeek}',
-                  onTap: _editTrainingDays,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // Goal & Activity
+          SettingsSection(
+            title: 'Goal & Activity',
+            children: [
+              SettingsRow(
+                icon: Icons.flag,
+                iconColor: Colors.red,
+                title: 'Goal',
+                value: _goalLabel(p.goal),
+                onTap: _editGoal,
+              ),
+              SettingsRow(
+                icon: Icons.directions_run,
+                iconColor: Colors.deepOrange,
+                title: 'Activity Level',
+                value: _activityLabel(p.activityLevel),
+                onTap: _editActivityLevel,
+              ),
+              SettingsRow(
+                icon: Icons.event_repeat,
+                iconColor: Colors.purple,
+                title: 'Training Days / Week',
+                value: '${p.trainingDaysPerWeek}',
+                onTap: _editTrainingDays,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // Nutrition Targets
-            SettingsSection(
-              title: 'Nutrition Targets',
-              children: [
-                SettingsRow(
-                  icon: Icons.local_fire_department,
-                  iconColor: Colors.orange,
-                  title: 'Calories',
-                  value: '${p.calorieTarget.toInt()} kcal',
-                  onTap: _editCalorieTarget,
-                ),
-                SettingsRow(
-                  icon: Icons.egg_alt,
-                  iconColor: Colors.red,
-                  title: 'Protein',
-                  value: '${p.proteinTargetG.toInt()} g',
-                  onTap: _editProteinTarget,
-                ),
-                SettingsRow(
-                  icon: Icons.grain,
-                  iconColor: Colors.amber,
-                  title: 'Carbs',
-                  value: '${p.carbsTargetG.toInt()} g',
-                  onTap: _editCarbsTarget,
-                ),
-                SettingsRow(
-                  icon: Icons.water_drop,
-                  iconColor: Colors.lightBlue,
-                  title: 'Fat',
-                  value: '${p.fatTargetG.toInt()} g',
-                  onTap: _editFatTarget,
-                ),
-                SettingsRow(
-                  icon: Icons.bolt,
-                  iconColor: Colors.indigo,
-                  title: 'BMR',
-                  value: '${p.bmr.toInt()} kcal',
-                  showChevron: false,
-                ),
-                SettingsRow(
-                  icon: Icons.bar_chart,
-                  iconColor: Colors.teal,
-                  title: 'TDEE',
-                  value: '${p.tdee.toInt()} kcal',
-                  showChevron: false,
-                ),
-                ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                  leading: Container(
+          // Nutrition Targets
+          SettingsSection(
+            title: 'Nutrition Targets',
+            children: [
+              SettingsRow(
+                icon: Icons.local_fire_department,
+                iconColor: Colors.orange,
+                title: 'Calories',
+                value: '${p.calorieTarget.toInt()} kcal',
+                onTap: _editCalorieTarget,
+              ),
+              SettingsRow(
+                icon: Icons.egg_alt,
+                iconColor: Colors.red,
+                title: 'Protein',
+                value: '${p.proteinTargetG.toInt()} g',
+                onTap: _editProteinTarget,
+              ),
+              SettingsRow(
+                icon: Icons.grain,
+                iconColor: Colors.amber,
+                title: 'Carbs',
+                value: '${p.carbsTargetG.toInt()} g',
+                onTap: _editCarbsTarget,
+              ),
+              SettingsRow(
+                icon: Icons.water_drop,
+                iconColor: Colors.lightBlue,
+                title: 'Fat',
+                value: '${p.fatTargetG.toInt()} g',
+                onTap: _editFatTarget,
+              ),
+              SettingsRow(
+                icon: Icons.bolt,
+                iconColor: Colors.indigo,
+                title: 'BMR',
+                value: '${p.bmr.toInt()} kcal',
+                showChevron: false,
+              ),
+              SettingsRow(
+                icon: Icons.bar_chart,
+                iconColor: Colors.teal,
+                title: 'TDEE',
+                value: '${p.tdee.toInt()} kcal',
+                showChevron: false,
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: Space.lg, vertical: Space.xxs),
+                leading: ContentSurface.tinted(
+                  color: Colors.green.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
                     width: 34,
                     height: 34,
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.refresh, color: Colors.green, size: 19),
+                    child: const Icon(Icons.refresh,
+                        color: Colors.green, size: 19),
                   ),
-                  title: const Text('Recalculate from Body & Goal'),
-                  onTap: () => _recomputeAndSave(p),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
+                title: const Text('Recalculate from Body & Goal'),
+                onTap: () => _recomputeAndSave(p),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // Food & Diet
-            SettingsSection(
-              title: 'Food & Diet',
-              children: [
-                SettingsRow(
-                  icon: Icons.restaurant,
-                  iconColor: Colors.deepOrange,
-                  title: 'Diet Type',
-                  value: p.dietType == 'herbivore'
-                      ? 'Plant-based'
-                      : p.dietType[0].toUpperCase() + p.dietType.substring(1),
-                  onTap: _editDietType,
-                ),
-                SettingsRow(
-                  icon: Icons.dining,
-                  iconColor: Colors.brown,
-                  title: 'Meals per Day',
-                  value: _mealsLabel(p.mealCountPerDay),
-                  onTap: _editMealsPerDay,
-                ),
-                SettingsRow(
-                  icon: Icons.no_food,
-                  iconColor: Colors.red,
-                  title: 'Food Exclusions',
-                  value: _listLabel(p.exclusions),
-                  onTap: _editExclusions,
-                ),
-                SettingsRow(
-                  icon: Icons.healing,
-                  iconColor: Colors.pink,
-                  title: 'Injuries',
-                  value: _listLabel(p.injuries),
-                  onTap: _editInjuries,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // Food & Diet
+          SettingsSection(
+            title: 'Food & Diet',
+            children: [
+              SettingsRow(
+                icon: Icons.restaurant,
+                iconColor: Colors.deepOrange,
+                title: 'Diet Type',
+                value: p.dietType == 'herbivore'
+                    ? 'Plant-based'
+                    : p.dietType[0].toUpperCase() + p.dietType.substring(1),
+                onTap: _editDietType,
+              ),
+              SettingsRow(
+                icon: Icons.dining,
+                iconColor: Colors.brown,
+                title: 'Meals per Day',
+                value: _mealsLabel(p.mealCountPerDay),
+                onTap: _editMealsPerDay,
+              ),
+              SettingsRow(
+                icon: Icons.no_food,
+                iconColor: Colors.red,
+                title: 'Food Exclusions',
+                value: _listLabel(p.exclusions),
+                onTap: _editExclusions,
+              ),
+              SettingsRow(
+                icon: Icons.healing,
+                iconColor: Colors.pink,
+                title: 'Injuries',
+                value: _listLabel(p.injuries),
+                onTap: _editInjuries,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // Equipment
-            SettingsSection(
-              title: 'Equipment',
-              children: [
-                SettingsRow(
-                  icon: Icons.fitness_center,
-                  iconColor: Colors.blueGrey,
-                  title: 'Available Equipment',
-                  value: _listLabel(p.equipment),
-                  onTap: _editEquipment,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+          // Equipment
+          SettingsSection(
+            title: 'Equipment',
+            children: [
+              SettingsRow(
+                icon: Icons.fitness_center,
+                iconColor: Colors.blueGrey,
+                title: 'Available Equipment',
+                value: _listLabel(p.equipment),
+                onTap: _editEquipment,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // Units
-            SettingsSection(
-              title: 'Units',
-              children: [
-                SettingsRow(
-                  icon: Icons.flash_on,
-                  iconColor: Colors.yellow.shade700,
-                  title: 'Energy Unit',
-                  value: p.energyUnit.toUpperCase(),
-                  onTap: _editEnergyUnit,
-                ),
-                SettingsRow(
-                  icon: Icons.scale,
-                  iconColor: Colors.indigo,
-                  title: 'Weight Unit',
-                  value: p.weightUnit,
-                  onTap: _editWeightUnit,
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-          ],
+          // Units
+          SettingsSection(
+            title: 'Units',
+            children: [
+              SettingsRow(
+                icon: Icons.flash_on,
+                iconColor: Colors.yellow.shade700,
+                title: 'Energy Unit',
+                value: p.energyUnit.toUpperCase(),
+                onTap: _editEnergyUnit,
+              ),
+              SettingsRow(
+                icon: Icons.scale,
+                iconColor: Colors.indigo,
+                title: 'Weight Unit',
+                value: p.weightUnit,
+                onTap: _editWeightUnit,
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
@@ -847,8 +859,7 @@ class _PickerPage extends StatelessWidget {
                 width: 20,
                 child: opt.value == current
                     ? Icon(CupertinoIcons.check_mark,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.primary)
+                        size: 18, color: Theme.of(context).colorScheme.primary)
                     : null,
               ),
             ),
@@ -924,8 +935,7 @@ class _MultiPickerPageState extends State<_MultiPickerPage> {
                 width: 20,
                 child: _selected.contains(opt.value)
                     ? Icon(CupertinoIcons.check_mark,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.primary)
+                        size: 18, color: Theme.of(context).colorScheme.primary)
                     : null,
               ),
             ),
@@ -984,8 +994,7 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
       return;
     }
     if (d < widget.min || d > widget.max) {
-      setState(
-          () => _error = '${widget.min.toInt()}–${widget.max.toInt()}');
+      setState(() => _error = '${widget.min.toInt()}–${widget.max.toInt()}');
       return;
     }
     final result = widget.integer ? d.round() as T : d as T;
@@ -998,41 +1007,41 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
       chrome: PageChrome(
         title: widget.title,
         actions: [
-          ChromeAction(label: 'Save', tooltip: 'Save', isProminent: true, onPressed: _submit),
+          ChromeAction(
+              label: 'Save',
+              tooltip: 'Save',
+              isProminent: true,
+              onPressed: _submit),
         ],
       ),
       child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _ctrl,
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true),
-                inputFormatters: widget.integer
-                    ? [FilteringTextInputFormatter.digitsOnly]
-                    : [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9.]'))
-                      ],
-                autofocus: true,
-                decoration: InputDecoration(
-                  suffixText: widget.suffix,
-                  border: const OutlineInputBorder(),
-                  errorText: _error,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _ctrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: widget.integer
+                ? [FilteringTextInputFormatter.digitsOnly]
+                : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+            autofocus: true,
+            decoration: InputDecoration(
+              suffixText: widget.suffix,
+              border: const OutlineInputBorder(),
+              errorText: _error,
+            ),
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${widget.min.toInt()}–${widget.max.toInt()} ${widget.suffix}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
                 ),
-                onSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${widget.min.toInt()}–${widget.max.toInt()} ${widget.suffix}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.5),
-                    ),
-              ),
-            ],
+          ),
+        ],
       ),
     );
   }

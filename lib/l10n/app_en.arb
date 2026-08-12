@@ -1344,5 +1344,25 @@
       }
     }
   },
-  "nightlyAverage": "nightly average"
+  "nightlyAverage": "nightly average",
+  "glassEffect": "Glass Effect",
+  "@glassEffect": {
+    "description": "Settings row: how translucent the app's surfaces are"
+  },
+  "glassOff": "Off",
+  "@glassOff": {
+    "description": "Glass level: solid surfaces"
+  },
+  "glassSubtle": "Subtle",
+  "@glassSubtle": {
+    "description": "Glass level: light translucency"
+  },
+  "glassFull": "Full",
+  "@glassFull": {
+    "description": "Glass level: the full Liquid Glass material"
+  },
+  "glassEffectReducedByAccessibility": "Off — Reduce Transparency is on",
+  "@glassEffectReducedByAccessibility": {
+    "description": "Shown instead of the glass level when iOS Reduce Transparency forces it off"
+  }
 }
