@@ -16,6 +16,8 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
+import '../../../core/ios/pickers.dart';
 
 class MealEditorPage extends HookConsumerWidget {
   final String? mealId;
@@ -339,11 +341,11 @@ class MealEditorPage extends HookConsumerWidget {
 
   Future<void> _selectDate(
       BuildContext context, ValueNotifier<DateTime> selectedDate) async {
-    final date = await showDatePicker(
+    final date = await showAppDatePicker(
       context: context,
-      initialDate: selectedDate.value,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
+      initial: selectedDate.value,
+      first: DateTime.now().subtract(const Duration(days: 365)),
+      last: DateTime.now().add(const Duration(days: 1)),
     );
     if (date != null) {
       selectedDate.value = date;
@@ -352,9 +354,9 @@ class MealEditorPage extends HookConsumerWidget {
 
   Future<void> _selectTime(
       BuildContext context, ValueNotifier<TimeOfDay?> selectedTime) async {
-    final time = await showTimePicker(
+    final time = await showAppTimePicker(
       context: context,
-      initialTime: selectedTime.value ?? TimeOfDay.now(),
+      initial: selectedTime.value ?? TimeOfDay.now(),
     );
     if (time != null) {
       selectedTime.value = time;
@@ -375,9 +377,7 @@ class MealEditorPage extends HookConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     if (name.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseEnterMealName)),
-      );
+      showAppError(context, l10n.pleaseEnterMealName);
       return;
     }
 
@@ -435,9 +435,7 @@ class MealEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving meal: $e')),
-        );
+        showAppError(context, 'Error saving meal: $e');
       }
     } finally {
       isLoading.value = false;

@@ -24,6 +24,7 @@ import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 /// Which half of the catalog is showing.
 enum _CatalogScope { user, starter }
@@ -636,9 +637,7 @@ class FoodEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving food: $e')),
-        );
+        showAppError(context, 'Error saving food: $e');
       }
     } finally {
       isLoading.value = false;

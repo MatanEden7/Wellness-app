@@ -17,6 +17,8 @@ import '../data/calendar_service.dart';
 import '../../../data/db/drift_database.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
+import '../../../core/ios/pickers.dart';
 
 /// The weekdays a weekly event should repeat on.
 ///
@@ -326,9 +328,7 @@ class EventSchedulingDialog extends HookConsumerWidget {
                       prominent: true,
                       onPressed: () async {
                         if (titleController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.titleRequired)),
-                          );
+                          showAppError(context, l10n.titleRequired);
                           return;
                         }
 
@@ -761,11 +761,11 @@ class _DatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        final picked = await showDatePicker(
+        final picked = await showAppDatePicker(
           context: context,
-          initialDate: date,
-          firstDate: DateTime.now().subtract(const Duration(days: 365)),
-          lastDate: DateTime.now().add(const Duration(days: 365)),
+          initial: date,
+          first: DateTime.now().subtract(const Duration(days: 365)),
+          last: DateTime.now().add(const Duration(days: 365)),
         );
         if (picked != null) {
           onDateSelected(picked);
@@ -810,9 +810,9 @@ class _TimePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        final picked = await showTimePicker(
+        final picked = await showAppTimePicker(
           context: context,
-          initialTime: time,
+          initial: time,
         );
         if (picked != null) {
           onTimeSelected(picked);

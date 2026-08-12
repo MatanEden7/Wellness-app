@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/core/widgets.dart';
 import 'package:wellness_app/features/settings/ui/advanced_color_picker.dart';
 import 'package:wellness_app/features/settings/ui/widgets/settings_row.dart';
+import 'package:flutter/cupertino.dart';
 
 /// Widget-level interaction tests: tap a widget in isolation, assert its
 /// callback fired with the right value. Previously the suite jumped straight
@@ -88,7 +89,7 @@ void main() {
         ),
       ));
 
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(CupertinoSwitch));
       await tester.pump();
 
       expect(newValue, isTrue);

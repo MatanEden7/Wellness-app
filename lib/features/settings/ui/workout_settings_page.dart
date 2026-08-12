@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -132,7 +133,7 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                         ],
                       ),
                     ),
-                    Switch(
+                    CupertinoSwitch(
                       value: soundEnabled.value,
                       onChanged: (value) {
                         soundEnabled.value = value;

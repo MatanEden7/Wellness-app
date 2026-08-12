@@ -15,6 +15,8 @@ import '../../../services/language_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../core/ios/feedback.dart';
+import '../../../core/ios/pickers.dart';
 
 /// Saved meal templates. Structurally identical to the workout templates
 /// screen -- same rows, same primary button, same actions.
@@ -99,11 +101,11 @@ class MealTemplatesPage extends ConsumerWidget {
       BuildContext context, WidgetRef ref, MealTemplate template) async {
     final l10n = AppLocalizations.of(context)!;
 
-    final selectedDate = await showDatePicker(
+    final selectedDate = await showAppDatePicker(
       context: context,
-      initialDate: AppDateUtils.today,
-      firstDate: DateTime(2020),
-      lastDate: AppDateUtils.today.add(const Duration(days: 365)),
+      initial: AppDateUtils.today,
+      first: DateTime(2020),
+      last: AppDateUtils.today.add(const Duration(days: 365)),
     );
 
     if (selectedDate == null) return;
@@ -139,16 +141,12 @@ class MealTemplatesPage extends ConsumerWidget {
       ref.invalidate(mealsRepositoryProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.mealCreatedFromTemplate)),
-        );
+        showAppSuccess(context, l10n.mealCreatedFromTemplate);
         context.pop();
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
-        );
+        showAppError(context, '${l10n.error}: $e');
       }
     }
   }

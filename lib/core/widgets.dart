@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,6 +8,7 @@ import 'utils.dart';
 import '../services/preferences_service.dart';
 import '../core/design/surfaces.dart';
 import 'design/tokens.dart';
+import 'ios/pressable.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -41,10 +43,10 @@ class AppButton extends StatelessWidget {
         ? SizedBox(
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(spinnerColor),
-            ),
+            // The Material spinner is a sweeping arc; iOS's is the spoked
+            // wheel. On a button label it is small enough to miss and loud
+            // enough to place the app on the wrong platform.
+            child: CupertinoActivityIndicator(radius: 8, color: spinnerColor),
           )
         : (icon != null ? Icon(icon, size: 18) : null);
 
@@ -97,17 +99,14 @@ class AppCard extends StatelessWidget {
       child: ContentSurface(
         borderRadius: radius,
         color: cardTheme.color,
-        child: Material(
-          // Transparent: the glass underneath is the surface. A Material with
-          // a colour here would paint over it and the blur would be invisible.
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: radius,
-            child: Padding(
-              padding: padding ?? const EdgeInsets.all(AppSpacing.md),
-              child: child,
-            ),
+        // No `Material` wrapper any more: it existed only to give the ink
+        // ripple a surface to paint on, and there is no ripple now.
+        child: Pressable(
+          onTap: onTap,
+          borderRadius: radius,
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+            child: child,
           ),
         ),
       ),
@@ -287,7 +286,7 @@ class LoadingIndicator extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
+          const CupertinoActivityIndicator(radius: 14),
           if (message != null) ...[
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -1056,64 +1055,62 @@ class IconRowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+    return Pressable(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: ContentSurface.tinted(
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        child: ContentSurface.tinted(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: Space.md),
-            child: Row(
-              children: [
-                ContentSurface.tinted(
-                  color: color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    child: Icon(icon, color: color, size: 24),
-                  ),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: Space.md),
+          child: Row(
+            children: [
+              ContentSurface.tinted(
+                color: color.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    if (subtitle != null)
                       Text(
-                        label,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
+                        subtitle!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                       ),
-                      if (subtitle != null)
-                        Text(
-                          subtitle!,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.6),
-                                  ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.35),
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                // The iOS disclosure chevron, not Material's heavier one.
+                CupertinoIcons.chevron_forward,
+                size: 16,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.35),
+              ),
+            ],
           ),
         ),
       ),

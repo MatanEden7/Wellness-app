@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -18,6 +19,7 @@ import '../../../data/db/drift_database.dart';
 import '../../../features/calendar/data/calendar_service.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 class OnboardingPage extends HookConsumerWidget {
   const OnboardingPage({super.key});
@@ -155,9 +157,7 @@ class OnboardingPage extends HookConsumerWidget {
         isCompleting.value = false;
         // Show error to user if mounted
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Setup failed: $e')),
-          );
+          showAppError(context, 'Setup failed: $e');
         }
       }
     }
@@ -1494,7 +1494,7 @@ class _SummaryStep extends HookConsumerWidget {
     }, []);
 
     if (!isInitialized.value || profileSnapshot.value == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CupertinoActivityIndicator(radius: 14));
     }
 
     final profile = profileSnapshot.value!;
@@ -1593,17 +1593,18 @@ class _SummaryStep extends HookConsumerWidget {
           // unambiguous "Complete Setup".
           AppCard(
             padding: EdgeInsets.zero,
-            child: SwitchListTile(
-              value: buildFullSchedule.value,
-              onChanged: isCompleting
-                  ? null
-                  : (value) => buildFullSchedule.value = value,
+            child: ListTile(
               title: Text(
                   AppLocalizations.of(context)!.onboardingBuildScheduleTitle),
               subtitle: Text(
                 AppLocalizations.of(context)!.onboardingBuildScheduleSubtitle,
               ),
-              secondary: const Icon(Icons.event_available),
+              leading: const Icon(Icons.event_available),
+              trailing: CupertinoSwitch(
+                  value: buildFullSchedule.value,
+                  onChanged: isCompleting
+                      ? null
+                      : (value) => buildFullSchedule.value = value),
             ),
           ),
 

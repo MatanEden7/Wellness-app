@@ -11,6 +11,8 @@ import 'advanced_color_picker.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/ios/inset_list.dart';
 
 class AppearanceEditorPage extends ConsumerWidget {
   const AppearanceEditorPage({super.key});
@@ -154,14 +156,15 @@ class AppearanceEditorPage extends ConsumerWidget {
           _buildSectionHeader(
               context, 'Nutrition Colors', Icons.local_fire_department),
           const SizedBox(height: 12),
-          SwitchListTile(
-            title: Text(AppLocalizations.of(context)!.followTheme),
-            subtitle: Text(AppLocalizations.of(context)!.followThemeDesc),
-            value: prefs.useThemeColors,
-            onChanged: (value) async {
-              await prefs.setUseThemeColors(value);
-              ref.invalidate(preferencesServiceProvider);
-            },
+          InsetRow(
+            title: AppLocalizations.of(context)!.followTheme,
+            subtitle: AppLocalizations.of(context)!.followThemeDesc,
+            trailing: CupertinoSwitch(
+                value: prefs.useThemeColors,
+                onChanged: (value) async {
+                  await prefs.setUseThemeColors(value);
+                  ref.invalidate(preferencesServiceProvider);
+                }),
           ),
           if (!prefs.useThemeColors) ...[
             const SizedBox(height: 8),
@@ -249,36 +252,15 @@ class AppearanceEditorPage extends ConsumerWidget {
   }
 
   Future<void> _showResetDialog(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showAppConfirm(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.resetAllColors),
-        content: Text(
-          AppLocalizations.of(context)!.resetColorsWarningBody,
-        ),
-        actions: [
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context)!.reset,
-                style: const TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: l10n.resetAllColors,
+      message: l10n.resetColorsWarningBody,
+      confirmLabel: l10n.reset,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       final prefs = ref.read(preferencesServiceProvider);
       await prefs.resetAllCustomColors();
       ref.invalidate(preferencesServiceProvider);

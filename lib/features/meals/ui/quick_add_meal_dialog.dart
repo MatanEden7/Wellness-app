@@ -10,6 +10,7 @@ import '../domain/models.dart';
 import 'meal_editor_page.dart' show FoodSelectorDialog;
 import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 /// Sheet opened from the dashboard "+": name the meal, search/add foods via
 /// the same [FoodSelectorDialog] the full editor uses, and save directly --
@@ -138,9 +139,7 @@ class QuickAddMealDialog extends HookConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     if (name.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseEnterMealName)),
-      );
+      showAppError(context, l10n.pleaseEnterMealName);
       return;
     }
 
@@ -173,9 +172,7 @@ class QuickAddMealDialog extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
-        );
+        showAppError(context, '${l10n.error}: $e');
       }
     } finally {
       isLoading.value = false;

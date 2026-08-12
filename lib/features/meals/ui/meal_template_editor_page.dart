@@ -15,6 +15,7 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 class MealTemplateEditorPage extends HookConsumerWidget {
   final String? templateId;
@@ -176,16 +177,12 @@ class MealTemplateEditorPage extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     if (name.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseEnterTemplateName)),
-      );
+      showAppError(context, l10n.pleaseEnterTemplateName);
       return;
     }
 
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseAddAtLeastOneFood)),
-      );
+      showAppError(context, l10n.pleaseAddAtLeastOneFood);
       return;
     }
 
@@ -255,15 +252,11 @@ class MealTemplateEditorPage extends HookConsumerWidget {
 
       if (context.mounted) {
         context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.mealTemplateSaved)),
-        );
+        showAppBanner(context, l10n.mealTemplateSaved);
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
-        );
+        showAppError(context, '${l10n.error}: $e');
       }
     } finally {
       isLoading.value = false;
@@ -555,10 +548,8 @@ class _TemplateItemDialog extends HookConsumerWidget {
                             final displayAmount =
                                 double.tryParse(amountController.text);
                             if (displayAmount == null || displayAmount <= 0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(l10n.pleaseEnterValidAmount)),
-                              );
+                              showAppError(
+                                  context, l10n.pleaseEnterValidAmount);
                               return;
                             }
 

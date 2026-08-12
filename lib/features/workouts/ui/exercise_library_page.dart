@@ -21,6 +21,7 @@ import '../../../services/profile_fit.dart';
 import '../../meals/ui/food_catalog_page.dart' show MismatchBadge;
 import '../domain/exercise_tags.dart';
 import '../domain/models.dart';
+import '../../../core/ios/feedback.dart';
 
 /// The exercise library -- the workouts counterpart of the food catalog, and
 /// now built the same way: search pinned under the title, a muscle-group
@@ -555,9 +556,7 @@ class ExerciseEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving exercise: $e')),
-        );
+        showAppError(context, 'Error saving exercise: $e');
       }
     } finally {
       isLoading.value = false;

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,8 +29,9 @@ import '../../../routing/routes.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
-import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
+import '../../../core/ios/inset_list.dart';
 
 class SettingsStub extends ConsumerWidget {
   const SettingsStub({super.key});
@@ -225,31 +227,12 @@ class SettingsStub extends ConsumerWidget {
       BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final current = ref.read(preferencesServiceProvider).primaryNutritionMetric;
-    final result = await showDialog<NutritionMetric>(
+    final result = await showAppPicker<NutritionMetric>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.primaryNutritionMetric),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: NutritionMetric.values
-              .map((m) => RadioListTile<NutritionMetric>(
-                    title: Text(_nutritionMetricLabel(l10n, m)),
-                    value: m,
-                    groupValue: current,
-                    onChanged: (v) => Navigator.of(ctx).pop(v),
-                  ))
-              .toList(),
-        ),
-        actions: [
-          GlassButton(
-              minHeight: Sizes.control,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md, vertical: Space.sm),
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l10n.cancel)),
-        ],
-      ),
+      title: l10n.primaryNutritionMetric,
+      options: NutritionMetric.values,
+      current: current,
+      labelOf: (m) => _nutritionMetricLabel(l10n, m),
     );
     if (result != null) {
       await ref
@@ -263,31 +246,12 @@ class SettingsStub extends ConsumerWidget {
       BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final current = ref.read(preferencesServiceProvider).globalTimeframeMode;
-    final result = await showDialog<TimeframeMode>(
+    final result = await showAppPicker<TimeframeMode>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.globalTimeframe),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: TimeframeMode.values
-              .map((m) => RadioListTile<TimeframeMode>(
-                    title: Text(_timeframeModeLabel(l10n, m)),
-                    value: m,
-                    groupValue: current,
-                    onChanged: (v) => Navigator.of(ctx).pop(v),
-                  ))
-              .toList(),
-        ),
-        actions: [
-          GlassButton(
-              minHeight: Sizes.control,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md, vertical: Space.sm),
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l10n.cancel)),
-        ],
-      ),
+      title: l10n.globalTimeframe,
+      options: TimeframeMode.values,
+      current: current,
+      labelOf: (m) => _timeframeModeLabel(l10n, m),
     );
     if (result != null) {
       await ref.read(preferencesServiceProvider).setGlobalTimeframeMode(result);
@@ -299,31 +263,12 @@ class SettingsStub extends ConsumerWidget {
       BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final current = ref.read(preferencesServiceProvider).workoutMetricMode;
-    final result = await showDialog<WorkoutMetricMode>(
+    final result = await showAppPicker<WorkoutMetricMode>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.workoutMetricDisplay),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: WorkoutMetricMode.values
-              .map((m) => RadioListTile<WorkoutMetricMode>(
-                    title: Text(_workoutMetricLabel(l10n, m)),
-                    value: m,
-                    groupValue: current,
-                    onChanged: (v) => Navigator.of(ctx).pop(v),
-                  ))
-              .toList(),
-        ),
-        actions: [
-          GlassButton(
-              minHeight: Sizes.control,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md, vertical: Space.sm),
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l10n.cancel)),
-        ],
-      ),
+      title: l10n.workoutMetricDisplay,
+      options: WorkoutMetricMode.values,
+      current: current,
+      labelOf: (m) => _workoutMetricLabel(l10n, m),
     );
     if (result != null) {
       await ref.read(preferencesServiceProvider).setWorkoutMetricMode(result);
@@ -356,15 +301,11 @@ class SettingsStub extends ConsumerWidget {
         sharePositionOrigin: origin,
       );
       if (context.mounted && result.status == ShareResultStatus.dismissed) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${l10n.exportData}: ${file.path}'),
-          action: SnackBarAction(label: 'OK', onPressed: () {}),
-        ));
+        showAppBanner(context, '${l10n.exportData}: ${file.path}');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('${l10n.exportFailed}: $e')));
+        showAppError(context, '${l10n.exportFailed}: $e');
       }
     }
   }
@@ -439,23 +380,18 @@ class SettingsStub extends ConsumerWidget {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
+        builder: (_) =>
+            const Center(child: CupertinoActivityIndicator(radius: 14)),
       );
       await ref.read(exportImportServiceProvider).importFromJson(json);
       if (context.mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${l10n.importData} successful!'),
-          backgroundColor: Colors.green,
-        ));
+        showAppSuccess(context, '${l10n.importData} successful!');
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Import failed: $e'),
-          backgroundColor: Colors.red,
-        ));
+        showAppError(context, 'Import failed: $e');
       }
     }
   }
@@ -463,47 +399,22 @@ class SettingsStub extends ConsumerWidget {
   Future<void> _showDeleteOldDataDialog(
       BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final days = await showDialog<int>(
+    final days = await showAppPicker<int>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text(l10n.deleteOldData),
-        children: [
-          for (final option in const [90, 180, 365])
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(ctx).pop(option),
-              child: Text(l10n.olderThanNDays(option)),
-            ),
-        ],
-      ),
+      title: l10n.deleteOldData,
+      options: const [90, 180, 365],
+      current: null,
+      labelOf: l10n.olderThanNDays,
     );
     if (days == null || !context.mounted) return;
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteOldData),
-        content: Text(l10n.deleteOldDataConfirmation(days)),
-        actions: [
-          GlassButton(
-              minHeight: Sizes.control,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md, vertical: Space.sm),
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.cancel)),
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.deleteOldData,
-                style: const TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: l10n.deleteOldData,
+      message: l10n.deleteOldDataConfirmation(days),
+      confirmLabel: l10n.deleteOldData,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final cutoff = DateTime.now().subtract(Duration(days: days));
     var removed = await ref.read(databaseProvider).deleteDataOlderThan(cutoff);
@@ -514,40 +425,19 @@ class SettingsStub extends ConsumerWidget {
     ref.invalidate(sleepRepositoryProvider);
     await ref.read(calendarStateProvider.notifier).refresh();
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l10n.deleteOldDataResult(removed)),
-      ));
+      showAppBanner(context, l10n.deleteOldDataResult(removed));
     }
   }
 
   Future<void> _showResetDialog(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.resetAllData),
-        content: Text(l10n.resetDataWarningBody),
-        actions: [
-          GlassButton(
-              minHeight: Sizes.control,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md, vertical: Space.sm),
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.cancel)),
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.resetAllData,
-                style: const TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: l10n.resetAllData,
+      message: l10n.resetDataWarningBody,
+      confirmLabel: l10n.resetAllData,
     );
-    if (confirmed == true && context.mounted) {
+    if (confirmed && context.mounted) {
       // Both halves are required. The database reset also reseeds the starter
       // catalog (a bare clearAllData left the user unable to log anything),
       // and the calendar lives in SharedPreferences, so no database call can
@@ -560,8 +450,7 @@ class SettingsStub extends ConsumerWidget {
           .read(calendarStateProvider.notifier)
           .rescheduleAllNotifications();
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.resetAllDataDone)));
+        showAppSuccess(context, l10n.resetAllDataDone);
       }
     }
   }
@@ -780,33 +669,18 @@ class _CloudBackupTileState extends ConsumerState<_CloudBackupTile> {
       subtitle = l10n.cloudBackupOnSubtitle;
     }
 
-    return SwitchListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: Space.lg, vertical: Space.xxs),
-      secondary: ContentSurface.tinted(
-        color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 34,
-          height: 34,
-          child: Icon(
-            enabled ? Icons.cloud_done : Icons.cloud_off,
-            color: Theme.of(context).colorScheme.tertiary,
-            size: 19,
-          ),
-        ),
+    // An InsetRow, not a ListTile: ListTile resolves its own colours and ink
+    // against the nearest Material ancestor, and inside a glass section there
+    // isn't one -- which is the assertion the settings smoke test was hitting.
+    return InsetRow(
+      icon: enabled ? Icons.cloud_done : Icons.cloud_off,
+      iconColor: Theme.of(context).colorScheme.tertiary,
+      title: l10n.cloudBackup,
+      subtitle: subtitle,
+      trailing: CupertinoSwitch(
+        value: enabled,
+        onChanged: _busy ? null : _onChanged,
       ),
-      title:
-          Text(l10n.cloudBackup, style: Theme.of(context).textTheme.bodyLarge),
-      subtitle: Text(subtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.5),
-              )),
-      value: enabled,
-      onChanged: _busy ? null : _onChanged,
     );
   }
 
@@ -817,13 +691,12 @@ class _CloudBackupTileState extends ConsumerState<_CloudBackupTile> {
       final newPath = await service.setCloudBackupEnabled(value);
       await ref.read(databaseProvider).useSnapshotPath(newPath);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context)!.backupSettingUpdated)));
+        showAppSuccess(
+            context, AppLocalizations.of(context)!.backupSettingUpdated);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('${AppLocalizations.of(context)!.error}: $e')));
+        showAppError(context, '${AppLocalizations.of(context)!.error}: $e');
       }
     } finally {
       if (mounted) setState(() => _busy = false);

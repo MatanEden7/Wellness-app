@@ -23,6 +23,7 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 class WorkoutSessionPage extends HookConsumerWidget {
   final String sessionId;
@@ -308,14 +309,8 @@ class WorkoutSessionPage extends HookConsumerWidget {
     exercises.value = [...exercises.value, prescription.exercise];
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.exerciseAddedToWorkout(prescription.exercise.name),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      showAppBanner(
+          context, l10n.exerciseAddedToWorkout(prescription.exercise.name));
     }
   }
 

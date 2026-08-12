@@ -30,6 +30,7 @@ import '../../sleep/ui/sleep_page.dart' show showAddSleepSheet;
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 /// Keys for the dashboard's navigation affordances.
 ///
@@ -1240,7 +1241,7 @@ class _TestDataDialogState extends State<_TestDataDialog> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(),
+        child: CupertinoActivityIndicator(radius: 14),
       ),
     );
 
@@ -1252,15 +1253,11 @@ class _TestDataDialogState extends State<_TestDataDialog> {
         Navigator.of(context).pop(); // Close loading
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_useHebrew
+        showAppSuccess(
+            context,
+            _useHebrew
                 ? 'נתונים נוצרו בהצלחה!'
-                : 'Test data created successfully'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+                : 'Test data created successfully');
 
         // Trigger refresh
         final refreshService =
@@ -1271,15 +1268,8 @@ class _TestDataDialogState extends State<_TestDataDialog> {
       if (context.mounted) {
         Navigator.of(context).pop(); // Close loading
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_useHebrew
-                ? 'שגיאה ביצירת נתונים'
-                : '❌ Error creating data: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        showAppError(context,
+            _useHebrew ? 'שגיאה ביצירת נתונים' : '❌ Error creating data: $e');
       }
     }
   }
@@ -1310,10 +1300,12 @@ class _TestDataDialogState extends State<_TestDataDialog> {
                           _useHebrew ? FontWeight.normal : FontWeight.bold)),
               Transform.scale(
                 scale: 0.7,
-                child: Switch(
+                child: CupertinoSwitch(
                   value: _useHebrew,
                   onChanged: (value) => setState(() => _useHebrew = value),
-                  activeThumbColor: theme.colorScheme.primary,
+                  // CupertinoSwitch tints the whole track, not the thumb --
+                  // the thumb stays white, as it does system-wide.
+                  activeTrackColor: theme.colorScheme.primary,
                 ),
               ),
               Text('HE',

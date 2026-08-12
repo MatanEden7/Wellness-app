@@ -111,6 +111,40 @@ class MenuSpec {
   final List<ActionSheetItem?> items;
 }
 
+/// A one-button `UIAlertController` — the "something went wrong" case, where
+/// there is nothing to confirm and Cancel would be meaningless.
+class InfoSpec {
+  const InfoSpec({
+    required this.title,
+    this.message,
+    this.buttonLabel = 'OK',
+  });
+  final String title;
+  final String? message;
+  final String buttonLabel;
+}
+
+/// The transient confirmation that replaces Material's `SnackBar`.
+///
+/// iOS has no SnackBar and no UIKit API for one, so the alternatives were a
+/// Flutter-drawn bar (the thing that reads as Android from across the room) or
+/// a real `UIVisualEffectView` capsule presented on the native window above
+/// the Flutter view. This is the latter: system material, system type, and it
+/// sits outside Flutter's tree so it survives route changes.
+class BannerSpec {
+  const BannerSpec({
+    required this.message,
+    this.kind = 'info',
+    this.durationMs = 2200,
+  });
+  final String message;
+
+  /// 'success' | 'error' | 'info' — picks the SF Symbol, the tint, and the
+  /// accompanying `UINotificationFeedbackGenerator` type.
+  final String kind;
+  final int durationMs;
+}
+
 class AnchorRect {
   const AnchorRect({
     required this.x,
@@ -192,6 +226,12 @@ abstract class PresentationHostApi {
 
   @async
   bool presentAlert(AlertSpec spec);
+
+  @async
+  void presentInfo(InfoSpec spec);
+
+  /// Fire-and-forget: the banner dismisses itself, and nothing waits on it.
+  void presentBanner(BannerSpec spec);
 
   @async
   String? presentMenu(MenuSpec spec, AnchorRect anchor);

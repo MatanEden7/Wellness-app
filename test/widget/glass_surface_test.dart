@@ -11,6 +11,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/core/ios/glass.dart';
+import 'package:wellness_app/core/ios/pressable.dart';
 
 void main() {
   Widget host(GlassLevel level, {Widget? child}) => MaterialApp(
@@ -159,11 +160,12 @@ void main() {
         child: const GlassButton(onPressed: null, child: Text('Save')),
       ));
 
-      final inkWell = tester.widget<InkWell>(find.descendant(
+      // Was an InkWell; the ripple is gone and Pressable carries the gesture.
+      final pressable = tester.widget<Pressable>(find.descendant(
         of: find.byType(GlassButton),
-        matching: find.byType(InkWell),
+        matching: find.byType(Pressable),
       ));
-      expect(inkWell.onTap, isNull,
+      expect(pressable.onTap, isNull,
           reason: 'a disabled button must not be tappable at all — dimming it '
               'and leaving the callback wired is the bug this catches');
     });

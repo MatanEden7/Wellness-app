@@ -17,6 +17,8 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
+import '../../../core/ios/pickers.dart';
 
 class SleepTimerPage extends HookConsumerWidget {
   const SleepTimerPage({super.key});
@@ -596,11 +598,11 @@ class _EditActiveSleepDialog extends HookWidget {
 
   Future<void> _selectDate(
       BuildContext context, ValueNotifier<DateTime> selectedDate) async {
-    final date = await showDatePicker(
+    final date = await showAppDatePicker(
       context: context,
-      initialDate: selectedDate.value,
-      firstDate: DateTime.now().subtract(const Duration(days: 7)),
-      lastDate: DateTime.now(),
+      initial: selectedDate.value,
+      first: DateTime.now().subtract(const Duration(days: 7)),
+      last: DateTime.now(),
     );
     if (date != null) {
       selectedDate.value = date;
@@ -610,9 +612,9 @@ class _EditActiveSleepDialog extends HookWidget {
   Future<void> _selectTime(
       BuildContext context, TextEditingController controller) async {
     final currentTime = TimeOfDay.fromDateTime(entry.startedAt);
-    final time = await showTimePicker(
+    final time = await showAppTimePicker(
       context: context,
-      initialTime: currentTime,
+      initial: currentTime,
     );
     if (time != null) {
       controller.text =
@@ -645,9 +647,7 @@ class _EditActiveSleepDialog extends HookWidget {
 
       Navigator.of(context).pop(updatedEntry);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating sleep entry: $e')),
-      );
+      showAppError(context, 'Error updating sleep entry: $e');
     }
   }
 }

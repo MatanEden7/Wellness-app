@@ -50,7 +50,15 @@ void main() {
     List<({String path, List<String> lines})> chromeSources() => [
           for (final dir in [chromeDir, bridgeDir, presDir])
             for (final file in swiftFiles(dir))
-              if (!file.path.endsWith('.g.swift'))
+              if (!file.path.endsWith('.g.swift') &&
+                  // These rules are about the *bars*: the nav bar and tab bar
+                  // must take their material from UIKit's own appearance
+                  // configuration rather than assembling one. The banner is
+                  // not chrome -- it is a transient overlay on the window --
+                  // and UIVisualEffectView is the system material API, not a
+                  // hand-rolled imitation of it. Its alpha is presentation
+                  // animation, not a translucency setting.
+                  !file.path.endsWith('BannerPresenter.swift'))
                 (path: file.path, lines: file.readAsLinesSync()),
         ];
 

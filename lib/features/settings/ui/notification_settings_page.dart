@@ -8,6 +8,10 @@ import '../../../core/theme.dart';
 import '../../../services/notification_preferences_service.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/pickers.dart';
+import 'package:flutter/cupertino.dart';
+import '../../../core/ios/sheets.dart';
+import '../../../core/ios/inset_list.dart';
 
 class NotificationSettingsPage extends ConsumerWidget {
   const NotificationSettingsPage({super.key});
@@ -39,41 +43,44 @@ class NotificationSettingsPage extends ConsumerWidget {
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
-                SwitchListTile(
-                  title: Text(l10n.meals),
-                  subtitle: Text(l10n.mealsNotificationDesc),
-                  secondary: const SettingsIconBadge(Icons.restaurant,
-                      color: Colors.orange),
-                  value: prefs.mealsEnabled,
-                  onChanged: (value) {
-                    ref
-                        .read(notificationPreferencesProvider.notifier)
-                        .setMealsEnabled(value);
-                  },
+                InsetRow(
+                  title: l10n.meals,
+                  subtitle: l10n.mealsNotificationDesc,
+                  icon: Icons.restaurant,
+                  iconColor: Colors.orange,
+                  trailing: CupertinoSwitch(
+                      value: prefs.mealsEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferencesProvider.notifier)
+                            .setMealsEnabled(value);
+                      }),
                 ),
-                SwitchListTile(
-                  title: Text(l10n.workouts),
-                  subtitle: Text(l10n.workoutsNotificationDesc),
-                  secondary: const SettingsIconBadge(Icons.fitness_center,
-                      color: Colors.blue),
-                  value: prefs.workoutsEnabled,
-                  onChanged: (value) {
-                    ref
-                        .read(notificationPreferencesProvider.notifier)
-                        .setWorkoutsEnabled(value);
-                  },
+                InsetRow(
+                  title: l10n.workouts,
+                  subtitle: l10n.workoutsNotificationDesc,
+                  icon: Icons.fitness_center,
+                  iconColor: Colors.blue,
+                  trailing: CupertinoSwitch(
+                      value: prefs.workoutsEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferencesProvider.notifier)
+                            .setWorkoutsEnabled(value);
+                      }),
                 ),
-                SwitchListTile(
-                  title: Text(l10n.sleep),
-                  subtitle: Text(l10n.sleepNotificationDesc),
-                  secondary: const SettingsIconBadge(Icons.bedtime,
-                      color: Colors.purple),
-                  value: prefs.sleepEnabled,
-                  onChanged: (value) {
-                    ref
-                        .read(notificationPreferencesProvider.notifier)
-                        .setSleepEnabled(value);
-                  },
+                InsetRow(
+                  title: l10n.sleep,
+                  subtitle: l10n.sleepNotificationDesc,
+                  icon: Icons.bedtime,
+                  iconColor: Colors.purple,
+                  trailing: CupertinoSwitch(
+                      value: prefs.sleepEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferencesProvider.notifier)
+                            .setSleepEnabled(value);
+                      }),
                 ),
               ],
             ),
@@ -144,27 +151,25 @@ class NotificationSettingsPage extends ConsumerWidget {
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
-                ListTile(
-                  leading: const SettingsIconBadge(Icons.hotel,
-                      color: Colors.indigo),
-                  title: Text(l10n.sleepGoal),
-                  subtitle: Text(
-                      '${prefs.sleepGoalHours.toStringAsFixed(1)} ${l10n.hours}'),
-                  trailing: const Icon(Icons.chevron_right),
+                InsetRow(
+                  icon: Icons.hotel,
+                  iconColor: Colors.indigo,
+                  title: l10n.sleepGoal,
+                  subtitle:
+                      '${prefs.sleepGoalHours.toStringAsFixed(1)} ${l10n.hours}',
                   onTap: () =>
                       _showSleepGoalDialog(context, ref, prefs.sleepGoalHours),
                 ),
-                ListTile(
-                  leading:
-                      const SettingsIconBadge(Icons.alarm, color: Colors.teal),
-                  title: Text(l10n.sleepLogReminder),
-                  subtitle: Text(l10n.sleepLogReminderDesc(
+                InsetRow(
+                  icon: Icons.alarm,
+                  iconColor: Colors.teal,
+                  title: l10n.sleepLogReminder,
+                  subtitle: l10n.sleepLogReminderDesc(
                     TimeOfDay(
                             hour: prefs.sleepReminderHour,
                             minute: prefs.sleepReminderMinute)
                         .format(context),
-                  )),
-                  trailing: const Icon(Icons.chevron_right),
+                  ),
                   onTap: () => _showSleepReminderTimeDialog(
                     context,
                     ref,
@@ -184,30 +189,28 @@ class NotificationSettingsPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SwitchListTile(
-                  title: Text(l10n.quietHours),
-                  subtitle: Text(l10n.quietHoursDesc),
-                  secondary: const SettingsIconBadge(Icons.do_not_disturb,
-                      color: Colors.redAccent),
-                  value: prefs.quietHoursEnabled,
-                  onChanged: (value) {
-                    ref
-                        .read(notificationPreferencesProvider.notifier)
-                        .setQuietHoursEnabled(value);
-                  },
+                InsetRow(
+                  title: l10n.quietHours,
+                  subtitle: l10n.quietHoursDesc,
+                  icon: Icons.do_not_disturb,
+                  iconColor: Colors.redAccent,
+                  trailing: CupertinoSwitch(
+                      value: prefs.quietHoursEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferencesProvider.notifier)
+                            .setQuietHoursEnabled(value);
+                      }),
                 ),
                 if (prefs.quietHoursEnabled) ...[
-                  ListTile(
-                    leading: const SettingsIconBadge(Icons.bedtime,
-                        color: Colors.purple),
-                    title: Text(l10n.startTime),
-                    subtitle: Text(
-                      TimeOfDay(
-                              hour: prefs.quietHoursStartHour,
-                              minute: prefs.quietHoursStartMinute)
-                          .format(context),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
+                  InsetRow(
+                    icon: Icons.bedtime,
+                    iconColor: Colors.purple,
+                    title: l10n.startTime,
+                    subtitle: TimeOfDay(
+                            hour: prefs.quietHoursStartHour,
+                            minute: prefs.quietHoursStartMinute)
+                        .format(context),
                     onTap: () => _showQuietHoursStartDialog(
                       context,
                       ref,
@@ -216,17 +219,14 @@ class NotificationSettingsPage extends ConsumerWidget {
                           minute: prefs.quietHoursStartMinute),
                     ),
                   ),
-                  ListTile(
-                    leading: const SettingsIconBadge(Icons.wb_sunny,
-                        color: Colors.amber),
-                    title: Text(l10n.endTime),
-                    subtitle: Text(
-                      TimeOfDay(
-                              hour: prefs.quietHoursEndHour,
-                              minute: prefs.quietHoursEndMinute)
-                          .format(context),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
+                  InsetRow(
+                    icon: Icons.wb_sunny,
+                    iconColor: Colors.amber,
+                    title: l10n.endTime,
+                    subtitle: TimeOfDay(
+                            hour: prefs.quietHoursEndHour,
+                            minute: prefs.quietHoursEndMinute)
+                        .format(context),
                     onTap: () => _showQuietHoursEndDialog(
                       context,
                       ref,
@@ -246,29 +246,31 @@ class NotificationSettingsPage extends ConsumerWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                SwitchListTile(
-                  title: Text(l10n.sound),
-                  subtitle: Text(l10n.soundDesc),
-                  secondary: const SettingsIconBadge(Icons.volume_up,
-                      color: Colors.green),
-                  value: prefs.soundEnabled,
-                  onChanged: (value) {
-                    ref
-                        .read(notificationPreferencesProvider.notifier)
-                        .setSoundEnabled(value);
-                  },
+                InsetRow(
+                  title: l10n.sound,
+                  subtitle: l10n.soundDesc,
+                  icon: Icons.volume_up,
+                  iconColor: Colors.green,
+                  trailing: CupertinoSwitch(
+                      value: prefs.soundEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferencesProvider.notifier)
+                            .setSoundEnabled(value);
+                      }),
                 ),
-                SwitchListTile(
-                  title: Text(l10n.vibration),
-                  subtitle: Text(l10n.vibrationDesc),
-                  secondary: const SettingsIconBadge(Icons.vibration,
-                      color: Colors.blueGrey),
-                  value: prefs.vibrationEnabled,
-                  onChanged: (value) {
-                    ref
-                        .read(notificationPreferencesProvider.notifier)
-                        .setVibrationEnabled(value);
-                  },
+                InsetRow(
+                  title: l10n.vibration,
+                  subtitle: l10n.vibrationDesc,
+                  icon: Icons.vibration,
+                  iconColor: Colors.blueGrey,
+                  trailing: CupertinoSwitch(
+                      value: prefs.vibrationEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(notificationPreferencesProvider.notifier)
+                            .setVibrationEnabled(value);
+                      }),
                 ),
               ],
             ),
@@ -283,50 +285,61 @@ class NotificationSettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     double selectedHours = currentHours;
 
-    await showDialog(
+    // A Material `Slider` in a Material `AlertDialog`: the thumb, the track and
+    // the value balloon are all Material Design components. iOS uses the
+    // `CupertinoSlider` in a bottom sheet, which is what this is now.
+    await showCupertinoModalPopup<void>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(l10n.sleepGoal),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${selectedHours.toStringAsFixed(1)} ${l10n.hours}',
-                style: Theme.of(context).textTheme.headlineMedium,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setState) => GlassSheet(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                Space.xl, Space.md, Space.xl, Space.xl),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: Text(l10n.cancel),
+                      ),
+                      Text(l10n.sleepGoal,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          ref
+                              .read(notificationPreferencesProvider.notifier)
+                              .setSleepGoalHours(selectedHours);
+                          Navigator.of(sheetContext).pop();
+                        },
+                        child: Text(l10n.save,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Space.md),
+                  Text(
+                    '${selectedHours.toStringAsFixed(1)} ${l10n.hours}',
+                    style: Theme.of(sheetContext).textTheme.headlineMedium,
+                  ),
+                  CupertinoSlider(
+                    value: selectedHours,
+                    min: 4,
+                    max: 12,
+                    divisions: 40,
+                    onChanged: (value) => setState(() => selectedHours = value),
+                  ),
+                ],
               ),
-              Slider(
-                value: selectedHours,
-                min: 4,
-                max: 12,
-                divisions: 40,
-                label: selectedHours.toStringAsFixed(1),
-                onChanged: (value) {
-                  setState(() => selectedHours = value);
-                },
-              ),
-            ],
+            ),
           ),
-          actions: [
-            GlassButton(
-              minHeight: Sizes.control,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md, vertical: Space.sm),
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancel),
-            ),
-            GlassButton(
-              prominent: true,
-              onPressed: () {
-                ref
-                    .read(notificationPreferencesProvider.notifier)
-                    .setSleepGoalHours(selectedHours);
-                Navigator.of(context).pop();
-              },
-              child: Text(l10n.save),
-            ),
-          ],
         ),
       ),
     );
@@ -334,9 +347,9 @@ class NotificationSettingsPage extends ConsumerWidget {
 
   void _showSleepReminderTimeDialog(
       BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
-    final picked = await showTimePicker(
+    final picked = await showAppTimePicker(
       context: context,
-      initialTime: currentTime,
+      initial: currentTime,
     );
 
     if (picked != null) {
@@ -348,9 +361,9 @@ class NotificationSettingsPage extends ConsumerWidget {
 
   void _showQuietHoursStartDialog(
       BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
-    final picked = await showTimePicker(
+    final picked = await showAppTimePicker(
       context: context,
-      initialTime: currentTime,
+      initial: currentTime,
     );
 
     if (picked != null) {
@@ -362,9 +375,9 @@ class NotificationSettingsPage extends ConsumerWidget {
 
   void _showQuietHoursEndDialog(
       BuildContext context, WidgetRef ref, TimeOfDay currentTime) async {
-    final picked = await showTimePicker(
+    final picked = await showAppTimePicker(
       context: context,
-      initialTime: currentTime,
+      initial: currentTime,
     );
 
     if (picked != null) {
@@ -394,11 +407,11 @@ class _LeadTimeSetting extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-    return ListTile(
-      leading: SettingsIconBadge(icon, color: iconColor),
-      title: Text(title),
-      subtitle: Text(_getLeadTimeLabel(value, l10n)),
-      trailing: const Icon(Icons.chevron_right),
+    return InsetRow(
+      icon: icon,
+      iconColor: iconColor,
+      title: title,
+      subtitle: _getLeadTimeLabel(value, l10n),
       onTap: () => _showLeadTimeDialog(context, value, onChanged, l10n),
     );
   }
@@ -420,37 +433,13 @@ class _LeadTimeSetting extends ConsumerWidget {
   ) async {
     final options = [0, 5, 10, 15, 30];
 
-    await showDialog(
+    final picked = await showAppPicker<int>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.reminderTiming),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((minutes) {
-            return RadioListTile<int>(
-              title: Text(_getLeadTimeLabel(minutes, l10n)),
-              value: minutes,
-              groupValue: currentValue,
-              onChanged: (value) {
-                if (value != null) {
-                  onChanged(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            );
-          }).toList(),
-        ),
-        actions: [
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-        ],
-      ),
+      title: l10n.reminderTiming,
+      options: options,
+      current: currentValue,
+      labelOf: (minutes) => _getLeadTimeLabel(minutes, l10n),
     );
+    if (picked != null) onChanged(picked);
   }
 }

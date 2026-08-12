@@ -19,6 +19,8 @@ import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
+import '../../../core/ios/sheets.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -72,38 +74,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     // onboarding, a weight edit should not conjure one.
     if (preview.isEmpty) return;
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Update your templates?'),
-        content: Text(
-          'Your profile changed in a way that affects which meals and '
+      title: 'Update your templates?',
+      message: 'Your profile changed in a way that affects which meals and '
           'workouts suit you.\n\n'
           'Rebuilding replaces ${preview.mealTemplates} generated meal '
           'template(s) and ${preview.workoutTemplates} generated workout '
           'template(s). Anything you created or edited yourself is kept.',
-        ),
-        actions: [
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Keep as is'),
-          ),
-          GlassButton(
-            minHeight: Sizes.control,
-            borderRadius: BorderRadius.circular(18),
-            padding: const EdgeInsets.symmetric(
-                horizontal: Space.md, vertical: Space.sm),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Rebuild'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Rebuild',
+      // Rebuilding is additive and reversible -- red would overstate it.
+      isDestructive: false,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     final created = await service.regenerate(profile);
     // Regeneration rebuilds templates under fresh ids, leaving every
@@ -112,9 +95,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     // reminder and it does nothing at all.
     await ref.read(calendarStateProvider.notifier).repinDanglingTemplates();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Rebuilt $created templates')),
-      );
+      showAppSuccess(context, 'Rebuilt $created templates');
     }
   }
 
@@ -141,12 +122,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
     await _saveProfile(updated);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Targets updated'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      showAppSuccess(context, 'Targets updated');
     }
   }
 

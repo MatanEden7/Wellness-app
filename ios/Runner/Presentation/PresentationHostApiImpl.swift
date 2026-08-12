@@ -65,6 +65,31 @@ final class PresentationHostApiImpl: PresentationHostApi {
         presenter.present(alert, animated: true)
     }
 
+    // MARK: - Info alert (one button)
+
+    func presentInfo(
+        spec: InfoSpec,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        guard let presenter else { completion(.success(())); return }
+
+        let alert = UIAlertController(
+            title: spec.title,
+            message: spec.message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: spec.buttonLabel, style: .default) { _ in
+            completion(.success(()))
+        })
+        presenter.present(alert, animated: true)
+    }
+
+    // MARK: - Banner
+
+    func presentBanner(spec: BannerSpec) throws {
+        BannerPresenter.show(spec)
+    }
+
     // MARK: - Menu (popover on iPad, action sheet on phone)
 
     func presentMenu(

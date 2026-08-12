@@ -17,8 +17,10 @@ import '../data/repositories.dart';
 import '../domain/models.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/ios/glass.dart';
+import '../../../core/ios/feedback.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/pickers.dart';
 
 /// Sleep history -- every logged night, plus the entry points that produce
 /// them (the live timer, and manual entry for a night you forgot to time).
@@ -553,11 +555,11 @@ class AddSleepSheet extends HookConsumerWidget {
     BuildContext context,
     ValueNotifier<DateTime> selectedDate,
   ) async {
-    final date = await showDatePicker(
+    final date = await showAppDatePicker(
       context: context,
-      initialDate: selectedDate.value,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
+      initial: selectedDate.value,
+      first: DateTime.now().subtract(const Duration(days: 365)),
+      last: DateTime.now().add(const Duration(days: 1)),
     );
     if (date != null) {
       selectedDate.value = date;
@@ -571,9 +573,9 @@ class AddSleepSheet extends HookConsumerWidget {
     // Seed the picker with whatever the field already holds, so re-opening it
     // to nudge a time by ten minutes doesn't reset to "now".
     final existing = AppDateUtils.parseTimeOfDay(controller.text);
-    final time = await showTimePicker(
+    final time = await showAppTimePicker(
       context: context,
-      initialTime: existing ?? TimeOfDay.now(),
+      initial: existing ?? TimeOfDay.now(),
     );
     if (time != null) {
       controller.text = '${time.hour.toString().padLeft(2, '0')}:'
@@ -592,11 +594,10 @@ class AddSleepSheet extends HookConsumerWidget {
     ValueNotifier<bool> isLoading,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
     if (startTime.isEmpty) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.pleaseEnterBedtime)));
+      showAppError(context, l10n.pleaseEnterBedtime);
       return;
     }
 
@@ -667,9 +668,7 @@ class AddSleepSheet extends HookConsumerWidget {
       navigator.pop();
     } catch (e) {
       isLoading.value = false;
-      messenger.showSnackBar(
-        SnackBar(content: Text('${l10n.error}: $e')),
-      );
+      if (context.mounted) showAppError(context, '${l10n.error}: $e');
     }
   }
 }

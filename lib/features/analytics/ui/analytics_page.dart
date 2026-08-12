@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -72,7 +73,8 @@ class AnalyticsPage extends ConsumerWidget {
                 : const SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.only(top: 80),
-                      child: Center(child: CircularProgressIndicator()),
+                      child:
+                          Center(child: CupertinoActivityIndicator(radius: 14)),
                     ),
                   ),
             error: (error, _) => SliverToBoxAdapter(

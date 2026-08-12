@@ -309,6 +309,79 @@ class MenuSpec {
   }
 }
 
+/// A one-button `UIAlertController` — the "something went wrong" case, where
+/// there is nothing to confirm and Cancel would be meaningless.
+class InfoSpec {
+  InfoSpec({
+    required this.title,
+    this.message,
+    this.buttonLabel = 'OK',
+  });
+
+  String title;
+
+  String? message;
+
+  String buttonLabel;
+
+  Object encode() {
+    return <Object?>[
+      title,
+      message,
+      buttonLabel,
+    ];
+  }
+
+  static InfoSpec decode(Object result) {
+    result as List<Object?>;
+    return InfoSpec(
+      title: result[0]! as String,
+      message: result[1] as String?,
+      buttonLabel: result[2]! as String,
+    );
+  }
+}
+
+/// The transient confirmation that replaces Material's `SnackBar`.
+///
+/// iOS has no SnackBar and no UIKit API for one, so the alternatives were a
+/// Flutter-drawn bar (the thing that reads as Android from across the room) or
+/// a real `UIVisualEffectView` capsule presented on the native window above
+/// the Flutter view. This is the latter: system material, system type, and it
+/// sits outside Flutter's tree so it survives route changes.
+class BannerSpec {
+  BannerSpec({
+    required this.message,
+    this.kind = 'info',
+    this.durationMs = 2200,
+  });
+
+  String message;
+
+  /// 'success' | 'error' | 'info' — picks the SF Symbol, the tint, and the
+  /// accompanying `UINotificationFeedbackGenerator` type.
+  String kind;
+
+  int durationMs;
+
+  Object encode() {
+    return <Object?>[
+      message,
+      kind,
+      durationMs,
+    ];
+  }
+
+  static BannerSpec decode(Object result) {
+    result as List<Object?>;
+    return BannerSpec(
+      message: result[0]! as String,
+      kind: result[1]! as String,
+      durationMs: result[2]! as int,
+    );
+  }
+}
+
 class AnchorRect {
   AnchorRect({
     required this.x,
@@ -458,14 +531,20 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is MenuSpec) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is AnchorRect) {
+    } else if (value is InfoSpec) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is DatePickerSpec) {
+    } else if (value is BannerSpec) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is CapabilitiesSpec) {
+    } else if (value is AnchorRect) {
       buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    } else if (value is DatePickerSpec) {
+      buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    } else if (value is CapabilitiesSpec) {
+      buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -492,10 +571,14 @@ class _PigeonCodec extends StandardMessageCodec {
       case 136:
         return MenuSpec.decode(readValue(buffer)!);
       case 137:
-        return AnchorRect.decode(readValue(buffer)!);
+        return InfoSpec.decode(readValue(buffer)!);
       case 138:
-        return DatePickerSpec.decode(readValue(buffer)!);
+        return BannerSpec.decode(readValue(buffer)!);
       case 139:
+        return AnchorRect.decode(readValue(buffer)!);
+      case 140:
+        return DatePickerSpec.decode(readValue(buffer)!);
+      case 141:
         return CapabilitiesSpec.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -745,6 +828,55 @@ class PresentationHostApi {
       );
     } else {
       return (pigeonVar_replyList[0] as bool?)!;
+    }
+  }
+
+  Future<void> presentInfo(InfoSpec spec) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentInfo$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[spec]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  /// Fire-and-forget: the banner dismisses itself, and nothing waits on it.
+  Future<void> presentBanner(BannerSpec spec) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.wellness_app.PresentationHostApi.presentBanner$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[spec]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
     }
   }
 

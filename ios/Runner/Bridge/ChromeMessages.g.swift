@@ -320,6 +320,75 @@ struct MenuSpec {
   }
 }
 
+/// A one-button `UIAlertController` — the "something went wrong" case, where
+/// there is nothing to confirm and Cancel would be meaningless.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct InfoSpec {
+  var title: String
+  var message: String? = nil
+  var buttonLabel: String
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> InfoSpec? {
+    let title = pigeonVar_list[0] as! String
+    let message: String? = nilOrValue(pigeonVar_list[1])
+    let buttonLabel = pigeonVar_list[2] as! String
+
+    return InfoSpec(
+      title: title,
+      message: message,
+      buttonLabel: buttonLabel
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      title,
+      message,
+      buttonLabel,
+    ]
+  }
+}
+
+/// The transient confirmation that replaces Material's `SnackBar`.
+///
+/// iOS has no SnackBar and no UIKit API for one, so the alternatives were a
+/// Flutter-drawn bar (the thing that reads as Android from across the room) or
+/// a real `UIVisualEffectView` capsule presented on the native window above
+/// the Flutter view. This is the latter: system material, system type, and it
+/// sits outside Flutter's tree so it survives route changes.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct BannerSpec {
+  var message: String
+  /// 'success' | 'error' | 'info' — picks the SF Symbol, the tint, and the
+  /// accompanying `UINotificationFeedbackGenerator` type.
+  var kind: String
+  var durationMs: Int64
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BannerSpec? {
+    let message = pigeonVar_list[0] as! String
+    let kind = pigeonVar_list[1] as! String
+    let durationMs = pigeonVar_list[2] as! Int64
+
+    return BannerSpec(
+      message: message,
+      kind: kind,
+      durationMs: durationMs
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      message,
+      kind,
+      durationMs,
+    ]
+  }
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct AnchorRect {
   var x: Double
@@ -444,10 +513,14 @@ private class ChromeMessagesPigeonCodecReader: FlutterStandardReader {
     case 136:
       return MenuSpec.fromList(self.readValue() as! [Any?])
     case 137:
-      return AnchorRect.fromList(self.readValue() as! [Any?])
+      return InfoSpec.fromList(self.readValue() as! [Any?])
     case 138:
-      return DatePickerSpec.fromList(self.readValue() as! [Any?])
+      return BannerSpec.fromList(self.readValue() as! [Any?])
     case 139:
+      return AnchorRect.fromList(self.readValue() as! [Any?])
+    case 140:
+      return DatePickerSpec.fromList(self.readValue() as! [Any?])
+    case 141:
       return CapabilitiesSpec.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -481,14 +554,20 @@ private class ChromeMessagesPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? MenuSpec {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? AnchorRect {
+    } else if let value = value as? InfoSpec {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? DatePickerSpec {
+    } else if let value = value as? BannerSpec {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? CapabilitiesSpec {
+    } else if let value = value as? AnchorRect {
       super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? DatePickerSpec {
+      super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? CapabilitiesSpec {
+      super.writeByte(141)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -658,6 +737,9 @@ class ChromeHostApiSetup {
 protocol PresentationHostApi {
   func presentActionSheet(spec: ActionSheetSpec, completion: @escaping (Result<String?, Error>) -> Void)
   func presentAlert(spec: AlertSpec, completion: @escaping (Result<Bool, Error>) -> Void)
+  func presentInfo(spec: InfoSpec, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Fire-and-forget: the banner dismisses itself, and nothing waits on it.
+  func presentBanner(spec: BannerSpec) throws
   func presentMenu(spec: MenuSpec, anchor: AnchorRect, completion: @escaping (Result<String?, Error>) -> Void)
   func presentDatePicker(spec: DatePickerSpec, completion: @escaping (Result<Int64?, Error>) -> Void)
   func presentShare(paths: [String], anchor: AnchorRect, completion: @escaping (Result<Void, Error>) -> Void)
@@ -703,6 +785,39 @@ class PresentationHostApiSetup {
       }
     } else {
       presentAlertChannel.setMessageHandler(nil)
+    }
+    let presentInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.wellness_app.PresentationHostApi.presentInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      presentInfoChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let specArg = args[0] as! InfoSpec
+        api.presentInfo(spec: specArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      presentInfoChannel.setMessageHandler(nil)
+    }
+    /// Fire-and-forget: the banner dismisses itself, and nothing waits on it.
+    let presentBannerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.wellness_app.PresentationHostApi.presentBanner\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      presentBannerChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let specArg = args[0] as! BannerSpec
+        do {
+          try api.presentBanner(spec: specArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      presentBannerChannel.setMessageHandler(nil)
     }
     let presentMenuChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.wellness_app.PresentationHostApi.presentMenu\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
+import 'pressable.dart';
 
 /// The Liquid Glass material, as far as Flutter can express it.
 ///
@@ -501,13 +502,14 @@ class GlassButton extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: _enabled,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: radius,
-          child: pane,
-        ),
+      // Every button in the app funnels through here, so the ripple that used
+      // to live on this line was the app's most-repeated Android tell. iOS
+      // dims a pressed button and taps a light impact against it.
+      child: Pressable(
+        onTap: onPressed,
+        borderRadius: radius,
+        haptic: HapticKind.light,
+        child: pane,
       ),
     );
   }

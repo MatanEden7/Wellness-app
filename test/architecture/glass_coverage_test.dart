@@ -30,6 +30,8 @@ const _functional = <String, String>{
   'lib/core/widgets.dart': 'AppSheet — a modal sheet floats',
   'lib/features/settings/ui/advanced_color_picker.dart': 'a modal sheet',
   'lib/features/calendar/ui/event_scheduling_dialog.dart': 'a modal dialog',
+  'lib/features/settings/ui/notification_settings_page.dart':
+      'the sleep-goal slider sheet floats',
   'lib/features/meals/ui/meal_editor_page.dart': 'hosts a modal dialog',
   'lib/features/meals/ui/meal_template_editor_page.dart': 'hosts a modal dialog',
   'lib/features/workouts/ui/template_editor_page.dart': 'hosts modal dialogs',
@@ -59,6 +61,12 @@ const _rawSurfaceAllowed = <String, String>{
   'lib/shell/material/material_page_shell.dart': 'Material shell, by design',
   'lib/core/theme.dart': 'theme definitions, not widgets',
   'lib/core/design/surfaces.dart': 'the content material itself',
+  // Not a surface: an overlay tint laid *over* one, replacing the ink ripple.
+  // A ContentSurface here would paint a second card on top of the row.
+  'lib/core/ios/pressable.dart': 'the press highlight, not a surface',
+  // The banner is real UIKit on iOS (BannerPresenter.swift); this is only the
+  // Android/widget-test stand-in, so it has no glass to inherit.
+  'lib/core/ios/feedback.dart': 'Flutter fallback banner, off the iOS path',
 };
 
 Iterable<File> _dartFiles() => Directory('lib')

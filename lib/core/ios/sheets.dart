@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../../l10n/app_localizations.dart';
 import '../ui_constants.dart';
 import 'app_scaffold.dart';
+import 'native_ui.dart';
 
 /// One button in an [showAppActionSheet].
 class AppAction {
@@ -41,9 +42,40 @@ Future<void> showAppActionSheet({
   String? title,
   String? message,
   required List<AppAction> actions,
-}) {
+}) async {
   final l10n = AppLocalizations.of(context)!;
 
+  // Real UIKit first. `presentActionSheet` returns the id of the tapped item,
+  // or null for Cancel -- and the NativeResult wrapper is what tells those
+  // apart from "no bridge", so a Cancel here must not fall through and open
+  // the Flutter sheet on top of the dismissal.
+  final native = await NativeUI.actionSheet(
+    title: title,
+    message: message,
+    items: [
+      for (final (index, action) in actions.indexed)
+        ActionSheetItem(
+          id: '$index',
+          title: action.label,
+          isDestructive: action.isDestructive,
+        ),
+    ],
+    cancelLabel: l10n.cancel,
+  );
+
+  if (native != null) {
+    final id = native.value;
+    if (id == null) return;
+    final index = int.tryParse(id);
+    if (index != null && index >= 0 && index < actions.length) {
+      actions[index].onPressed();
+    }
+    return;
+  }
+
+  if (!context.mounted) return;
+
+  // Fallback: Android, and widget tests, where there is no channel to answer.
   return showCupertinoModalPopup<void>(
     context: context,
     builder: (sheetContext) => CupertinoActionSheet(
@@ -78,6 +110,40 @@ Future<void> showAppActionSheet({
   );
 }
 
+/// Select-one-of-a-few, as an iOS action sheet.
+///
+/// Replaces the `AlertDialog` + `RadioListTile` column that every settings
+/// picker in the app was built from. A radio list is a Material control — iOS
+/// has no radio button at all — and the dialog it sat in was a centred Material
+/// card. The current value is marked with a checkmark, which is how iOS shows
+/// the selected row in a list of choices.
+///
+/// Returns null if the user cancelled.
+Future<T?> showAppPicker<T>({
+  required BuildContext context,
+  required String title,
+  required List<T> options,
+  required T? current,
+  required String Function(T) labelOf,
+}) async {
+  T? chosen;
+  await showAppActionSheet(
+    context: context,
+    title: title,
+    actions: [
+      for (final option in options)
+        AppAction(
+          // U+2713 rather than a leading icon: the native action sheet takes
+          // titles only, so the mark has to live in the string.
+          label: option == current ? '✓ ${labelOf(option)}' : labelOf(option),
+          isDefault: option == current,
+          onPressed: () => chosen = option,
+        ),
+    ],
+  );
+  return chosen;
+}
+
 /// iOS confirmation alert. Returns true only if the user confirmed.
 ///
 /// Replaces the `AlertDialog` + two `TextButton`s that every delete path in
@@ -90,6 +156,19 @@ Future<bool> showAppConfirm({
   bool isDestructive = true,
 }) async {
   final l10n = AppLocalizations.of(context)!;
+
+  // A real UIAlertController -- system font metrics, system button ordering,
+  // and the dim/blur behind it that Flutter can only approximate.
+  final native = await NativeUI.confirm(
+    title: title,
+    message: message,
+    confirmLabel: confirmLabel,
+    cancelLabel: l10n.cancel,
+    isDestructive: isDestructive,
+  );
+  if (native != null) return native;
+
+  if (!context.mounted) return false;
 
   final confirmed = await showCupertinoDialog<bool>(
     context: context,

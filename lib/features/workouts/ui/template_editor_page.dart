@@ -20,6 +20,7 @@ import '../domain/rest_time.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import '../../../core/ios/feedback.dart';
 
 class TemplateEditorPage extends HookConsumerWidget {
   final String? templateId;
@@ -279,17 +280,13 @@ class TemplateEditorPage extends HookConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     if (name.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseEnterTemplateName)),
-      );
+      showAppError(context, l10n.pleaseEnterTemplateName);
       return;
     }
 
     // A template of nothing but breaks is not a workout.
     if (exercises.where((e) => !e.isRest).isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseAddExercise)),
-      );
+      showAppError(context, l10n.pleaseAddExercise);
       return;
     }
 
@@ -327,9 +324,7 @@ class TemplateEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving template: $e')),
-        );
+        showAppError(context, 'Error saving template: $e');
       }
     } finally {
       isLoading.value = false;
