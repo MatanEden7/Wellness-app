@@ -26,6 +26,7 @@
 		A1B2C3D4E5F60023A1B2C323 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60009A1B2C309 /* Haptics.swift */; };
 		A1B2C3D4E5F60024A1B2C324 /* PresentationHostApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60010A1B2C310 /* PresentationHostApiImpl.swift */; };
 		A1B2C3D4E5F60091A1B2C391 /* BannerPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60090A1B2C390 /* BannerPresenter.swift */; };
+		A1B2C3D4E5F60093A1B2C393 /* DatePickerSheetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60092A1B2C392 /* DatePickerSheetController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +73,7 @@
 		A1B2C3D4E5F60009A1B2C309 /* Haptics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60010A1B2C310 /* PresentationHostApiImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationHostApiImpl.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60090A1B2C390 /* BannerPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BannerPresenter.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60092A1B2C392 /* DatePickerSheetController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatePickerSheetController.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		8F74CF4DC21382D06F895692 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		93F0AC216C8D64EA4F3F6151 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
@@ -204,6 +206,7 @@
 				A1B2C3D4E5F60009A1B2C309 /* Haptics.swift */,
 				A1B2C3D4E5F60010A1B2C310 /* PresentationHostApiImpl.swift */,
 				A1B2C3D4E5F60090A1B2C390 /* BannerPresenter.swift */,
+				A1B2C3D4E5F60092A1B2C392 /* DatePickerSheetController.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -456,6 +459,7 @@
 				A1B2C3D4E5F60023A1B2C323 /* Haptics.swift in Sources */,
 				A1B2C3D4E5F60024A1B2C324 /* PresentationHostApiImpl.swift in Sources */,
 				A1B2C3D4E5F60091A1B2C391 /* BannerPresenter.swift in Sources */,
+				A1B2C3D4E5F60093A1B2C393 /* DatePickerSheetController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

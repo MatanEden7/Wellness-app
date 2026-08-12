@@ -114,42 +114,14 @@ final class PresentationHostApiImpl: PresentationHostApi {
     ) {
         guard let presenter else { completion(.success(nil)); return }
 
-        let picker = UIDatePicker()
-        picker.preferredDatePickerStyle = .wheels
-
-        switch spec.mode {
-        case "date":     picker.datePickerMode = .date
-        case "time":     picker.datePickerMode = .time
-        default:         picker.datePickerMode = .dateAndTime
+        let sheet = DatePickerSheetController(spec: spec) { date in
+            guard let date else { completion(.success(nil)); return }
+            completion(.success(Int64(date.timeIntervalSince1970 * 1000)))
         }
-
-        if let ms = spec.initialTimestamp {
-            picker.date = Date(timeIntervalSince1970: Double(ms) / 1000)
-        }
-        if let ms = spec.minTimestamp {
-            picker.minimumDate = Date(timeIntervalSince1970: Double(ms) / 1000)
-        }
-        if let ms = spec.maxTimestamp {
-            picker.maximumDate = Date(timeIntervalSince1970: Double(ms) / 1000)
-        }
-
-        let container = UIAlertController(title: "\n\n\n\n\n\n\n\n\n", message: nil, preferredStyle: .actionSheet)
-        container.view.addSubview(picker)
-        picker.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            picker.centerXAnchor.constraint(equalTo: container.view.centerXAnchor),
-            picker.topAnchor.constraint(equalTo: container.view.topAnchor, constant: 8),
-        ])
-
-        container.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-            completion(.success(nil))
-        })
-        container.addAction(UIAlertAction(title: "Done", style: .default) { _ in
-            let ms = Int64(picker.date.timeIntervalSince1970 * 1000)
-            completion(.success(ms))
-        })
-
-        presenter.present(container, animated: true)
+        sheet.modalPresentationStyle = .pageSheet
+        sheet.loadViewIfNeeded()
+        sheet.configureSheet()
+        presenter.present(sheet, animated: true)
     }
 
     // MARK: - Share

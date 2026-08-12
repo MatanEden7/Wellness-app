@@ -143,7 +143,10 @@ class InsetRow extends StatelessWidget {
                           ? CupertinoColors.destructiveRed
                           : theme.colorScheme.onSurface,
                     ),
-                    maxLines: 2,
+                    // One line when a value sits beside it -- a wrapped title
+                    // next to a short value reads as a layout failure. Rows
+                    // without a value have the width to spare for two.
+                    maxLines: value == null ? 2 : 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (subtitle != null) ...[
@@ -162,11 +165,18 @@ class InsetRow extends StatelessWidget {
               trailing!
             else ...[
               if (value != null)
-                // Flexible, not a bare Text: the title already takes an
-                // Expanded, so an unconstrained value overflows the row as
-                // soon as both are long -- which is every settings row whose
-                // value is a translated phrase rather than a number.
-                Flexible(
+                // A hard cap rather than a Flexible. An unconstrained value
+                // overflows the row once it is a translated phrase instead of
+                // a number, but making it Flexible is worse: Expanded and
+                // Flexible both default to flex 1, so they split the free
+                // space evenly and the *title* starts wrapping -- "Primary
+                // Metric" over two lines next to eight characters of value.
+                // Capping the value keeps the title's claim on the row, which
+                // is the priority iOS gives it.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.sizeOf(context).width * 0.38,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
                     child: Text(
