@@ -804,6 +804,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get yesterday => 'אתמול';
 
   @override
+  String get tomorrow => 'מחר';
+
+  @override
   String get thisWeek => 'השבוע';
 
   @override

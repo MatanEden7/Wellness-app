@@ -807,6 +807,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yesterday => 'Yesterday';
 
   @override
+  String get tomorrow => 'Tomorrow';
+
+  @override
   String get thisWeek => 'This Week';
 
   @override

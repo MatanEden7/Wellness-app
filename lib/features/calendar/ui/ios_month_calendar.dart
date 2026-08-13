@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../../core/date_utils.dart';
 import '../domain/models.dart';
 import '../../../core/design/tokens.dart';
+import 'package:flutter/cupertino.dart';
+import '../../../core/ios/pressable.dart';
 
 /// A continuously-scrolling month grid modelled on the iOS Calendar app.
 ///
@@ -12,9 +14,16 @@ import '../../../core/design/tokens.dart';
 /// interaction of the iPhone calendar is *continuous* vertical scrolling
 /// through months with a pinned weekday header. That can't be restyled in.
 ///
-/// Colours come from the active [ColorScheme] rather than iOS's hardcoded red,
-/// so the app's nine themes keep working; the *shapes*, sizing and typography
-/// are what make it read as iOS.
+/// Colours come from the active [ColorScheme] so the app's nine themes keep
+/// working — with one deliberate exception. **Today is always red.** It is the
+/// single most recognisable thing about Apple's calendar: red is what tells you
+/// where you are, on the icon, in the month grid and in the day list. Themed to
+/// the accent it stopped carrying that meaning, and in themes whose accent is
+/// near-white it was indistinguishable from an ordinary day. The event dots
+/// stay on the user's configured section colours, which is where per-theme
+/// colour actually earns something.
+const Color _todayRed = CupertinoColors.systemRed;
+
 class IosMonthCalendar extends StatefulWidget {
   const IosMonthCalendar({
     super.key,
@@ -248,9 +257,10 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  // The month a user is looking at is the one they care about.
+                  // The current month's name is red too, exactly as Apple
+                  // marks it while you scroll past it.
                   color: month.month == now.month && month.year == now.year
-                      ? theme.colorScheme.primary
+                      ? CupertinoDynamicColor.resolve(_todayRed, context)
                       : theme.colorScheme.onSurface,
                 ),
               ),
@@ -299,17 +309,21 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
 
     final events = widget.eventsForDay(date);
 
+    // Apple's four states, in the order it resolves them: today-and-selected is
+    // a filled red disc, selected alone is a filled label-coloured disc, today
+    // alone is red text with no disc, everything else is plain.
+    final red = CupertinoDynamicColor.resolve(_todayRed, context);
     final Color numberColor;
     final Color? circleColor;
     if (isSelected && isToday) {
-      circleColor = scheme.primary;
-      numberColor = scheme.onPrimary;
+      circleColor = red;
+      numberColor = CupertinoColors.white;
     } else if (isSelected) {
       circleColor = scheme.onSurface;
       numberColor = scheme.surface;
     } else if (isToday) {
       circleColor = null;
-      numberColor = scheme.primary;
+      numberColor = red;
     } else if (isWeekend) {
       circleColor = null;
       numberColor = scheme.onSurface.withValues(alpha: 0.45);
@@ -324,9 +338,11 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
       label: DateFormat.yMMMMEEEEd(Localizations.localeOf(context).toString())
           .format(day),
       value: events.isEmpty ? null : '${events.length}',
-      child: InkResponse(
+      // Not InkResponse: a day tap in Apple's calendar has no ripple, and the
+      // selection disc lands immediately.
+      child: Pressable(
         onTap: () => widget.onDaySelected(date),
-        radius: 26,
+        haptic: HapticKind.selection,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -386,7 +402,11 @@ class _IosMonthCalendarState extends State<IosMonthCalendar> {
   }
 }
 
-/// Pinned S M T W T F S row, iOS-style: short, uppercase, letterspaced.
+/// Pinned S M T W T F S row.
+///
+/// Single narrow letters, not "SUN MON TUE": the month grid is seven columns of
+/// two-digit numbers, and three-letter headings are wider than the data they
+/// label, which is why Apple's month view uses the narrow form.
 class _WeekdayHeader extends StatelessWidget {
   const _WeekdayHeader({required this.height});
 
@@ -409,10 +429,10 @@ class _WeekdayHeader extends StatelessWidget {
           return Expanded(
             child: Center(
               child: Text(
-                DateFormat.E(locale).format(day).toUpperCase(),
+                DateFormat.EEEEE(locale).format(day).toUpperCase(),
                 style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 11,
-                  letterSpacing: 0.6,
+                  fontSize: 13,
+                  letterSpacing: 0,
                   fontWeight: FontWeight.w600,
                   color: theme.colorScheme.onSurface
                       .withValues(alpha: isWeekend ? 0.35 : 0.55),

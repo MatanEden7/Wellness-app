@@ -24,6 +24,9 @@ import '../../../data/db/drift_database.dart';
 import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
+import 'package:intl/intl.dart';
+import '../../../core/ios/pressable.dart';
+import '../../../core/ios/app_scaffold.dart';
 
 class CalendarPage extends ConsumerWidget {
   const CalendarPage({super.key});
@@ -92,6 +95,18 @@ class CalendarPage extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+          // Every Apple calendar has one, and without it a user who has
+          // scrolled to next March has no way back except scrolling.
+          ChromeAction(
+            label: l10n.today,
+            tooltip: l10n.today,
+            onPressed: () {
+              final now = DateTime.now();
+              final today = DateTime(now.year, now.month, now.day);
+              ref.read(calendarStateProvider.notifier).setFocusedDate(today);
+              ref.read(calendarStateProvider.notifier).setSelectedDate(today);
+            },
           ),
           ChromeAction(
             icon: CupertinoIcons.add,
@@ -218,23 +233,32 @@ class CalendarPage extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
+                          // "Wednesday, 12 August", not "Aug 12, 2026". The
+                          // day list is headed by the weekday in Apple's
+                          // calendar, because when you have just tapped a cell
+                          // in a month grid the number is the one thing you
+                          // already know.
                           child: Text(
-                            AppDateUtils.formatDate(selectedDate),
+                            _dayHeaderLabel(context, selectedDate),
                             style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.add_circle_outline),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minSize: 32,
                           onPressed: () =>
                               _showAddEventDialog(context, ref, selectedDate),
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          tooltip:
-                              AppLocalizations.of(context)!.addEventTooltip,
+                          child: Icon(
+                            CupertinoIcons.add,
+                            size: 22,
+                            color: theme.colorScheme.primary,
+                            semanticLabel:
+                                AppLocalizations.of(context)!.addEventTooltip,
+                          ),
                         ),
                       ],
                     ),
@@ -325,13 +349,18 @@ class CalendarPage extends ConsumerWidget {
                       // Add padding at the top
                       return const SizedBox.shrink();
                     }
-                    final event = calendarDay.events[index - 1];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      child: _buildEventCard(context, ref, event),
+                    final index0 = index - 1;
+                    final event = calendarDay.events[index0];
+                    // Hairline between rows, not a gap: the rows are flat now,
+                    // so the separator is what groups them into a list. Indented
+                    // to the title, the way a grouped list separates its rows.
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (index0 > 0)
+                          const AppHairline(indent: AppSpacing.md + 69),
+                        _buildEventRow(context, ref, event),
+                      ],
                     );
                   },
                   childCount: calendarDay.events.length + 1,
@@ -382,123 +411,117 @@ class CalendarPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEventCard(
+  /// One row of the day list, in the shape Apple's calendar uses.
+  ///
+  /// Was a rounded card carrying a 44pt tinted icon badge and a floating
+  /// surface of its own. Apple's day list has neither: the rows sit flat on the
+  /// page, separated by hairlines, and the only colour is a rounded capsule
+  /// down the leading edge. The badge was also redundant — that capsule already
+  /// says which of the three types this is, in the same colour as the dot on
+  /// the month grid above it.
+  ///
+  /// Layout is time-led, which is the other half of it: the eye goes down a
+  /// column of times, and the title sits beside it.
+  Widget _buildEventRow(
       BuildContext context, WidgetRef ref, ScheduledEvent event) {
     final theme = Theme.of(context);
     final eventColor = _getEventColor(ref, event);
+    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: ContentSurface(
-        borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.surface,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: () => _navigateToEventDetail(context, ref, event),
-            child: Row(
-              children: [
-                // iOS-style leading colour bar: a solid accent down the leading
-                // edge, the way an event row reads in the iOS Calendar day list.
-                // Replaces a fully tinted border, which washed the colour out at
-                // 30% opacity and made the three types hard to tell apart.
-                Container(width: 4, height: 68, color: eventColor),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(Space.md),
-                    child: Row(
-                      children: [
-                        // Icon with background
-                        ContentSurface.tinted(
-                          color: eventColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            child: Icon(
-                              _getEventIcon(event.type),
-                              color: eventColor,
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-
-                        // Content
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Title with type badge
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      event.title,
-                                      style:
-                                          theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        decoration: event.isCompleted
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  _buildStatusChip(
-                                      context, event.status, eventColor),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-
-                              // Time and description
-                              Row(
-                                children: [
-                                  Icon(Icons.access_time,
-                                      size: 14,
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.6)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    AppDateUtils.formatTime(event.scheduledAt),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color
-                                          ?.withValues(alpha: 0.8),
-                                    ),
-                                  ),
-                                  if (event.description != null) ...[
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        event.description!,
-                                        style:
-                                            theme.textTheme.bodySmall?.copyWith(
-                                          color: theme
-                                              .textTheme.bodySmall?.color
-                                              ?.withValues(alpha: 0.7),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+    return Pressable(
+      onTap: () => _navigateToEventDetail(context, ref, event),
+      style: PressStyle.highlight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 10,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 56,
+              child: Text(
+                AppDateUtils.formatTime(event.scheduledAt),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: 15,
+                  color: muted,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
-              ],
+              ),
             ),
-          ),
+            // Rounded, not square: a 3pt capsule is what iOS draws beside an
+            // event, and it reads as a marker rather than as a table rule.
+            Container(
+              width: 3,
+              height: 34,
+              margin: const EdgeInsets.only(right: 10),
+              decoration: BoxDecoration(
+                color: eventColor,
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    event.title,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontSize: 17,
+                      decoration:
+                          event.isCompleted ? TextDecoration.lineThrough : null,
+                      color: event.isCompleted ? muted : null,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (event.description != null) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      event.description!,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(fontSize: 15, color: muted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildStatusChip(context, event.status, eventColor),
+          ],
         ),
       ),
     );
+  }
+
+  /// "Today" / "Tomorrow" / "Wednesday, 12 August", localised.
+  ///
+  /// The relative words are not decoration: the day list is most often opened
+  /// on today, and reading a date back to someone who tapped "now" is the kind
+  /// of thing that makes an app feel like it is not paying attention.
+  String _dayHeaderLabel(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
+    // Truncated inline rather than via AppDateUtils.startOfDay: there are two
+    // classes called AppDateUtils in this repo (core/utils.dart and
+    // core/date_utils.dart) and only the latter has it, so importing it here
+    // would collide with the one this file already uses.
+    final now = DateTime.now();
+    final day = DateTime(date.year, date.month, date.day);
+    final today = DateTime(now.year, now.month, now.day);
+
+    if (day == today) return l10n.today;
+    if (day == today.add(const Duration(days: 1))) return l10n.tomorrow;
+    if (day == today.subtract(const Duration(days: 1))) return l10n.yesterday;
+
+    // The year only when it isn't this one -- same rule the month headers use.
+    return day.year == today.year
+        ? DateFormat.MMMMEEEEd(locale).format(day)
+        : DateFormat.yMMMMEEEEd(locale).format(day);
   }
 
   void _navigateToEventDetail(
@@ -1077,10 +1100,10 @@ class CalendarPage extends ConsumerWidget {
             onAction: () => _showAddEventDialog(context, ref, selectedDate),
           )
         else
-          ...calendarDay.events.map((event) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _buildEventCard(context, ref, event),
-              )),
+          for (final (index, event) in calendarDay.events.indexed) ...[
+            if (index > 0) const AppHairline(indent: AppSpacing.md + 69),
+            _buildEventRow(context, ref, event),
+          ],
       ],
     );
   }
