@@ -797,17 +797,6 @@ class CalendarPage extends ConsumerWidget {
   Color _getEventColor(WidgetRef ref, ScheduledEvent event) =>
       eventColorFor(ref.read(preferencesServiceProvider), event.type);
 
-  IconData _getEventIcon(EventType type) {
-    switch (type) {
-      case EventType.meal:
-        return Icons.restaurant;
-      case EventType.workout:
-        return Icons.fitness_center;
-      case EventType.sleep:
-        return Icons.bedtime;
-    }
-  }
-
   Future<void> _showAddEventDialog(
     BuildContext context,
     WidgetRef ref, [
