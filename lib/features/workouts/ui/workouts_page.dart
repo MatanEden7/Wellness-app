@@ -335,7 +335,8 @@ class WorkoutSessionCard extends StatelessWidget {
                       [
                         AppDateUtils.formatTime(session.startedAt),
                         if (session.duration != null)
-                          AppDateUtils.formatDuration(session.duration!),
+                          AppDateUtils.formatDuration(
+                              session.duration!, AppLocalizations.of(context)!),
                         if (session.sets.isNotEmpty)
                           l10n.setsCompletedCount(session.sets.length),
                       ].join(' · '),

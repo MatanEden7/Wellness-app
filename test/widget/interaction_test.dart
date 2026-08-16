@@ -111,7 +111,8 @@ void main() {
       ));
 
       // Tapping the left edge should report a hue near 0.
-      await tester.tapAt(tester.getTopLeft(find.byType(HuePicker)) + const Offset(2, 20));
+      await tester.tapAt(
+          tester.getTopLeft(find.byType(HuePicker)) + const Offset(2, 20));
       await tester.pump();
 
       expect(reportedHue, isNotNull);
@@ -143,7 +144,8 @@ void main() {
         ),
       ));
 
-      final topLeft = tester.getTopLeft(find.byType(SaturationBrightnessPicker));
+      final topLeft =
+          tester.getTopLeft(find.byType(SaturationBrightnessPicker));
       // Top-left of the square is max brightness, zero saturation.
       await tester.tapAt(topLeft + const Offset(2, 2));
       await tester.pump();

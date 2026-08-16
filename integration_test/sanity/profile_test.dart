@@ -14,7 +14,8 @@ import '../support/app_launcher.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('shows the complete-setup empty state when no profile is saved', (tester) async {
+  testWidgets('shows the complete-setup empty state when no profile is saved',
+      (tester) async {
     await pumpApp(tester); // no profile seeded
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -26,7 +27,8 @@ void main() {
     expect(find.text('Body'), findsNothing);
   });
 
-  testWidgets('all sections render with the saved profile values', (tester) async {
+  testWidgets('all sections render with the saved profile values',
+      (tester) async {
     await pumpApp(tester, profile: testProfile());
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -49,7 +51,8 @@ void main() {
     expect(find.text('4'), findsOneWidget);
 
     // Nutrition Targets -- off-screen in the single ListView until scrolled.
-    await tester.scrollUntilVisible(find.text('2200 kcal'), 200, scrollable: scrollable);
+    await tester.scrollUntilVisible(find.text('2200 kcal'), 200,
+        scrollable: scrollable);
     expect(find.text('2200 kcal'), findsOneWidget);
     expect(find.text('180 g'), findsOneWidget);
     expect(find.text('220 g'), findsOneWidget);
@@ -58,23 +61,26 @@ void main() {
     expect(find.text('2600 kcal'), findsOneWidget); // TDEE
 
     // Food & Diet.
-    await tester.scrollUntilVisible(find.text('Omnivore'), 200, scrollable: scrollable);
+    await tester.scrollUntilVisible(find.text('Omnivore'), 200,
+        scrollable: scrollable);
     expect(find.text('Omnivore'), findsOneWidget);
     expect(find.text('3 Meals'), findsOneWidget);
     expect(find.text('None'), findsNWidgets(2)); // exclusions + injuries
 
     // Equipment.
-    await tester.scrollUntilVisible(
-        find.text('Dumbbells, Barbell_rack'), 200, scrollable: scrollable);
+    await tester.scrollUntilVisible(find.text('Dumbbells, Barbell_rack'), 200,
+        scrollable: scrollable);
     expect(find.text('Dumbbells, Barbell_rack'), findsOneWidget);
 
     // Units.
-    await tester.scrollUntilVisible(find.text('KCAL'), 200, scrollable: scrollable);
+    await tester.scrollUntilVisible(find.text('KCAL'), 200,
+        scrollable: scrollable);
     expect(find.text('KCAL'), findsOneWidget);
     expect(find.text('g'), findsOneWidget);
   });
 
-  testWidgets('editing weight recomputes BMR/TDEE/targets from the new value', (tester) async {
+  testWidgets('editing weight recomputes BMR/TDEE/targets from the new value',
+      (tester) async {
     await pumpApp(tester, profile: testProfile());
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -127,17 +133,15 @@ void main() {
     expect(find.text('${fat.toInt()} g'), findsOneWidget);
   });
 
-  testWidgets('editing a nutrition target directly does not touch BMR/TDEE', (tester) async {
+  testWidgets('editing a nutrition target directly does not touch BMR/TDEE',
+      (tester) async {
     await pumpApp(tester, profile: testProfile());
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
     await tester.tap(find.text('My Profile'));
     await settle(tester);
 
-    await tester.scrollUntilVisible(find.text('Calories'), 200,
-        scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.text('Calories'));
-    await settle(tester);
+    await tapInScroll(tester, find.text('Calories'));
     await tester.enterText(find.byType(TextField), '2500');
     await tester.tap(find.text('Save'));
     await settle(tester);
@@ -150,7 +154,9 @@ void main() {
     expect(find.text('2600 kcal'), findsOneWidget);
   });
 
-  testWidgets('multi-picker: selecting an exclusion clears "None", re-picking "None" clears others', (tester) async {
+  testWidgets(
+      'multi-picker: selecting an exclusion clears "None", re-picking "None" clears others',
+      (tester) async {
     await pumpApp(tester, profile: testProfile());
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -185,6 +191,7 @@ void main() {
     await tester.tap(find.text('Done'));
     await settle(tester);
 
-    expect(find.text('None'), findsWidgets); // exclusions row now reads "None" too
+    expect(
+        find.text('None'), findsWidgets); // exclusions row now reads "None" too
   });
 }

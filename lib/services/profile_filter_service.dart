@@ -4,6 +4,7 @@ import '../features/meals/domain/food_tags.dart';
 import '../features/workouts/domain/exercise_tags.dart';
 import 'profile_fit.dart';
 import 'user_profile_service.dart';
+import 'package:wellness_app/services/language_service.dart';
 
 /// Whether the browsing lists are currently showing everything, or only
 /// what suits the user's profile.
@@ -28,20 +29,20 @@ final filterProfileProvider = Provider<UserProfile?>((ref) {
 ///
 /// Lives here rather than in [ProfileFit] so that service stays free of
 /// presentation concerns and remains testable without a widget tree.
-String? fitFailureLabel(FitResult result) {
+String? fitFailureLabel(FitResult result, AppLanguage language) {
   if (result.fits) return null;
   switch (result.failure!) {
     case FitFailure.diet:
       final tag = result.detail as FoodTag;
-      return 'Contains ${tag.label.toLowerCase()}';
+      return 'Contains ${tag.label(language).toLowerCase()}';
     case FitFailure.exclusion:
       final tag = result.detail as FoodTag;
-      return 'Contains ${tag.label.toLowerCase()}';
+      return 'Contains ${tag.label(language).toLowerCase()}';
     case FitFailure.equipment:
       final equipment = result.detail as Equipment;
-      return 'Needs ${equipment.label.toLowerCase()}';
+      return 'Needs ${equipment.label(language).toLowerCase()}';
     case FitFailure.injury:
       final part = result.detail as BodyPart;
-      return 'Avoid with ${part.label.toLowerCase()} injury';
+      return 'Avoid with ${part.label(language).toLowerCase()} injury';
   }
 }

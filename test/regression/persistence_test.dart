@@ -67,7 +67,8 @@ void main() {
       await second.load();
 
       final meals = await second.getMealsByDate(20260802);
-      expect(meals, hasLength(1), reason: 'the logged meal should survive restart');
+      expect(meals, hasLength(1),
+          reason: 'the logged meal should survive restart');
       expect(meals.single.name, 'Lunch');
 
       final items = await second.getMealItemsByMealId('meal-1');
@@ -97,7 +98,8 @@ void main() {
       expect((await second.getAllMealTemplates()).length, seededTemplateCount);
     });
 
-    test('a starter food the user deleted stays deleted across restart', () async {
+    test('a starter food the user deleted stays deleted across restart',
+        () async {
       final store = FakeSnapshotStore();
 
       final first = AppDatabase(store: store);
@@ -145,13 +147,15 @@ void main() {
       await second.load();
 
       expect((await second.getAllWorkoutSessions()), hasLength(1));
-      expect((await second.getSetEntriesBySessionId('session-1')), hasLength(1));
+      expect(
+          (await second.getSetEntriesBySessionId('session-1')), hasLength(1));
       expect(await second.getLastNightSleepHours(), 8.0);
     });
   });
 
   group('durability', () {
-    test('a corrupt snapshot falls back to the seeded catalog instead of crashing',
+    test(
+        'a corrupt snapshot falls back to the seeded catalog instead of crashing',
         () async {
       final store = FakeSnapshotStore('{ this is not valid json');
 
@@ -164,7 +168,8 @@ void main() {
       expect(() => jsonDecode(store.contents!), returnsNormally);
     });
 
-    test('an absent snapshot writes the seeded baseline on first launch', () async {
+    test('an absent snapshot writes the seeded baseline on first launch',
+        () async {
       final store = FakeSnapshotStore();
 
       final database = AppDatabase(store: store);

@@ -130,7 +130,7 @@ class SettingsStub extends ConsumerWidget {
 
           // ── Health ──────────────────────────────────────────────────────
           SettingsSection(
-            title: 'Health',
+            title: l10n.healthSection,
             children: [
               SettingsRow(
                 icon: Icons.notifications,
@@ -142,7 +142,7 @@ class SettingsStub extends ConsumerWidget {
                 icon: Icons.track_changes,
                 iconColor: Colors.red,
                 title: l10n.nutritionGoals,
-                value: _nutritionGoalsSummary(prefs),
+                value: _nutritionGoalsSummary(l10n, prefs),
                 onTap: () => context.push(Routes.nutritionGoals),
               ),
               // This row said "Workout Templates" and opened Workout
@@ -534,28 +534,29 @@ class SettingsStub extends ConsumerWidget {
       case AppThemeKind.gold:
         return l10n.gold;
       case AppThemeKind.ocean:
-        return 'Ocean';
+        return l10n.themeOcean;
       case AppThemeKind.forest:
-        return 'Forest';
+        return l10n.themeForest;
       case AppThemeKind.sunset:
-        return 'Sunset';
+        return l10n.themeSunset;
       case AppThemeKind.lavender:
-        return 'Lavender';
+        return l10n.themeLavender;
       case AppThemeKind.midnight:
-        return 'Midnight';
+        return l10n.themeMidnight;
       case AppThemeKind.custom:
-        return 'Custom';
+        return l10n.themeCustom;
     }
   }
 
-  String _nutritionGoalsSummary(PreferencesService prefs) {
+  String _nutritionGoalsSummary(
+      AppLocalizations l10n, PreferencesService prefs) {
     final set = [
       prefs.calorieGoal,
       prefs.proteinGoal,
       prefs.carbsGoal,
       prefs.fatGoal,
     ].where((g) => g != null).length;
-    return set == 0 ? 'Not set' : '$set/4 goals set';
+    return set == 0 ? l10n.notSet : l10n.goalsSetCount(set);
   }
 }
 
@@ -572,20 +573,13 @@ class _ProfileCard extends StatelessWidget {
   final String? goal;
   final VoidCallback onTap;
 
-  String _goalLabel(String goal) {
-    switch (goal) {
-      case 'fat_loss':
-        return 'Fat Loss';
-      case 'muscle_gain':
-        return 'Muscle Gain';
-      case 'maintenance':
-        return 'Maintenance';
-      case 'mobility_rehab':
-        return 'Mobility & Rehab';
-      default:
-        return goal;
-    }
-  }
+  String _goalLabel(AppLocalizations l10n, String goal) => switch (goal) {
+        'fat_loss' => l10n.onboardingGoalFatLoss,
+        'muscle_gain' => l10n.onboardingGoalMuscleBuild,
+        'maintenance' => l10n.onboardingGoalMaintenance,
+        'mobility_rehab' => l10n.onboardingGoalMobilityRehab,
+        _ => goal,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -611,13 +605,13 @@ class _ProfileCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('My Profile',
+                    Text(AppLocalizations.of(context)!.profileTitle,
                         style: theme.textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600)),
                     if (weightKg != null && goal != null) ...[
                       const SizedBox(height: 2),
                       Text(
-                        '${weightKg!.toStringAsFixed(1)} kg  ·  ${_goalLabel(goal!)}',
+                        '${weightKg!.toStringAsFixed(1)} ${AppLocalizations.of(context)!.kg}  ·  ${_goalLabel(AppLocalizations.of(context)!, goal!)}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.55),
@@ -625,7 +619,7 @@ class _ProfileCard extends StatelessWidget {
                       ),
                     ] else
                       Text(
-                        'Tap to complete setup',
+                        AppLocalizations.of(context)!.tapToCompleteSetup,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.primary,
                         ),

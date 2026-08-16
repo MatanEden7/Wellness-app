@@ -5,12 +5,35 @@ import '../core/template_origin.dart';
 import '../data/db/drift_database.dart';
 import '../features/calendar/domain/models.dart';
 import 'user_profile_service.dart';
+import 'package:wellness_app/services/language_service.dart';
 
 class CalendarScheduleGenerator {
   final AppDatabase _database;
   final UserProfile _profile;
 
-  CalendarScheduleGenerator(this._database, this._profile);
+  /// The language the plan is being generated in.
+  ///
+  /// Event titles are *stored*, so this decides what a user sees on their
+  /// calendar forever after. Both generators already fill `nameHe` on their
+  /// templates; this class was copying `template.name` -- the English field --
+  /// so a plan built during Hebrew onboarding came out in English even though
+  /// the Hebrew names existed alongside it.
+  final AppLanguage _language;
+
+  CalendarScheduleGenerator(this._database, this._profile,
+      [this._language = AppLanguage.english]);
+
+  /// Picks the Hebrew name when generating in Hebrew and one exists.
+  ///
+  /// The *Data classes carry `nameHe` but not the `displayName()` the domain
+  /// models have, so the same fallback rule lives here: an untranslated
+  /// template keeps its English name rather than showing a blank.
+  String _named(String name, String? nameHe) =>
+      _language == AppLanguage.hebrew &&
+              nameHe != null &&
+              nameHe.trim().isNotEmpty
+          ? nameHe
+          : name;
 
   /// Builds the events a new user's calendar should start with.
   ///
@@ -46,7 +69,7 @@ class CalendarScheduleGenerator {
     if (mainTemplates.isEmpty) {
       debugPrint(
           '[CALENDAR-GEN] No workout templates, skipping workout events');
-      return const [];
+      return [];
     }
 
     // One weekly-recurring event per training day, each pinned to a template.
@@ -62,7 +85,7 @@ class CalendarScheduleGenerator {
       final firstOccurrence = _nextWeekdayOnOrAfter(firstDay, weekday);
 
       events.add(ScheduledEvent.create(
-        title: template.name,
+        title: _named(template.name, template.nameHe),
         type: EventType.workout,
         scheduledAt: DateTime(firstOccurrence.year, firstOccurrence.month,
             firstOccurrence.day, _workoutHour),
@@ -93,7 +116,9 @@ class CalendarScheduleGenerator {
       final template = pool.isEmpty ? null : pool[i % pool.length];
 
       events.add(ScheduledEvent.create(
-        title: template?.name ?? slot.label,
+        title: template == null
+            ? slot.label
+            : _named(template.name, template.nameHe),
         type: EventType.meal,
         scheduledAt: DateTime(
             today.year, today.month, today.day, slot.hour, slot.minute),
@@ -107,7 +132,7 @@ class CalendarScheduleGenerator {
   ScheduledEvent _buildSleepEvent() {
     final today = AppDateUtils.startOfDay(DateTime.now());
     return ScheduledEvent.create(
-      title: 'Sleep',
+      title: _language == AppLanguage.hebrew ? 'שינה' : 'Sleep',
       type: EventType.sleep,
       scheduledAt: DateTime(today.year, today.month, today.day, _bedtimeHour),
       recurrenceType: RecurrenceType.daily,
@@ -115,34 +140,83 @@ class CalendarScheduleGenerator {
   }
 
   /// Meal slots for the profile's meal count. The labels are only a fallback
-  /// for when no meal template was generated to name the event after.
+  /// for when no meal template was generated to name the event after, so they
+  /// follow the generation language too.
   List<({String label, int hour, int minute})> _mealTimes() {
     switch (_profile.mealCountPerDay) {
       case '2':
-        return const [
-          (label: 'Lunch', hour: 12, minute: 30),
-          (label: 'Dinner', hour: 19, minute: 0),
+        return [
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת צהריים' : 'Lunch',
+            hour: 12,
+            minute: 30
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת ערב' : 'Dinner',
+            hour: 19,
+            minute: 0
+          ),
         ];
       case '4':
-        return const [
-          (label: 'Breakfast', hour: 8, minute: 0),
-          (label: 'Lunch', hour: 12, minute: 30),
-          (label: 'Snack', hour: 16, minute: 0),
-          (label: 'Dinner', hour: 19, minute: 30),
+        return [
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת בוקר' : 'Breakfast',
+            hour: 8,
+            minute: 0
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת צהריים' : 'Lunch',
+            hour: 12,
+            minute: 30
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'חטיף' : 'Snack',
+            hour: 16,
+            minute: 0
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת ערב' : 'Dinner',
+            hour: 19,
+            minute: 30
+          ),
         ];
       case 'intermittent_fasting_16_8':
         // Eating window opens at midday.
-        return const [
-          (label: 'Lunch', hour: 12, minute: 0),
-          (label: 'Snack', hour: 16, minute: 0),
-          (label: 'Dinner', hour: 19, minute: 30),
+        return [
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת צהריים' : 'Lunch',
+            hour: 12,
+            minute: 0
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'חטיף' : 'Snack',
+            hour: 16,
+            minute: 0
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת ערב' : 'Dinner',
+            hour: 19,
+            minute: 30
+          ),
         ];
       case '3':
       default:
-        return const [
-          (label: 'Breakfast', hour: 8, minute: 0),
-          (label: 'Lunch', hour: 12, minute: 30),
-          (label: 'Dinner', hour: 19, minute: 0),
+        return [
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת בוקר' : 'Breakfast',
+            hour: 8,
+            minute: 0
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת צהריים' : 'Lunch',
+            hour: 12,
+            minute: 30
+          ),
+          (
+            label: _language == AppLanguage.hebrew ? 'ארוחת ערב' : 'Dinner',
+            hour: 19,
+            minute: 0
+          ),
         ];
     }
   }
@@ -183,13 +257,13 @@ class CalendarScheduleGenerator {
     // consecutive days: three sessions belong on Sun/Tue/Thu, not Sun/Mon/Tue.
     switch (count) {
       case 1:
-        return const [DateTime.sunday];
+        return [DateTime.sunday];
       case 2:
-        return const [DateTime.sunday, DateTime.wednesday];
+        return [DateTime.sunday, DateTime.wednesday];
       case 3:
-        return const [DateTime.sunday, DateTime.tuesday, DateTime.thursday];
+        return [DateTime.sunday, DateTime.tuesday, DateTime.thursday];
       case 4:
-        return const [
+        return [
           DateTime.sunday,
           DateTime.monday,
           DateTime.wednesday,

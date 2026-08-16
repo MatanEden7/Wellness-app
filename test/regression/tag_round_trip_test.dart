@@ -73,7 +73,8 @@ void main() {
           reason: 'editing a food must not silently untag it');
     });
 
-    test('exercise equipment and contraindications survive create -> read', () async {
+    test('exercise equipment and contraindications survive create -> read',
+        () async {
       final db = AppDatabase();
       final repo = ExercisesRepository(db);
 

@@ -169,9 +169,20 @@ void main() {
 
     test('the big compounds are all present', () {
       const essentials = [
-        'Squats', 'Deadlift', 'Bench Press', 'Overhead Press', 'Pull-ups',
-        'Barbell Rows', 'Push-ups', 'Bodyweight Squat', 'Plank', 'Chin-up',
-        'Romanian Deadlift', 'Hip Thrust', 'Farmer Carry', 'Reverse Lunge',
+        'Squats',
+        'Deadlift',
+        'Bench Press',
+        'Overhead Press',
+        'Pull-ups',
+        'Barbell Rows',
+        'Push-ups',
+        'Bodyweight Squat',
+        'Plank',
+        'Chin-up',
+        'Romanian Deadlift',
+        'Hip Thrust',
+        'Farmer Carry',
+        'Reverse Lunge',
       ];
       final names = all.map((e) => e.name).toSet();
       for (final name in essentials) {
@@ -211,7 +222,9 @@ void main() {
     setUpAll(() => database = AppDatabase());
 
     test('every row is seeded, with its metadata intact', () async {
-      final seeded = {for (final e in await database.getAllExercises()) e.id: e};
+      final seeded = {
+        for (final e in await database.getAllExercises()) e.id: e
+      };
       for (final e in all) {
         final row = seeded[e.id];
         expect(row, isNotNull, reason: '${e.name} was not seeded');

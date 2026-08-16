@@ -20,7 +20,12 @@ void main() {
       // silently matched nothing here once the shortcut moved.
       await tapDashboardAction(tester, DashboardKeys.calendarAction);
 
-      expect(find.text(l10n.calendarTitle), findsOneWidget);
+      // At least one, not exactly one: on the Flutter chrome tier the
+      // screen's name is legitimately in the tree three times -- the
+      // navigation-bar title, the large title it collapses into, and the
+      // tab-bar label. On the native tier all three live in UIKit and the
+      // count was one, which is what this assertion was written against.
+      expect(find.text(l10n.calendarTitle), findsAtLeastNWidgets(1));
     });
   }
 }

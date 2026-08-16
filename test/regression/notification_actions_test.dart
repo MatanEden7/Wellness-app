@@ -24,7 +24,8 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     AppDatabase.resetForTesting();
-    service = CalendarService(await SharedPreferences.getInstance(), AppDatabase());
+    service =
+        CalendarService(await SharedPreferences.getInstance(), AppDatabase());
   });
 
   ScheduledEvent recurring() => ScheduledEvent(
@@ -74,7 +75,8 @@ void main() {
       expect(await service.getEventById('nope'), isNull);
       expect(
         await service.getEventById(
-          CalendarService.occurrenceIdFor('deleted-event', DateTime(2026, 8, 9)),
+          CalendarService.occurrenceIdFor(
+              'deleted-event', DateTime(2026, 8, 9)),
         ),
         isNull,
       );
@@ -97,7 +99,8 @@ void main() {
   });
 
   group('notification payloads', () {
-    final notifications = NotificationService(FlutterLocalNotificationsPlugin());
+    final notifications =
+        NotificationService(FlutterLocalNotificationsPlugin());
 
     test('a payload with a template round-trips', () {
       final parsed = notifications.parsePayload('meal|evt-1|tpl-9');

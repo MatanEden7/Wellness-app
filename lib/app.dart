@@ -146,7 +146,7 @@ class _WellnessAppState extends ConsumerState<WellnessApp>
     final prefs = ref.watch(preferencesServiceProvider);
 
     return MaterialApp.router(
-      title: 'Wellness App',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: AppTheme.byKind(
         currentTheme,
         customPrimary: currentTheme == AppThemeKind.custom

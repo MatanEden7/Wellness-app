@@ -476,6 +476,12 @@ abstract class AppLocalizations {
   /// **'kcal'**
   String get kcal;
 
+  /// No description provided for @centimetersShort.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get centimetersShort;
+
   /// No description provided for @addFood.
   ///
   /// In en, this message translates to:
@@ -4693,6 +4699,498 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Off — Reduce Transparency is on'**
   String get glassEffectReducedByAccessibility;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get profileTitle;
+
+  /// No description provided for @profileNotCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile setup not completed'**
+  String get profileNotCompleted;
+
+  /// No description provided for @profileSectionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get profileSectionBody;
+
+  /// No description provided for @profileSectionGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal & Activity'**
+  String get profileSectionGoal;
+
+  /// No description provided for @profileSectionTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition Targets'**
+  String get profileSectionTargets;
+
+  /// No description provided for @profileSectionFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food & Diet'**
+  String get profileSectionFood;
+
+  /// No description provided for @profileSectionUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get profileSectionUnits;
+
+  /// No description provided for @profileTrainingDaysWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Days / Week'**
+  String get profileTrainingDaysWeek;
+
+  /// No description provided for @profileCalorieTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie Target'**
+  String get profileCalorieTarget;
+
+  /// No description provided for @profileProteinTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein Target'**
+  String get profileProteinTarget;
+
+  /// No description provided for @profileCarbsTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs Target'**
+  String get profileCarbsTarget;
+
+  /// No description provided for @profileFatTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat Target'**
+  String get profileFatTarget;
+
+  /// No description provided for @profileInjuries.
+  ///
+  /// In en, this message translates to:
+  /// **'Injuries'**
+  String get profileInjuries;
+
+  /// No description provided for @profileEnergyUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy Unit'**
+  String get profileEnergyUnit;
+
+  /// No description provided for @profileRecalculate.
+  ///
+  /// In en, this message translates to:
+  /// **'Recalculate from Body & Goal'**
+  String get profileRecalculate;
+
+  /// No description provided for @profileRegenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your templates?'**
+  String get profileRegenTitle;
+
+  /// No description provided for @healthSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get healthSection;
+
+  /// No description provided for @calendarSelectRecentMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a recent meal'**
+  String get calendarSelectRecentMeal;
+
+  /// No description provided for @calendarSelectRecentWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a recent workout'**
+  String get calendarSelectRecentWorkout;
+
+  /// No description provided for @filterShowingEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing everything'**
+  String get filterShowingEverything;
+
+  /// No description provided for @foodBrandHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Generic, Organic, etc.'**
+  String get foodBrandHint;
+
+  /// No description provided for @foodUnitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'g, ml, piece, cup, etc.'**
+  String get foodUnitHint;
+
+  /// No description provided for @foodTagsContains.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains'**
+  String get foodTagsContains;
+
+  /// No description provided for @foodTagsContainsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Used to hide this food when it clashes with your diet or exclusions. Leave blank if it contains none.'**
+  String get foodTagsContainsHelp;
+
+  /// No description provided for @foodTagsAnimalOrigin.
+  ///
+  /// In en, this message translates to:
+  /// **'Animal origin'**
+  String get foodTagsAnimalOrigin;
+
+  /// No description provided for @foodTagsAnimalOriginHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for plant-based diets.'**
+  String get foodTagsAnimalOriginHelp;
+
+  /// No description provided for @mealNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any additional notes about this meal'**
+  String get mealNotesHint;
+
+  /// No description provided for @mealTemplateNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., High Protein Breakfast, Pre-Workout Snack'**
+  String get mealTemplateNameHint;
+
+  /// No description provided for @mealTemplateNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes about this meal template'**
+  String get mealTemplateNotesHint;
+
+  /// No description provided for @colorRolePrimary.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary'**
+  String get colorRolePrimary;
+
+  /// No description provided for @colorRoleBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get colorRoleBackground;
+
+  /// No description provided for @colorRoleSurface.
+  ///
+  /// In en, this message translates to:
+  /// **'Surface'**
+  String get colorRoleSurface;
+
+  /// No description provided for @exerciseNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Bench Press, Squats'**
+  String get exerciseNameHint;
+
+  /// No description provided for @exerciseMuscleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Chest, Legs, Back'**
+  String get exerciseMuscleHint;
+
+  /// No description provided for @exerciseNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Form cues, variations, etc.'**
+  String get exerciseNotesHint;
+
+  /// No description provided for @exerciseEquipmentNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment needed'**
+  String get exerciseEquipmentNeeded;
+
+  /// No description provided for @exerciseEquipmentHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick every option this can be done with. Leave blank and it will be treated as always available.'**
+  String get exerciseEquipmentHelp;
+
+  /// No description provided for @exerciseAvoidInjury.
+  ///
+  /// In en, this message translates to:
+  /// **'Avoid with injury to'**
+  String get exerciseAvoidInjury;
+
+  /// No description provided for @exerciseAvoidInjuryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'This will be hidden for anyone reporting one of these injuries.'**
+  String get exerciseAvoidInjuryHelp;
+
+  /// No description provided for @workoutTemplateNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Push Day, Full Body'**
+  String get workoutTemplateNameHint;
+
+  /// No description provided for @workoutTemplateNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any notes about this workout template'**
+  String get workoutTemplateNotesHint;
+
+  /// No description provided for @templateNoExercisesAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises added'**
+  String get templateNoExercisesAdded;
+
+  /// No description provided for @templateNoExercisesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add exercises to build your workout template'**
+  String get templateNoExercisesHelp;
+
+  /// No description provided for @templateNoExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises'**
+  String get templateNoExercises;
+
+  /// No description provided for @templateRepsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for variable reps'**
+  String get templateRepsEmptyHint;
+
+  /// No description provided for @workoutLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading workout...'**
+  String get workoutLoading;
+
+  /// No description provided for @sleepInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress...'**
+  String get sleepInProgress;
+
+  /// No description provided for @profileRegenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile changed in a way that affects which meals and workouts suit you.\n\nRebuilding replaces {meals} generated meal template(s) and {workouts} generated workout template(s). Anything you created or edited yourself is kept.'**
+  String profileRegenBody(int meals, int workouts);
+
+  /// No description provided for @themeOcean.
+  ///
+  /// In en, this message translates to:
+  /// **'Ocean'**
+  String get themeOcean;
+
+  /// No description provided for @themeForest.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest'**
+  String get themeForest;
+
+  /// No description provided for @themeSunset.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get themeSunset;
+
+  /// No description provided for @themeLavender.
+  ///
+  /// In en, this message translates to:
+  /// **'Lavender'**
+  String get themeLavender;
+
+  /// No description provided for @themeMidnight.
+  ///
+  /// In en, this message translates to:
+  /// **'Midnight'**
+  String get themeMidnight;
+
+  /// No description provided for @themeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get themeCustom;
+
+  /// No description provided for @themeOceanDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Calming blues & teals'**
+  String get themeOceanDesc;
+
+  /// No description provided for @themeForestDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Natural & balanced greens'**
+  String get themeForestDesc;
+
+  /// No description provided for @themeSunsetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm & energetic'**
+  String get themeSunsetDesc;
+
+  /// No description provided for @themeLavenderDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Mindful & creative'**
+  String get themeLavenderDesc;
+
+  /// No description provided for @themeMidnightDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sophisticated dark blue'**
+  String get themeMidnightDesc;
+
+  /// No description provided for @themeCustomDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your own colors'**
+  String get themeCustomDesc;
+
+  /// No description provided for @appearanceThemeColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Colors'**
+  String get appearanceThemeColors;
+
+  /// No description provided for @appearanceSectionColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Section Colors'**
+  String get appearanceSectionColors;
+
+  /// No description provided for @appearanceNutritionColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition Colors'**
+  String get appearanceNutritionColors;
+
+  /// No description provided for @appearancePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get appearancePreview;
+
+  /// No description provided for @appearanceCustomAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize all app colors. Changes apply immediately.'**
+  String get appearanceCustomAll;
+
+  /// No description provided for @appearanceCustomSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize section colors. Switch to Custom theme to edit theme colors.'**
+  String get appearanceCustomSection;
+
+  /// No description provided for @tapToCompleteSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to complete setup'**
+  String get tapToCompleteSetup;
+
+  /// No description provided for @goalsSetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/4 goals set'**
+  String goalsSetCount(int count);
+
+  /// No description provided for @perUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Per {unit}:'**
+  String perUnit(String unit);
+
+  /// No description provided for @nutritionPerUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition per {unit}:'**
+  String nutritionPerUnit(String unit);
+
+  /// No description provided for @unitPer100g.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values are per 100 grams'**
+  String get unitPer100g;
+
+  /// No description provided for @unitPerGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values are per gram'**
+  String get unitPerGram;
+
+  /// No description provided for @unitPerMl.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values are per milliliter'**
+  String get unitPerMl;
+
+  /// No description provided for @unitPerOz.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values are per ounce'**
+  String get unitPerOz;
+
+  /// No description provided for @unitPerCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values are per {unit}'**
+  String unitPerCount(String unit);
+
+  /// No description provided for @durationHm.
+  ///
+  /// In en, this message translates to:
+  /// **'{h}h {m}m'**
+  String durationHm(String h, String m);
+
+  /// No description provided for @durationM.
+  ///
+  /// In en, this message translates to:
+  /// **'{m}m'**
+  String durationM(String m);
+
+  /// No description provided for @durationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get durationLabel;
+
+  /// No description provided for @activeFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Active {duration}'**
+  String activeFor(String duration);
+
+  /// No description provided for @scheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get scheduled;
+
+  /// No description provided for @brandGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Generic'**
+  String get brandGeneric;
+
+  /// No description provided for @amountWithUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount ({unit})'**
+  String amountWithUnit(String unit);
 }
 
 class _AppLocalizationsDelegate

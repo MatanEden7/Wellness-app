@@ -118,13 +118,26 @@ remaining work is a translator/designer decision, not engineering effort.
 | 98 | `PlatformChildPage`/`PlatformNavPage` ignored the app theme's background | Medium | Fixed | ~10min |
 | 99 | Bridge calls fail asynchronously; the `try/catch` around them caught nothing | Medium | Fixed | ~20min |
 | 100 | Deferred chrome sync leaked a listener per popped route, and pushed stale chrome | Low | Fixed | ~20min |
-| 101 | Analytics screen is a red error page: one `GlobalKey` used twice in a child list | Critical | **Open** | TBD |
+| 101 | Analytics screen is a red error page: one `GlobalKey` used twice in a child list | Critical | Fixed | ~1h |
+| 102 | Onboarding still renders English in Hebrew mode (units, BMR/TDEE/Goal lines) | Medium | Fixed | ~2h |
+| 103 | Onboarding never created the plan: setup marked complete before the generators ran | Critical | Fixed | ~1h |
+| 104 | `ListTile` inside glass surfaces asserts on every build (6 screens) | High | Fixed | ~1h |
+| 105 | Analytics `OverflowBox` bounded width but not height → infinite-size assert in a sliver | High | Fixed | ~20min |
+| 106 | Device suite unrunnable since the native chrome landed (21/23 sanity failures) | High | Fixed | ~3h |
+| 107 | Generated plan, templates and catalog rendered English in Hebrew mode | High | Fixed | ~3h |
+| 108 | RTL: number+unit strings reversed, and nav chevrons pointed the wrong way | Medium | Fixed | ~1h |
 
-**Totals:** 83 fixed, 1 partly fixed, 5 open. Four remaining items need you --
-a keystore (#49), a bundle-ID decision (#51), a product decision (#14), a
-translator (#31, which now also covers the Hebrew wording added by #72), and
-one 15-minute device check (#9). #101 is ordinary engineering work, not blocked
-on anything.
+**Totals:** 91 fixed, 1 partly fixed, 4 open. Every remaining item needs you --
+a keystore (#49), a bundle-ID decision (#51), a product decision (#14), and one
+15-minute device check (#9).
+
+#31's translator scope shrank sharply. Across #84, #102 and #107 the recurring
+finding was that the ARB keys **already existed and were simply not wired**: 35
+of the 55 literals on the Profile page had keys, and all 28 of its picker option
+labels did. What was genuinely missing came to ~60 new strings, not the
+translator pass the earlier entries implied. The Hebrew added for those is
+mine and still wants a native-speaker review, but it is a review, not a
+translation project.
 
 ---
 
@@ -1557,7 +1570,7 @@ Not a bug — the whole-app Liquid Glass conversion the owner asked for. See
 
 ---
 
-### 101. The Analytics screen is a red error page  **[OPEN]**
+### 101. The Analytics screen is a red error page  **[FIXED]**
 
 Found on device (screenshot, 21:06). Opening **Analytics** renders nothing but
 the framework's red error screen under the nav bar — the whole screen body is
@@ -1592,3 +1605,176 @@ Analytics is in its list, and if it is, why this build error didn't trip it.
 
 Owner: unmarked (mine).
 
+### 102. Onboarding renders English in Hebrew mode  **[FIXED]**
+
+Found on device (screenshots, steps 2/7 and 7/7). The screen chrome is fully
+Hebrew — headings, the sex toggle, the buttons — but strings sitting *next to*
+numbers are not, and one whole card is untranslated:
+
+| Where | Shows | Should be |
+|---|---|---|
+| Step 2 — height | `cm 170` | `170 ס"מ` |
+| Step 2 — weight | `kg 70.0` | `70.0 ק"ג` |
+| Step 2 — preferred units | `g` / `oz`, `kJ` | Hebrew unit labels (`קק"ל` already is) |
+| Step 7 — daily targets | `kcal 2550`, `126g`, `334g`, `79g` | Hebrew unit suffixes |
+| Step 7 — metabolic card | `BMR: 1643 kcal` / `TDEE: 2546 kcal` / `Goal: Maintenance` | all three Hebrew, and the goal name translated |
+
+Two distinct defects, worth separating when this is fixed:
+
+1. **Untranslated strings.** The unit abbreviations and the three
+   `BMR:`/`TDEE:`/`Goal:` status lines are the exact items #30 listed as still
+   open in `onboarding_page.dart` and left for a translator pass. `Maintenance`
+   is a *goal id rendered raw* — the same class of thing as #84's warning that
+   stored enum values must be mapped for display, never translated in place.
+2. **Unit-before-number in RTL.** `cm 170` / `kg 70.0` / `kcal 2550` read
+   backwards: bidi puts the LTR run first inside an RTL paragraph, so a
+   `'$value $unit'` string flips. Even once the units are Hebrew, these need to
+   be composed so the number stays adjacent and ordered correctly (an ARB
+   placeholder string rather than string interpolation, or an explicit
+   `Directionality`/LRM). Note `25 שנים` on the same screen is right, because
+   its unit is already Hebrew — so this is purely the mixed-script case.
+
+Related: #30 (the original list), #31 (needs a translator), #84 (same gap on
+the Profile page). Owner: unmarked (mine) for the wiring and the bidi fix; the
+Hebrew unit wording itself is **me** if it should not be my own copy.
+
+
+---
+
+### 103. Onboarding never created the plan  **[FIXED]**
+
+Reported as "why doesn't onboarding create the workouts, meals and sleep on the
+calendar". Generation worked; it was never allowed to finish.
+
+`UserProfileService.saveProfile()` called `setSetupCompleted(true)`, and the
+router takes `profileService` as its `refreshListenable`:
+
+```dart
+if (isSetupComplete && isOnOnboarding) return '/';
+```
+
+Onboarding calls `saveProfile()` **first**, then runs three generators --
+workout templates, meal templates, and last the calendar schedule. So the
+moment the profile was written the router tore the wizard down and navigated to
+the dashboard while generation was still awaiting. The calendar schedule runs
+last and is the only one that goes through `ref.read`, so it was first to die on
+the disposed container -- the `Tried to read a provider from a ProviderContainer
+that was already disposed` line that had been in the test logs all along.
+
+It could not self-correct: `setup_completed` was already true, so the wizard
+never ran again.
+
+**Solution:** `saveProfile` takes `markSetupComplete` (default true, so profile
+edits are unchanged); onboarding passes false and flips the flag only after the
+plan exists. The `calendarStateProvider.notifier` read is hoisted up with the
+other `ref.read`s -- it was the one read happening after three awaits, which is
+exactly what the existing "read all providers BEFORE any async operations"
+comment was trying to prevent. Guarded by two fast tests in
+`profile_and_backup_test.dart` and by `onboarding_calendar_render_test.dart`,
+which asserts on the calendar *state* rather than the database.
+
+**Why nothing caught it:** `onboarding_schedule_flow_test` claims in its own
+doc comment to check "the calendar renders the result", but every assertion in
+it reads the database through `readScheduledEvents`. Generation and persistence
+were well covered; rendering was not covered at all.
+
+---
+
+### 104. `ListTile` inside a glass surface asserts on every build  **[FIXED]**
+
+`ListTile` resolves its ink, background and `selected` tint against the nearest
+`Material`. Inside a `ContentSurface`/`GlassSheet` there is none, so Flutter
+raises `ListTile background color or ink splashes may be invisible` rather than
+degrading -- on the settings rows, the profile page, both food pickers, the
+workout-template exercise picker, the onboarding "build schedule" switch, and
+the calendar's event menu.
+
+**Solution:** the grouped rows became `InsetRow`; the pickers became
+`Pressable`; the calendar's six-tile sheet became a real `showAppActionSheet`,
+so it is now a `UIAlertController` with a system Cancel. All of them lose the
+ink ripple, which was the point.
+
+---
+
+### 105. Analytics `OverflowBox` given an infinite size  **[FIXED]**
+
+`ChartAxisLabels` bounded `maxWidth` but not `maxHeight`. Inside a sliver the
+incoming height constraint is unbounded, so it asked for infinite height and
+threw `RenderConstrainedOverflowBox object was given an infinite size during
+layout` -- 30 exceptions on one screen. A fixed `maxHeight` would work until
+Dynamic Type moved it; `fit: OverflowBoxFit.deferToChild` sizes to the label and
+keeps the horizontal overflow the widget exists for.
+
+---
+
+### 106. The device suite had been unrunnable since the native chrome landed  **[FIXED]**
+
+21 of 23 sanity tests failed before reaching the screen under test. The nav bar
+and tab bar are UIKit objects, so `find.byKey(Key('glass_tab_/meals'))` and
+every dashboard-action finder matched nothing.
+
+**Solution:** the launcher overrides `nativeChromeActiveProvider` and
+`NativeUI.debugForceUnavailable`, driving the Flutter tier -- a real shipped
+code path (Android, iOS < 15, bridge not attached) rendering the same pages
+behind the same keys.
+
+**The trade, stated plainly:** these tests no longer cover the native chrome
+itself -- the bars, SF Symbols, scroll-edge behaviour, native alerts and the
+banner. That needs XCUITest, which this repo does not have.
+
+Also fixed on the way: `tap()` silently misses any row under the floating tab
+bar (the finder matches, the bar swallows the tap, and the failure surfaces two
+steps later), hence the `tapInScroll` helper; and a batch of finders stale since
+the design pass -- a `FilledButton` that became a `GlassButton`, an
+`Icons.insights_outlined` that became a Cupertino icon, and a Hebrew test
+asserting an English food name against a catalog that renders
+`displayName(language)`.
+
+Sanity 23/23, regression 25/25, e2e journey green.
+
+---
+
+### 107. The generated plan and catalog rendered English in Hebrew  **[FIXED]**
+
+A plan generated during Hebrew onboarding came out in English on the calendar,
+and the food/template lists were mixed.
+
+Three separate causes, all "the bilingual field exists and nothing reads it":
+
+* `CalendarScheduleGenerator` copied `template.name` -- the English column --
+  though `WorkoutTemplateData.nameHe` had been filled all along. It now takes
+  the onboarding language and resolves the name.
+* `MealTemplate` has a `nameHe` column the generator never filled. All 14
+  recipes gained `nameHe` and every meal slot a Hebrew label, so a template
+  composes as `ארוחת בוקר: ביצים וטוסט`.
+* Seeded built-in workout templates had no `nameHe` at all, so the list mixed
+  translated generated sessions with untranslated built-ins.
+
+Plus the display layer: the meal editor read `food.name` rather than
+`displayName(language)`; `FoodTag`, `Equipment` and `BodyPart` gained the
+`label(AppLanguage)` shape `FoodCategory` already used; units are mapped by
+token (`100g` -> `100 ג`, keeping the number); and `FoodItem.displayBrand`
+maps the 59 distinct brand descriptors in one place rather than adding a
+`brandHe` column to 234 rows.
+
+**Deliberately not translated:** rehab template names, which are pinned to
+English so stored rows do not inherit whichever locale happened to be active.
+
+---
+
+### 108. RTL: reversed number+unit strings, and chevrons pointing the wrong way  **[FIXED]**
+
+Two bidi defects, both app-wide rather than per-screen.
+
+`'$value $unit'` inside an RTL paragraph has its LTR run reordered, so `170 cm`
+rendered as `cm 170`. `RTLHelper.numericLTR` already existed and was simply not
+applied. `InsetRow` now forces LTR for *number-led* values only -- word values
+like `שמירה` keep the ambient direction, since forcing those is the same bug
+pointing the other way.
+
+`CupertinoIcons.chevron_back`/`chevron_forward` read as directional but their
+glyphs are fixed. A `Row` mirrors under RTL, so Previous correctly moved to the
+right-hand side and then still drew a left-pointing arrow: both chevrons ended
+up pointing at the wrong neighbour. `RTLHelper.chevronBack/chevronForward` pick
+the glyph by direction; applied to the date strip, the calendar day view, the
+workout session stepper and every `InsetRow` disclosure.

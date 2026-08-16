@@ -12,7 +12,8 @@ import 'package:wellness_app/core/rtl_helper.dart';
 /// dependency easy to drive with a bare widget test (no app services or
 /// simulator needed).
 void main() {
-  Future<BuildContext> pumpWithLocale(WidgetTester tester, Locale locale) async {
+  Future<BuildContext> pumpWithLocale(
+      WidgetTester tester, Locale locale) async {
     late BuildContext captured;
     await tester.pumpWidget(MaterialApp(
       locale: locale,
@@ -64,7 +65,9 @@ void main() {
     });
   });
 
-  testWidgets('getStartCrossAxisAlignment/getStartMainAxisAlignment mirror for RTL', (tester) async {
+  testWidgets(
+      'getStartCrossAxisAlignment/getStartMainAxisAlignment mirror for RTL',
+      (tester) async {
     final he = await pumpWithLocale(tester, const Locale('he'));
     expect(RTLHelper.getStartCrossAxisAlignment(he), CrossAxisAlignment.end);
     expect(RTLHelper.getStartMainAxisAlignment(he), MainAxisAlignment.end);
@@ -74,7 +77,8 @@ void main() {
     expect(RTLHelper.getStartMainAxisAlignment(en), MainAxisAlignment.start);
   });
 
-  testWidgets('numericLTR always forces LTR regardless of ambient direction', (tester) async {
+  testWidgets('numericLTR always forces LTR regardless of ambient direction',
+      (tester) async {
     await tester.pumpWidget(MaterialApp(
       locale: const Locale('he'),
       supportedLocales: const [Locale('en'), Locale('he')],
@@ -84,7 +88,8 @@ void main() {
 
     // MaterialApp's own ambient Directionality (from the Hebrew locale) is
     // the outermost one; numericLTR's wrapper is nested inside it.
-    final directionality = tester.widget<Directionality>(find.byType(Directionality).last);
+    final directionality =
+        tester.widget<Directionality>(find.byType(Directionality).last);
     expect(directionality.textDirection, TextDirection.ltr);
   });
 }

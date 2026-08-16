@@ -135,7 +135,8 @@ void main() {
       mealsByDay[day] = (mealsByDay[day] ?? 0) + 1;
     }
 
-    expect(mealsByDay.length, 28, reason: 'a day somewhere has no meals at all');
+    expect(mealsByDay.length, 28,
+        reason: 'a day somewhere has no meals at all');
     expect(mealsByDay.values.toSet(), {4},
         reason: 'mealCountPerDay=4 must give exactly 4 meals on every day, '
             'got ${mealsByDay.values.toSet()}');
@@ -227,8 +228,7 @@ void main() {
       return [
         for (final e in await calendarService.getEvents())
           if (e.templateId != null)
-            if ((e.type == EventType.meal &&
-                    !mealIds.contains(e.templateId)) ||
+            if ((e.type == EventType.meal && !mealIds.contains(e.templateId)) ||
                 (e.type == EventType.workout &&
                     !workoutIds.contains(e.templateId)))
               e,
@@ -248,7 +248,9 @@ void main() {
           reason: 'sanity check on the test itself: regeneration is expected '
               'to orphan the pins, which is what repin has to repair');
 
-      await container.read(calendarStateProvider.notifier).repinDanglingTemplates();
+      await container
+          .read(calendarStateProvider.notifier)
+          .repinDanglingTemplates();
 
       expect(await danglingEvents(), isEmpty,
           reason: 'Approve / Start Workout silently do nothing on these');
@@ -258,7 +260,9 @@ void main() {
       await completeOnboarding(_profile());
       await ContentRegenerationService(database)
           .regenerate(_profile(dietType: 'vegan'));
-      await container.read(calendarStateProvider.notifier).repinDanglingTemplates();
+      await container
+          .read(calendarStateProvider.notifier)
+          .repinDanglingTemplates();
 
       final generatedMealIds = (await database.getAllMealTemplates())
           .where((t) => t.origin == TemplateOrigin.generated)
@@ -285,7 +289,9 @@ void main() {
 
       await ContentRegenerationService(database)
           .regenerate(_profile(dietType: 'vegan'));
-      await container.read(calendarStateProvider.notifier).repinDanglingTemplates();
+      await container
+          .read(calendarStateProvider.notifier)
+          .repinDanglingTemplates();
 
       final after = (await calendarService.getEvents())
           .map((e) => '${e.type.name}@${e.scheduledAt.toIso8601String()}')
@@ -321,7 +327,9 @@ void main() {
 
       await ContentRegenerationService(database)
           .regenerate(_profile(dietType: 'vegan'));
-      await container.read(calendarStateProvider.notifier).repinDanglingTemplates();
+      await container
+          .read(calendarStateProvider.notifier)
+          .repinDanglingTemplates();
 
       final reloaded = (await calendarService.getEvents())
           .firstWhere((e) => e.id == target.id);

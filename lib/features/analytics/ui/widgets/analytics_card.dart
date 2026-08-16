@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/ios/glass.dart';
@@ -127,6 +128,16 @@ class ChartAxisLabels extends StatelessWidget {
                   // which are empty: only five of the slots carry a label.
                   ? OverflowBox(
                       maxWidth: 72,
+                      // Size to the label, don't expand. Only maxWidth was
+                      // bounded, so in a sliver -- where the incoming height
+                      // constraint is unbounded -- this asked for infinite
+                      // height and tripped `RenderConstrainedOverflowBox was
+                      // given an infinite size during layout`. A fixed
+                      // maxHeight would work until Dynamic Type moved it;
+                      // deferring to the child is the version that keeps
+                      // working, and the horizontal overflow this exists for
+                      // is unaffected.
+                      fit: OverflowBoxFit.deferToChild,
                       alignment: Alignment.topCenter,
                       child: Text(
                         AnalyticsFormat.axisDate(series.points[i].t, bucket),

@@ -64,7 +64,8 @@ void main() {
       expect(prefs.getEffectiveWorkoutsTimeframe(), TimeframeMode.week);
     });
 
-    test('setting an override back to null clears it, not just sets day', () async {
+    test('setting an override back to null clears it, not just sets day',
+        () async {
       await prefs.setSleepTimeframeOverride(TimeframeMode.day);
       await prefs.setSleepTimeframeOverride(null);
       expect(prefs.getSleepTimeframeOverride(), isNull);
@@ -91,7 +92,8 @@ void main() {
       expect(prefs.fatGoal, 70);
     });
 
-    test('setting a goal to null clears it rather than storing null-as-0', () async {
+    test('setting a goal to null clears it rather than storing null-as-0',
+        () async {
       await prefs.setCalorieGoal(2200);
       await prefs.setCalorieGoal(null);
       expect(prefs.calorieGoal, isNull);
@@ -133,31 +135,41 @@ void main() {
   });
 
   group('getColorForMetric', () {
-    test('returns the per-metric custom color when useThemeColors is off', () async {
+    test('returns the per-metric custom color when useThemeColors is off',
+        () async {
       await prefs.setCalorieColor(const Color(0xFF009688));
-      expect(prefs.getColorForMetric(NutritionMetric.calories, themeColor: Colors.pink),
+      expect(
+          prefs.getColorForMetric(NutritionMetric.calories,
+              themeColor: Colors.pink),
           const Color(0xFF009688));
     });
 
     test('returns the theme color once useThemeColors is on', () async {
       await prefs.setUseThemeColors(true);
       await prefs.setCalorieColor(const Color(0xFF009688));
-      expect(prefs.getColorForMetric(NutritionMetric.calories, themeColor: Colors.pink),
+      expect(
+          prefs.getColorForMetric(NutritionMetric.calories,
+              themeColor: Colors.pink),
           Colors.pink);
     });
 
-    test('falls back to the per-metric color if useThemeColors is on but no theme color given', () async {
+    test(
+        'falls back to the per-metric color if useThemeColors is on but no theme color given',
+        () async {
       await prefs.setUseThemeColors(true);
       await prefs.setCalorieColor(const Color(0xFF009688));
-      expect(prefs.getColorForMetric(NutritionMetric.calories), const Color(0xFF009688));
+      expect(prefs.getColorForMetric(NutritionMetric.calories),
+          const Color(0xFF009688));
     });
   });
 
   group('WCAG contrast helpers', () {
     test('black on white is maximally accessible', () {
-      expect(PreferencesService.calculateContrastRatio(Colors.black, Colors.white),
+      expect(
+          PreferencesService.calculateContrastRatio(Colors.black, Colors.white),
           closeTo(21, 0.01));
-      expect(PreferencesService.isColorAccessible(Colors.black, Colors.white), isTrue);
+      expect(PreferencesService.isColorAccessible(Colors.black, Colors.white),
+          isTrue);
     });
 
     test('two near-identical colors are not accessible', () {
@@ -167,22 +179,27 @@ void main() {
     });
 
     test('contrast ratio is symmetric regardless of argument order', () {
-      final ab = PreferencesService.calculateContrastRatio(Colors.orange, Colors.white);
-      final ba = PreferencesService.calculateContrastRatio(Colors.white, Colors.orange);
+      final ab = PreferencesService.calculateContrastRatio(
+          Colors.orange, Colors.white);
+      final ba = PreferencesService.calculateContrastRatio(
+          Colors.white, Colors.orange);
       expect(ab, ba);
     });
 
     test('ensureContrast returns the same color when already accessible', () {
-      expect(PreferencesService.ensureContrast(Colors.black, Colors.white), Colors.black);
+      expect(PreferencesService.ensureContrast(Colors.black, Colors.white),
+          Colors.black);
     });
 
-    test('ensureContrast darkens a too-light color against a light background', () {
+    test('ensureContrast darkens a too-light color against a light background',
+        () {
       const tooLight = Color(0xFFF0F0F0);
       final fixed = PreferencesService.ensureContrast(tooLight, Colors.white);
       expect(PreferencesService.isColorAccessible(fixed, Colors.white), isTrue);
     });
 
-    test('ensureContrast lightens a too-dark color against a dark background', () {
+    test('ensureContrast lightens a too-dark color against a dark background',
+        () {
       const darkBg = Color(0xFF101010);
       const tooDark = Color(0xFF1A1A1A);
       final fixed = PreferencesService.ensureContrast(tooDark, darkBg);
@@ -208,7 +225,9 @@ void main() {
     });
   });
 
-  test('resetAllCustomColors reverts nutrition, section, and theme colors together', () async {
+  test(
+      'resetAllCustomColors reverts nutrition, section, and theme colors together',
+      () async {
     await prefs.setCalorieColor(const Color(0xFF009688));
     await prefs.setMealsColor(const Color(0xFF009688));
     await prefs.setCustomPrimaryColor(const Color(0xFF009688));
@@ -217,6 +236,7 @@ void main() {
 
     expect(prefs.calorieColor, PreferencesService.defaultCalorieColor);
     expect(prefs.mealsColor, PreferencesService.defaultMealsColor);
-    expect(prefs.customPrimaryColor, PreferencesService.defaultCustomPrimaryColor);
+    expect(
+        prefs.customPrimaryColor, PreferencesService.defaultCustomPrimaryColor);
   });
 }

@@ -24,6 +24,7 @@ import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
+import '../../../core/rtl_helper.dart';
 
 class WorkoutSessionPage extends HookConsumerWidget {
   final String sessionId;
@@ -46,8 +47,9 @@ class WorkoutSessionPage extends HookConsumerWidget {
     }, [sessionId]);
 
     if (isLoading.value || session.value == null) {
-      return const Scaffold(
-        body: LoadingIndicator(message: 'Loading workout...'),
+      return Scaffold(
+        body: LoadingIndicator(
+            message: AppLocalizations.of(context)!.workoutLoading),
       );
     }
 
@@ -100,7 +102,7 @@ class WorkoutSessionPage extends HookConsumerWidget {
                     children: [
                       _SessionStat(
                         label: l10n.duration,
-                        value: _formatSessionDuration(currentSession),
+                        value: _formatSessionDuration(currentSession, l10n),
                         icon: Icons.timer,
                       ),
                       Container(
@@ -325,10 +327,10 @@ class WorkoutSessionPage extends HookConsumerWidget {
     }
   }
 
-  String _formatSessionDuration(WorkoutSession session) {
+  String _formatSessionDuration(WorkoutSession session, AppLocalizations l10n) {
     final duration =
         session.duration ?? DateTime.now().difference(session.startedAt);
-    return AppDateUtils.formatDuration(duration);
+    return AppDateUtils.formatDuration(duration, l10n);
   }
 }
 
@@ -464,7 +466,7 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                             const SizedBox(width: 8),
                             if (currentExerciseIndex.value > 0)
                               IconButton(
-                                icon: const Icon(Icons.chevron_left),
+                                icon: Icon(RTLHelper.chevronBack(context)),
                                 onPressed: () {
                                   showRestTimer.value =
                                       null; // Reset rest timer
@@ -477,7 +479,7 @@ class _ActiveWorkoutView extends HookConsumerWidget {
                             if (currentExerciseIndex.value <
                                 exercises.length - 1)
                               IconButton(
-                                icon: const Icon(Icons.chevron_right),
+                                icon: Icon(RTLHelper.chevronForward(context)),
                                 onPressed: () {
                                   showRestTimer.value =
                                       null; // Reset rest timer
@@ -1298,7 +1300,7 @@ class _CompletedWorkoutView extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Duration: ${AppDateUtils.formatDuration(session.duration!)}',
+                  '${AppLocalizations.of(context)!.durationLabel}: ${AppDateUtils.formatDuration(session.duration!, AppLocalizations.of(context)!)}',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 Text(

@@ -109,7 +109,8 @@ void main() {
       expect((await db.getExerciseById('8'))!.name, 'Front Squat');
     });
 
-    test('an updated workout template reads back the new value by id', () async {
+    test('an updated workout template reads back the new value by id',
+        () async {
       await db.updateWorkoutTemplate(WorkoutTemplateData(
         id: 'builtin-workout-1',
         name: 'Renamed Plan',
@@ -165,7 +166,8 @@ void main() {
       );
     });
 
-    test('updating a sleep entry that does not exist returns false, not a crash',
+    test(
+        'updating a sleep entry that does not exist returns false, not a crash',
         () async {
       await expectLater(
         db.updateSleepEntry(SleepEntryData(
@@ -179,7 +181,8 @@ void main() {
   });
 
   group('exercise mutations notify their stream', () {
-    test('insert, update and delete each emit on the workouts stream', () async {
+    test('insert, update and delete each emit on the workouts stream',
+        () async {
       // ExercisesRepository.watchAllExercises listens on this stream, but the
       // exercise mutators never fired it, so the library only refreshed via a
       // manual ref.invalidate in the UI.
@@ -195,7 +198,8 @@ void main() {
         unit: 'kg',
       ));
       await Future<void>.delayed(Duration.zero);
-      expect(emissions.length, greaterThan(initial), reason: 'insert must emit');
+      expect(emissions.length, greaterThan(initial),
+          reason: 'insert must emit');
 
       final afterInsert = emissions.length;
       await db.updateExercise(ExerciseData(
@@ -205,12 +209,14 @@ void main() {
         unit: 'kg',
       ));
       await Future<void>.delayed(Duration.zero);
-      expect(emissions.length, greaterThan(afterInsert), reason: 'update must emit');
+      expect(emissions.length, greaterThan(afterInsert),
+          reason: 'update must emit');
 
       final afterUpdate = emissions.length;
       await db.deleteExercise('ex-new');
       await Future<void>.delayed(Duration.zero);
-      expect(emissions.length, greaterThan(afterUpdate), reason: 'delete must emit');
+      expect(emissions.length, greaterThan(afterUpdate),
+          reason: 'delete must emit');
 
       await sub.cancel();
     });

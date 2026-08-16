@@ -132,7 +132,8 @@ void main() {
 
     // User-owned content, which regeneration must never replace.
     expect((await database.getAllFoods()).any((f) => !f.isStarter), isTrue);
-    expect((await database.getAllExercises()).any((e) => e.id.startsWith('demo-')),
+    expect(
+        (await database.getAllExercises()).any((e) => e.id.startsWith('demo-')),
         isTrue);
   });
 }

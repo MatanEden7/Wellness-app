@@ -72,8 +72,8 @@ void main() {
     prefs = await SharedPreferences.getInstance();
     AppDatabase.resetForTesting();
     database = AppDatabase();
-    service = ExportImportService(
-        database, CalendarService(prefs, database), prefs);
+    service =
+        ExportImportService(database, CalendarService(prefs, database), prefs);
     return payload;
   }
 
@@ -175,8 +175,8 @@ void main() {
       expect(prefs.getStringList('scheduled_events'), isNotEmpty,
           reason: 'fixture check -- the raw key must exist to be excluded');
 
-      final payload = jsonDecode(await service.exportToJson())
-          as Map<String, dynamic>;
+      final payload =
+          jsonDecode(await service.exportToJson()) as Map<String, dynamic>;
       final encoded = (payload['data'] as Map<String, dynamic>)['preferences']
           as Map<String, dynamic>;
 
@@ -189,7 +189,8 @@ void main() {
   test('a service built without preferences still exports and imports',
       () async {
     // Tests and any non-app container construct it with two arguments.
-    final bare = ExportImportService(database, CalendarService(prefs, database));
+    final bare =
+        ExportImportService(database, CalendarService(prefs, database));
 
     final payload = await bare.exportToJson();
     final data = (jsonDecode(payload) as Map<String, dynamic>)['data']

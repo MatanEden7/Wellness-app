@@ -170,7 +170,8 @@ class ExerciseLibraryPage extends HookConsumerWidget {
                   SliverToBoxAdapter(
                     child: FilterBanner(
                       icon: Icons.visibility_outlined,
-                      message: 'Showing everything',
+                      message:
+                          AppLocalizations.of(context)!.filterShowingEverything,
                       actionLabel: l10n.filter,
                       onAction: () => ref
                           .read(showAllContentProvider.notifier)
@@ -204,7 +205,8 @@ class ExerciseLibraryPage extends HookConsumerWidget {
                         final reason = profile == null
                             ? null
                             : fitFailureLabel(
-                                ProfileFit.exerciseFit(exercise, profile));
+                                ProfileFit.exerciseFit(exercise, profile),
+                                language);
                         return _ExerciseCard(
                           exercise: exercise,
                           language: language,
@@ -390,6 +392,7 @@ class ExerciseEditorPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(currentLanguageProvider);
     final l10n = AppLocalizations.of(context)!;
     final nameController = useTextEditingController(text: exercise?.name ?? '');
     final muscleController =
@@ -438,7 +441,7 @@ class ExerciseEditorPage extends HookConsumerWidget {
               controller: nameController,
               decoration: InputDecoration(
                 labelText: l10n.exerciseName,
-                hintText: 'e.g., Bench Press, Squats',
+                hintText: AppLocalizations.of(context)!.exerciseNameHint,
               ),
               maxLength: 40,
               validator: (value) =>
@@ -449,7 +452,7 @@ class ExerciseEditorPage extends HookConsumerWidget {
               controller: muscleController,
               decoration: InputDecoration(
                 labelText: l10n.primaryMuscleOptional,
-                hintText: 'e.g., Chest, Legs, Back',
+                hintText: AppLocalizations.of(context)!.exerciseMuscleHint,
               ),
               maxLength: 40,
             ),
@@ -470,29 +473,27 @@ class ExerciseEditorPage extends HookConsumerWidget {
               controller: notesController,
               decoration: InputDecoration(
                 labelText: l10n.notesOptional,
-                hintText: 'Form cues, variations, etc.',
+                hintText: AppLocalizations.of(context)!.exerciseNotesHint,
               ),
               maxLines: 3,
               maxLength: 200,
             ),
             const SizedBox(height: AppSpacing.lg),
             TagChips<Equipment>(
-              title: 'Equipment needed',
-              subtitle: 'Pick every option this can be done with. Leave '
-                  'blank and it will be treated as always available.',
+              title: AppLocalizations.of(context)!.exerciseEquipmentNeeded,
+              subtitle: AppLocalizations.of(context)!.exerciseEquipmentHelp,
               options: Equipment.values,
               selected: equipment.value,
-              labelOf: (e) => e.label,
+              labelOf: (e) => e.label(language),
               onChanged: (next) => equipment.value = next,
             ),
             const SizedBox(height: AppSpacing.md),
             TagChips<BodyPart>(
-              title: 'Avoid with injury to',
-              subtitle: 'This will be hidden for anyone reporting one of '
-                  'these injuries.',
+              title: AppLocalizations.of(context)!.exerciseAvoidInjury,
+              subtitle: AppLocalizations.of(context)!.exerciseAvoidInjuryHelp,
               options: BodyPart.values,
               selected: contraindicated.value,
-              labelOf: (b) => b.label,
+              labelOf: (b) => b.label(language),
               onChanged: (next) => contraindicated.value = next,
             ),
           ],

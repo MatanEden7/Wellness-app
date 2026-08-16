@@ -12,12 +12,18 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   for (final language in AppLanguage.values) {
-    testWidgets('Meals + Food Catalog render in ${language.code}', (tester) async {
+    testWidgets('Meals + Food Catalog render in ${language.code}',
+        (tester) async {
       final l10n = await loadL10n(language);
       await pumpApp(tester, language: language);
 
       await tapDashboardAction(tester, DashboardKeys.mealsAction);
-      expect(find.text(l10n.meals), findsOneWidget);
+      // At least one, not exactly one: on the Flutter chrome tier the
+      // screen's name is legitimately in the tree three times -- the
+      // navigation-bar title, the large title it collapses into, and the
+      // tab-bar label. On the native tier all three live in UIKit and the
+      // count was one, which is what this assertion was written against.
+      expect(find.text(l10n.meals), findsAtLeastNWidgets(1));
 
       // Open the food catalog -- this is where seeded nutrition data (unit,
       // kcal/protein/carbs/fat per unit) is actually displayed. It is a
@@ -33,8 +39,16 @@ void main() {
       await tester.tap(find.text(l10n.starterList));
       await settle(tester);
 
-      // Real seeded starter food (see AppDatabase._getSampleFoods()).
-      expect(find.text('Chicken Breast'), findsOneWidget);
+      // Real seeded starter food (see catalog/starter_foods.dart). The name is
+      // asserted per language on purpose: the catalog renders
+      // `food.displayName(language)`, so in Hebrew the row reads "חזה עוף" and
+      // the English literal is genuinely absent. Asserting the English string
+      // in both runs was testing that the bilingual names *don't* work.
+      expect(
+        find.text(
+            language == AppLanguage.hebrew ? 'חזה עוף' : 'Chicken Breast'),
+        findsOneWidget,
+      );
     });
   }
 }

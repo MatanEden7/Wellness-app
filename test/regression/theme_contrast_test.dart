@@ -29,8 +29,8 @@ void main() {
 
     test('$kind: onSurface readable on the scaffold background', () {
       final theme = AppTheme.byKind(kind);
-      final ratio =
-          contrastRatio(theme.colorScheme.onSurface, theme.scaffoldBackgroundColor);
+      final ratio = contrastRatio(
+          theme.colorScheme.onSurface, theme.scaffoldBackgroundColor);
       expect(ratio, greaterThanOrEqualTo(aaBar),
           reason: '$kind onSurface/scaffoldBackgroundColor contrast is only '
               '${ratio.toStringAsFixed(2)}:1');
@@ -80,7 +80,8 @@ void main() {
               'app will be drawn at full text weight');
       final ratio = contrastRatio(scheme.outline, scheme.surface);
       expect(ratio, lessThan(4.5),
-          reason: '$kind outline contrasts like text (${ratio.toStringAsFixed(2)}'
+          reason:
+              '$kind outline contrasts like text (${ratio.toStringAsFixed(2)}'
               ':1) — a separator that loud competes with the content');
     });
 
@@ -132,8 +133,7 @@ void main() {
     // the theme's primary and tertiary blended into the scaffold colour. A
     // card floating over the *coloured* part of the gradient is the worst
     // case for legibility, and it is not covered by the check above.
-    test('$kind: onSurface readable through full glass over the page wash',
-        () {
+    test('$kind: onSurface readable through full glass over the page wash', () {
       final theme = AppTheme.byKind(kind);
       final spec = GlassSpec.resolve(GlassLevel.full);
       for (final accent in [

@@ -7,6 +7,7 @@ import 'package:wellness_app/core/theme.dart';
 import 'package:wellness_app/services/language_service.dart';
 import 'package:wellness_app/services/theme_service.dart';
 import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
+import 'package:wellness_app/core/ios/glass.dart';
 
 import '../support/app_launcher.dart';
 
@@ -38,13 +39,13 @@ void main() {
     expect(container.read(currentThemeProvider), AppThemeKind.dark);
   });
 
-  testWidgets('language page selects Hebrew and it takes effect', (tester) async {
+  testWidgets('language page selects Hebrew and it takes effect',
+      (tester) async {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester);
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
-    await tester.tap(find.text(l10n.language));
-    await settle(tester);
+    await tapInScroll(tester, find.text(l10n.language));
 
     expect(find.text('עברית'), findsOneWidget);
     await tester.tap(find.text('עברית'));
@@ -56,17 +57,15 @@ void main() {
     expect(container.read(currentLanguageProvider), AppLanguage.hebrew);
   });
 
-  testWidgets('nutrition goals page saves values that PreferencesService actually reads back', (tester) async {
+  testWidgets(
+      'nutrition goals page saves values that PreferencesService actually reads back',
+      (tester) async {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester);
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
-    // "Nutrition Goals" is in the Health section, off-screen in the single
-    // ListView until scrolled into view.
-    await tester.scrollUntilVisible(find.text(l10n.nutritionGoals), 200,
-        scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.text(l10n.nutritionGoals));
-    await settle(tester);
+    // "Nutrition Goals" is in the Health section, below the fold.
+    await tapInScroll(tester, find.text(l10n.nutritionGoals));
 
     expect(find.text(l10n.nutritionGoals), findsWidgets);
 
@@ -78,7 +77,9 @@ void main() {
 
     // Save appears twice: the navigation-bar action and the button at the
     // bottom of the form. Target the button.
-    await tester.tap(find.widgetWithText(FilledButton, l10n.save));
+    // GlassButton, not FilledButton: the glass design pass replaced every
+    // Material button in the app and this finder was never updated.
+    await tester.tap(find.widgetWithText(GlassButton, l10n.save).last);
     await settle(tester);
 
     // Back on Settings -- the summary must reflect the just-saved goal, but

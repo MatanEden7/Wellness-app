@@ -219,9 +219,25 @@ class UserProfileService extends ChangeNotifier {
   }
 
   // Save user profile
-  Future<void> saveProfile(UserProfile profile) async {
+  ///
+  /// [markSetupComplete] exists for onboarding, which must **not** flip the
+  /// flag here. The router takes `profileService` as its `refreshListenable`
+  /// and redirects `/onboarding -> /` the moment `isSetupCompleted` turns
+  /// true, so marking completion at the point the profile is written tears the
+  /// wizard down while it is still awaiting the workout, meal and calendar
+  /// generators that run after it. The calendar schedule is generated last and
+  /// through `ref.read`, so it is the first thing to die on the disposed
+  /// container -- which is why the symptom was "onboarding didn't create my
+  /// plan" with a profile that otherwise looked fine, and why it never
+  /// recovered: the flag was already true, so onboarding never ran again.
+  Future<void> saveProfile(
+    UserProfile profile, {
+    bool markSetupComplete = true,
+  }) async {
     await _prefs.setString(_profileKey, jsonEncode(profile.toJson()));
-    await setSetupCompleted(true);
+    if (markSetupComplete) {
+      await setSetupCompleted(true);
+    }
     notifyListeners(); // Notify router to refresh
   }
 

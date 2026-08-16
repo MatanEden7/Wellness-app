@@ -46,9 +46,16 @@ class RecipeSlot {
 enum MealSlotKind { breakfast, main, snack }
 
 class MealRecipe {
-  const MealRecipe(this.name, this.kind, this.slots, {this.description});
+  const MealRecipe(this.name, this.kind, this.slots,
+      {this.description, this.nameHe});
 
   final String name;
+
+  /// Hebrew dish name, mirroring `FoodItem.nameHe` and
+  /// `WorkoutTemplateData.nameHe`. The generator composes the template's
+  /// `nameHe` from this plus the Hebrew meal-slot name, so a plan generated
+  /// during Hebrew onboarding reads as Hebrew on the calendar.
+  final String? nameHe;
   final MealSlotKind kind;
   final List<RecipeSlot> slots;
   final String? description;
@@ -75,6 +82,7 @@ abstract final class MealRecipes {
         RecipeSlot(RecipeRole.produce, ['Spinach', 'Tomato'], required: false),
       ],
       description: 'Eggs with toast, avocado and greens',
+      nameHe: 'ביצים וטוסט',
     ),
     MealRecipe(
       'Greek Yogurt Bowl',
@@ -88,6 +96,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Yogurt, oats and berries',
+      nameHe: 'קערת יוגורט יווני',
     ),
     MealRecipe(
       'Porridge & Peanut Butter',
@@ -99,6 +108,7 @@ abstract final class MealRecipes {
         RecipeSlot(RecipeRole.produce, ['Banana'], required: false),
       ],
       description: 'Porridge with peanut butter and banana',
+      nameHe: 'דייסה וחמאת בוטנים',
     ),
     MealRecipe(
       'Tofu Scramble',
@@ -111,6 +121,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Scrambled tofu with greens on toast',
+      nameHe: 'טופו מקושקש',
     ),
     MealRecipe(
       'Seed & Oat Bowl',
@@ -125,6 +136,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Seeds and grains with fruit',
+      nameHe: 'קערת זרעים ושיבולת שועל',
     ),
   ];
 
@@ -140,6 +152,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'The classic. Lean protein, grain and greens',
+      nameHe: 'עוף, אורז וברוקולי',
     ),
     MealRecipe(
       'Salmon & Sweet Potato',
@@ -152,6 +165,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Oily fish, roast sweet potato and greens',
+      nameHe: 'סלמון ובטטה',
     ),
     MealRecipe(
       'Beef & Quinoa Bowl',
@@ -164,6 +178,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Beef, quinoa and roast peppers',
+      nameHe: 'קערת בקר וקינואה',
     ),
     MealRecipe(
       'Tuna Pasta',
@@ -175,6 +190,7 @@ abstract final class MealRecipes {
         RecipeSlot(RecipeRole.produce, ['Tomato', 'Spinach'], required: false),
       ],
       description: 'Tuna, wholewheat pasta and tomato',
+      nameHe: 'פסטה בטונה',
     ),
     MealRecipe(
       'Tempeh Stir Fry',
@@ -187,6 +203,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Tempeh, rice and stir-fried vegetables',
+      nameHe: 'טמפה מוקפץ',
     ),
     MealRecipe(
       'Lentil & Rice Bowl',
@@ -199,6 +216,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Lentils, rice and greens',
+      nameHe: 'קערת עדשים ואורז',
     ),
     MealRecipe(
       'Chickpea Bowl',
@@ -211,6 +229,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Chickpeas, grains and salad',
+      nameHe: 'קערת חומוס',
     ),
   ];
 
@@ -225,6 +244,7 @@ abstract final class MealRecipes {
         RecipeSlot(RecipeRole.fat, ['Almonds', 'Walnuts'], required: false),
       ],
       description: 'Yogurt with fruit and nuts',
+      nameHe: 'יוגורט ופירות יער',
     ),
     MealRecipe(
       'Seeds & Fruit',
@@ -236,6 +256,7 @@ abstract final class MealRecipes {
             required: false),
       ],
       description: 'Seeds and a piece of fruit',
+      nameHe: 'זרעים ופירות',
     ),
   ];
 

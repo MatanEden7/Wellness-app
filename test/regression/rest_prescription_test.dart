@@ -101,7 +101,8 @@ void main() {
       final repo = container.read(workoutTemplatesRepositoryProvider);
       final exercise = (await database.getAllExercises()).first;
 
-      await repo.createTemplate(WorkoutTemplate(id: 't', name: 'v1', exercises: [
+      await repo
+          .createTemplate(WorkoutTemplate(id: 't', name: 'v1', exercises: [
         TemplateExercise(
             id: 'te',
             templateId: 't',

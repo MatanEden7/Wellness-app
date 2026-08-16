@@ -6,6 +6,7 @@ import 'app_scaffold.dart';
 import '../../core/design/surfaces.dart';
 import '../design/tokens.dart';
 import 'pressable.dart';
+import '../rtl_helper.dart';
 
 /// An iOS inset-grouped section: an optional caps header, then rows sharing
 /// one rounded container with hairlines between them.
@@ -179,21 +180,23 @@ class InsetRow extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: Text(
-                      value!,
-                      textAlign: TextAlign.end,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyLarge
-                          ?.copyWith(fontSize: 17, color: muted),
-                    ),
+                    // Number-led values ("170 ס\"מ", "2550 קק\"ל") are forced
+                    // LTR so bidi cannot reorder them into "ס\"מ 170". Values
+                    // that are words ("שמירה", "עברית") are left in the
+                    // ambient direction -- forcing those would be the same bug
+                    // pointing the other way.
+                    child: _startsWithDigit(value!)
+                        ? RTLHelper.numericLTR(_valueText(theme, muted))
+                        : _valueText(theme, muted),
                   ),
                 ),
               if (onTap != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
+                  // The disclosure chevron points the way the push goes, which
+                  // in RTL is leftwards.
                   child: Icon(
-                    CupertinoIcons.chevron_forward,
+                    RTLHelper.chevronForward(context),
                     size: 16,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.28),
                   ),
@@ -204,4 +207,17 @@ class InsetRow extends StatelessWidget {
       ),
     );
   }
+
+  static bool _startsWithDigit(String v) {
+    final t = v.trimLeft();
+    return t.isNotEmpty && RegExp(r'[0-9]').hasMatch(t[0]);
+  }
+
+  Widget _valueText(ThemeData theme, Color muted) => Text(
+        value!,
+        textAlign: TextAlign.end,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodyLarge?.copyWith(fontSize: 17, color: muted),
+      );
 }

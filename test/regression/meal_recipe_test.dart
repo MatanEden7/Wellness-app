@@ -1,5 +1,6 @@
 @Tags(['catalog', 'nutrition'])
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/services/meal_template_generator.dart';
@@ -8,12 +9,28 @@ import 'package:wellness_app/services/user_profile_service.dart';
 /// Generated meals must read like food someone would cook, not a macro-legal
 /// pile. The previous generator produced "Seitan, Avocado, White Rice and
 /// Milk" for breakfast -- it hit its numbers and was not a breakfast.
-UserProfile _p({String diet = 'omnivore', List<String> ex = const []}) => UserProfile(
-    sex: 'male', ageYears: 30, heightCm: 180, weightKg: 80, goal: 'maintenance',
-    activityLevel: 'moderate', trainingDaysPerWeek: 3, equipment: const ['none'],
-    dietType: diet, mealCountPerDay: '3', exclusions: ex, injuries: const [],
-    energyUnit: 'kcal', weightUnit: 'g', bmr: 1800, tdee: 2500,
-    calorieTarget: 2500, proteinTargetG: 150, fatTargetG: 70, carbsTargetG: 280);
+UserProfile _p({String diet = 'omnivore', List<String> ex = const []}) =>
+    UserProfile(
+        sex: 'male',
+        ageYears: 30,
+        heightCm: 180,
+        weightKg: 80,
+        goal: 'maintenance',
+        activityLevel: 'moderate',
+        trainingDaysPerWeek: 3,
+        equipment: const ['none'],
+        dietType: diet,
+        mealCountPerDay: '3',
+        exclusions: ex,
+        injuries: const [],
+        energyUnit: 'kcal',
+        weightUnit: 'g',
+        bmr: 1800,
+        tdee: 2500,
+        calorieTarget: 2500,
+        proteinTargetG: 150,
+        fatTargetG: 70,
+        carbsTargetG: 280);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,9 +58,21 @@ void main() {
     // Not an exhaustive definition of breakfast -- just that it draws from
     // breakfast foods rather than, say, salmon and pasta.
     const breakfastish = {
-      'Eggs', 'Egg Whites', 'Greek Yogurt', 'Cottage Cheese', 'Oats',
-      'Whole Wheat Bread', 'Milk', 'Soy Milk', 'Tofu', 'Tempeh',
-      'Hemp Seeds', 'Pumpkin Seeds', 'Sunflower Seeds', 'Buckwheat', 'Quinoa',
+      'Eggs',
+      'Egg Whites',
+      'Greek Yogurt',
+      'Cottage Cheese',
+      'Oats',
+      'Whole Wheat Bread',
+      'Milk',
+      'Soy Milk',
+      'Tofu',
+      'Tempeh',
+      'Hemp Seeds',
+      'Pumpkin Seeds',
+      'Sunflower Seeds',
+      'Buckwheat',
+      'Quinoa',
     };
     expect(names.any(breakfastish.contains), isTrue,
         reason: 'breakfast was: $names');
@@ -74,7 +103,8 @@ void main() {
     for (final t in created) {
       for (final i in await db.getMealTemplateItemsByTemplateId(t.id)) {
         final f = foods[i.foodId]!;
-        if (const ['Spinach', 'Broccoli', 'Kale', 'Blueberries'].contains(f.name)) {
+        if (const ['Spinach', 'Broccoli', 'Kale', 'Blueberries']
+            .contains(f.name)) {
           expect(i.amount, lessThanOrEqualTo(1.5),
               reason: '${f.name} at ${i.amount * 100}g is not a serving');
         }
@@ -86,7 +116,8 @@ void main() {
     final db = AppDatabase();
     final created = await MealTemplateGenerator(db, _p()).generateTemplates();
     final foods = {for (final f in await db.getAllFoods()) f.id: f};
-    final breakfast = created.firstWhere((t) => t.name.contains('Eggs & Toast'));
+    final breakfast =
+        created.firstWhere((t) => t.name.contains('Eggs & Toast'));
     final names = [
       for (final i in await db.getMealTemplateItemsByTemplateId(breakfast.id))
         foods[i.foodId]!.name,

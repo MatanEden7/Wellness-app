@@ -16,7 +16,9 @@ void main() {
   group('AppDatabase.deleteDataOlderThan', () {
     setUp(AppDatabase.resetForTesting);
 
-    test('removes meals/sessions/sleep entries older than the cutoff, keeps newer ones', () async {
+    test(
+        'removes meals/sessions/sleep entries older than the cutoff, keeps newer ones',
+        () async {
       final database = AppDatabase();
       final cutoff = DateTime(2026, 6, 1);
 
@@ -75,7 +77,8 @@ void main() {
 
       final removed = await database.deleteDataOlderThan(cutoff);
 
-      expect(removed, 3, reason: 'one old meal, one old session, one old sleep entry');
+      expect(removed, 3,
+          reason: 'one old meal, one old session, one old sleep entry');
       expect(await database.getMealById('old-meal'), isNull);
       expect(await database.getMealById('new-meal'), isNotNull);
       expect(await database.getMealItemsByMealId('old-meal'), isEmpty,
@@ -97,7 +100,9 @@ void main() {
       expect((await database.getAllExercises()).length, exercisesBefore);
     });
 
-    test('returns 0 and deletes nothing when everything is newer than the cutoff', () async {
+    test(
+        'returns 0 and deletes nothing when everything is newer than the cutoff',
+        () async {
       final database = AppDatabase();
       await database.insertMeal(MealData(
         id: 'meal-1',
@@ -145,7 +150,8 @@ void main() {
       expect(remaining.map((e) => e.id), [newEvent.id]);
     });
 
-    test('never removes a recurring event, no matter how old its base date is', () async {
+    test('never removes a recurring event, no matter how old its base date is',
+        () async {
       final oldRecurring = ScheduledEvent.create(
         title: 'Daily meal reminder',
         type: EventType.meal,
@@ -157,7 +163,8 @@ void main() {
       final removed = await service.deleteEventsOlderThan(DateTime(2026, 1, 1));
 
       expect(removed, 0,
-          reason: 'a recurring event is one row generating future occurrences -- '
+          reason:
+              'a recurring event is one row generating future occurrences -- '
               'deleting it would remove those too, not just old ones');
       expect((await service.getEvents()).map((e) => e.id), [oldRecurring.id]);
     });

@@ -631,7 +631,7 @@ class _DashboardContent extends HookConsumerWidget {
 
                     // Step 3: Meta info (time + duration or status)
                     Text(
-                      _getWorkoutMeta(session, isActive, isPlanned),
+                      _getWorkoutMeta(l10n, session, isActive, isPlanned),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.textTheme.bodySmall?.color
                             ?.withValues(alpha: 0.7),
@@ -724,16 +724,16 @@ class _DashboardContent extends HookConsumerWidget {
   }
 
   // Helper: Get workout meta info
-  String _getWorkoutMeta(
-      WorkoutSession session, bool isActive, bool isPlanned) {
+  String _getWorkoutMeta(AppLocalizations l10n, WorkoutSession session,
+      bool isActive, bool isPlanned) {
     if (isPlanned) {
-      return 'Scheduled ${AppDateUtils.formatTime(session.startedAt)}';
+      return '${l10n.scheduled} ${AppDateUtils.formatTime(session.startedAt)}';
     } else if (isActive) {
       final duration = DateTime.now().difference(session.startedAt);
-      return 'Active ${_formatDuration(duration)}';
+      return l10n.activeFor(_formatDuration(duration));
     } else {
       final duration = session.duration;
-      return '${AppDateUtils.formatTime(session.startedAt)}${duration != null ? ' • ${AppDateUtils.formatDuration(duration)}' : ''}';
+      return '${AppDateUtils.formatTime(session.startedAt)}${duration != null ? ' • ${AppDateUtils.formatDuration(duration, l10n)}' : ''}';
     }
   }
 

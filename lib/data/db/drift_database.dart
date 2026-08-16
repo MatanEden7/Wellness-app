@@ -1658,6 +1658,9 @@ class AppDatabase {
       required List<String> exerciseIds,
       int sets = 3,
       int reps = 10,
+      // Built-ins carried no nameHe, so a Hebrew user's template list was a
+      // mix: generated sessions translated, seeded ones not.
+      String? nameHe,
     }) {
       final templateId = 'builtin-workout-${nextTemplateId++}';
       final exercises = <TemplateExerciseData>[];
@@ -1678,6 +1681,7 @@ class AppDatabase {
         template: WorkoutTemplateData(
             id: templateId,
             name: name,
+            nameHe: nameHe,
             notes: notes,
             origin: TemplateOrigin.builtin),
         exercises: exercises,
@@ -1697,6 +1701,7 @@ class AppDatabase {
           '16'
         ], // Squats, Push-ups, Barbell Rows, Overhead Press, Plank
         reps: 10,
+        nameHe: 'גוף מלא למתחילים',
       ),
       template(
         'Upper Body (Upper/Lower Split)',
@@ -1707,7 +1712,8 @@ class AppDatabase {
           '12',
           '14',
           '15'
-        ], // Bench Press, Barbell Rows, Overhead Press, Bicep Curls, Dips
+        ], // Bench Press, Barbell Rows, Overhead Press, Bicep Curls, Dips,
+        nameHe: 'פלג גוף עליון (פיצול עליון/תחתון)',
       ),
       template(
         'Lower Body (Upper/Lower Split)',
@@ -1717,7 +1723,8 @@ class AppDatabase {
           '9',
           '10',
           '11'
-        ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
+        ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises,
+        nameHe: 'פלג גוף תחתון (פיצול עליון/תחתון)',
       ),
       template(
         'Push Day (Push/Pull/Legs)',
@@ -1728,7 +1735,8 @@ class AppDatabase {
           '3',
           '13',
           '15'
-        ], // Bench Press, Overhead Press, Chest Fly, Lateral Raises, Dips
+        ], // Bench Press, Overhead Press, Chest Fly, Lateral Raises, Dips,
+        nameHe: 'אימון דחיפה (דחיפה/משיכה/רגליים)',
       ),
       template(
         'Pull Day (Push/Pull/Legs)',
@@ -1742,6 +1750,7 @@ class AppDatabase {
         ], // Deadlift, Pull-ups, Barbell Rows, Lat Pulldown, Bicep Curls
         sets: 3,
         reps: 8,
+        nameHe: 'אימון משיכה (דחיפה/משיכה/רגליים)',
       ),
       template(
         'Leg Day (Push/Pull/Legs)',
@@ -1754,6 +1763,7 @@ class AppDatabase {
         ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
         sets: 4,
         reps: 8,
+        nameHe: 'אימון רגליים (דחיפה/משיכה/רגליים)',
       ),
     ];
   }

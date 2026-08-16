@@ -134,12 +134,12 @@ void main() {
       await db.load();
 
       final foods = await db.getAllFoods();
-      expect(foods.firstWhere((f) => f.id == '1').category,
-          FoodCategory.protein);
+      expect(
+          foods.firstWhere((f) => f.id == '1').category, FoodCategory.protein);
       expect(foods.firstWhere((f) => f.id == '23').category,
           FoodCategory.vegetables);
-      expect(foods.firstWhere((f) => f.id == '32').category,
-          FoodCategory.fruit);
+      expect(
+          foods.firstWhere((f) => f.id == '32').category, FoodCategory.fruit);
       expect(foods.where((f) => f.category == FoodCategory.other), isEmpty,
           reason: 'a seeded row was left unclassified after migration');
     });
@@ -180,8 +180,7 @@ void main() {
       final db = AppDatabase(store: store);
       await db.load();
 
-      final chicken =
-          (await db.getAllFoods()).firstWhere((f) => f.id == '1');
+      final chicken = (await db.getAllFoods()).firstWhere((f) => f.id == '1');
       expect(chicken.nameHe, 'חזה עוף');
     });
 
@@ -277,15 +276,15 @@ void main() {
 
       final second = AppDatabase(store: store);
       await second.load();
-      expect((await second.getAllExercises()).any((e) => e.id == '60'), isFalse);
+      expect(
+          (await second.getAllExercises()).any((e) => e.id == '60'), isFalse);
     });
 
     test('backfills Hebrew names onto rows it already had', () async {
       final store = FakeSnapshotStore(_legacyExerciseSnapshot());
       final db = AppDatabase(store: store);
       await db.load();
-      final squat =
-          (await db.getAllExercises()).firstWhere((e) => e.id == '8');
+      final squat = (await db.getAllExercises()).firstWhere((e) => e.id == '8');
       expect(squat.nameHe, isNotNull);
       expect(squat.primaryMuscleHe, isNotNull);
     });

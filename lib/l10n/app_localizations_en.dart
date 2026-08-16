@@ -198,6 +198,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kcal => 'kcal';
 
   @override
+  String get centimetersShort => 'cm';
+
+  @override
   String get addFood => 'Add Food';
 
   @override
@@ -2474,4 +2477,276 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get glassEffectReducedByAccessibility =>
       'Off — Reduce Transparency is on';
+
+  @override
+  String get profileTitle => 'My Profile';
+
+  @override
+  String get profileNotCompleted => 'Profile setup not completed';
+
+  @override
+  String get profileSectionBody => 'Body';
+
+  @override
+  String get profileSectionGoal => 'Goal & Activity';
+
+  @override
+  String get profileSectionTargets => 'Nutrition Targets';
+
+  @override
+  String get profileSectionFood => 'Food & Diet';
+
+  @override
+  String get profileSectionUnits => 'Units';
+
+  @override
+  String get profileTrainingDaysWeek => 'Training Days / Week';
+
+  @override
+  String get profileCalorieTarget => 'Calorie Target';
+
+  @override
+  String get profileProteinTarget => 'Protein Target';
+
+  @override
+  String get profileCarbsTarget => 'Carbs Target';
+
+  @override
+  String get profileFatTarget => 'Fat Target';
+
+  @override
+  String get profileInjuries => 'Injuries';
+
+  @override
+  String get profileEnergyUnit => 'Energy Unit';
+
+  @override
+  String get profileRecalculate => 'Recalculate from Body & Goal';
+
+  @override
+  String get profileRegenTitle => 'Update your templates?';
+
+  @override
+  String get healthSection => 'Health';
+
+  @override
+  String get calendarSelectRecentMeal => 'Select a recent meal';
+
+  @override
+  String get calendarSelectRecentWorkout => 'Select a recent workout';
+
+  @override
+  String get filterShowingEverything => 'Showing everything';
+
+  @override
+  String get foodBrandHint => 'e.g., Generic, Organic, etc.';
+
+  @override
+  String get foodUnitHint => 'g, ml, piece, cup, etc.';
+
+  @override
+  String get foodTagsContains => 'Contains';
+
+  @override
+  String get foodTagsContainsHelp =>
+      'Used to hide this food when it clashes with your diet or exclusions. Leave blank if it contains none.';
+
+  @override
+  String get foodTagsAnimalOrigin => 'Animal origin';
+
+  @override
+  String get foodTagsAnimalOriginHelp => 'Used for plant-based diets.';
+
+  @override
+  String get mealNotesHint => 'Any additional notes about this meal';
+
+  @override
+  String get mealTemplateNameHint =>
+      'e.g., High Protein Breakfast, Pre-Workout Snack';
+
+  @override
+  String get mealTemplateNotesHint => 'Notes about this meal template';
+
+  @override
+  String get colorRolePrimary => 'Primary';
+
+  @override
+  String get colorRoleBackground => 'Background';
+
+  @override
+  String get colorRoleSurface => 'Surface';
+
+  @override
+  String get exerciseNameHint => 'e.g., Bench Press, Squats';
+
+  @override
+  String get exerciseMuscleHint => 'e.g., Chest, Legs, Back';
+
+  @override
+  String get exerciseNotesHint => 'Form cues, variations, etc.';
+
+  @override
+  String get exerciseEquipmentNeeded => 'Equipment needed';
+
+  @override
+  String get exerciseEquipmentHelp =>
+      'Pick every option this can be done with. Leave blank and it will be treated as always available.';
+
+  @override
+  String get exerciseAvoidInjury => 'Avoid with injury to';
+
+  @override
+  String get exerciseAvoidInjuryHelp =>
+      'This will be hidden for anyone reporting one of these injuries.';
+
+  @override
+  String get workoutTemplateNameHint => 'e.g., Push Day, Full Body';
+
+  @override
+  String get workoutTemplateNotesHint =>
+      'Any notes about this workout template';
+
+  @override
+  String get templateNoExercisesAdded => 'No exercises added';
+
+  @override
+  String get templateNoExercisesHelp =>
+      'Add exercises to build your workout template';
+
+  @override
+  String get templateNoExercises => 'No exercises';
+
+  @override
+  String get templateRepsEmptyHint => 'Leave empty for variable reps';
+
+  @override
+  String get workoutLoading => 'Loading workout...';
+
+  @override
+  String get sleepInProgress => 'In progress...';
+
+  @override
+  String profileRegenBody(int meals, int workouts) {
+    return 'Your profile changed in a way that affects which meals and workouts suit you.\n\nRebuilding replaces $meals generated meal template(s) and $workouts generated workout template(s). Anything you created or edited yourself is kept.';
+  }
+
+  @override
+  String get themeOcean => 'Ocean';
+
+  @override
+  String get themeForest => 'Forest';
+
+  @override
+  String get themeSunset => 'Sunset';
+
+  @override
+  String get themeLavender => 'Lavender';
+
+  @override
+  String get themeMidnight => 'Midnight';
+
+  @override
+  String get themeCustom => 'Custom';
+
+  @override
+  String get themeOceanDesc => 'Calming blues & teals';
+
+  @override
+  String get themeForestDesc => 'Natural & balanced greens';
+
+  @override
+  String get themeSunsetDesc => 'Warm & energetic';
+
+  @override
+  String get themeLavenderDesc => 'Mindful & creative';
+
+  @override
+  String get themeMidnightDesc => 'Sophisticated dark blue';
+
+  @override
+  String get themeCustomDesc => 'Customize your own colors';
+
+  @override
+  String get appearanceThemeColors => 'Theme Colors';
+
+  @override
+  String get appearanceSectionColors => 'Section Colors';
+
+  @override
+  String get appearanceNutritionColors => 'Nutrition Colors';
+
+  @override
+  String get appearancePreview => 'Preview';
+
+  @override
+  String get appearanceCustomAll =>
+      'Customize all app colors. Changes apply immediately.';
+
+  @override
+  String get appearanceCustomSection =>
+      'Customize section colors. Switch to Custom theme to edit theme colors.';
+
+  @override
+  String get tapToCompleteSetup => 'Tap to complete setup';
+
+  @override
+  String goalsSetCount(int count) {
+    return '$count/4 goals set';
+  }
+
+  @override
+  String perUnit(String unit) {
+    return 'Per $unit:';
+  }
+
+  @override
+  String nutritionPerUnit(String unit) {
+    return 'Nutrition per $unit:';
+  }
+
+  @override
+  String get unitPer100g => 'Nutrition values are per 100 grams';
+
+  @override
+  String get unitPerGram => 'Nutrition values are per gram';
+
+  @override
+  String get unitPerMl => 'Nutrition values are per milliliter';
+
+  @override
+  String get unitPerOz => 'Nutrition values are per ounce';
+
+  @override
+  String unitPerCount(String unit) {
+    return 'Nutrition values are per $unit';
+  }
+
+  @override
+  String durationHm(String h, String m) {
+    return '${h}h ${m}m';
+  }
+
+  @override
+  String durationM(String m) {
+    return '${m}m';
+  }
+
+  @override
+  String get durationLabel => 'Duration';
+
+  @override
+  String activeFor(String duration) {
+    return 'Active $duration';
+  }
+
+  @override
+  String get scheduled => 'Scheduled';
+
+  @override
+  String get brandGeneric => 'Generic';
+
+  @override
+  String amountWithUnit(String unit) {
+    return 'Amount ($unit)';
+  }
 }

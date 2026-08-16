@@ -130,7 +130,8 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
-      await WorkoutTemplateGenerator(db, profile(days: days)).generateTemplates();
+      await WorkoutTemplateGenerator(db, profile(days: days))
+          .generateTemplates();
       await container.read(calendarStateProvider.notifier).addEvents(
           await CalendarScheduleGenerator(db, profile(days: days))
               .buildSchedule());

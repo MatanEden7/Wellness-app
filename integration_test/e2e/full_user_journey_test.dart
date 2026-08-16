@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -5,6 +6,9 @@ import 'package:integration_test/integration_test.dart';
 import 'package:wellness_app/core/widgets.dart';
 import 'package:wellness_app/services/language_service.dart';
 import 'package:wellness_app/features/dashboard/ui/dashboard_page.dart';
+import 'package:wellness_app/core/ios/liquid_glass_tab_bar.dart';
+import 'package:wellness_app/routing/routes.dart';
+import 'package:wellness_app/core/ios/pressable.dart';
 
 import '../support/app_launcher.dart';
 
@@ -25,7 +29,9 @@ import '../support/app_launcher.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('onboarding -> food -> meal template -> use it -> exercise -> workout template -> execute -> sleep', (tester) async {
+  testWidgets(
+      'onboarding -> food -> meal template -> use it -> exercise -> workout template -> execute -> sleep',
+      (tester) async {
     final l10n = await loadL10n(AppLanguage.english);
 
     // ---------------------------------------------------------------
@@ -85,7 +91,8 @@ void main() {
     await tapVisible(tester, find.byTooltip(l10n.add));
     await settle(tester);
 
-    expect(find.text(foodName), findsOneWidget, reason: 'new food should appear in "Your Foods"');
+    expect(find.text(foodName), findsOneWidget,
+        reason: 'new food should appear in "Your Foods"');
 
     // Back from Food Catalog to Meals -- the Meal Templates shortcut lives
     // on the Meals page, not the Food Catalog page.
@@ -105,21 +112,27 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, mealTemplateName);
     await settle(tester);
 
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.add)); // "Add" next to Food Items
+    await tapVisible(tester,
+        find.widgetWithText(AppButton, l10n.add)); // "Add" next to Food Items
     await settle(tester);
     // The underlying template editor's own "Template Name" field is still
     // mounted behind this dialog, so an unscoped find.byType(TextFormField)
     // would match it instead of the dialog's search field -- scope to the
     // Dialog.
     await tester.enterText(
-      find.descendant(of: find.byType(Dialog), matching: find.byType(TextFormField)).first,
+      find
+          .descendant(
+              of: find.byType(Dialog), matching: find.byType(TextFormField))
+          .first,
       'E2E Test Food',
     );
     await settle(tester);
     // find.text(foodName) now also matches the search field's own
-    // EditableText (it contains what we just typed) as well as the
-    // ListTile -- scope to the ListTile specifically.
-    await tester.tap(find.widgetWithText(ListTile, foodName));
+    // EditableText (it contains what we just typed) as well as the picker
+    // row -- scope to the row specifically. The row is a Pressable, not a
+    // ListTile: ListTile needs a Material ancestor that this sheet does not
+    // have, so it asserted on every build.
+    await tester.tap(find.widgetWithText(Pressable, foodName));
     await settle(tester);
     // The dialog's own "Save" button and the template editor's AppBar
     // "Save" button behind it are both AppButton widgets with identical
@@ -143,7 +156,8 @@ void main() {
     // ones in a ListView.builder -- it may not even be built yet until
     // scrolled into range.
     await scrollToFind(tester, find.text(mealTemplateName));
-    expect(find.text(mealTemplateName), findsOneWidget, reason: 'should be back on Meal Templates showing the new template');
+    expect(find.text(mealTemplateName), findsOneWidget,
+        reason: 'should be back on Meal Templates showing the new template');
 
     // ---------------------------------------------------------------
     // Phase 4: Use the template to log a meal
@@ -152,31 +166,36 @@ void main() {
     // + this one), each with its own "Use Now" button -- scope to this
     // template's card specifically (same reasoning as the workout template
     // card scoping in Phase 7 below).
-    final mealCard = find.ancestor(of: find.text(mealTemplateName), matching: find.byType(AppCard));
-    final useNowButton = find.descendant(of: mealCard, matching: find.widgetWithText(AppButton, l10n.useNow));
+    final mealCard = find.ancestor(
+        of: find.text(mealTemplateName), matching: find.byType(AppCard));
+    final useNowButton = find.descendant(
+        of: mealCard, matching: find.widgetWithText(AppButton, l10n.useNow));
     // Scroll to the button itself, not just the card's name -- for the
     // last card in the list the name can be visible while the button
     // further down is still clipped.
     await scrollToFind(tester, useNowButton);
     await tester.tap(useNowButton);
     await settle(tester);
-    // Native date picker defaults to today -- just confirm it. Wait
-    // robustly rather than assume one settle() covers the dialog's
-    // entrance transition.
-    await waitFor(tester, find.text('OK'));
-    await tester.tap(find.text('OK'));
-    await settle(tester);
+    // Date picker defaults to today -- just confirm it. The confirm button is
+    // "Done", not "OK": this is a UIDatePicker on a device and a
+    // CupertinoDatePicker in the fallback, and both use the iOS wording.
+    // Material's showDatePicker, which said OK, is gone.
+    await waitFor(tester, find.text(l10n.done));
+    await tester.tap(find.text(l10n.done));
+    // Fewer frames on purpose. The confirmation is a banner now, not a
+    // SnackBar, and it dismisses itself after 2.2s -- a full `settle()` pumps
+    // 3s of frames, so the assertion below ran *after* the banner had already
+    // gone and reported that the app never confirmed anything.
+    await settle(tester, frames: 4);
 
     expect(find.text(l10n.mealCreatedFromTemplate), findsOneWidget);
-    await settle(tester); // let the snackbar clear and the pop-back settle
+    await settle(tester); // let the banner clear and the pop-back settle
 
-    // Back on Meals now (Use Now pops MealTemplatesPage) -- MealsPage and
-    // WorkoutsPage are pushed routes with no bottom nav of their own, so
-    // go back to the dashboard before tapping a bottom nav icon again.
-    // MealsPage/WorkoutsPage use a custom "Back to Dashboard" tooltip
-    // rather than the default "Back", so tester.pageBack() (which only
-    // looks for tooltip 'Back') won't find it -- tap by tooltip directly.
-    await tester.tap(find.byTooltip(l10n.backToDashboard));
+    // Back on Meals now (Use Now pops MealTemplatesPage). Meals is a *tab*
+    // destination -- `showBack: false`, `tabIndex: 1` -- so it has no back
+    // chevron to tap; the comment this replaces described the app before the
+    // tab bar existed. Home is the tab bar's first item.
+    await tester.tap(find.byKey(LiquidGlassTabBar.tabKey(Routes.dashboard)));
     await settle(tester);
 
     // ---------------------------------------------------------------
@@ -197,11 +216,15 @@ void main() {
     await tapVisible(tester, find.byTooltip(l10n.add));
     await settle(tester);
 
-    // Appended after the 16 built-in exercises in a ListView.builder, so it
-    // is not built until scrolled into range -- same concern as the template
-    // lists below.
-    await scrollToFind(tester, find.text(exerciseName));
-    expect(find.text(exerciseName), findsOneWidget, reason: 'new exercise should appear in the library');
+    // Filter rather than scroll. The comment this replaces said "appended
+    // after the 16 built-in exercises"; the catalog is 115 exercises now and
+    // the new one is not necessarily last, while `scrollUntilVisible` only
+    // travels one direction -- so it walked past the end and gave up. The
+    // search field makes this deterministic and is what a user would do.
+    await tester.enterText(find.byType(CupertinoSearchTextField), exerciseName);
+    await settle(tester);
+    expect(find.text(exerciseName), findsWidgets,
+        reason: 'new exercise should appear in the library');
 
     // ---------------------------------------------------------------
     // Phase 6: Create a workout template that includes it
@@ -217,15 +240,22 @@ void main() {
     await tester.tap(find.byTooltip(l10n.createTemplate));
     await settle(tester);
 
-    await tester.enterText(find.byType(TextFormField).first, workoutTemplateName);
+    await tester.enterText(
+        find.byType(TextFormField).first, workoutTemplateName);
     await settle(tester);
-    await tapVisible(tester, find.widgetWithText(AppButton, l10n.addExerciseTooltip)); // "Add Exercise"
+    // The design pass replaced this AppButton with a compact pill labelled
+    // `addExerciseShort` ("Exercise"); `addExerciseTooltip` is not on this
+    // screen any more.
+    await tapVisible(tester, find.text(l10n.addExerciseShort));
     await settle(tester);
     // 16 exercises + this new one in a plain ListView.builder inside the
     // dialog -- may need scrolling within the dialog specifically (not the
     // page behind it).
-    final exerciseDialogList = find.descendant(of: find.byType(Dialog), matching: find.byType(Scrollable)).first;
-    await scrollToFind(tester, find.text(exerciseName), scrollable: exerciseDialogList);
+    final exerciseDialogList = find
+        .descendant(of: find.byType(Dialog), matching: find.byType(Scrollable))
+        .first;
+    await scrollToFind(tester, find.text(exerciseName),
+        scrollable: exerciseDialogList);
     await tester.tap(find.text(exerciseName));
     await settle(tester);
     // The workout template editor's Save is a navigation-bar action now.
@@ -244,8 +274,11 @@ void main() {
     // this one), each with its own "Start Workout" button -- scope to the
     // card containing this specific template's name so the right one
     // starts, not just whichever renders first.
-    final workoutCard = find.ancestor(of: find.text(workoutTemplateName), matching: find.byType(AppCard));
-    final startWorkoutButton = find.descendant(of: workoutCard, matching: find.widgetWithText(AppButton, l10n.startWorkout));
+    final workoutCard = find.ancestor(
+        of: find.text(workoutTemplateName), matching: find.byType(AppCard));
+    final startWorkoutButton = find.descendant(
+        of: workoutCard,
+        matching: find.widgetWithText(AppButton, l10n.startWorkout));
     // Scroll to the button itself, not just the card's name -- see the
     // identical Phase 4 comment on "Use Now" for why.
     await scrollToFind(tester, startWorkoutButton);
@@ -260,11 +293,12 @@ void main() {
     expect(find.text(workoutTemplateName), findsOneWidget,
         reason: 'should be back on Workout Templates after finishing');
 
-    // Templates is a pushed page above Workouts, which is itself pushed
-    // above the dashboard -- pop both.
+    // Templates is a pushed page above Workouts. Pop it, then take the tab bar
+    // Home -- Workouts is a tab destination (`showBack: false`) and has no back
+    // chevron, same as Meals above.
     await tester.pageBack();
     await settle(tester);
-    await tester.tap(find.byTooltip(l10n.backToDashboard));
+    await tester.tap(find.byKey(LiquidGlassTabBar.tabKey(Routes.dashboard)));
     await settle(tester);
 
     // ---------------------------------------------------------------
@@ -276,21 +310,22 @@ void main() {
 
     await tester.tap(find.byType(TextFormField).first); // Bedtime
     await settle(tester);
-    // Time picker opens in dial mode -- switch to keyboard entry for a
-    // reliable programmatic time instead of dragging the clock hands.
-    await tester.tap(find.byIcon(Icons.keyboard_outlined));
-    await settle(tester);
-    final timeFields = find.descendant(of: find.byType(Dialog).last, matching: find.byType(TextFormField));
-    await tester.enterText(timeFields.at(0), '11'); // hour
-    await tester.enterText(timeFields.at(1), '30'); // minute
-    await settle(tester);
-    await waitFor(tester, find.text('OK'));
-    await tester.tap(find.text('OK'));
+    // Bedtime opens a wheel picker now, not Material's dial: there is no
+    // keyboard-entry toggle to switch to, no hour/minute TextFormFields to
+    // type into, and the confirm button says "Done". The block this replaces
+    // drove all three. Nothing below asserts the *value* -- only that the
+    // sheet saved and closed -- so confirming the picker's default is enough.
+    await waitFor(tester, find.text(l10n.done));
+    await tester.tap(find.text(l10n.done));
     await settle(tester);
 
-    await tapVisible(tester, find.widgetWithText(AppButton, 'Add')); // sleep dialog's Add (hardcoded, not l10n)
+    await tapVisible(
+        tester,
+        find.widgetWithText(
+            AppButton, 'Add')); // sleep dialog's Add (hardcoded, not l10n)
     await settle(tester);
 
-    expect(find.byType(TextFormField), findsNothing, reason: 'sleep entry dialog should be closed after saving');
+    expect(find.byType(TextFormField), findsNothing,
+        reason: 'sleep entry dialog should be closed after saving');
   });
 }

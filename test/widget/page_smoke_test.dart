@@ -180,9 +180,11 @@ void main() {
   testWidgets('the large title survives being scrolled', (tester) async {
     await pumpPage(tester, const MealsPage());
 
-    await tester.drag(find.byType(CustomScrollView).first, const Offset(0, -200));
+    await tester.drag(
+        find.byType(CustomScrollView).first, const Offset(0, -200));
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.drag(find.byType(CustomScrollView).first, const Offset(0, 400));
+    await tester.drag(
+        find.byType(CustomScrollView).first, const Offset(0, 400));
     await tester.pump(const Duration(milliseconds: 300));
   });
 }

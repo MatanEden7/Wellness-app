@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/core/utils.dart';
+import 'package:wellness_app/l10n/app_localizations_en.dart';
 
 /// Coverage for the pure helpers in core/utils.dart: date <-> int conversion
 /// (the format every date-keyed table in the app uses), duration formatting,
@@ -22,18 +23,20 @@ void main() {
     });
 
     test('formatDuration omits the hours segment when under an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(minutes: 45)), '45m');
+      expect(AppDateUtils.formatDuration(const Duration(minutes: 45), AppLocalizationsEn()), '45m');
     });
 
     test('formatDuration includes both segments over an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(hours: 1, minutes: 30)), '1h 30m');
+      expect(AppDateUtils.formatDuration(const Duration(hours: 1, minutes: 30), AppLocalizationsEn()),
+          '1h 30m');
     });
 
     test('formatDuration handles an exact hour with 0 minutes', () {
-      expect(AppDateUtils.formatDuration(const Duration(hours: 2)), '2h 0m');
+      expect(AppDateUtils.formatDuration(const Duration(hours: 2), AppLocalizationsEn()), '2h 0m');
     });
 
-    test('formatSleepDuration computes the difference between two DateTimes', () {
+    test('formatSleepDuration computes the difference between two DateTimes',
+        () {
       final start = DateTime(2026, 1, 1, 23, 0);
       final end = DateTime(2026, 1, 2, 6, 30);
       expect(AppDateUtils.formatSleepDuration(start, end), '7h 30m');
@@ -54,7 +57,8 @@ void main() {
     });
 
     test('formatCalories rounds to the nearest whole number', () {
-      expect(Formatters.formatCalories(247.5), '248'); // banker's/half-up per num.round()
+      expect(Formatters.formatCalories(247.5),
+          '248'); // banker's/half-up per num.round()
       expect(Formatters.formatCalories(247.4), '247');
     });
 

@@ -1,5 +1,7 @@
 import 'models.dart';
 import 'food_serving_kind.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
+import 'package:wellness_app/services/language_service.dart';
 
 class NutritionMacros {
   const NutritionMacros({
@@ -60,6 +62,41 @@ class FoodNutritionMath {
     }
   }
 
+  /// Localised form of a stored unit string.
+  ///
+  /// `FoodItem.unit` holds display tokens like "100g", "piece", "tbsp". They
+  /// are part of the seeded data rather than the UI, so there is no ARB key
+  /// per food -- one token map covers the whole catalog, the same way
+  /// `FoodCategory.label` handles categories. A numeric prefix is kept and only
+  /// its suffix translated, so "100g" becomes "100 ג" rather than being lost.
+  static String localizedUnit(AppLanguage language, String unit) {
+    if (language != AppLanguage.hebrew) return unit;
+    const tokens = {
+      'g': 'ג',
+      'ml': 'מ״ל',
+      'oz': 'אונקיה',
+      'piece': 'יחידה',
+      'pieces': 'יחידות',
+      'slice': 'פרוסה',
+      'tbsp': 'כף',
+      'tsp': 'כפית',
+      'cup': 'כוס',
+      'scoop': 'סקופ',
+      'serving': 'מנה',
+      'can': 'פחית',
+      'bottle': 'בקבוק',
+    };
+    final trimmed = unit.trim();
+    if (tokens.containsKey(trimmed)) return tokens[trimmed]!;
+    // "100g" / "300ml" -- keep the number, translate the suffix.
+    final m = RegExp(r'^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)$').firstMatch(trimmed);
+    if (m != null) {
+      final suffix = tokens[m.group(2)!.toLowerCase()];
+      if (suffix != null) return '${m.group(1)} $suffix';
+    }
+    return unit;
+  }
+
   static String displayUnitLabel(FoodItem food) {
     switch (food.servingKind) {
       case FoodServingKind.per100g:
@@ -98,18 +135,20 @@ class FoodNutritionMath {
     return '${_formatNumber(display)} $unit';
   }
 
-  static String explainUnit(FoodItem food) {
+  /// Takes [l10n] rather than a BuildContext: this is domain code, and the
+  /// caller already has the localisations in hand.
+  static String explainUnit(AppLocalizations l10n, FoodItem food) {
     switch (food.servingKind) {
       case FoodServingKind.per100g:
-        return 'Nutrition values are per 100 grams';
+        return l10n.unitPer100g;
       case FoodServingKind.perGram:
-        return 'Nutrition values are per gram';
+        return l10n.unitPerGram;
       case FoodServingKind.perMl:
-        return 'Nutrition values are per milliliter';
+        return l10n.unitPerMl;
       case FoodServingKind.perOz:
-        return 'Nutrition values are per ounce';
+        return l10n.unitPerOz;
       case FoodServingKind.perCount:
-        return 'Nutrition values are per ${food.unit}';
+        return l10n.unitPerCount(food.unit);
     }
   }
 

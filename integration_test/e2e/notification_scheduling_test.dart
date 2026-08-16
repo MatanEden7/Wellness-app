@@ -28,7 +28,8 @@ import '../support/app_launcher.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('scheduling an event puts a matching request in the OS pending queue',
+  testWidgets(
+      'scheduling an event puts a matching request in the OS pending queue',
       (tester) async {
     final ref = await () async {
       await pumpApp(tester);

@@ -8,7 +8,8 @@ import 'package:wellness_app/features/calendar/data/calendar_service.dart';
 import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/features/meals/data/repositories.dart';
 import 'package:wellness_app/features/meals/domain/models.dart';
-import 'package:wellness_app/features/sleep/data/repositories.dart' as sleep_repo;
+import 'package:wellness_app/features/sleep/data/repositories.dart'
+    as sleep_repo;
 import 'package:wellness_app/features/sleep/domain/models.dart';
 import 'package:wellness_app/features/workouts/data/repositories.dart';
 import 'package:wellness_app/features/workouts/domain/models.dart';

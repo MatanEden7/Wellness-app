@@ -66,6 +66,7 @@
   "hours": "hours",
   "minutes": "minutes",
   "kcal": "kcal",
+  "centimetersShort": "cm",
   "addFood": "Add Food",
   "foodName": "Food Name",
   "save": "Save",
@@ -1365,5 +1366,156 @@
   "glassEffectReducedByAccessibility": "Off — Reduce Transparency is on",
   "@glassEffectReducedByAccessibility": {
     "description": "Shown instead of the glass level when iOS Reduce Transparency forces it off"
+  },
+  "profileTitle": "My Profile",
+  "profileNotCompleted": "Profile setup not completed",
+  "profileSectionBody": "Body",
+  "profileSectionGoal": "Goal & Activity",
+  "profileSectionTargets": "Nutrition Targets",
+  "profileSectionFood": "Food & Diet",
+  "profileSectionUnits": "Units",
+  "profileTrainingDaysWeek": "Training Days / Week",
+  "profileCalorieTarget": "Calorie Target",
+  "profileProteinTarget": "Protein Target",
+  "profileCarbsTarget": "Carbs Target",
+  "profileFatTarget": "Fat Target",
+  "profileInjuries": "Injuries",
+  "profileEnergyUnit": "Energy Unit",
+  "profileRecalculate": "Recalculate from Body & Goal",
+  "profileRegenTitle": "Update your templates?",
+  "healthSection": "Health",
+  "calendarSelectRecentMeal": "Select a recent meal",
+  "calendarSelectRecentWorkout": "Select a recent workout",
+  "filterShowingEverything": "Showing everything",
+  "foodBrandHint": "e.g., Generic, Organic, etc.",
+  "foodUnitHint": "g, ml, piece, cup, etc.",
+  "foodTagsContains": "Contains",
+  "foodTagsContainsHelp": "Used to hide this food when it clashes with your diet or exclusions. Leave blank if it contains none.",
+  "foodTagsAnimalOrigin": "Animal origin",
+  "foodTagsAnimalOriginHelp": "Used for plant-based diets.",
+  "mealNotesHint": "Any additional notes about this meal",
+  "mealTemplateNameHint": "e.g., High Protein Breakfast, Pre-Workout Snack",
+  "mealTemplateNotesHint": "Notes about this meal template",
+  "colorRolePrimary": "Primary",
+  "colorRoleBackground": "Background",
+  "colorRoleSurface": "Surface",
+  "exerciseNameHint": "e.g., Bench Press, Squats",
+  "exerciseMuscleHint": "e.g., Chest, Legs, Back",
+  "exerciseNotesHint": "Form cues, variations, etc.",
+  "exerciseEquipmentNeeded": "Equipment needed",
+  "exerciseEquipmentHelp": "Pick every option this can be done with. Leave blank and it will be treated as always available.",
+  "exerciseAvoidInjury": "Avoid with injury to",
+  "exerciseAvoidInjuryHelp": "This will be hidden for anyone reporting one of these injuries.",
+  "workoutTemplateNameHint": "e.g., Push Day, Full Body",
+  "workoutTemplateNotesHint": "Any notes about this workout template",
+  "templateNoExercisesAdded": "No exercises added",
+  "templateNoExercisesHelp": "Add exercises to build your workout template",
+  "templateNoExercises": "No exercises",
+  "templateRepsEmptyHint": "Leave empty for variable reps",
+  "workoutLoading": "Loading workout...",
+  "sleepInProgress": "In progress...",
+  "profileRegenBody": "Your profile changed in a way that affects which meals and workouts suit you.\n\nRebuilding replaces {meals} generated meal template(s) and {workouts} generated workout template(s). Anything you created or edited yourself is kept.",
+  "@profileRegenBody": {
+    "placeholders": {
+      "meals": {
+        "type": "int"
+      },
+      "workouts": {
+        "type": "int"
+      }
+    }
+  },
+  "themeOcean": "Ocean",
+  "themeForest": "Forest",
+  "themeSunset": "Sunset",
+  "themeLavender": "Lavender",
+  "themeMidnight": "Midnight",
+  "themeCustom": "Custom",
+  "themeOceanDesc": "Calming blues & teals",
+  "themeForestDesc": "Natural & balanced greens",
+  "themeSunsetDesc": "Warm & energetic",
+  "themeLavenderDesc": "Mindful & creative",
+  "themeMidnightDesc": "Sophisticated dark blue",
+  "themeCustomDesc": "Customize your own colors",
+  "appearanceThemeColors": "Theme Colors",
+  "appearanceSectionColors": "Section Colors",
+  "appearanceNutritionColors": "Nutrition Colors",
+  "appearancePreview": "Preview",
+  "appearanceCustomAll": "Customize all app colors. Changes apply immediately.",
+  "appearanceCustomSection": "Customize section colors. Switch to Custom theme to edit theme colors.",
+  "tapToCompleteSetup": "Tap to complete setup",
+  "goalsSetCount": "{count}/4 goals set",
+  "@goalsSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perUnit": "Per {unit}:",
+  "@perUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionPerUnit": "Nutrition per {unit}:",
+  "@nutritionPerUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "unitPer100g": "Nutrition values are per 100 grams",
+  "unitPerGram": "Nutrition values are per gram",
+  "unitPerMl": "Nutrition values are per milliliter",
+  "unitPerOz": "Nutrition values are per ounce",
+  "unitPerCount": "Nutrition values are per {unit}",
+  "@unitPerCount": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "durationHm": "{h}h {m}m",
+  "@durationHm": {
+    "placeholders": {
+      "h": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "durationM": "{m}m",
+  "@durationM": {
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "durationLabel": "Duration",
+  "activeFor": "Active {duration}",
+  "@activeFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "scheduled": "Scheduled",
+  "brandGeneric": "Generic",
+  "amountWithUnit": "Amount ({unit})",
+  "@amountWithUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
   }
 }

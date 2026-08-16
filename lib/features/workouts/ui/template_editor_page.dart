@@ -21,6 +21,7 @@ import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
+import '../../../core/ios/pressable.dart';
 
 class TemplateEditorPage extends HookConsumerWidget {
   final String? templateId;
@@ -86,7 +87,7 @@ class TemplateEditorPage extends HookConsumerWidget {
             controller: nameController,
             decoration: InputDecoration(
               labelText: l10n.templateName,
-              hintText: 'e.g., Push Day, Full Body',
+              hintText: AppLocalizations.of(context)!.workoutTemplateNameHint,
               counterText:
                   '${nameController.text.length}/${TextLimits.workoutTemplateNameMaxLength}',
               contentPadding: const EdgeInsets.symmetric(
@@ -111,7 +112,7 @@ class TemplateEditorPage extends HookConsumerWidget {
             controller: notesController,
             decoration: InputDecoration(
               labelText: l10n.notesOptional,
-              hintText: 'Any notes about this workout template',
+              hintText: AppLocalizations.of(context)!.workoutTemplateNotesHint,
               counterText:
                   '${notesController.text.length}/${TextLimits.generalNoteMaxLength}',
               contentPadding: const EdgeInsets.symmetric(
@@ -191,9 +192,9 @@ class TemplateEditorPage extends HookConsumerWidget {
 
           // Exercises List
           if (templateExercises.value.isEmpty)
-            const EmptyState(
-              title: 'No exercises added',
-              subtitle: 'Add exercises to build your workout template',
+            EmptyState(
+              title: AppLocalizations.of(context)!.templateNoExercisesAdded,
+              subtitle: AppLocalizations.of(context)!.templateNoExercisesHelp,
               icon: Icons.fitness_center,
             )
           else
@@ -792,8 +793,9 @@ class _ExerciseSelectorDialog extends ConsumerWidget {
                     final exercises = snapshot.data ?? [];
 
                     if (exercises.isEmpty) {
-                      return const EmptyState(
-                        title: 'No exercises',
+                      return EmptyState(
+                        title:
+                            AppLocalizations.of(context)!.templateNoExercises,
                         subtitle:
                             'Create exercises in the Exercise Library first',
                         icon: Icons.fitness_center,
@@ -804,12 +806,42 @@ class _ExerciseSelectorDialog extends ConsumerWidget {
                       itemCount: exercises.length,
                       itemBuilder: (context, index) {
                         final exercise = exercises[index];
-                        return ListTile(
-                          title: Text(exercise.name),
-                          subtitle: exercise.primaryMuscle != null
-                              ? Text(exercise.primaryMuscle!)
-                              : null,
+                        // Not a ListTile: it resolves ink and background
+                        // against the nearest Material, and this picker sits
+                        // on a rounded surface with none -- Flutter asserts
+                        // instead of degrading.
+                        return Pressable(
                           onTap: () => Navigator.of(context).pop(exercise),
+                          style: PressStyle.highlight,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  exercise.name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(fontSize: 17),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (exercise.primaryMuscle != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    exercise.primaryMuscle!,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         );
                       },
                     );
@@ -902,7 +934,7 @@ class _TemplateExerciseEditorDialog extends HookConsumerWidget {
                 controller: repsController,
                 decoration: InputDecoration(
                   labelText: l10n.defaultRepsOptional,
-                  hintText: 'Leave empty for variable reps',
+                  hintText: AppLocalizations.of(context)!.templateRepsEmptyHint,
                 ),
                 keyboardType: TextInputType.number,
               ),

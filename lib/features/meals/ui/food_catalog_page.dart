@@ -25,6 +25,7 @@ import 'package:wellness_app/l10n/app_localizations.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
+import '../domain/food_nutrition_math.dart';
 
 /// Which half of the catalog is showing.
 enum _CatalogScope { user, starter }
@@ -216,7 +217,8 @@ class _FoodList extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: FilterBanner(
                   icon: Icons.visibility_outlined,
-                  message: 'Showing everything',
+                  message:
+                      AppLocalizations.of(context)!.filterShowingEverything,
                   actionLabel: l10n.filter,
                   onAction: () =>
                       ref.read(showAllContentProvider.notifier).state = false,
@@ -248,7 +250,8 @@ class _FoodList extends ConsumerWidget {
                     final food = foods[index];
                     final reason = profile == null
                         ? null
-                        : fitFailureLabel(ProfileFit.foodFit(food, profile));
+                        : fitFailureLabel(
+                            ProfileFit.foodFit(food, profile), language);
                     return _FoodCard(
                       food: food,
                       language: language,
@@ -346,7 +349,7 @@ class _FoodCard extends StatelessWidget {
                         if (food.brand != null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            food.brand!,
+                            food.displayBrand(language)!,
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(fontSize: 14),
                             maxLines: 1,
@@ -386,7 +389,8 @@ class _FoodCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Per ${food.unit}:',
+                AppLocalizations.of(context)!.perUnit(
+                    FoodNutritionMath.localizedUnit(language, food.unit)),
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: AppSpacing.xs),
@@ -417,6 +421,7 @@ class FoodEditorPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(currentLanguageProvider);
     final l10n = AppLocalizations.of(context)!;
     final nameController = useTextEditingController(text: food?.name ?? '');
     final brandController = useTextEditingController(text: food?.brand ?? '');
@@ -485,7 +490,7 @@ class FoodEditorPage extends HookConsumerWidget {
               controller: brandController,
               decoration: InputDecoration(
                 labelText: l10n.brandOptional,
-                hintText: 'e.g., Generic, Organic, etc.',
+                hintText: AppLocalizations.of(context)!.foodBrandHint,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -493,13 +498,16 @@ class FoodEditorPage extends HookConsumerWidget {
               controller: unitController,
               decoration: InputDecoration(
                 labelText: l10n.unit,
-                hintText: 'g, ml, piece, cup, etc.',
+                hintText: AppLocalizations.of(context)!.foodUnitHint,
               ),
               validator: (value) => Validators.required(value, l10n.unit),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nutrition per ${unitController.text.isEmpty ? l10n.unitDefault : unitController.text}:',
+              AppLocalizations.of(context)!.nutritionPerUnit(
+                  unitController.text.isEmpty
+                      ? AppLocalizations.of(context)!.unitDefault
+                      : unitController.text),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -552,12 +560,11 @@ class FoodEditorPage extends HookConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             TagChips<FoodTag>(
-              title: 'Contains',
-              subtitle: 'Used to hide this food when it clashes with your '
-                  'diet or exclusions. Leave blank if it contains none.',
+              title: AppLocalizations.of(context)!.foodTagsContains,
+              subtitle: AppLocalizations.of(context)!.foodTagsContainsHelp,
               options: FoodTagLabel.allergens,
               selected: tags.value,
-              labelOf: (t) => t.label,
+              labelOf: (t) => t.label(language),
               onChanged: (next) => tags.value = {
                 ...next,
                 // Preserve the animal-origin tags the other group owns.
@@ -566,11 +573,11 @@ class FoodEditorPage extends HookConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             TagChips<FoodTag>(
-              title: 'Animal origin',
-              subtitle: 'Used for plant-based diets.',
+              title: AppLocalizations.of(context)!.foodTagsAnimalOrigin,
+              subtitle: AppLocalizations.of(context)!.foodTagsAnimalOriginHelp,
               options: FoodTagLabel.animalOrigin,
               selected: tags.value,
-              labelOf: (t) => t.label,
+              labelOf: (t) => t.label(language),
               onChanged: (next) => tags.value = {
                 ...next,
                 ...tags.value.where(FoodTagLabel.allergens.contains),

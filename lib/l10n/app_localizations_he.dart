@@ -198,6 +198,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get kcal => 'קק\"ל';
 
   @override
+  String get centimetersShort => 'ס\"מ';
+
+  @override
   String get addFood => 'הוסף מזון';
 
   @override
@@ -2459,4 +2462,275 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get glassEffectReducedByAccessibility => 'כבוי — הפחתת שקיפות פעילה';
+
+  @override
+  String get profileTitle => 'הפרופיל שלי';
+
+  @override
+  String get profileNotCompleted => 'הגדרת הפרופיל לא הושלמה';
+
+  @override
+  String get profileSectionBody => 'נתוני גוף';
+
+  @override
+  String get profileSectionGoal => 'מטרה ופעילות';
+
+  @override
+  String get profileSectionTargets => 'יעדי תזונה';
+
+  @override
+  String get profileSectionFood => 'מזון ותזונה';
+
+  @override
+  String get profileSectionUnits => 'יחידות';
+
+  @override
+  String get profileTrainingDaysWeek => 'ימי אימון בשבוע';
+
+  @override
+  String get profileCalorieTarget => 'יעד קלוריות';
+
+  @override
+  String get profileProteinTarget => 'יעד חלבון';
+
+  @override
+  String get profileCarbsTarget => 'יעד פחמימות';
+
+  @override
+  String get profileFatTarget => 'יעד שומן';
+
+  @override
+  String get profileInjuries => 'פציעות';
+
+  @override
+  String get profileEnergyUnit => 'יחידת אנרגיה';
+
+  @override
+  String get profileRecalculate => 'חישוב מחדש לפי גוף ומטרה';
+
+  @override
+  String get profileRegenTitle => 'לעדכן את התבניות שלך?';
+
+  @override
+  String get healthSection => 'בריאות';
+
+  @override
+  String get calendarSelectRecentMeal => 'בחר ארוחה אחרונה';
+
+  @override
+  String get calendarSelectRecentWorkout => 'בחר אימון אחרון';
+
+  @override
+  String get filterShowingEverything => 'מוצג הכל';
+
+  @override
+  String get foodBrandHint => 'לדוגמה: רגיל, אורגני וכו׳';
+
+  @override
+  String get foodUnitHint => 'גרם, מ״ל, יחידה, כוס וכו׳';
+
+  @override
+  String get foodTagsContains => 'מכיל';
+
+  @override
+  String get foodTagsContainsHelp =>
+      'משמש להסתרת המזון כשהוא מתנגש בתפריט או בהחרגות שלך. השאר ריק אם אינו מכיל אף אחד מהם.';
+
+  @override
+  String get foodTagsAnimalOrigin => 'מקור מן החי';
+
+  @override
+  String get foodTagsAnimalOriginHelp => 'משמש לתפריטים מהצומח.';
+
+  @override
+  String get mealNotesHint => 'הערות נוספות על הארוחה';
+
+  @override
+  String get mealTemplateNameHint =>
+      'לדוגמה: ארוחת בוקר עתירת חלבון, חטיף לפני אימון';
+
+  @override
+  String get mealTemplateNotesHint => 'הערות על תבנית הארוחה';
+
+  @override
+  String get colorRolePrimary => 'ראשי';
+
+  @override
+  String get colorRoleBackground => 'רקע';
+
+  @override
+  String get colorRoleSurface => 'משטח';
+
+  @override
+  String get exerciseNameHint => 'לדוגמה: לחיצת חזה, סקוואט';
+
+  @override
+  String get exerciseMuscleHint => 'לדוגמה: חזה, רגליים, גב';
+
+  @override
+  String get exerciseNotesHint => 'דגשי ביצוע, וריאציות וכו׳';
+
+  @override
+  String get exerciseEquipmentNeeded => 'ציוד נדרש';
+
+  @override
+  String get exerciseEquipmentHelp =>
+      'בחר כל אפשרות שניתן לבצע איתה. אם תשאיר ריק, התרגיל ייחשב כזמין תמיד.';
+
+  @override
+  String get exerciseAvoidInjury => 'להימנע בפציעה ב';
+
+  @override
+  String get exerciseAvoidInjuryHelp =>
+      'התרגיל יוסתר עבור מי שדיווח על אחת מהפציעות האלה.';
+
+  @override
+  String get workoutTemplateNameHint => 'לדוגמה: יום דחיפה, גוף מלא';
+
+  @override
+  String get workoutTemplateNotesHint => 'הערות על תבנית האימון';
+
+  @override
+  String get templateNoExercisesAdded => 'לא נוספו תרגילים';
+
+  @override
+  String get templateNoExercisesHelp =>
+      'הוסף תרגילים כדי לבנות את תבנית האימון';
+
+  @override
+  String get templateNoExercises => 'אין תרגילים';
+
+  @override
+  String get templateRepsEmptyHint => 'השאר ריק לחזרות משתנות';
+
+  @override
+  String get workoutLoading => 'טוען אימון...';
+
+  @override
+  String get sleepInProgress => 'בתהליך...';
+
+  @override
+  String profileRegenBody(int meals, int workouts) {
+    return 'הפרופיל שלך השתנה באופן שמשפיע על הארוחות והאימונים שמתאימים לך.\n\nבנייה מחדש תחליף $meals תבניות ארוחה שנוצרו אוטומטית ו-$workouts תבניות אימון שנוצרו אוטומטית. כל מה שיצרת או ערכת בעצמך נשמר.';
+  }
+
+  @override
+  String get themeOcean => 'אוקיינוס';
+
+  @override
+  String get themeForest => 'יער';
+
+  @override
+  String get themeSunset => 'שקיעה';
+
+  @override
+  String get themeLavender => 'לבנדר';
+
+  @override
+  String get themeMidnight => 'חצות';
+
+  @override
+  String get themeCustom => 'מותאם אישית';
+
+  @override
+  String get themeOceanDesc => 'כחולים וטורקיזים מרגיעים';
+
+  @override
+  String get themeForestDesc => 'ירוקים טבעיים ומאוזנים';
+
+  @override
+  String get themeSunsetDesc => 'חמים ואנרגטי';
+
+  @override
+  String get themeLavenderDesc => 'רגוע ויצירתי';
+
+  @override
+  String get themeMidnightDesc => 'כחול כהה ומעודן';
+
+  @override
+  String get themeCustomDesc => 'התאם את הצבעים שלך';
+
+  @override
+  String get appearanceThemeColors => 'צבעי ערכת נושא';
+
+  @override
+  String get appearanceSectionColors => 'צבעי מקטעים';
+
+  @override
+  String get appearanceNutritionColors => 'צבעי תזונה';
+
+  @override
+  String get appearancePreview => 'תצוגה מקדימה';
+
+  @override
+  String get appearanceCustomAll =>
+      'התאם את כל צבעי האפליקציה. השינויים חלים מיד.';
+
+  @override
+  String get appearanceCustomSection =>
+      'התאם את צבעי המקטעים. עבור לערכת נושא מותאמת כדי לערוך את צבעי הערכה.';
+
+  @override
+  String get tapToCompleteSetup => 'הקש להשלמת ההגדרה';
+
+  @override
+  String goalsSetCount(int count) {
+    return '$count/4 יעדים הוגדרו';
+  }
+
+  @override
+  String perUnit(String unit) {
+    return 'לכל $unit:';
+  }
+
+  @override
+  String nutritionPerUnit(String unit) {
+    return 'ערכים תזונתיים לכל $unit:';
+  }
+
+  @override
+  String get unitPer100g => 'הערכים התזונתיים הם ל-100 גרם';
+
+  @override
+  String get unitPerGram => 'הערכים התזונתיים הם לגרם';
+
+  @override
+  String get unitPerMl => 'הערכים התזונתיים הם למ\"ל';
+
+  @override
+  String get unitPerOz => 'הערכים התזונתיים הם לאונקיה';
+
+  @override
+  String unitPerCount(String unit) {
+    return 'הערכים התזונתיים הם ל$unit';
+  }
+
+  @override
+  String durationHm(String h, String m) {
+    return '$h ש\' $m ד\'';
+  }
+
+  @override
+  String durationM(String m) {
+    return '$m ד\'';
+  }
+
+  @override
+  String get durationLabel => 'משך';
+
+  @override
+  String activeFor(String duration) {
+    return 'פעיל $duration';
+  }
+
+  @override
+  String get scheduled => 'מתוכנן';
+
+  @override
+  String get brandGeneric => 'רגיל';
+
+  @override
+  String amountWithUnit(String unit) {
+    return 'כמות ($unit)';
+  }
 }

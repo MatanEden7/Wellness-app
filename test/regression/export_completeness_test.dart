@@ -137,7 +137,8 @@ void main() {
   test('the export carries every collection the database holds', () async {
     await seedOneOfEverything();
 
-    final payload = jsonDecode(await service.exportToJson()) as Map<String, dynamic>;
+    final payload =
+        jsonDecode(await service.exportToJson()) as Map<String, dynamic>;
     final data = payload['data'] as Map<String, dynamic>;
 
     // A table added to AppDatabase and forgotten here is the failure this
@@ -177,11 +178,14 @@ void main() {
     for (final key in data.keys) {
       if (key == 'profile' || key == 'preferences') continue;
       if (key == 'introducedFoodIds' || key == 'introducedExerciseIds') {
-        expect(data[key], isA<List<dynamic>>().having((l) => l.length,
-            'introduced ids', greaterThan(0)));
+        expect(
+            data[key],
+            isA<List<dynamic>>()
+                .having((l) => l.length, 'introduced ids', greaterThan(0)));
         continue;
       }
-      expect(data[key], isA<List<dynamic>>().having((l) => l.length, key, greaterThan(0)),
+      expect(data[key],
+          isA<List<dynamic>>().having((l) => l.length, key, greaterThan(0)),
           reason: '"$key" exported empty even though a row was seeded');
     }
   });

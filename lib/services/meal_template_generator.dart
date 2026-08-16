@@ -73,6 +73,11 @@ class MealTemplateGenerator {
         // Named for the dish, prefixed with when it is eaten, so the list
         // reads like a meal plan rather than a set of macro buckets.
         name: '${meal.name}: ${recipe.name}',
+        // Composed the same way as `name`, from the slot's Hebrew label and
+        // the recipe's. Null when the recipe has no Hebrew name -- displayName()
+        // falls back to English, which beats a half-translated title.
+        nameHe:
+            recipe.nameHe == null ? null : '${meal.nameHe}: ${recipe.nameHe}',
         description: recipe.description,
         origin: TemplateOrigin.generated,
         createdAt: now,
@@ -149,36 +154,40 @@ class MealTemplateGenerator {
     switch (_profile.mealCountPerDay) {
       case '2':
         return const [
-          _MealSlot('Brunch', MealSlotKind.breakfast, 0.45),
-          _MealSlot('Dinner', MealSlotKind.main, 0.55),
+          _MealSlot('Brunch', MealSlotKind.breakfast, 0.45, 'בראנץ׳'),
+          _MealSlot('Dinner', MealSlotKind.main, 0.55, 'ארוחת ערב'),
         ];
       case '4':
         return const [
-          _MealSlot('Breakfast', MealSlotKind.breakfast, 0.25),
-          _MealSlot('Lunch', MealSlotKind.main, 0.30),
-          _MealSlot('Snack', MealSlotKind.snack, 0.20),
-          _MealSlot('Dinner', MealSlotKind.main, 0.25),
+          _MealSlot('Breakfast', MealSlotKind.breakfast, 0.25, 'ארוחת בוקר'),
+          _MealSlot('Lunch', MealSlotKind.main, 0.30, 'ארוחת צהריים'),
+          _MealSlot('Snack', MealSlotKind.snack, 0.20, 'חטיף'),
+          _MealSlot('Dinner', MealSlotKind.main, 0.25, 'ארוחת ערב'),
         ];
       case 'intermittent_fasting_16_8':
         return const [
-          _MealSlot('First Meal', MealSlotKind.breakfast, 0.40),
-          _MealSlot('Second Meal', MealSlotKind.main, 0.35),
-          _MealSlot('Final Meal', MealSlotKind.main, 0.25),
+          _MealSlot('First Meal', MealSlotKind.breakfast, 0.40, 'ארוחה ראשונה'),
+          _MealSlot('Second Meal', MealSlotKind.main, 0.35, 'ארוחה שנייה'),
+          _MealSlot('Final Meal', MealSlotKind.main, 0.25, 'ארוחה אחרונה'),
         ];
       case '3':
       default:
         return const [
-          _MealSlot('Breakfast', MealSlotKind.breakfast, 0.30),
-          _MealSlot('Lunch', MealSlotKind.main, 0.40),
-          _MealSlot('Dinner', MealSlotKind.main, 0.30),
+          _MealSlot('Breakfast', MealSlotKind.breakfast, 0.30, 'ארוחת בוקר'),
+          _MealSlot('Lunch', MealSlotKind.main, 0.40, 'ארוחת צהריים'),
+          _MealSlot('Dinner', MealSlotKind.main, 0.30, 'ארוחת ערב'),
         ];
     }
   }
 }
 
 class _MealSlot {
-  const _MealSlot(this.name, this.kind, this.fraction);
+  const _MealSlot(this.name, this.kind, this.fraction, this.nameHe);
   final String name;
+
+  /// Hebrew label for the slot ("Breakfast" -> "ארוחת בוקר"), used to compose
+  /// the template's `nameHe`.
+  final String nameHe;
   final MealSlotKind kind;
 
   /// Share of the day's calorie and protein targets this meal carries.

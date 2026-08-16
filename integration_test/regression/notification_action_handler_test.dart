@@ -79,18 +79,21 @@ void main() {
   }
 
   group('tapping the notification body (no action button)', () {
-    testWidgets('meal, nothing logged yet -> opens the meal list', (tester) async {
+    testWidgets('meal, nothing logged yet -> opens the meal list',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.meal);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: null, payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: null, payload: payloadFor(event));
 
       expect(find.byType(MealsPage), findsOneWidget);
     });
 
-    testWidgets('meal, already logged -> opens that meal, not the list', (tester) async {
+    testWidgets('meal, already logged -> opens that meal, not the list',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.meal);
@@ -107,7 +110,8 @@ void main() {
         sourceEventId: event.id,
       ));
 
-      await fire(tester, ref, context, actionId: null, payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: null, payload: payloadFor(event));
 
       expect(find.byType(MealEditorPage), findsOneWidget);
       expect(find.byType(MealsPage), findsNothing);
@@ -119,14 +123,17 @@ void main() {
       final event = buildEvent(type: EventType.workout);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: null, payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: null, payload: payloadFor(event));
 
       expect(find.byType(WorkoutSessionPage), findsOneWidget);
       final sessions = await ref.read(databaseProvider).getAllWorkoutSessions();
       expect(sessions.where((s) => s.sourceEventId == event.id), hasLength(1));
     });
 
-    testWidgets('workout, session already active -> reopens it, does not duplicate', (tester) async {
+    testWidgets(
+        'workout, session already active -> reopens it, does not duplicate',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.workout);
@@ -139,12 +146,14 @@ void main() {
         sourceEventId: event.id,
       ));
 
-      await fire(tester, ref, context, actionId: null, payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: null, payload: payloadFor(event));
 
       expect(find.byType(WorkoutSessionPage), findsOneWidget);
       final sessions = await database.getAllWorkoutSessions();
       expect(sessions.where((s) => s.sourceEventId == event.id), hasLength(1),
-          reason: 'tapping again must reopen the existing session, not start a second one');
+          reason:
+              'tapping again must reopen the existing session, not start a second one');
     });
 
     testWidgets('sleep -> opens the sleep timer', (tester) async {
@@ -153,14 +162,17 @@ void main() {
       final event = buildEvent(type: EventType.sleep);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: null, payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: null, payload: payloadFor(event));
 
       expect(find.byType(SleepTimerPage), findsOneWidget);
     });
   });
 
   group('meal action buttons', () {
-    testWidgets('meal_approve with a template creates the meal and marks the event completed', (tester) async {
+    testWidgets(
+        'meal_approve with a template creates the meal and marks the event completed',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final database = ref.read(databaseProvider);
@@ -169,61 +181,77 @@ void main() {
       final event = buildEvent(type: EventType.meal, templateId: template.id);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: 'meal_approve', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'meal_approve', payload: payloadFor(event));
 
       final meals = await database.getAllMeals();
       final created = meals.where((m) => m.sourceEventId == event.id).toList();
       expect(created, hasLength(1));
       expect(created.single.name, template.name);
 
-      final updated = await ref.read(calendarServiceProvider).getEventById(event.id);
+      final updated =
+          await ref.read(calendarServiceProvider).getEventById(event.id);
       expect(updated?.status, EventStatus.completed);
     });
 
-    testWidgets('meal_approve with no template opens the meal editor instead of guessing', (tester) async {
+    testWidgets(
+        'meal_approve with no template opens the meal editor instead of guessing',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.meal); // no templateId
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: 'meal_approve', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'meal_approve', payload: payloadFor(event));
 
       expect(find.byType(MealEditorPage), findsOneWidget);
       final meals = await ref.read(databaseProvider).getAllMeals();
       expect(meals.where((m) => m.sourceEventId == event.id), isEmpty);
     });
 
-    testWidgets('meal_remove marks the event missed and removes it from the calendar', (tester) async {
+    testWidgets(
+        'meal_remove marks the event missed and removes it from the calendar',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.meal);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: 'meal_remove', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'meal_remove', payload: payloadFor(event));
 
-      final stillThere = await ref.read(calendarServiceProvider).getEventById(event.id);
-      expect(stillThere, isNull, reason: 'meal_remove deletes the event outright');
+      final stillThere =
+          await ref.read(calendarServiceProvider).getEventById(event.id);
+      expect(stillThere, isNull,
+          reason: 'meal_remove deletes the event outright');
     });
   });
 
   group('workout action buttons', () {
-    testWidgets('workout_start with no session creates one, navigates, and marks the event active', (tester) async {
+    testWidgets(
+        'workout_start with no session creates one, navigates, and marks the event active',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.workout);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: 'workout_start', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'workout_start', payload: payloadFor(event));
 
       expect(find.byType(WorkoutSessionPage), findsOneWidget);
       final sessions = await ref.read(databaseProvider).getAllWorkoutSessions();
       expect(sessions.where((s) => s.sourceEventId == event.id), hasLength(1));
 
-      final updated = await ref.read(calendarServiceProvider).getEventById(event.id);
+      final updated =
+          await ref.read(calendarServiceProvider).getEventById(event.id);
       expect(updated?.status, EventStatus.active);
     });
 
-    testWidgets('workout_start with an active session reopens it instead of duplicating', (tester) async {
+    testWidgets(
+        'workout_start with an active session reopens it instead of duplicating',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.workout);
@@ -236,7 +264,8 @@ void main() {
         sourceEventId: event.id,
       ));
 
-      await fire(tester, ref, context, actionId: 'workout_start', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'workout_start', payload: payloadFor(event));
 
       final sessions = await database.getAllWorkoutSessions();
       expect(sessions.where((s) => s.sourceEventId == event.id), hasLength(1));
@@ -250,12 +279,14 @@ void main() {
       final event = buildEvent(type: EventType.sleep);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: 'sleep_start', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'sleep_start', payload: payloadFor(event));
 
       expect(find.byType(SleepTimerPage), findsOneWidget);
     });
 
-    testWidgets('sleep_stop ends the most recently started open sleep entry', (tester) async {
+    testWidgets('sleep_stop ends the most recently started open sleep entry',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.sleep);
@@ -271,23 +302,30 @@ void main() {
         startedAt: DateTime.now().subtract(const Duration(minutes: 5)),
       ));
 
-      await fire(tester, ref, context, actionId: 'sleep_stop', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'sleep_stop', payload: payloadFor(event));
 
       final entries = await database.getAllSleepEntries();
       final active = entries.firstWhere((e) => e.id == 'active-entry');
       final older = entries.firstWhere((e) => e.id == 'older-entry');
-      expect(active.endedAt, isNotNull, reason: 'the most recently started entry is the one actually sleeping');
-      expect(older.endedAt, isNull, reason: 'an already-older open entry must not be touched');
+      expect(active.endedAt, isNotNull,
+          reason:
+              'the most recently started entry is the one actually sleeping');
+      expect(older.endedAt, isNull,
+          reason: 'an already-older open entry must not be touched');
       expect(find.byType(SleepPage), findsOneWidget);
     });
 
-    testWidgets('sleep_stop with nothing active does not crash and still navigates', (tester) async {
+    testWidgets(
+        'sleep_stop with nothing active does not crash and still navigates',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.sleep);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
 
-      await fire(tester, ref, context, actionId: 'sleep_stop', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'sleep_stop', payload: payloadFor(event));
 
       expect(find.byType(SleepPage), findsOneWidget);
     });
@@ -298,16 +336,21 @@ void main() {
     // exact same _handleSnooze() helper with only the event type and delay
     // (10/10/30 min) differing -- one full test plus a lighter duration
     // check for the other two, rather than three independent full tests.
-    testWidgets('meal_snooze does not change the event\'s scheduledAt or status', (tester) async {
+    testWidgets(
+        'meal_snooze does not change the event\'s scheduledAt or status',
+        (tester) async {
       final ref = await pumpToRef(tester);
       final context = tester.element(find.byType(SettingsStub));
       final event = buildEvent(type: EventType.meal);
       await ref.read(calendarStateProvider.notifier).addEvent(event);
-      final before = await ref.read(calendarServiceProvider).getEventById(event.id);
+      final before =
+          await ref.read(calendarServiceProvider).getEventById(event.id);
 
-      await fire(tester, ref, context, actionId: 'meal_snooze', payload: payloadFor(event));
+      await fire(tester, ref, context,
+          actionId: 'meal_snooze', payload: payloadFor(event));
 
-      final after = await ref.read(calendarServiceProvider).getEventById(event.id);
+      final after =
+          await ref.read(calendarServiceProvider).getEventById(event.id);
       expect(after?.scheduledAt, before?.scheduledAt,
           reason: 'snooze reschedules the notification, not the event itself');
       expect(after?.status, EventStatus.planned);
@@ -317,22 +360,27 @@ void main() {
       'workout_snooze': EventType.workout,
       'sleep_snooze': EventType.sleep,
     }.entries) {
-      testWidgets('${entry.key} likewise leaves the event untouched', (tester) async {
+      testWidgets('${entry.key} likewise leaves the event untouched',
+          (tester) async {
         final ref = await pumpToRef(tester);
         final context = tester.element(find.byType(SettingsStub));
         final event = buildEvent(type: entry.value);
         await ref.read(calendarStateProvider.notifier).addEvent(event);
-        final before = await ref.read(calendarServiceProvider).getEventById(event.id);
+        final before =
+            await ref.read(calendarServiceProvider).getEventById(event.id);
 
-        await fire(tester, ref, context, actionId: entry.key, payload: payloadFor(event));
+        await fire(tester, ref, context,
+            actionId: entry.key, payload: payloadFor(event));
 
-        final after = await ref.read(calendarServiceProvider).getEventById(event.id);
+        final after =
+            await ref.read(calendarServiceProvider).getEventById(event.id);
         expect(after?.scheduledAt, before?.scheduledAt);
       });
     }
   });
 
-  testWidgets('an event id that matches nothing does not crash', (tester) async {
+  testWidgets('an event id that matches nothing does not crash',
+      (tester) async {
     final ref = await pumpToRef(tester);
     final context = tester.element(find.byType(SettingsStub));
 
@@ -340,6 +388,7 @@ void main() {
     // EventType.meal) -- the id just doesn't match any stored event, and
     // every _handle* method is wrapped so a missing event/template is
     // handled gracefully rather than throwing.
-    await fire(tester, ref, context, actionId: 'meal_approve', payload: 'not|a-real-event|');
+    await fire(tester, ref, context,
+        actionId: 'meal_approve', payload: 'not|a-real-event|');
   });
 }

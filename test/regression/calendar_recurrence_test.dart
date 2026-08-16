@@ -21,7 +21,8 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     AppDatabase.resetForTesting();
-    service = CalendarService(await SharedPreferences.getInstance(), AppDatabase());
+    service =
+        CalendarService(await SharedPreferences.getInstance(), AppDatabase());
   });
 
   ScheduledEvent dailyEvent() => ScheduledEvent(
@@ -46,7 +47,8 @@ void main() {
       expect(CalendarService.parseOccurrenceId('evt-1'), isNull);
       // A uuid-shaped id must not be mistaken for an occurrence.
       expect(
-        CalendarService.parseOccurrenceId('3f2b6c1e-9a10-4d5b-8c77-1f0e2a3b4c5d'),
+        CalendarService.parseOccurrenceId(
+            '3f2b6c1e-9a10-4d5b-8c77-1f0e2a3b4c5d'),
         isNull,
       );
     });
@@ -286,7 +288,8 @@ void main() {
       );
 
       expect(occurrences, isNotEmpty,
-          reason: 'weekly with no days picked must not silently produce nothing');
+          reason:
+              'weekly with no days picked must not silently produce nothing');
       for (final o in occurrences) {
         expect(o.scheduledAt.weekday, DateTime.monday,
             reason: 'should fall back to the weekday the event starts on');
@@ -330,7 +333,8 @@ void main() {
         expect(o.scheduledAt.day, 15);
         expect(o.scheduledAt.hour, 9, reason: 'time of day must be preserved');
       }
-      expect(occurrences.map((o) => o.scheduledAt.month), List.generate(12, (i) => i + 1));
+      expect(occurrences.map((o) => o.scheduledAt.month),
+          List.generate(12, (i) => i + 1));
     });
 
     test('the 31st clamps to short months and recovers afterwards', () async {
@@ -340,10 +344,13 @@ void main() {
         DateTime(2026, 5, 31),
       );
 
-      final byMonth = {for (final o in occurrences) o.scheduledAt.month: o.scheduledAt.day};
+      final byMonth = {
+        for (final o in occurrences) o.scheduledAt.month: o.scheduledAt.day
+      };
       expect(byMonth[1], 31);
       expect(byMonth[2], 28, reason: 'Feb 2026 has 28 days');
-      expect(byMonth[3], 31, reason: 'must recover to the 31st, not stay clamped');
+      expect(byMonth[3], 31,
+          reason: 'must recover to the 31st, not stay clamped');
       expect(byMonth[4], 30, reason: 'April has 30 days');
       expect(byMonth[5], 31);
     });
@@ -363,7 +370,8 @@ void main() {
     // the same generator, and a regression in one would otherwise go unnoticed
     // until a user hit that specific combination.
     for (final eventType in EventType.values) {
-      test('${eventType.name}: daily / weekly / monthly all produce occurrences',
+      test(
+          '${eventType.name}: daily / weekly / monthly all produce occurrences',
           () async {
         final base = DateTime(2026, 8, 3, 7); // a Monday
 

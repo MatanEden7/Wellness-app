@@ -51,10 +51,7 @@ void main() {
 
     // Any single save writes all four current targets through at once (see
     // _saveProfile), so one edit is enough to flip every goal from unset.
-    await tester.scrollUntilVisible(find.text('Calories'), 200,
-        scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.text('Calories'));
-    await settle(tester);
+    await tapInScroll(tester, find.text('Calories'));
     await tester.enterText(find.byType(TextField), '2500');
     await tester.tap(find.text('Save'));
     await settle(tester);
@@ -63,7 +60,8 @@ void main() {
     // of the bottom-nav shell, which is why the shell's own nav icons aren't
     // in the tree here -- pop back through each pushed page instead. Every
     // screen's back control is the navigation bar's chevron now.
-    await tester.tap(find.byIcon(CupertinoIcons.back).first); // Profile -> Settings
+    await tester
+        .tap(find.byIcon(CupertinoIcons.back).first); // Profile -> Settings
     await settle(tester);
 
     await tester.scrollUntilVisible(find.text('4/4 goals set'), 200,
@@ -73,7 +71,8 @@ void main() {
 
     // ... and on to the dashboard. The chevron lives in the navigation bar,
     // not the scrolling body, so it's on-screen regardless of scroll.
-    await tester.tap(find.byIcon(CupertinoIcons.back).first); // Settings -> Dashboard
+    await tester
+        .tap(find.byIcon(CupertinoIcons.back).first); // Settings -> Dashboard
     await settle(tester);
 
     expect(find.byType(NutritionProgressGrid), findsOneWidget,

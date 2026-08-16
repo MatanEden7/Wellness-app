@@ -63,8 +63,12 @@ void main() {
       );
 
   /// Generates for [p] and returns each training template with its rows.
-  Future<List<({WorkoutTemplateData template, List<TemplateExerciseData> rows})>>
-      generate(UserProfile p) async {
+  Future<
+      List<
+          ({
+            WorkoutTemplateData template,
+            List<TemplateExerciseData> rows
+          })>> generate(UserProfile p) async {
     AppDatabase.resetForTesting();
     final db = AppDatabase();
     final created = await WorkoutTemplateGenerator(db, p).generateTemplates();
@@ -97,8 +101,8 @@ void main() {
     test('sets, reps and rest are always present', () async {
       for (final goal in goals) {
         for (final experience in experiences) {
-          final plans = await generate(
-              profile(goal: goal, experience: experience));
+          final plans =
+              await generate(profile(goal: goal, experience: experience));
           expect(plans, isNotEmpty, reason: '$goal/$experience got no plan');
 
           for (final plan in plans) {
@@ -173,7 +177,8 @@ void main() {
                 .generateTemplates();
 
             for (final template in created) {
-              final rows = await db.getTemplateExercisesByTemplateId(template.id);
+              final rows =
+                  await db.getTemplateExercisesByTemplateId(template.id);
               final duration = await durationOf(db, rows);
               expect(duration, lessThanOrEqualTo(WorkoutProgramming.maxSession),
                   reason: '$goal/$experience/$equipment produced '
@@ -216,7 +221,8 @@ void main() {
             .generateTemplates();
 
         for (final template in created) {
-          for (final row in await db.getTemplateExercisesByTemplateId(template.id)) {
+          for (final row
+              in await db.getTemplateExercisesByTemplateId(template.id)) {
             final exercise = await db.getExerciseById(row.exerciseId);
             if (exercise == null) continue;
 
@@ -254,7 +260,8 @@ void main() {
         return sum;
       }
 
-      expect(await totalFor('advanced'), greaterThan(await totalFor('beginner')));
+      expect(
+          await totalFor('advanced'), greaterThan(await totalFor('beginner')));
     });
 
     test('a lighter person is prescribed less than a heavier one', () async {
@@ -331,19 +338,19 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created = await WorkoutTemplateGenerator(
-              db,
-              profile(equipment: const [
-                'barbell_rack',
-                'dumbbells',
-                'cable',
-                'pullup_bar'
-              ]))
-          .generateTemplates();
+          db,
+          profile(equipment: const [
+            'barbell_rack',
+            'dumbbells',
+            'cable',
+            'pullup_bar'
+          ])).generateTemplates();
 
       for (final template in created) {
         if (template.name.startsWith('Physiotherapy')) continue;
         final seen = <MovementPattern>{};
-        for (final row in await db.getTemplateExercisesByTemplateId(template.id)) {
+        for (final row
+            in await db.getTemplateExercisesByTemplateId(template.id)) {
           final exercise = await db.getExerciseById(row.exerciseId);
           if (exercise == null) continue;
           if (exercise.mechanicOrDefault != Mechanic.compound) continue;
@@ -362,20 +369,21 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created = await WorkoutTemplateGenerator(
-              db,
-              profile(days: 6, equipment: const [
-                'barbell_rack',
-                'dumbbells',
-                'cable',
-                'pullup_bar'
-              ]))
-          .generateTemplates();
+          db,
+          profile(days: 6, equipment: const [
+            'barbell_rack',
+            'dumbbells',
+            'cable',
+            'pullup_bar'
+          ])).generateTemplates();
 
       final muscles = <String>{};
       for (final template in created) {
-        for (final row in await db.getTemplateExercisesByTemplateId(template.id)) {
+        for (final row
+            in await db.getTemplateExercisesByTemplateId(template.id)) {
           final exercise = await db.getExerciseById(row.exerciseId);
-          if (exercise?.primaryMuscle != null) muscles.add(exercise!.primaryMuscle!);
+          if (exercise?.primaryMuscle != null)
+            muscles.add(exercise!.primaryMuscle!);
         }
       }
 
@@ -398,7 +406,8 @@ void main() {
 
       final names = <String>{};
       for (final template in created) {
-        for (final row in await db.getTemplateExercisesByTemplateId(template.id)) {
+        for (final row
+            in await db.getTemplateExercisesByTemplateId(template.id)) {
           final exercise = await db.getExerciseById(row.exerciseId);
           if (exercise != null) names.add(exercise.name);
         }

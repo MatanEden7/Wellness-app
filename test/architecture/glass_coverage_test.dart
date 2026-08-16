@@ -33,7 +33,8 @@ const _functional = <String, String>{
   'lib/features/settings/ui/notification_settings_page.dart':
       'the sleep-goal slider sheet floats',
   'lib/features/meals/ui/meal_editor_page.dart': 'hosts a modal dialog',
-  'lib/features/meals/ui/meal_template_editor_page.dart': 'hosts a modal dialog',
+  'lib/features/meals/ui/meal_template_editor_page.dart':
+      'hosts a modal dialog',
   'lib/features/workouts/ui/template_editor_page.dart': 'hosts modal dialogs',
   'lib/features/sleep/ui/sleep_timer_page.dart': 'hosts a modal dialog',
   'lib/features/analytics/ui/sections/strength_section.dart': 'a modal sheet',
@@ -136,7 +137,8 @@ void main() {
 /// into the widget's children.
 bool _hasColourWithin(List<String> lines, int start) {
   for (var i = start; i < start + 4 && i < lines.length; i++) {
-    if (lines[i].contains('color:') && !lines[i].contains('border')) return true;
+    if (lines[i].contains('color:') && !lines[i].contains('border'))
+      return true;
     if (lines[i].contains('),') && i > start) return false;
   }
   return false;

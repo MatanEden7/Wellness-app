@@ -65,8 +65,7 @@ void main() {
             )
             .first,
       );
-      expect((box.decoration as BoxDecoration).color,
-          const Color(0xFF123456));
+      expect((box.decoration as BoxDecoration).color, const Color(0xFF123456));
     });
   });
 
@@ -135,8 +134,10 @@ void main() {
         final m = GlassSpec.saturationMatrix(s);
         const grey = 0.5;
         for (var row = 0; row < 3; row++) {
-          final out = m[row * 5] * grey + m[row * 5 + 1] * grey +
-              m[row * 5 + 2] * grey + m[row * 5 + 4];
+          final out = m[row * 5] * grey +
+              m[row * 5 + 1] * grey +
+              m[row * 5 + 2] * grey +
+              m[row * 5 + 4];
           expect(out, closeTo(grey, 1e-9),
               reason: 'saturation $s shifted a neutral grey');
         }
@@ -229,7 +230,8 @@ void main() {
 
   group('GlassBackdrop', () {
     testWidgets('is a flat scaffold colour when glass is off', (tester) async {
-      await tester.pumpWidget(host(GlassLevel.off, child: const GlassBackdrop()));
+      await tester
+          .pumpWidget(host(GlassLevel.off, child: const GlassBackdrop()));
       expect(find.byType(ColoredBox), findsWidgets);
       expect(
         find.descendant(

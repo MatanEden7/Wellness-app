@@ -52,8 +52,7 @@ void main() {
 
   tearDown(() => container.dispose());
 
-  CalendarNotifier notifier() =>
-      container.read(calendarStateProvider.notifier);
+  CalendarNotifier notifier() => container.read(calendarStateProvider.notifier);
 
   List<ScheduledEvent> visibleOn(DateTime day) =>
       container
@@ -87,11 +86,12 @@ void main() {
     final day = dayInCurrentMonth();
     await notifier().addEvent(workoutOn(day));
 
-    expect(visibleOn(day).where((e) => e.type == EventType.workout),
-        hasLength(1));
+    expect(
+        visibleOn(day).where((e) => e.type == EventType.workout), hasLength(1));
   });
 
-  test('a workout scheduled in a month the user scrolled to is visible '
+  test(
+      'a workout scheduled in a month the user scrolled to is visible '
       'immediately', () async {
     final day = dayInAScrolledMonth();
 

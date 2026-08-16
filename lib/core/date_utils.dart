@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class AppDateUtils {
   static DateTime get today => DateTime.now();
@@ -62,12 +63,14 @@ class AppDateUtils {
     return DateFormat('MMM dd, yyyy HH:mm').format(dateTime);
   }
 
-  static String formatDuration(Duration duration) {
+  /// Takes [l10n] so the "h"/"m" suffixes follow the app language -- they were
+  /// the last English left on the sleep timer's big duration readout.
+  static String formatDuration(Duration duration, AppLocalizations l10n) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
     if (hours > 0) {
-      return '${hours}h ${minutes}m';
+      return l10n.durationHm('$hours', '$minutes');
     }
-    return '${minutes}m';
+    return l10n.durationM('$minutes');
   }
 }

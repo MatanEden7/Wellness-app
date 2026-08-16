@@ -16,6 +16,7 @@ import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
+import '../../../core/ios/pressable.dart';
 
 class MealTemplateEditorPage extends HookConsumerWidget {
   final String? templateId;
@@ -71,7 +72,7 @@ class MealTemplateEditorPage extends HookConsumerWidget {
             controller: nameController,
             decoration: InputDecoration(
               labelText: l10n.templateName,
-              hintText: 'e.g., High Protein Breakfast, Pre-Workout Snack',
+              hintText: AppLocalizations.of(context)!.mealTemplateNameHint,
               counterText:
                   '${nameController.text.length}/${TextLimits.mealNameMaxLength}',
             ),
@@ -85,7 +86,7 @@ class MealTemplateEditorPage extends HookConsumerWidget {
             controller: descriptionController,
             decoration: InputDecoration(
               labelText: l10n.descriptionOptional,
-              hintText: 'Notes about this meal template',
+              hintText: AppLocalizations.of(context)!.mealTemplateNotesHint,
               counterText:
                   '${descriptionController.text.length}/${TextLimits.generalNoteMaxLength}',
             ),
@@ -362,8 +363,8 @@ class _TemplateItemCard extends ConsumerWidget {
                         // Convert to display amount (grams for 100g units)
                         final displayAmount = FoodNutritionMath.displayQuantity(
                             food, item.amount);
-                        final displayUnit =
-                            FoodNutritionMath.displayUnitLabel(food);
+                        final displayUnit = FoodNutritionMath.localizedUnit(
+                            language, FoodNutritionMath.displayUnitLabel(food));
                         return Text(
                           '${displayAmount.toStringAsFixed(displayAmount.truncateToDouble() == displayAmount ? 0 : 1)} $displayUnit',
                           style: Theme.of(context).textTheme.bodyMedium,
@@ -492,12 +493,44 @@ class _TemplateItemDialog extends HookConsumerWidget {
                             final isSelected =
                                 selectedFoodState.value?.id == food.id;
 
-                            return ListTile(
-                              title: Text(food.displayName(language)),
-                              subtitle: Text(
-                                  '${food.brand ?? 'Generic'} • ${FoodNutritionMath.displayUnitLabel(food)}'),
-                              selected: isSelected,
+                            // See meal_editor_page: ListTile needs a Material
+                            // ancestor this sheet does not provide.
+                            return Pressable(
                               onTap: () => selectedFoodState.value = food,
+                              style: PressStyle.highlight,
+                              child: Container(
+                                color: isSelected
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.10)
+                                    : null,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      food.displayName(language),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(fontSize: 17),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${food.displayBrand(language) ?? AppLocalizations.of(context)!.brandGeneric} • ${FoodNutritionMath.localizedUnit(language, FoodNutritionMath.displayUnitLabel(food))}',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         );
@@ -520,8 +553,10 @@ class _TemplateItemDialog extends HookConsumerWidget {
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     labelText: l10n.amount,
-                    suffixText: FoodNutritionMath.displayUnitLabel(
-                        selectedFoodState.value!),
+                    suffixText: FoodNutritionMath.localizedUnit(
+                        language,
+                        FoodNutritionMath.displayUnitLabel(
+                            selectedFoodState.value!)),
                   ),
                 ),
               ],

@@ -48,7 +48,8 @@ void main() {
     // Today and yesterday meet goal; two days ago falls short.
     await database.insertSleepEntry(entry(
       'today',
-      DateTime(today.year, today.month, today.day).subtract(const Duration(hours: 8)),
+      DateTime(today.year, today.month, today.day)
+          .subtract(const Duration(hours: 8)),
       DateTime(today.year, today.month, today.day),
     ));
     final yesterday = DateTime(today.year, today.month, today.day - 1);
@@ -74,7 +75,8 @@ void main() {
 
     await database.insertSleepEntry(entry(
       'today',
-      DateTime(today.year, today.month, today.day).subtract(const Duration(hours: 8)),
+      DateTime(today.year, today.month, today.day)
+          .subtract(const Duration(hours: 8)),
       DateTime(today.year, today.month, today.day),
     ));
     // Skip yesterday entirely -- no entry.
@@ -86,30 +88,35 @@ void main() {
     ));
 
     expect(await repo.getSleepStreak(7.0), 1,
-        reason: 'the gap on the missing day must stop the count, not skip over it');
+        reason:
+            'the gap on the missing day must stop the count, not skip over it');
   });
 
-  test('an unfinished entry (endedAt null) does not count toward the streak', () async {
+  test('an unfinished entry (endedAt null) does not count toward the streak',
+      () async {
     final database = AppDatabase();
     final repo = SleepRepository(database);
     final today = DateTime.now();
 
     await database.insertSleepEntry(SleepEntryData(
       id: 'active',
-      startedAt: DateTime(today.year, today.month, today.day).subtract(const Duration(hours: 2)),
+      startedAt: DateTime(today.year, today.month, today.day)
+          .subtract(const Duration(hours: 2)),
       endedAt: null,
     ));
 
     expect(await repo.getSleepStreak(7.0), 0);
   });
 
-  test('a nap on the same day as a goal-meeting entry does not double-count', () async {
+  test('a nap on the same day as a goal-meeting entry does not double-count',
+      () async {
     final database = AppDatabase();
     final repo = SleepRepository(database);
     final today = DateTime.now();
     final day = DateTime(today.year, today.month, today.day);
 
-    await database.insertSleepEntry(entry('night', day.subtract(const Duration(hours: 8)), day));
+    await database.insertSleepEntry(
+        entry('night', day.subtract(const Duration(hours: 8)), day));
     await database.insertSleepEntry(SleepEntryData(
       id: 'nap',
       startedAt: day.add(const Duration(hours: 13)),

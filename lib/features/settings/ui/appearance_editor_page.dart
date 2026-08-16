@@ -51,8 +51,8 @@ class AppearanceEditorPage extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     currentTheme == AppThemeKind.custom
-                        ? 'Customize all app colors. Changes apply immediately.'
-                        : 'Customize section colors. Switch to Custom theme to edit theme colors.',
+                        ? AppLocalizations.of(context)!.appearanceCustomAll
+                        : AppLocalizations.of(context)!.appearanceCustomSection,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -65,10 +65,13 @@ class AppearanceEditorPage extends ConsumerWidget {
 
           // Theme Colors Section (only show if custom theme is selected)
           if (currentTheme == AppThemeKind.custom) ...[
-            _buildSectionHeader(context, 'Theme Colors', Icons.palette),
+            _buildSectionHeader(
+                context,
+                AppLocalizations.of(context)!.appearanceThemeColors,
+                Icons.palette),
             const SizedBox(height: 12),
             _ColorPickerTile(
-              label: 'Primary',
+              label: AppLocalizations.of(context)!.colorRolePrimary,
               icon: Icons.circle,
               currentColor: prefs.customPrimaryColor,
               onColorChanged: (color) async {
@@ -78,7 +81,7 @@ class AppearanceEditorPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _ColorPickerTile(
-              label: 'Background',
+              label: AppLocalizations.of(context)!.colorRoleBackground,
               icon: Icons.square,
               currentColor: prefs.customBackgroundColor,
               onColorChanged: (color) async {
@@ -88,7 +91,7 @@ class AppearanceEditorPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _ColorPickerTile(
-              label: 'Surface',
+              label: AppLocalizations.of(context)!.colorRoleSurface,
               icon: Icons.layers,
               currentColor: prefs.customSurfaceColor,
               onColorChanged: (color) async {
@@ -109,7 +112,10 @@ class AppearanceEditorPage extends ConsumerWidget {
           ],
 
           // Section Colors
-          _buildSectionHeader(context, 'Section Colors', Icons.category),
+          _buildSectionHeader(
+              context,
+              AppLocalizations.of(context)!.appearanceSectionColors,
+              Icons.category),
           const SizedBox(height: 12),
           _ColorPickerTile(
             label: AppLocalizations.of(context)!.meals,
@@ -154,7 +160,9 @@ class AppearanceEditorPage extends ConsumerWidget {
 
           // Nutrition Colors
           _buildSectionHeader(
-              context, 'Nutrition Colors', Icons.local_fire_department),
+              context,
+              AppLocalizations.of(context)!.appearanceNutritionColors,
+              Icons.local_fire_department),
           const SizedBox(height: 12),
           InsetRow(
             title: AppLocalizations.of(context)!.followTheme,
@@ -221,7 +229,10 @@ class AppearanceEditorPage extends ConsumerWidget {
           const SizedBox(height: 32),
 
           // Preview Section
-          _buildSectionHeader(context, 'Preview', Icons.visibility),
+          _buildSectionHeader(
+              context,
+              AppLocalizations.of(context)!.appearancePreview,
+              Icons.visibility),
           const SizedBox(height: 12),
           _PreviewPanel(),
 

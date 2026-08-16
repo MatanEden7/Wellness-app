@@ -17,12 +17,14 @@ void main() {
 
   group('calculateBMR', () {
     test('male uses the +5 constant', () {
-      final bmr = engine.calculateBMR(sex: 'male', weightKg: 90, heightCm: 178, ageYears: 30);
+      final bmr = engine.calculateBMR(
+          sex: 'male', weightKg: 90, heightCm: 178, ageYears: 30);
       expect(bmr, 10 * 90 + 6.25 * 178 - 5 * 30 + 5);
     });
 
     test('female uses the -161 constant', () {
-      final bmr = engine.calculateBMR(sex: 'female', weightKg: 65, heightCm: 165, ageYears: 28);
+      final bmr = engine.calculateBMR(
+          sex: 'female', weightKg: 65, heightCm: 165, ageYears: 28);
       expect(bmr, 10 * 65 + 6.25 * 165 - 5 * 28 - 161);
     });
   });
@@ -76,13 +78,16 @@ void main() {
 
     test('never prescribes below the safe floor for the sex', () {
       // 1350 TDEE - 20% = 1080, under the 1200 kcal floor for women.
-      expect(engine.calculateCalorieTarget(1350, 'fat_loss', sex: 'female'), 1200);
+      expect(
+          engine.calculateCalorieTarget(1350, 'fat_loss', sex: 'female'), 1200);
       // 1700 - 20% = 1360, under the 1500 kcal floor for men.
-      expect(engine.calculateCalorieTarget(1700, 'fat_loss', sex: 'male'), 1500);
+      expect(
+          engine.calculateCalorieTarget(1700, 'fat_loss', sex: 'male'), 1500);
     });
 
     test('a TDEE already under the floor is not inflated up to it', () {
-      expect(engine.calculateCalorieTarget(1100, 'fat_loss', sex: 'female'), 1100);
+      expect(
+          engine.calculateCalorieTarget(1100, 'fat_loss', sex: 'female'), 1100);
     });
   });
 
@@ -141,7 +146,9 @@ void main() {
       expect(carbs, (2200 - 180 * 4 - 70 * 9) / 4);
     });
 
-    test('floors at 0 instead of going negative when protein+fat exceed the target', () {
+    test(
+        'floors at 0 instead of going negative when protein+fat exceed the target',
+        () {
       // 180g protein (720) + 70g fat (630) = 1350 kcal, more than the 1000 target.
       final carbs = engine.calculateCarbsTarget(1000, 180, 70);
       expect(carbs, 0);
@@ -152,7 +159,12 @@ void main() {
     /// Every profile shape the onboarding form can actually produce.
     final profiles = [
       for (final sex in ['male', 'female'])
-        for (final goal in ['fat_loss', 'muscle_gain', 'maintenance', 'mobility_rehab'])
+        for (final goal in [
+          'fat_loss',
+          'muscle_gain',
+          'maintenance',
+          'mobility_rehab'
+        ])
           for (final activity in ['sedentary', 'moderate', 'very_active'])
             for (final body in [
               (age: 22, height: 155, weight: 45.0), // small and light
@@ -251,7 +263,9 @@ void main() {
     });
   });
 
-  test('createUserProfile assembles a profile whose fields match calculateTargets', () {
+  test(
+      'createUserProfile assembles a profile whose fields match calculateTargets',
+      () {
     final profile = engine.createUserProfile(
       sex: 'male',
       ageYears: 30,
@@ -314,20 +328,23 @@ void main() {
     });
 
     test('an unrecognized meal count defaults to the 3-meal split', () {
-      expect(engine.getMealDistribution('nonsense'), engine.getMealDistribution('3'));
+      expect(engine.getMealDistribution('nonsense'),
+          engine.getMealDistribution('3'));
     });
   });
 
   group('getWorkoutScheduleDays', () {
     test('day counts map to the documented weekday sets', () {
-      expect(engine.getWorkoutScheduleDays(5), ['Mon', 'Tue', 'Thu', 'Fri', 'Sat']);
+      expect(engine.getWorkoutScheduleDays(5),
+          ['Mon', 'Tue', 'Thu', 'Fri', 'Sat']);
       expect(engine.getWorkoutScheduleDays(3), ['Mon', 'Wed', 'Fri']);
       expect(engine.getWorkoutScheduleDays(2), ['Mon', 'Thu']);
     });
   });
 
   group('getFoodSuggestions', () {
-    test('diet type picks the protein list; carnivore drops carbs/fats/veggies', () {
+    test('diet type picks the protein list; carnivore drops carbs/fats/veggies',
+        () {
       final omni = engine.getFoodSuggestions('omnivore', []);
       expect(omni, contains('Chicken Breast'));
       expect(omni, contains('Rice'));
@@ -338,7 +355,8 @@ void main() {
       expect(carnivore, contains('Butter'));
     });
 
-    test('exclusions filter out the matching foods regardless of diet type', () {
+    test('exclusions filter out the matching foods regardless of diet type',
+        () {
       final noDairy = engine.getFoodSuggestions('omnivore', ['dairy']);
       expect(noDairy, isNot(contains('Greek Yogurt')));
 

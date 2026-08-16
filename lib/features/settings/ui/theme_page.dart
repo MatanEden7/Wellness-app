@@ -93,17 +93,17 @@ class ThemePage extends ConsumerWidget {
       case AppThemeKind.gold:
         return l10n.gold;
       case AppThemeKind.ocean:
-        return 'Ocean';
+        return l10n.themeOcean;
       case AppThemeKind.forest:
-        return 'Forest';
+        return l10n.themeForest;
       case AppThemeKind.sunset:
-        return 'Sunset';
+        return l10n.themeSunset;
       case AppThemeKind.lavender:
-        return 'Lavender';
+        return l10n.themeLavender;
       case AppThemeKind.midnight:
-        return 'Midnight';
+        return l10n.themeMidnight;
       case AppThemeKind.custom:
-        return 'Custom';
+        return l10n.themeCustom;
     }
   }
 
@@ -117,17 +117,17 @@ class ThemePage extends ConsumerWidget {
       case AppThemeKind.gold:
         return l10n.luxuryGold;
       case AppThemeKind.ocean:
-        return 'Calming blues & teals';
+        return l10n.themeOceanDesc;
       case AppThemeKind.forest:
-        return 'Natural & balanced greens';
+        return l10n.themeForestDesc;
       case AppThemeKind.sunset:
-        return 'Warm & energetic';
+        return l10n.themeSunsetDesc;
       case AppThemeKind.lavender:
-        return 'Mindful & creative';
+        return l10n.themeLavenderDesc;
       case AppThemeKind.midnight:
-        return 'Sophisticated dark blue';
+        return l10n.themeMidnightDesc;
       case AppThemeKind.custom:
-        return 'Customize your own colors';
+        return l10n.themeCustomDesc;
     }
   }
 }

@@ -30,25 +30,32 @@ void main() {
 
   group('FoodServingKindParser.fromLegacyUnit', () {
     test('recognizes the exact 100g unit as per100g', () {
-      expect(FoodServingKindParser.fromLegacyUnit('100g'), FoodServingKind.per100g);
-      expect(FoodServingKindParser.fromLegacyUnit('100 g'), FoodServingKind.per100g);
+      expect(FoodServingKindParser.fromLegacyUnit('100g'),
+          FoodServingKind.per100g);
+      expect(FoodServingKindParser.fromLegacyUnit('100 g'),
+          FoodServingKind.per100g);
     });
 
     test('recognizes gram/ml/oz synonyms', () {
       for (final u in ['g', 'gram', 'grams']) {
-        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perGram, reason: u);
+        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perGram,
+            reason: u);
       }
       for (final u in ['ml', 'milliliter', 'milliliters']) {
-        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perMl, reason: u);
+        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perMl,
+            reason: u);
       }
       for (final u in ['oz', 'ounce', 'ounces']) {
-        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perOz, reason: u);
+        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perOz,
+            reason: u);
       }
     });
 
     test('recognizes count-based units', () {
       for (final u in ['piece', 'slice', 'tbsp', 'serving', 'item', 'each']) {
-        expect(FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perCount, reason: u);
+        expect(
+            FoodServingKindParser.fromLegacyUnit(u), FoodServingKind.perCount,
+            reason: u);
       }
     });
 
@@ -58,14 +65,18 @@ void main() {
       'also have mismatched labels merely containing the substring "100", '
       'e.g. "1000g" -- the real parser must not make that mistake either)',
       () {
-        expect(FoodServingKindParser.fromLegacyUnit('30g'), FoodServingKind.perCount);
-        expect(FoodServingKindParser.fromLegacyUnit('1000g'), FoodServingKind.perCount);
+        expect(FoodServingKindParser.fromLegacyUnit('30g'),
+            FoodServingKind.perCount);
+        expect(FoodServingKindParser.fromLegacyUnit('1000g'),
+            FoodServingKind.perCount);
       },
     );
 
     test('unrecognized units default to perCount rather than throwing', () {
-      expect(FoodServingKindParser.fromLegacyUnit('cup'), FoodServingKind.perCount);
-      expect(FoodServingKindParser.fromLegacyUnit('bowl'), FoodServingKind.perCount);
+      expect(FoodServingKindParser.fromLegacyUnit('cup'),
+          FoodServingKind.perCount);
+      expect(FoodServingKindParser.fromLegacyUnit('bowl'),
+          FoodServingKind.perCount);
     });
   });
 
@@ -93,7 +104,8 @@ void main() {
 
   group('computeMacros', () {
     test('100g-unit food: 150g of Chicken Breast (165 kcal/100g)', () {
-      final chicken = food(unit: '100g', kcal: 165, protein: 31, carbs: 0, fat: 3.6);
+      final chicken =
+          food(unit: '100g', kcal: 165, protein: 31, carbs: 0, fat: 3.6);
       final macros = FoodNutritionMath.computeMacrosFromDisplay(chicken, 150);
 
       expect(macros.kcal, closeTo(247.5, 0.001));
@@ -119,7 +131,8 @@ void main() {
     });
 
     test('perCount-unit food: 2 Bananas (105 kcal/piece)', () {
-      final banana = food(unit: 'piece', kcal: 105, protein: 1.3, carbs: 27, fat: 0.4);
+      final banana =
+          food(unit: 'piece', kcal: 105, protein: 1.3, carbs: 27, fat: 0.4);
       final macros = FoodNutritionMath.computeMacros(banana, 2);
 
       expect(macros.kcal, 210);
@@ -140,7 +153,8 @@ void main() {
         // User enters "3" meaning 3 ounces.
         final macros = FoodNutritionMath.computeMacrosFromDisplay(f, 3);
 
-        expect(macros.kcal, 300, reason: 'must be 100 * 3, not 100 * 3 / 28.35');
+        expect(macros.kcal, 300,
+            reason: 'must be 100 * 3, not 100 * 3 / 28.35');
         expect(macros.protein, 30);
         expect(macros.carbs, 15);
         expect(macros.fat, 6);

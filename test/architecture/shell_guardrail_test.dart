@@ -101,7 +101,8 @@ void main() {
       // `if #available(iOS 15.0, *)` is a capability branch and is fine; a
       // comparison against a version *number* is choosing a look by OS.
       expectNoMatch(
-        RegExp(r'(osVersion|majorVersion)\s*[=<>!]=?\s*\d|systemVersion\s*[=<>]'),
+        RegExp(
+            r'(osVersion|majorVersion)\s*[=<>!]=?\s*\d|systemVersion\s*[=<>]'),
         'Branch on capability (#available), never on a version number. '
         'CapabilityReporter is the one place allowed to read the OS version, '
         'and it reports it rather than styling with it.',

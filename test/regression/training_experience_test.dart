@@ -60,9 +60,15 @@ void main() {
   });
 
   test('copyWith carries it', () {
-    expect(_profile().copyWith(trainingExperience: 'intermediate').trainingExperience,
+    expect(
+        _profile()
+            .copyWith(trainingExperience: 'intermediate')
+            .trainingExperience,
         'intermediate');
-    expect(_profile(experience: 'advanced').copyWith(ageYears: 31).trainingExperience,
+    expect(
+        _profile(experience: 'advanced')
+            .copyWith(ageYears: 31)
+            .trainingExperience,
         'advanced',
         reason: 'an unrelated edit dropped it');
   });

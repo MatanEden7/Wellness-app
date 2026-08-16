@@ -634,9 +634,9 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
             initialValue: selectedTemplateId?.startsWith('meal_') == true
                 ? selectedTemplateId
                 : null,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Select a recent meal',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              hintText: AppLocalizations.of(context)!.calendarSelectRecentMeal,
             ),
             isExpanded: true,
             items: meals.map((meal) {
@@ -693,9 +693,10 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
 
               return DropdownButtonFormField<String>(
                 initialValue: selectedTemplateId,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Select a recent workout',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText:
+                      AppLocalizations.of(context)!.calendarSelectRecentWorkout,
                 ),
                 isExpanded: true,
                 items: sessions.map((session) {

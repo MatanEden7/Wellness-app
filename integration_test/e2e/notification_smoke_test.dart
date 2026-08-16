@@ -24,7 +24,9 @@ import '../support/app_launcher.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('a real notification scheduled a few seconds out actually shows on screen', (tester) async {
+  testWidgets(
+      'a real notification scheduled a few seconds out actually shows on screen',
+      (tester) async {
     final ref = await () async {
       await pumpApp(tester);
       await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -35,7 +37,8 @@ void main() {
 
     debugPrint('SMOKE: calling initialize()');
     await notificationService.initialize();
-    debugPrint('PAUSE: post-initialize, holding 6s for a possible permission dialog');
+    debugPrint(
+        'PAUSE: post-initialize, holding 6s for a possible permission dialog');
     await Future<void>.delayed(const Duration(seconds: 6));
 
     debugPrint('SMOKE: calling requestPermissions()');
@@ -49,13 +52,15 @@ void main() {
       type: EventType.workout,
       scheduledAt: DateTime.now().add(const Duration(seconds: 3)),
     );
-    debugPrint('SMOKE: scheduling event for ${event.scheduledAt}, current time ${DateTime.now()}');
+    debugPrint(
+        'SMOKE: scheduling event for ${event.scheduledAt}, current time ${DateTime.now()}');
     await notificationService.scheduleEventNotification(
       event,
       await loadL10n(AppLanguage.english),
     );
 
-    debugPrint('PAUSE: waiting for the scheduled notification to fire, holding 40s for a screenshot');
+    debugPrint(
+        'PAUSE: waiting for the scheduled notification to fire, holding 40s for a screenshot');
     await Future<void>.delayed(const Duration(seconds: 40));
     debugPrint('SMOKE: done waiting');
   });

@@ -21,7 +21,6 @@ import '../../sleep/data/repositories.dart';
 import 'event_scheduling_dialog.dart';
 import 'ios_month_calendar.dart';
 import '../../../data/db/drift_database.dart';
-import '../../../core/ios/glass.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import 'package:intl/intl.dart';
@@ -552,93 +551,76 @@ class CalendarPage extends ConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
 
-    await showModalBottomSheet(
+    // A real action sheet, not a hand-built one.
+    //
+    // This was a `showModalBottomSheet` holding six `ListTile`s inside a
+    // `GlassSheet`. Two things wrong with that: a ListTile resolves its ink and
+    // background against the nearest `Material`, and a glass sheet provides
+    // none, so every open of this menu threw `ListTile background color or ink
+    // splashes may be invisible`. And a stack of tiles in a sheet is precisely
+    // what an action sheet *is* -- so this now goes through `showAppActionSheet`
+    // and is presented by UIKit as a real `UIAlertController`, with the
+    // Cancel row it used to draw by hand supplied by the system.
+    await showAppActionSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => GlassSheet(
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: Text(l10n.edit),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showEditEventDialog(context, ref, event);
-                },
-              ),
-              if (event.status != EventStatus.completed) ...[
-                ListTile(
-                  leading: const Icon(Icons.check_circle, color: Colors.green),
-                  title: Text(AppLocalizations.of(context)!.markAsCompleted),
-                  onTap: () async {
-                    Navigator.of(context).pop();
-                    // Create the actual data entry when marking as complete
-                    if (event.templateId != null) {
-                      await _completeScheduledEvent(ref, event);
-                    }
-                    await ref
-                        .read(calendarStateProvider.notifier)
-                        .markEventCompleted(event.id, DateTime.now());
-                    // Refresh the data providers. The calendar itself no longer
-                    // needs a hand-rolled reload here: `markEventCompleted`
-                    // refreshes every month currently paged in. This call site
-                    // existed only to work around `refresh()` reloading the
-                    // focused month, which scrolling never updates.
-                    ref.invalidate(mealsRepositoryProvider);
-                    ref.invalidate(workoutSessionsRepositoryProvider);
-                    ref.invalidate(sleepRepositoryProvider);
-                  },
-                ),
-              ],
-              if (event.type == EventType.workout) ...[
-                ListTile(
-                  leading: const Icon(Icons.play_arrow, color: Colors.blue),
-                  title: Text(AppLocalizations.of(context)!.startWorkout),
-                  onTap: () async {
-                    Navigator.of(context).pop();
-                    await _startWorkoutFromEvent(context, ref, event);
-                    // Refresh workouts to show new session
-                    ref.invalidate(workoutSessionsRepositoryProvider);
-                  },
-                ),
-              ],
-              if (event.type == EventType.sleep) ...[
-                ListTile(
-                  leading: const Icon(Icons.bedtime, color: Colors.purple),
-                  title: Text(AppLocalizations.of(context)!.startSleepTimer),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    context.push('/sleep/timer');
-                  },
-                ),
-              ],
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: Text(l10n.delete),
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  await ref
-                      .read(calendarStateProvider.notifier)
-                      .deleteEvent(event.id);
-                  // Data providers only -- see the note on "mark as completed"
-                  // above for why the calendar reload that used to be here is
-                  // now redundant.
-                  ref.invalidate(mealsRepositoryProvider);
-                  ref.invalidate(workoutSessionsRepositoryProvider);
-                  ref.invalidate(sleepRepositoryProvider);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.cancel),
-                title: Text(l10n.cancel),
-                onTap: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
+      title: event.title,
+      actions: [
+        AppAction(
+          label: l10n.edit,
+          onPressed: () => _showEditEventDialog(context, ref, event),
         ),
-      ),
+        if (event.status != EventStatus.completed)
+          AppAction(
+            label: l10n.markAsCompleted,
+            isDefault: true,
+            onPressed: () async {
+              // Create the actual data entry when marking as complete
+              if (event.templateId != null) {
+                await _completeScheduledEvent(ref, event);
+              }
+              await ref
+                  .read(calendarStateProvider.notifier)
+                  .markEventCompleted(event.id, DateTime.now());
+              // Refresh the data providers. The calendar itself no longer
+              // needs a hand-rolled reload here: `markEventCompleted`
+              // refreshes every month currently paged in. This call site
+              // existed only to work around `refresh()` reloading the
+              // focused month, which scrolling never updates.
+              ref.invalidate(mealsRepositoryProvider);
+              ref.invalidate(workoutSessionsRepositoryProvider);
+              ref.invalidate(sleepRepositoryProvider);
+            },
+          ),
+        if (event.type == EventType.workout)
+          AppAction(
+            label: l10n.startWorkout,
+            onPressed: () async {
+              await _startWorkoutFromEvent(context, ref, event);
+              // Refresh workouts to show new session
+              ref.invalidate(workoutSessionsRepositoryProvider);
+            },
+          ),
+        if (event.type == EventType.sleep)
+          AppAction(
+            label: l10n.startSleepTimer,
+            onPressed: () => context.push('/sleep/timer'),
+          ),
+        AppAction(
+          label: l10n.delete,
+          isDestructive: true,
+          onPressed: () async {
+            await ref
+                .read(calendarStateProvider.notifier)
+                .deleteEvent(event.id);
+            // Data providers only -- see the note on "mark as completed"
+            // above for why the calendar reload that used to be here is
+            // now redundant.
+            ref.invalidate(mealsRepositoryProvider);
+            ref.invalidate(workoutSessionsRepositoryProvider);
+            ref.invalidate(sleepRepositoryProvider);
+          },
+        ),
+      ],
     );
   }
 
@@ -872,7 +854,7 @@ class CalendarPage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.chevron_left),
+                icon: Icon(RTLHelper.chevronBack(context)),
                 onPressed: () {
                   final previousDay =
                       selectedDate.subtract(const Duration(days: 1));
@@ -902,7 +884,7 @@ class CalendarPage extends ConsumerWidget {
                 ],
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right),
+                icon: Icon(RTLHelper.chevronForward(context)),
                 onPressed: () {
                   final nextDay = selectedDate.add(const Duration(days: 1));
                   ref

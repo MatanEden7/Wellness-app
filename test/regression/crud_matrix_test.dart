@@ -415,7 +415,8 @@ void main() {
       // ROADMAP A3, which is an open product question about whether to offer
       // a recalculation. Pinned here so the answer is a decision rather than
       // an accident.
-      expect((await db.getAllMealItems()).firstWhere((i) => i.id == 'logged').kcal,
+      expect(
+          (await db.getAllMealItems()).firstWhere((i) => i.id == 'logged').kcal,
           food.kcalPerUnit);
       expect((await db.getDayTotals(20260805))['kcal'], food.kcalPerUnit);
     });

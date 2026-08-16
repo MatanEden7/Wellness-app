@@ -8,6 +8,8 @@
 /// duplicated the seeded library and left the library itself unfilterable.
 library;
 
+import 'package:wellness_app/services/language_service.dart';
+
 /// Equipment an exercise requires. Values mirror the onboarding equipment
 /// chips exactly, plus [bodyweight] for the "no equipment" case -- the chip
 /// for that is `none`, but an exercise still positively *requires* nothing,
@@ -137,7 +139,22 @@ abstract final class BodyPartCodec {
 }
 
 extension EquipmentLabel on Equipment {
-  String get label {
+  /// See [FoodTagLabel.label] -- domain enums carry their own bilingual labels.
+  String label(AppLanguage language) =>
+      language == AppLanguage.hebrew ? _hebrew : _english;
+
+  String get _hebrew => switch (this) {
+        Equipment.bodyweight => 'משקל גוף',
+        Equipment.dumbbells => 'משקולות יד',
+        Equipment.barbellRack => 'מוט ומעמד',
+        Equipment.machines => 'מכונות',
+        Equipment.bands => 'גומיות',
+        Equipment.kettlebells => 'קטלבל',
+        Equipment.cable => 'כבל',
+        Equipment.pullupBar => 'מתח',
+      };
+
+  String get _english {
     switch (this) {
       case Equipment.bodyweight:
         return 'Bodyweight';
@@ -160,7 +177,21 @@ extension EquipmentLabel on Equipment {
 }
 
 extension BodyPartLabel on BodyPart {
-  String get label {
+  /// See [FoodTagLabel.label] -- domain enums carry their own bilingual labels.
+  String label(AppLanguage language) =>
+      language == AppLanguage.hebrew ? _hebrew : _english;
+
+  String get _hebrew => switch (this) {
+        BodyPart.shoulder => 'כתף',
+        BodyPart.back => 'גב',
+        BodyPart.knee => 'ברך',
+        BodyPart.ankle => 'קרסול',
+        BodyPart.elbow => 'מרפק',
+        BodyPart.hip => 'ירך',
+        BodyPart.neck => 'צוואר',
+      };
+
+  String get _english {
     switch (this) {
       case BodyPart.shoulder:
         return 'Shoulder';

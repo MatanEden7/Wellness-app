@@ -17,10 +17,10 @@ import '../../../core/ios/glass.dart';
 import '../../../core/widgets.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_row.dart';
-import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
 import '../../../core/ios/sheets.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -31,6 +31,12 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   UserProfile? _profile;
+
+  /// Every label on this page went through here. ISSUES #84 estimated ~29
+  /// new Hebrew strings; in the event 35 of the 55 literals already had ARB
+  /// keys and only 16 were genuinely new -- the page was not untranslated so
+  /// much as unwired.
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   @override
   void initState() {
     super.initState();
@@ -76,12 +82,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     final confirmed = await showAppConfirm(
       context: context,
-      title: 'Update your templates?',
-      message: 'Your profile changed in a way that affects which meals and '
-          'workouts suit you.\n\n'
-          'Rebuilding replaces ${preview.mealTemplates} generated meal '
-          'template(s) and ${preview.workoutTemplates} generated workout '
-          'template(s). Anything you created or edited yourself is kept.',
+      title: l10n.profileRegenTitle,
+      message: l10n.profileRegenBody(
+          preview.mealTemplates, preview.workoutTemplates),
       confirmLabel: 'Rebuild',
       // Rebuilding is additive and reversible -- red would overstate it.
       isDestructive: false,
@@ -135,10 +138,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<String>(_PickerPage(
-      title: 'Sex',
-      options: const [
-        _Option('male', 'Male'),
-        _Option('female', 'Female'),
+      title: l10n.onboardingSex,
+      options: [
+        _Option('male', l10n.onboardingMale),
+        _Option('female', l10n.onboardingFemale),
       ],
       current: p.sex,
     ));
@@ -151,8 +154,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<int>(_NumberPage(
-      title: 'Age',
-      suffix: 'yr',
+      title: l10n.onboardingAge,
+      suffix: l10n.onboardingYears,
       initial: p.ageYears,
       min: 13,
       max: 100,
@@ -167,8 +170,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<int>(_NumberPage(
-      title: 'Height',
-      suffix: 'cm',
+      title: l10n.onboardingHeight,
+      suffix: l10n.centimetersShort,
       initial: p.heightCm,
       min: 100,
       max: 250,
@@ -183,8 +186,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<double>(_NumberPage(
-      title: 'Weight',
-      suffix: 'kg',
+      title: l10n.weight,
+      suffix: l10n.kg,
       initial: p.weightKg,
       min: 30,
       max: 300,
@@ -199,12 +202,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<String>(_PickerPage(
-      title: 'Goal',
-      options: const [
-        _Option('fat_loss', 'Fat Loss'),
-        _Option('muscle_gain', 'Muscle Gain'),
-        _Option('maintenance', 'Maintenance'),
-        _Option('mobility_rehab', 'Mobility & Rehab'),
+      title: l10n.onboardingGoalLabel,
+      options: [
+        _Option('fat_loss', l10n.onboardingGoalFatLoss),
+        _Option('muscle_gain', l10n.onboardingGoalMuscleBuild),
+        _Option('maintenance', l10n.onboardingGoalMaintenance),
+        _Option('mobility_rehab', l10n.onboardingGoalMobilityRehab),
       ],
       current: p.goal,
     ));
@@ -217,13 +220,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<String>(_PickerPage(
-      title: 'Activity Level',
-      options: const [
-        _Option('sedentary', 'Sedentary'),
-        _Option('light', 'Light'),
-        _Option('moderate', 'Moderate'),
-        _Option('active', 'Active'),
-        _Option('very_active', 'Very Active'),
+      title: l10n.onboardingActivityLevel,
+      options: [
+        _Option('sedentary', l10n.onboardingActivitySedentary),
+        _Option('light', l10n.light),
+        _Option('moderate', l10n.onboardingActivityModerate),
+        _Option('active', l10n.active),
+        _Option('very_active', l10n.onboardingActivityVeryActive),
       ],
       current: p.activityLevel,
     ));
@@ -236,8 +239,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<int>(_NumberPage(
-      title: 'Training Days / Week',
-      suffix: 'days',
+      title: l10n.profileTrainingDaysWeek,
+      suffix: l10n.onboardingDays,
       initial: p.trainingDaysPerWeek,
       min: 1,
       max: 7,
@@ -252,8 +255,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<double>(_NumberPage(
-      title: 'Calorie Target',
-      suffix: 'kcal',
+      title: l10n.profileCalorieTarget,
+      suffix: l10n.kcal,
       initial: p.calorieTarget,
       min: 800,
       max: 20000,
@@ -268,8 +271,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<double>(_NumberPage(
-      title: 'Protein Target',
-      suffix: 'g',
+      title: l10n.profileProteinTarget,
+      suffix: l10n.grams,
       initial: p.proteinTargetG,
       min: 10,
       max: 600,
@@ -284,8 +287,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<double>(_NumberPage(
-      title: 'Carbs Target',
-      suffix: 'g',
+      title: l10n.profileCarbsTarget,
+      suffix: l10n.grams,
       initial: p.carbsTargetG,
       min: 10,
       max: 600,
@@ -300,8 +303,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<double>(_NumberPage(
-      title: 'Fat Target',
-      suffix: 'g',
+      title: l10n.profileFatTarget,
+      suffix: l10n.grams,
       initial: p.fatTargetG,
       min: 10,
       max: 300,
@@ -316,11 +319,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<String>(_PickerPage(
-      title: 'Diet Type',
-      options: const [
-        _Option('omnivore', 'Omnivore'),
-        _Option('carnivore', 'Carnivore'),
-        _Option('herbivore', 'Plant-based'),
+      title: l10n.onboardingDietType,
+      options: [
+        _Option('omnivore', l10n.onboardingDietOmnivore),
+        _Option('carnivore', l10n.onboardingDietCarnivore),
+        _Option('herbivore', l10n.onboardingDietHerbivore),
       ],
       current: p.dietType,
     ));
@@ -333,12 +336,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<String>(_PickerPage(
-      title: 'Meals per Day',
-      options: const [
-        _Option('2', '2 Meals'),
-        _Option('3', '3 Meals'),
-        _Option('4', '4 Meals'),
-        _Option('intermittent_fasting_16_8', 'Intermittent Fasting 16:8'),
+      title: l10n.onboardingMealsPerDay,
+      options: [
+        _Option('2', l10n.onboardingMeals2),
+        _Option('3', l10n.onboardingMeals3),
+        _Option('4', l10n.onboardingMeals4),
+        _Option('intermittent_fasting_16_8', l10n.onboardingMealsIF),
       ],
       current: p.mealCountPerDay,
     ));
@@ -351,15 +354,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<List<String>>(_MultiPickerPage(
-      title: 'Food Exclusions',
-      options: const [
-        _Option('none', 'None'),
-        _Option('dairy', 'Dairy'),
-        _Option('gluten', 'Gluten'),
-        _Option('nuts', 'Nuts'),
-        _Option('eggs', 'Eggs'),
-        _Option('shellfish', 'Shellfish'),
-        _Option('soy', 'Soy'),
+      title: l10n.onboardingExclusions,
+      options: [
+        _Option('none', l10n.onboardingExclusionsNone),
+        _Option('dairy', l10n.onboardingExclusionsDairy),
+        _Option('gluten', l10n.onboardingExclusionsGluten),
+        _Option('nuts', l10n.onboardingExclusionsNuts),
+        _Option('eggs', l10n.onboardingExclusionsEggs),
+        _Option('shellfish', l10n.onboardingExclusionsShellfish),
+        _Option('soy', l10n.onboardingExclusionsSoy),
       ],
       current: p.exclusions,
       noneValue: 'none',
@@ -373,13 +376,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<List<String>>(_MultiPickerPage(
-      title: 'Injuries',
-      options: const [
-        _Option('none', 'None'),
-        _Option('shoulder', 'Shoulder'),
-        _Option('back', 'Back'),
-        _Option('knee', 'Knee'),
-        _Option('ankle', 'Ankle'),
+      title: l10n.profileInjuries,
+      options: [
+        _Option('none', l10n.onboardingExclusionsNone),
+        _Option('shoulder', l10n.onboardingInjuriesShoulder),
+        _Option('back', l10n.onboardingInjuriesBack),
+        _Option('knee', l10n.onboardingInjuriesKnee),
+        _Option('ankle', l10n.onboardingInjuriesAnkle),
         _Option('elbow', 'Elbow'),
         _Option('hip', 'Hip'),
         _Option('neck', 'Neck'),
@@ -396,8 +399,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final p = _profile;
     if (p == null) return;
     final result = await _push<List<String>>(_MultiPickerPage(
-      title: 'Equipment',
-      options: const [
+      title: l10n.equipmentLabel,
+      options: [
         _Option('none', 'No Equipment'),
         _Option('dumbbells', 'Dumbbells'),
         _Option('barbell_rack', 'Barbell & Rack'),
@@ -415,50 +418,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     }
   }
 
-  Future<void> _editEnergyUnit() async {
-    final p = _profile;
-    if (p == null) return;
-    final result = await _push<String>(_PickerPage(
-      title: 'Energy Unit',
-      options: const [
-        _Option('kcal', 'kcal (Calories)'),
-        _Option('kj', 'kJ (Kilojoules)'),
-      ],
-      current: p.energyUnit,
-    ));
-    if (result != null && result != p.energyUnit) {
-      await _saveProfile(p.copyWith(energyUnit: result));
-    }
-  }
-
-  Future<void> _editWeightUnit() async {
-    final p = _profile;
-    if (p == null) return;
-    final result = await _push<String>(_PickerPage(
-      title: 'Weight Unit',
-      options: const [
-        _Option('g', 'Grams (g)'),
-        _Option('oz', 'Ounces (oz)'),
-      ],
-      current: p.weightUnit,
-    ));
-    if (result != null && result != p.weightUnit) {
-      await _saveProfile(p.copyWith(weightUnit: result));
-    }
-  }
-
   // ── display helpers ───────────────────────────────────────────────────────
 
   String _goalLabel(String goal) {
     switch (goal) {
       case 'fat_loss':
-        return 'Fat Loss';
+        return l10n.onboardingGoalFatLoss;
       case 'muscle_gain':
-        return 'Muscle Gain';
+        return l10n.onboardingGoalMuscleBuild;
       case 'maintenance':
-        return 'Maintenance';
+        return l10n.onboardingGoalMaintenance;
       case 'mobility_rehab':
-        return 'Mobility & Rehab';
+        return l10n.onboardingGoalMobilityRehab;
       default:
         return goal;
     }
@@ -467,15 +438,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   String _activityLabel(String level) {
     switch (level) {
       case 'sedentary':
-        return 'Sedentary';
+        return l10n.onboardingActivitySedentary;
       case 'light':
-        return 'Light';
+        return l10n.light;
       case 'moderate':
-        return 'Moderate';
+        return l10n.onboardingActivityModerate;
       case 'active':
-        return 'Active';
+        return l10n.active;
       case 'very_active':
-        return 'Very Active';
+        return l10n.onboardingActivityVeryActive;
       default:
         return level;
     }
@@ -484,22 +455,55 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   String _mealsLabel(String count) {
     switch (count) {
       case '2':
-        return '2 Meals';
+        return l10n.onboardingMeals2;
       case '3':
-        return '3 Meals';
+        return l10n.onboardingMeals3;
       case '4':
-        return '4 Meals';
+        return l10n.onboardingMeals4;
       case 'intermittent_fasting_16_8':
-        return 'IF 16:8';
+        return l10n.onboardingMealsIF;
       default:
         return count;
     }
   }
 
+  String _dietLabel(String diet) => switch (diet) {
+        'omnivore' => l10n.onboardingDietOmnivore,
+        'carnivore' => l10n.onboardingDietCarnivore,
+        'herbivore' => l10n.onboardingDietHerbivore,
+        _ => diet,
+      };
+
+  /// Stored ids -> display labels.
+  ///
+  /// Was `id[0].toUpperCase() + id.substring(1)`, which renders the raw id in
+  /// any language ("Dairy", "Barbell_rack") and never had a Hebrew path at
+  /// all. Every one of these already has an ARB key from onboarding.
+  String _itemLabel(String id) => switch (id) {
+        'dairy' => l10n.onboardingExclusionsDairy,
+        'gluten' => l10n.onboardingExclusionsGluten,
+        'nuts' => l10n.onboardingExclusionsNuts,
+        'eggs' => l10n.onboardingExclusionsEggs,
+        'shellfish' => l10n.onboardingExclusionsShellfish,
+        'soy' => l10n.onboardingExclusionsSoy,
+        'shoulder' => l10n.onboardingInjuriesShoulder,
+        'back' => l10n.onboardingInjuriesBack,
+        'knee' => l10n.onboardingInjuriesKnee,
+        'ankle' => l10n.onboardingInjuriesAnkle,
+        'dumbbells' => l10n.onboardingEquipmentDumbbells,
+        'barbell_rack' => l10n.onboardingEquipmentBarbell,
+        'machines' => l10n.onboardingEquipmentMachines,
+        'bands' => l10n.onboardingEquipmentBands,
+        'kettlebells' => l10n.onboardingEquipmentKettlebells,
+        'cable' => l10n.onboardingEquipmentCable,
+        'pullup_bar' => l10n.onboardingEquipmentPullup,
+        _ => id[0].toUpperCase() + id.substring(1),
+      };
+
   String _listLabel(List<String> items) {
     final filtered = items.where((e) => e != 'none').toList();
-    if (filtered.isEmpty) return 'None';
-    return filtered.map((e) => e[0].toUpperCase() + e.substring(1)).join(', ');
+    if (filtered.isEmpty) return l10n.onboardingExclusionsNone;
+    return filtered.map(_itemLabel).join(', ');
   }
 
   // ── build ─────────────────────────────────────────────────────────────────
@@ -510,7 +514,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     if (p == null) {
       return PlatformPage(
-        chrome: const PageChrome(title: 'My Profile'),
+        chrome: PageChrome(title: l10n.profileTitle),
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
@@ -521,12 +525,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   const Icon(Icons.person_outline,
                       size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
-                  const Text('Profile setup not completed'),
+                  Text(l10n.profileNotCompleted),
                   const SizedBox(height: 24),
                   GlassButton(
                     prominent: true,
                     onPressed: () => context.go('/onboarding'),
-                    child: const Text('Complete Setup'),
+                    child: Text(l10n.onboardingComplete),
                   ),
                 ],
               ),
@@ -538,7 +542,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return PlatformChildPage(
       chrome: PageChrome(
-        title: 'My Profile',
+        title: l10n.profileTitle,
         // Saving spinner shown inline above content instead of in the action
         // slot, since PageChrome actions are typed data, not widgets.
       ),
@@ -568,12 +572,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${p.weightKg.toStringAsFixed(1)} kg  ·  ${p.heightCm} cm',
+                          '${p.weightKg.toStringAsFixed(1)} ${l10n.kg}  ·  ${p.heightCm} ${l10n.centimetersShort}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${_goalLabel(p.goal)}  ·  ${p.ageYears} yr',
+                          '${_goalLabel(p.goal)}  ·  ${p.ageYears} ${l10n.onboardingYears}',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: Theme.of(context)
@@ -593,34 +597,36 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
           // Body
           SettingsSection(
-            title: 'Body',
+            title: l10n.profileSectionBody,
             children: [
               SettingsRow(
                 icon: Icons.wc,
                 iconColor: Colors.blue,
-                title: 'Sex',
-                value: p.sex == 'male' ? 'Male' : 'Female',
+                title: l10n.onboardingSex,
+                value: p.sex == 'male'
+                    ? l10n.onboardingMale
+                    : l10n.onboardingFemale,
                 onTap: _editSex,
               ),
               SettingsRow(
                 icon: Icons.cake,
                 iconColor: Colors.orange,
-                title: 'Age',
-                value: '${p.ageYears} yr',
+                title: l10n.onboardingAge,
+                value: '${p.ageYears} ${l10n.onboardingYears}',
                 onTap: _editAge,
               ),
               SettingsRow(
                 icon: Icons.height,
                 iconColor: Colors.teal,
-                title: 'Height',
-                value: '${p.heightCm} cm',
+                title: l10n.onboardingHeight,
+                value: '${p.heightCm} ${l10n.centimetersShort}',
                 onTap: _editHeight,
               ),
               SettingsRow(
                 icon: Icons.monitor_weight,
                 iconColor: Colors.green,
-                title: 'Weight',
-                value: '${p.weightKg.toStringAsFixed(1)} kg',
+                title: l10n.weight,
+                value: '${p.weightKg.toStringAsFixed(1)} ${l10n.kg}',
                 onTap: _editWeight,
               ),
             ],
@@ -629,26 +635,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
           // Goal & Activity
           SettingsSection(
-            title: 'Goal & Activity',
+            title: l10n.profileSectionGoal,
             children: [
               SettingsRow(
                 icon: Icons.flag,
                 iconColor: Colors.red,
-                title: 'Goal',
+                title: l10n.onboardingGoalLabel,
                 value: _goalLabel(p.goal),
                 onTap: _editGoal,
               ),
               SettingsRow(
                 icon: Icons.directions_run,
                 iconColor: Colors.deepOrange,
-                title: 'Activity Level',
+                title: l10n.onboardingActivityLevel,
                 value: _activityLabel(p.activityLevel),
                 onTap: _editActivityLevel,
               ),
               SettingsRow(
                 icon: Icons.event_repeat,
                 iconColor: Colors.purple,
-                title: 'Training Days / Week',
+                title: l10n.profileTrainingDaysWeek,
                 value: '${p.trainingDaysPerWeek}',
                 onTap: _editTrainingDays,
               ),
@@ -658,64 +664,59 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
           // Nutrition Targets
           SettingsSection(
-            title: 'Nutrition Targets',
+            title: l10n.profileSectionTargets,
             children: [
               SettingsRow(
                 icon: Icons.local_fire_department,
                 iconColor: Colors.orange,
-                title: 'Calories',
-                value: '${p.calorieTarget.toInt()} kcal',
+                title: l10n.calories,
+                value: '${p.calorieTarget.toInt()} ${l10n.kcal}',
                 onTap: _editCalorieTarget,
               ),
               SettingsRow(
                 icon: Icons.egg_alt,
                 iconColor: Colors.red,
-                title: 'Protein',
-                value: '${p.proteinTargetG.toInt()} g',
+                title: l10n.protein,
+                value: '${p.proteinTargetG.toInt()} ${l10n.grams}',
                 onTap: _editProteinTarget,
               ),
               SettingsRow(
                 icon: Icons.grain,
                 iconColor: Colors.amber,
-                title: 'Carbs',
-                value: '${p.carbsTargetG.toInt()} g',
+                title: l10n.carbs,
+                value: '${p.carbsTargetG.toInt()} ${l10n.grams}',
                 onTap: _editCarbsTarget,
               ),
               SettingsRow(
                 icon: Icons.water_drop,
                 iconColor: Colors.lightBlue,
-                title: 'Fat',
-                value: '${p.fatTargetG.toInt()} g',
+                title: l10n.fat,
+                value: '${p.fatTargetG.toInt()} ${l10n.grams}',
                 onTap: _editFatTarget,
               ),
               SettingsRow(
                 icon: Icons.bolt,
                 iconColor: Colors.indigo,
-                title: 'BMR',
-                value: '${p.bmr.toInt()} kcal',
+                title: l10n.onboardingBMR,
+                value: '${p.bmr.toInt()} ${l10n.kcal}',
                 showChevron: false,
               ),
               SettingsRow(
                 icon: Icons.bar_chart,
                 iconColor: Colors.teal,
-                title: 'TDEE',
-                value: '${p.tdee.toInt()} kcal',
+                title: l10n.onboardingTDEE,
+                value: '${p.tdee.toInt()} ${l10n.kcal}',
                 showChevron: false,
               ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: Space.lg, vertical: Space.xxs),
-                leading: ContentSurface.tinted(
-                  color: Colors.green.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    child: const Icon(Icons.refresh,
-                        color: Colors.green, size: 19),
-                  ),
-                ),
-                title: const Text('Recalculate from Body & Goal'),
+              // InsetRow, not ListTile: inside a glass SettingsSection there is
+              // no Material ancestor for ListTile to resolve its ink and
+              // background against, and Flutter asserts rather than degrading.
+              // The settings rows were converted for this; this one was missed,
+              // and it is what three profile integration tests were tripping on.
+              InsetRow(
+                icon: Icons.refresh,
+                iconColor: Colors.green,
+                title: l10n.profileRecalculate,
                 onTap: () => _recomputeAndSave(p),
               ),
             ],
@@ -724,35 +725,33 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
           // Food & Diet
           SettingsSection(
-            title: 'Food & Diet',
+            title: l10n.profileSectionFood,
             children: [
               SettingsRow(
                 icon: Icons.restaurant,
                 iconColor: Colors.deepOrange,
-                title: 'Diet Type',
-                value: p.dietType == 'herbivore'
-                    ? 'Plant-based'
-                    : p.dietType[0].toUpperCase() + p.dietType.substring(1),
+                title: l10n.onboardingDietType,
+                value: _dietLabel(p.dietType),
                 onTap: _editDietType,
               ),
               SettingsRow(
                 icon: Icons.dining,
                 iconColor: Colors.brown,
-                title: 'Meals per Day',
+                title: l10n.onboardingMealsPerDay,
                 value: _mealsLabel(p.mealCountPerDay),
                 onTap: _editMealsPerDay,
               ),
               SettingsRow(
                 icon: Icons.no_food,
                 iconColor: Colors.red,
-                title: 'Food Exclusions',
+                title: l10n.onboardingExclusions,
                 value: _listLabel(p.exclusions),
                 onTap: _editExclusions,
               ),
               SettingsRow(
                 icon: Icons.healing,
                 iconColor: Colors.pink,
-                title: 'Injuries',
+                title: l10n.profileInjuries,
                 value: _listLabel(p.injuries),
                 onTap: _editInjuries,
               ),
@@ -762,12 +761,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
           // Equipment
           SettingsSection(
-            title: 'Equipment',
+            title: l10n.equipmentLabel,
             children: [
               SettingsRow(
                 icon: Icons.fitness_center,
                 iconColor: Colors.blueGrey,
-                title: 'Available Equipment',
+                title: l10n.onboardingEquipment,
                 value: _listLabel(p.equipment),
                 onTap: _editEquipment,
               ),
@@ -775,26 +774,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
           const SizedBox(height: 16),
 
-          // Units
-          SettingsSection(
-            title: 'Units',
-            children: [
-              SettingsRow(
-                icon: Icons.flash_on,
-                iconColor: Colors.yellow.shade700,
-                title: 'Energy Unit',
-                value: p.energyUnit.toUpperCase(),
-                onTap: _editEnergyUnit,
-              ),
-              SettingsRow(
-                icon: Icons.scale,
-                iconColor: Colors.indigo,
-                title: 'Weight Unit',
-                value: p.weightUnit,
-                onTap: _editWeightUnit,
-              ),
-            ],
-          ),
+          // The Units section (energy / weight unit) used to sit here.
+          // Removed with the onboarding picker: the app works in grams and
+          // kcal everywhere, so offering oz/kJ was a choice that changed
+          // nothing downstream. `energyUnit`/`weightUnit` stay on the
+          // profile at their defaults, so the stored shape is unchanged.
           const SizedBox(height: 32),
         ],
       ),
@@ -894,8 +878,8 @@ class _MultiPickerPageState extends State<_MultiPickerPage> {
         title: widget.title,
         actions: [
           ChromeAction(
-            label: 'Done',
-            tooltip: 'Done',
+            label: AppLocalizations.of(context)!.done,
+            tooltip: AppLocalizations.of(context)!.done,
             isProminent: true,
             onPressed: () => Navigator.of(context).pop(_selected.toList()),
           ),
@@ -984,8 +968,8 @@ class _NumberPageState<T extends num> extends State<_NumberPage<T>> {
         title: widget.title,
         actions: [
           ChromeAction(
-              label: 'Save',
-              tooltip: 'Save',
+              label: AppLocalizations.of(context)!.save,
+              tooltip: AppLocalizations.of(context)!.save,
               isProminent: true,
               onPressed: _submit),
         ],

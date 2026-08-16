@@ -72,7 +72,8 @@ void main() {
     expect(state.isRunning, isFalse);
   });
 
-  test('reset() restores the initial duration and clears running/completed', () {
+  test('reset() restores the initial duration and clears running/completed',
+      () {
     final c = controller(90);
     c.start();
     c.skip();

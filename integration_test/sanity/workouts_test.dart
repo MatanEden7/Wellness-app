@@ -16,7 +16,12 @@ void main() {
 
       await tapDashboardAction(tester, DashboardKeys.workoutsAction);
 
-      expect(find.text(l10n.workouts), findsOneWidget);
+      // At least one, not exactly one: on the Flutter chrome tier the
+      // screen's name is legitimately in the tree three times -- the
+      // navigation-bar title, the large title it collapses into, and the
+      // tab-bar label. On the native tier all three live in UIKit and the
+      // count was one, which is what this assertion was written against.
+      expect(find.text(l10n.workouts), findsAtLeastNWidgets(1));
     });
   }
 }

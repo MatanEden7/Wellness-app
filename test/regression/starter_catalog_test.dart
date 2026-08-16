@@ -38,13 +38,17 @@ void main() {
     },
   );
 
-  test('exercise library covers at least 16 exercises across multiple muscle groups', () async {
+  test(
+      'exercise library covers at least 16 exercises across multiple muscle groups',
+      () async {
     final exercises = await database.getAllExercises();
     expect(exercises.length, greaterThanOrEqualTo(16));
 
-    final muscleGroups = exercises.map((e) => e.primaryMuscle).whereType<String>().toSet();
+    final muscleGroups =
+        exercises.map((e) => e.primaryMuscle).whereType<String>().toSet();
     for (final expected in ['Chest', 'Back', 'Shoulders', 'Core']) {
-      expect(muscleGroups, contains(expected), reason: 'missing $expected coverage');
+      expect(muscleGroups, contains(expected),
+          reason: 'missing $expected coverage');
     }
   });
 
@@ -53,21 +57,27 @@ void main() {
     expect(templates.length, greaterThanOrEqualTo(4));
 
     for (final template in templates) {
-      final exercises = await database.getTemplateExercisesByTemplateId(template.id);
-      expect(exercises, isNotEmpty, reason: '${template.name} has no exercises');
+      final exercises =
+          await database.getTemplateExercisesByTemplateId(template.id);
+      expect(exercises, isNotEmpty,
+          reason: '${template.name} has no exercises');
     }
   });
 
-  test('built-in meal templates exist and each references real foods', () async {
+  test('built-in meal templates exist and each references real foods',
+      () async {
     final templates = await database.getAllMealTemplates();
     expect(templates.length, greaterThanOrEqualTo(4));
 
     final foodIds = (await database.getAllFoods()).map((f) => f.id).toSet();
     for (final template in templates) {
-      final items = await database.getMealTemplateItemsByTemplateId(template.id);
+      final items =
+          await database.getMealTemplateItemsByTemplateId(template.id);
       expect(items, isNotEmpty, reason: '${template.name} has no items');
       for (final item in items) {
-        expect(foodIds, contains(item.foodId), reason: '${template.name} references an unknown food id ${item.foodId}');
+        expect(foodIds, contains(item.foodId),
+            reason:
+                '${template.name} references an unknown food id ${item.foodId}');
       }
     }
   });

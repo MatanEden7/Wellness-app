@@ -19,6 +19,8 @@ import 'package:wellness_app/services/preferences_service.dart';
 import 'package:wellness_app/services/theme_service.dart';
 import 'package:wellness_app/services/timezone_service.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
+import 'package:wellness_app/bridge/native_chrome_service.dart';
+import 'package:wellness_app/core/ios/native_ui.dart';
 
 /// A fully-filled profile for tests that need Settings/Profile screens to
 /// render their non-empty state instead of the "complete setup" placeholder.
@@ -79,6 +81,18 @@ Future<Widget> buildTestApp({
   UserProfile? profile,
   Future<void> Function(AppDatabase db)? seed,
 }) async {
+  // Route the presentation layer through its Flutter fallback too.
+  //
+  // Alerts, action sheets, pickers, the share sheet and the confirmation
+  // banner are all real UIKit on a device -- presented by iOS on top of the
+  // Flutter view, and so not in the widget tree. A test asserting
+  // `find.text('Targets updated')` sees nothing, because that string is in a
+  // UIVisualEffectView on the app window rather than in a `Text`.
+  //
+  // The same caveat as the chrome override applies: this covers *that the app
+  // asks for* an alert or a banner and what it says, not how UIKit draws it.
+  NativeUI.debugForceUnavailable = true;
+
   SharedPreferences.setMockInitialValues({
     'setup_completed': setupCompleted,
     'app_language': language.code,
@@ -99,7 +113,8 @@ Future<Widget> buildTestApp({
   final backupLocationService = BackupLocationService(prefs);
   final timezoneService = TimezoneService();
   await timezoneService.initialize();
-  final notificationService = NotificationService(FlutterLocalNotificationsPlugin());
+  final notificationService =
+      NotificationService(FlutterLocalNotificationsPlugin());
   final notificationPrefs = NotificationPreferencesNotifier(prefs);
 
   // AppDatabase seeds the starter catalog in its constructor; no store is
@@ -117,6 +132,22 @@ Future<Widget> buildTestApp({
       timezoneServiceProvider.overrideWithValue(timezoneService),
       notificationServiceProvider.overrideWithValue(notificationService),
       notificationPreferencesProvider.overrideWith((ref) => notificationPrefs),
+      // Drive the Flutter chrome tier, not the native one.
+      //
+      // On a real iOS run the navigation bar and tab bar are UIKit objects
+      // owned by `RootContainerViewController`. They are genuinely not in
+      // Flutter's widget tree, so `find.byKey(Key('glass_tab_/meals'))` and
+      // every dashboard-action finder match nothing and 21 of the 23 sanity
+      // tests fail before they reach the screen they exist to check.
+      //
+      // Forcing the fallback is not a workaround for a broken feature: it is a
+      // real, shipped code path (Android, iOS < 15, and any build where the
+      // bridge does not attach), and it renders the same pages behind the same
+      // keys. What it does mean is that **these tests no longer cover the
+      // native chrome itself** -- the bars, their SF Symbols, the scroll-edge
+      // behaviour and the native back gesture. Driving those needs XCUITest,
+      // which is a separate harness this repo does not have yet.
+      nativeChromeActiveProvider.overrideWithValue(false),
     ],
     child: const WellnessApp(),
   );
@@ -158,6 +189,36 @@ Future<void> settle(WidgetTester tester, {int frames = 10}) async {
   }
 }
 
+/// Scrolls [finder] to the middle of the viewport, then taps it.
+///
+/// `scrollUntilVisible` is not enough on any page that has the floating tab
+/// bar. It stops the moment the target enters the viewport, and the viewport
+/// extends *underneath* the bar -- so the widget is found, `tap()` computes a
+/// centre that the bar covers, the hit test lands on the bar instead, and the
+/// only symptom is a "call to tap() ... missed" warning followed by a failure
+/// on the next screen never having opened. That points at the wrong thing
+/// entirely, which is what made this worth a helper rather than a fix per site.
+///
+/// Centring sidesteps it: `alignment: 0.5` puts the row in the middle of the
+/// scroll view, clear of both bars. Safe on a page with no scroll view at all,
+/// where it just taps.
+Future<void> tapInScroll(WidgetTester tester, Finder finder) async {
+  final scrollable = find.byType(Scrollable);
+  if (scrollable.evaluate().isNotEmpty) {
+    // Duration.zero, not an animated scroll: awaiting the animation inside
+    // the integration binding hangs the test until the runner's own timeout.
+    // A jump is all this needs -- nothing here is asserting on scroll motion.
+    await Scrollable.ensureVisible(
+      tester.element(finder),
+      alignment: 0.5,
+      duration: Duration.zero,
+    );
+    await settle(tester, frames: 4);
+  }
+  await tester.tap(finder);
+  await settle(tester);
+}
+
 /// Loads the real localized strings for [language] so tests can assert on
 /// exact expected text instead of guessing at English/Hebrew copy.
 Future<AppLocalizations> loadL10n(AppLanguage language) {
@@ -186,7 +247,8 @@ Future<void> tapDashboardAction(WidgetTester tester, Key key) async {
 /// async computation (e.g. a step that shows a spinner until a profile
 /// preview finishes loading) where a single bounded [settle] might not be
 /// enough and pumpAndSettle() can't be used (see [pumpApp]).
-Future<void> waitFor(WidgetTester tester, Finder finder, {int maxAttempts = 10}) async {
+Future<void> waitFor(WidgetTester tester, Finder finder,
+    {int maxAttempts = 10}) async {
   for (var i = 0; i < maxAttempts; i++) {
     if (tester.any(finder)) return;
     await settle(tester);
@@ -220,8 +282,10 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 /// visible-ish items, so the target may not exist in the tree at all until
 /// scrolled into range, and even an eagerly-built `Column` in a
 /// `SingleChildScrollView` can be off-screen and un-tappable otherwise.
-Future<Finder> scrollToFind(WidgetTester tester, Finder finder, {Finder? scrollable}) async {
-  await tester.scrollUntilVisible(finder, 200, scrollable: scrollable ?? find.byType(Scrollable).first);
+Future<Finder> scrollToFind(WidgetTester tester, Finder finder,
+    {Finder? scrollable}) async {
+  await tester.scrollUntilVisible(finder, 200,
+      scrollable: scrollable ?? find.byType(Scrollable).first);
   await settle(tester);
   return finder;
 }

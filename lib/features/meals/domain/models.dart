@@ -76,6 +76,45 @@ extension FoodItemDisplayName on FoodItem {
   /// The name to show for [language]: Hebrew if selected and translated,
   /// English otherwise. Lets the catalog ship English-only today and grow
   /// Hebrew names later without any further UI changes.
+  /// Localised brand/qualifier.
+  ///
+  /// `brand` is a descriptor rather than a trademark -- "Cooked", "Skinless",
+  /// "Canned in Water", or a pack weight. 59 distinct values across 234 seeded
+  /// foods, so this maps them once here instead of adding a `brandHe` column
+  /// and 234 edits. Pure weights ("110g", "300ml") fall through to
+  /// `FoodNutritionMath.localizedUnit`, and anything unmapped keeps its
+  /// English text, which beats showing nothing.
+  String? displayBrand(AppLanguage language) {
+    final b = brand;
+    if (b == null || language != AppLanguage.hebrew) return b;
+    const map = {
+      'Generic': 'רגיל',
+      'Cooked': 'מבושל',
+      'Boiled': 'מבושל',
+      'Canned': 'משומר',
+      'Canned in Water': 'משומר במים',
+      'Canned in oil': 'משומר בשמן',
+      'Skinless': 'ללא עור',
+      'Low Fat': 'דל שומן',
+      'Unsweetened': 'ללא סוכר',
+      'Vanilla': 'וניל',
+      'Whole Wheat': 'חיטה מלאה',
+      'Extra Virgin': 'כתית מעולה',
+      'Sirloin': 'סינטה',
+      'Cheese': 'גבינה',
+      'Fried, breaded': 'מטוגן בציפוי',
+      'Roasted, with skin': 'צלוי, עם העור',
+      'Leg, roasted': 'שוק, צלוי',
+      'White, cooked': 'לבן, מבושל',
+      'Two eggs': 'שתי ביצים',
+      'Fresh': 'טרי',
+      'Lean': 'רזה',
+      '85% Lean': '85% רזה',
+      '93% Lean': '93% רזה',
+    };
+    return map[b] ?? b;
+  }
+
   String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
           nameHe != null &&
           nameHe!.trim().isNotEmpty

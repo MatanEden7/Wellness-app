@@ -135,8 +135,7 @@ void main() {
 
       for (final event in await calendarService.getEvents()) {
         if (event.templateId == null) continue;
-        expect(
-            event.type == EventType.meal ? mealIds : workoutIds,
+        expect(event.type == EventType.meal ? mealIds : workoutIds,
             contains(event.templateId),
             reason: 'Approve / Start Workout are dead on this reminder');
       }
@@ -179,8 +178,8 @@ void main() {
           protein: 1,
           carbs: 1,
           fat: 1));
-      await database
-          .insertWorkoutSession(WorkoutSessionData(id: 'old-session', startedAt: old));
+      await database.insertWorkoutSession(
+          WorkoutSessionData(id: 'old-session', startedAt: old));
       await database.insertSetEntry(SetEntryData(
           id: 'old-set',
           sessionId: 'old-session',
@@ -190,11 +189,13 @@ void main() {
 
       await database.deleteDataOlderThan(DateTime(2026, 1, 1));
 
-      expect((await database.getAllMealItems()).where((i) => i.id == 'old-item'),
+      expect(
+          (await database.getAllMealItems()).where((i) => i.id == 'old-item'),
           isEmpty,
           reason: 'an orphaned item keeps counting toward a day that no '
               'longer has a meal in it');
-      expect((await database.getAllSetEntries()).where((e) => e.id == 'old-set'),
+      expect(
+          (await database.getAllSetEntries()).where((e) => e.id == 'old-set'),
           isEmpty,
           reason: 'orphaned sets inflate every volume total that scans them');
     });

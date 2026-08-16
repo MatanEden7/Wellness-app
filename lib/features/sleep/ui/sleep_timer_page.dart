@@ -361,7 +361,8 @@ class _ActiveSleepView extends HookWidget {
             child: Column(
               children: [
                 Text(
-                  '${hours}h ${minutes}m',
+                  AppLocalizations.of(context)!
+                      .durationHm('$hours', '$minutes'),
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 56,

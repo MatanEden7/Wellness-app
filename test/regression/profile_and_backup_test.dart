@@ -67,6 +67,36 @@ void main() {
   group('UserProfileService', () {
     setUp(() => SharedPreferences.setMockInitialValues({}));
 
+    // The router takes UserProfileService as its `refreshListenable` and
+    // redirects off /onboarding the instant this flag turns true. Onboarding
+    // saves the profile *before* running the workout, meal and calendar
+    // generators, so flipping it inside saveProfile tore the wizard down
+    // mid-generation -- the calendar schedule runs last and died on the
+    // disposed container. The user landed on an empty dashboard with the flag
+    // already set, so the wizard never ran again to fix itself.
+    test('saving a profile can defer marking setup complete', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final service = UserProfileService(prefs);
+
+      await service.saveProfile(_profile(), markSetupComplete: false);
+
+      expect(service.loadProfile(), isNotNull,
+          reason: 'the profile itself must still be written');
+      expect(service.isSetupCompleted, isFalse,
+          reason: 'onboarding must stay in control of when setup is complete, '
+              'or the router redirects away mid-generation');
+    });
+
+    test('saving a profile marks setup complete by default', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final service = UserProfileService(prefs);
+
+      await service.saveProfile(_profile());
+
+      expect(service.isSetupCompleted, isTrue,
+          reason: 'every other caller (profile edits) relies on this default');
+    });
+
     test('round-trips a profile including list fields', () async {
       final prefs = await SharedPreferences.getInstance();
       final service = UserProfileService(prefs);
@@ -104,8 +134,10 @@ void main() {
       expect(service.loadProfile(), isNull);
     });
 
-    test('returns null rather than throwing on a corrupt stored value', () async {
-      SharedPreferences.setMockInitialValues({'user_profile': 'not json at all'});
+    test('returns null rather than throwing on a corrupt stored value',
+        () async {
+      SharedPreferences.setMockInitialValues(
+          {'user_profile': 'not json at all'});
       final prefs = await SharedPreferences.getInstance();
 
       expect(UserProfileService(prefs).loadProfile(), isNull);
@@ -131,7 +163,8 @@ void main() {
       final foodsBefore = (await database.getAllFoods()).length;
       final mealsBefore = (await database.getAllMeals()).length;
       final mealTemplatesBefore = (await database.getAllMealTemplates()).length;
-      final templateItemsBefore = (await database.getAllMealTemplateItems()).length;
+      final templateItemsBefore =
+          (await database.getAllMealTemplateItems()).length;
       final exercisesBefore = (await database.getAllExercises()).length;
 
       final json = await service.exportToJson();
@@ -143,7 +176,8 @@ void main() {
       expect((await database.getAllExercises()).length, exercisesBefore);
       expect((await database.getAllMealTemplates()).length, mealTemplatesBefore,
           reason: 'meal templates must survive the round-trip');
-      expect((await database.getAllMealTemplateItems()).length, templateItemsBefore);
+      expect((await database.getAllMealTemplateItems()).length,
+          templateItemsBefore);
     });
 
     test('export payload actually contains meal templates', () async {
@@ -295,4 +329,3 @@ void main() {
     });
   });
 }
-

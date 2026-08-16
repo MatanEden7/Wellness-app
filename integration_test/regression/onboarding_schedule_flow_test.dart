@@ -49,7 +49,8 @@ void main() {
     await settle(tester, frames: 40);
   }
 
-  testWidgets('a user with history completes onboarding and lands on a full schedule',
+  testWidgets(
+      'a user with history completes onboarding and lands on a full schedule',
       (tester) async {
     late AppDatabase db;
 
@@ -109,7 +110,8 @@ void main() {
     await pumpApp(tester, setupCompleted: false, seed: seedHistory);
     await completeOnboarding(tester);
 
-    final profile = readProvider(tester, userProfileServiceProvider).loadProfile();
+    final profile =
+        readProvider(tester, userProfileServiceProvider).loadProfile();
     expect(profile, isNotNull, reason: 'onboarding saved no profile');
 
     final events = await readScheduledEvents(tester);
@@ -138,13 +140,17 @@ void main() {
     await pumpApp(tester, setupCompleted: false, seed: seedHistory);
     await completeOnboarding(tester);
 
-    await tapVisible(tester, find.byIcon(Icons.insights_outlined));
+    // By key, not by icon: the dashboard actions moved to CupertinoIcons in
+    // the design pass (`CupertinoIcons.chart_bar_alt_fill`), so
+    // `Icons.insights_outlined` has not existed on this screen for a while.
+    await tapDashboardAction(tester, DashboardKeys.analyticsAction);
     await settle(tester, frames: 30);
 
     // The seeded history is three weeks of meals, sleep and progressive
     // training, so none of the "nothing logged" states should be reachable.
-    expect(find.text('Nothing logged in this range yet.\n'
-        'Log a meal, a workout or a night of sleep and this fills in.'),
+    expect(
+        find.text('Nothing logged in this range yet.\n'
+            'Log a meal, a workout or a night of sleep and this fills in.'),
         findsNothing);
 
     expect(find.text('Goals reached'), findsOneWidget);
@@ -161,7 +167,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the generated schedule is visible on the calendar, not just stored',
+  testWidgets(
+      'the generated schedule is visible on the calendar, not just stored',
       (tester) async {
     await pumpApp(tester, setupCompleted: false, seed: seedHistory);
     await completeOnboarding(tester);

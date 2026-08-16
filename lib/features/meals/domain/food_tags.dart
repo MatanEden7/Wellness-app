@@ -1,3 +1,5 @@
+import 'package:wellness_app/services/language_service.dart';
+
 /// What a food *contains*, as data rather than as a guess about its name.
 ///
 /// This exists because the profile collects diet type and exclusions during
@@ -111,13 +113,28 @@ abstract final class FoodTagCodec {
 
 /// Human-readable label for a tag.
 ///
-/// English-only for now, matching how the seeded catalog ships: the
-/// exclusion chips in onboarding already have Hebrew, but wiring those keys
-/// through here needs the l10n lookup, and these six strings are the same
-/// words. Left as a single place to localise later rather than scattered
-/// through the editors.
+/// Takes the language explicitly, matching [FoodCategory.label]: these are
+/// domain enums, so they carry their own bilingual labels rather than reaching
+/// for an ARB key and a BuildContext that the domain layer has no business
+/// knowing about. The "localise later" note this replaces has been true since
+/// the bilingual catalog landed.
 extension FoodTagLabel on FoodTag {
-  String get label {
+  String label(AppLanguage language) =>
+      language == AppLanguage.hebrew ? _hebrew : _english;
+
+  String get _hebrew => switch (this) {
+        FoodTag.dairy => 'מוצרי חלב',
+        FoodTag.gluten => 'גלוטן',
+        FoodTag.nuts => 'אגוזים',
+        FoodTag.eggs => 'ביצים',
+        FoodTag.shellfish => 'פירות ים',
+        FoodTag.soy => 'סויה',
+        FoodTag.meat => 'בשר',
+        FoodTag.fish => 'דגים',
+        FoodTag.animalProduct => 'מוצר מן החי',
+      };
+
+  String get _english {
     switch (this) {
       case FoodTag.dairy:
         return 'Dairy';

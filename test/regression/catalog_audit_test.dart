@@ -118,13 +118,15 @@ void main() {
     });
 
     test('shellfish is also fish', () {
-      for (final food in foods.where((f) => f.tags.contains(FoodTag.shellfish))) {
+      for (final food
+          in foods.where((f) => f.tags.contains(FoodTag.shellfish))) {
         expect(food.tags, contains(FoodTag.fish),
             reason: '${food.name} is shellfish but not tagged fish');
       }
     });
 
-    test('a zero-protein zero-fat food is not tagged as coming from an animal', () {
+    test('a zero-protein zero-fat food is not tagged as coming from an animal',
+        () {
       // Catches copy-paste tagging: the sanity check that a tag set was
       // actually thought about rather than inherited from the row above.
       for (final food in foods) {
@@ -167,7 +169,8 @@ void main() {
     });
 
     test('`all` is every category exactly once, in display order', () {
-      expect(StarterFoodCatalog.all.length,
+      expect(
+          StarterFoodCatalog.all.length,
           FoodCategory.values.fold<int>(
               0, (n, c) => n + StarterFoodCatalog.byCategory(c).length));
       final ids = StarterFoodCatalog.all.map((f) => f.id).toList();
@@ -184,7 +187,8 @@ void main() {
     });
 
     test('displayOrder covers every category', () {
-      expect(FoodCategoryLabel.displayOrder.toSet(), FoodCategory.values.toSet());
+      expect(
+          FoodCategoryLabel.displayOrder.toSet(), FoodCategory.values.toSet());
       expect(FoodCategoryLabel.displayOrder.length, FoodCategory.values.length);
     });
 
@@ -206,11 +210,33 @@ void main() {
       // Not an arbitrary list: each of these was missing at some point and
       // found by trying to log an ordinary day.
       const basics = [
-        'Chicken Breast', 'Eggs', 'Whole Milk', 'White Bread', 'White Rice',
-        'Pasta', 'Potato', 'Onion', 'Tomato', 'Cucumber', 'Lettuce', 'Banana',
-        'Apple', 'Olive Oil', 'Butter', 'Sugar', 'Coffee, Black', 'Water',
-        'Beef Steak', 'Tuna', 'Cottage Cheese', 'Hummus', 'Pita Bread',
-        'Ketchup', 'Mayonnaise', 'Dark Chocolate', 'Orange Juice',
+        'Chicken Breast',
+        'Eggs',
+        'Whole Milk',
+        'White Bread',
+        'White Rice',
+        'Pasta',
+        'Potato',
+        'Onion',
+        'Tomato',
+        'Cucumber',
+        'Lettuce',
+        'Banana',
+        'Apple',
+        'Olive Oil',
+        'Butter',
+        'Sugar',
+        'Coffee, Black',
+        'Water',
+        'Beef Steak',
+        'Tuna',
+        'Cottage Cheese',
+        'Hummus',
+        'Pita Bread',
+        'Ketchup',
+        'Mayonnaise',
+        'Dark Chocolate',
+        'Orange Juice',
       ];
       final names = StarterFoodCatalog.all.map((f) => f.name).toSet();
       for (final basic in basics) {
@@ -218,7 +244,8 @@ void main() {
       }
     });
 
-    test('the catalog is big enough to log an ordinary day without adding '
+    test(
+        'the catalog is big enough to log an ordinary day without adding '
         'a custom food', () {
       expect(StarterFoodCatalog.all.length, greaterThanOrEqualTo(200));
     });
@@ -231,8 +258,9 @@ void main() {
       for (final drink in flagged) {
         expect(drink.category, FoodCategory.beverages);
         expect(
-          FoodMacroAudit.energyAgrees(drink.kcal, drink.protein, drink.carbs,
-              drink.fat, unit: drink.unit),
+          FoodMacroAudit.energyAgrees(
+              drink.kcal, drink.protein, drink.carbs, drink.fat,
+              unit: drink.unit),
           isFalse,
           reason: '\${drink.name} does not need the alcohol exemption',
         );
@@ -243,7 +271,8 @@ void main() {
       final powders = StarterFoodCatalog.supplements
           .where((f) => f.name.contains('Protein') && !f.name.contains('Bar'));
       expect(powders.any((f) => f.unit == FoodServingUnits.scoop), isTrue);
-      for (final powder in powders.where((f) => f.unit == FoodServingUnits.scoop)) {
+      for (final powder
+          in powders.where((f) => f.unit == FoodServingUnits.scoop)) {
         // A scoop that is not overwhelmingly protein is a mislabelled row.
         expect(powder.protein * 4 / powder.kcal, greaterThan(0.7),
             reason: '${powder.name} is only ${powder.protein}g protein per '
@@ -251,7 +280,8 @@ void main() {
       }
     });
 
-    test('every fast-food row names its chain, so it is never mistaken for '
+    test(
+        'every fast-food row names its chain, so it is never mistaken for '
         'a generic food', () {
       for (final food in StarterFoodCatalog.fastFood) {
         expect(food.brand, isNotNull, reason: '${food.name} has no brand');

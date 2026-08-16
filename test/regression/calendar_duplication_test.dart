@@ -41,7 +41,8 @@ void main() {
       service.getEventsForDateRange(day, day);
 
   group('completing a scheduled event', () {
-    test('logging a meal linked to the event yields one row, not two', () async {
+    test('logging a meal linked to the event yields one row, not two',
+        () async {
       final event = mealEvent();
       await service.saveEvent(event);
 
@@ -58,7 +59,8 @@ void main() {
       final meals = events.where((e) => e.type == EventType.meal).toList();
 
       expect(meals, hasLength(1),
-          reason: 'the scheduled event and the meal it created are one activity');
+          reason:
+              'the scheduled event and the meal it created are one activity');
       expect(meals.single.id, event.id,
           reason: 'the scheduled event is the row that survives');
     });
@@ -196,8 +198,10 @@ void main() {
         sourceEventId: occurrenceId,
       ));
 
-      final today = (await eventsForDay()).where((e) => e.type == EventType.meal);
-      expect(today, hasLength(1), reason: 'the completed day must not double up');
+      final today =
+          (await eventsForDay()).where((e) => e.type == EventType.meal);
+      expect(today, hasLength(1),
+          reason: 'the completed day must not double up');
 
       final tomorrow = (await service.getEventsForDateRange(
         DateTime(2026, 8, 4),

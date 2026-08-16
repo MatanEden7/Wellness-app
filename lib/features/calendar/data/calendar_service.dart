@@ -10,6 +10,8 @@ import '../../../data/db/drift_database.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/notification_preferences_service.dart';
 import '../../../services/language_service.dart';
+import 'package:wellness_app/l10n/app_localizations_en.dart';
+import 'package:wellness_app/l10n/app_localizations_he.dart';
 
 // Provider for the calendar service
 final calendarServiceProvider = Provider<CalendarService>((ref) {
@@ -41,6 +43,17 @@ class CalendarService {
   static const String _skippedKey = 'skippedOccurrences';
 
   CalendarService(this._prefs, this._database);
+
+  /// Localised strings for the *derived* events this service synthesises from
+  /// logged meals, workouts and sleep.
+  ///
+  /// Built from the stored language rather than a BuildContext: this is a
+  /// service, and these titles are regenerated on every read rather than
+  /// stored, so there is nothing in the database to migrate.
+  AppLocalizations get _l10n =>
+      (_prefs.getString('app_language') ?? 'en') == 'he'
+          ? AppLocalizationsHe()
+          : AppLocalizationsEn();
 
   static String occurrenceIdFor(String baseId, DateTime date) =>
       '$baseId$occurrenceSeparator${AppDateUtils.dateToInt(date)}';
@@ -303,11 +316,11 @@ class CalendarService {
         continue;
       }
 
-      String title = 'Workout';
+      String title = _l10n.workout;
       if (workout.templateId != null) {
         final template =
             await _database.getWorkoutTemplateById(workout.templateId!);
-        title = template?.name ?? 'Workout';
+        title = template?.name ?? _l10n.workout;
       }
 
       events.add(ScheduledEvent(
@@ -334,10 +347,10 @@ class CalendarService {
 
       events.add(ScheduledEvent(
         id: 'sleep_${sleep.id}',
-        title: 'Sleep',
+        title: _l10n.sleep,
         description: duration != null
             ? '${(duration.inMinutes / 60).toStringAsFixed(1)} hours'
-            : sleep.note ?? 'In progress...',
+            : sleep.note ?? _l10n.sleepInProgress,
         type: EventType.sleep,
         scheduledAt: sleep.startedAt,
         completedAt: sleep.endedAt,

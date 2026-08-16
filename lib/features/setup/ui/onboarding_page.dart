@@ -20,6 +20,8 @@ import '../../../features/calendar/data/calendar_service.dart';
 import '../../../core/design/surfaces.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
+import '../../../core/ios/inset_list.dart';
+import '../../../core/rtl_helper.dart';
 
 class OnboardingPage extends HookConsumerWidget {
   const OnboardingPage({super.key});
@@ -89,6 +91,10 @@ class OnboardingPage extends HookConsumerWidget {
         final profileService = ref.read(userProfileServiceProvider);
         final prefs = ref.read(preferencesServiceProvider);
         final database = ref.read(databaseProvider);
+        // Hoisted up here with the rest for the reason the comment above
+        // gives: this one was read *after* three awaits, so it was the one
+        // read that could land on a disposed container.
+        final calendarNotifier = ref.read(calendarStateProvider.notifier);
 
         final setupEngine = SetupEngineService();
         await setupEngine.initialize();
@@ -111,8 +117,12 @@ class OnboardingPage extends HookConsumerWidget {
           weightUnit: weightUnit.value,
         );
 
-        // Save profile
-        await profileService.saveProfile(profile);
+        // Save the profile but do NOT mark setup complete yet -- see
+        // UserProfileService.saveProfile. Completion is flipped at the end,
+        // once the templates and the schedule actually exist, so a failure
+        // anywhere below leaves the user back in onboarding rather than on an
+        // empty dashboard they can never re-run the wizard from.
+        await profileService.saveProfile(profile, markSetupComplete: false);
 
         // Set nutrition goals in preferences
         await prefs.setCalorieGoal(profile.calorieTarget);
@@ -137,14 +147,23 @@ class OnboardingPage extends HookConsumerWidget {
         // exists, so what lands on the calendar respects the same diet,
         // equipment and injury constraints as everything else.
         if (buildFullSchedule.value) {
-          final calendarGen = CalendarScheduleGenerator(database, profile);
-          await ref
-              .read(calendarStateProvider.notifier)
-              .addEvents(await calendarGen.buildSchedule());
+          final calendarGen = CalendarScheduleGenerator(
+            database,
+            profile,
+            selectedLanguage.value == 'he'
+                ? AppLanguage.hebrew
+                : AppLanguage.english,
+          );
+          await calendarNotifier.addEvents(await calendarGen.buildSchedule());
         } else {
           debugPrint(
               '[ONBOARDING] Skipping schedule generation (user opted out)');
         }
+
+        // Only now is the user actually set up. Flipping this fires the
+        // router's refreshListenable, which redirects off /onboarding -- so it
+        // has to be the last thing, after the plan exists.
+        await profileService.setSetupCompleted(true);
 
         debugPrint('[ONBOARDING] Setup completed successfully');
 
@@ -577,17 +596,21 @@ class _BasicInfoStep extends StatelessWidget {
                   min: 120,
                   max: 220,
                   divisions: 100,
-                  label: '${height.value} cm',
+                  label: '${height.value} ${l10n.centimetersShort}',
                   onChanged: (value) => height.value = value.toInt(),
                 ),
               ),
               SizedBox(
                 width: 70,
-                child: Text(
-                  '${height.value} cm',
+                // numericLTR: in an RTL paragraph a bare '<number> <unit>'
+                // string has its LTR run reordered, so this rendered as
+                // "cm 170" in Hebrew (ISSUES #102). Forcing LTR keeps the
+                // number and its unit adjacent and in reading order.
+                child: RTLHelper.numericLTR(Text(
+                  '${height.value} ${l10n.centimetersShort}',
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.end,
-                ),
+                )),
               ),
             ],
           ),
@@ -605,81 +628,30 @@ class _BasicInfoStep extends StatelessWidget {
                   min: 35,
                   max: 250,
                   divisions: 430,
-                  label: '${weight.value.toStringAsFixed(1)} kg',
+                  label: '${weight.value.toStringAsFixed(1)} ${l10n.kg}',
                   onChanged: (value) => weight.value = value,
                 ),
               ),
               SizedBox(
                 width: 70,
-                child: Text(
-                  '${weight.value.toStringAsFixed(1)} kg',
+                // numericLTR: in an RTL paragraph a bare '<number> <unit>'
+                // string has its LTR run reordered, so this rendered as
+                // "cm 170" in Hebrew (ISSUES #102). Forcing LTR keeps the
+                // number and its unit adjacent and in reading order.
+                child: RTLHelper.numericLTR(Text(
+                  '${weight.value.toStringAsFixed(1)} ${l10n.kg}',
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.end,
-                ),
+                )),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Units
-          Text(l10n.onboardingPreferredUnits,
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l10n.onboardingEnergy,
-                        style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    SegmentedButton<String>(
-                      // Half-width control: the selected-check icon left too
-                      // little room and "kcal" wrapped to "kca / l".
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(
-                            value: 'kcal',
-                            label: Text(AppLocalizations.of(context)!.kcal,
-                                maxLines: 1)),
-                        const ButtonSegment(
-                            value: 'kJ', label: Text('kJ', maxLines: 1)),
-                      ],
-                      selected: {energyUnit.value},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        energyUnit.value = newSelection.first;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l10n.onboardingWeightUnit,
-                        style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    SegmentedButton<String>(
-                      showSelectedIcon: false,
-                      segments: const [
-                        ButtonSegment(
-                            value: 'g', label: Text('g', maxLines: 1)),
-                        ButtonSegment(
-                            value: 'oz', label: Text('oz', maxLines: 1)),
-                      ],
-                      selected: {weightUnit.value},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        weightUnit.value = newSelection.first;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // The preferred-units picker used to sit here. Removed: the app
+          // works in grams and kcal throughout, the alternatives were never
+          // applied to any display path, and asking a question whose answer
+          // changes nothing is worse than not asking. `energyUnit` and
+          // `weightUnit` stay on their 'kcal'/'g' defaults and are still
+          // written to the profile, so the stored shape is unchanged.
           const SizedBox(height: 48),
 
           SizedBox(
@@ -1468,6 +1440,7 @@ class _SummaryStep extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final setupEngine = useMemoized(() => SetupEngineService());
     final isInitialized = useState(false);
     final profileSnapshot = useState<UserProfile?>(null);
@@ -1536,25 +1509,29 @@ class _SummaryStep extends HookConsumerWidget {
                   const SizedBox(height: 16),
                   _TargetRow(
                     label: AppLocalizations.of(context)!.calories,
-                    value: '${profile.calorieTarget.toStringAsFixed(0)} kcal',
+                    value:
+                        '${profile.calorieTarget.toStringAsFixed(0)} ${l10n.kcal}',
                     color: Colors.orange,
                   ),
                   const SizedBox(height: 8),
                   _TargetRow(
                     label: AppLocalizations.of(context)!.protein,
-                    value: '${profile.proteinTargetG.toStringAsFixed(0)}g',
+                    value:
+                        '${profile.proteinTargetG.toStringAsFixed(0)} ${l10n.grams}',
                     color: Colors.red,
                   ),
                   const SizedBox(height: 8),
                   _TargetRow(
                     label: AppLocalizations.of(context)!.carbs,
-                    value: '${profile.carbsTargetG.toStringAsFixed(0)}g',
+                    value:
+                        '${profile.carbsTargetG.toStringAsFixed(0)} ${l10n.grams}',
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 8),
                   _TargetRow(
                     label: AppLocalizations.of(context)!.fat,
-                    value: '${profile.fatTargetG.toStringAsFixed(0)}g',
+                    value:
+                        '${profile.fatTargetG.toStringAsFixed(0)} ${l10n.grams}',
                     color: Colors.purple,
                   ),
                 ],
@@ -1578,9 +1555,19 @@ class _SummaryStep extends HookConsumerWidget {
                         ),
                   ),
                   const SizedBox(height: 12),
-                  Text('BMR: ${profile.bmr.toStringAsFixed(0)} kcal'),
-                  Text('TDEE: ${profile.tdee.toStringAsFixed(0)} kcal'),
-                  Text('Goal: ${_formatGoal(goal)}'),
+                  // Same bidi reordering as the target rows above. NOTE: the
+                  // "BMR:"/"TDEE:"/"Goal:" labels and the goal name itself are
+                  // still hardcoded English -- that half of ISSUES #102 is the
+                  // translator pass tracked by #30/#31, not something to invent
+                  // Hebrew for here.
+                  RTLHelper.numericLTR(Text(
+                      '${l10n.onboardingBMR}: ${profile.bmr.toStringAsFixed(0)} ${l10n.kcal}')),
+                  RTLHelper.numericLTR(Text(
+                      '${l10n.onboardingTDEE}: ${profile.tdee.toStringAsFixed(0)} ${l10n.kcal}')),
+                  // The goal name is a label, not a number -- no numericLTR, so
+                  // it reads in the paragraph's own direction.
+                  Text(
+                      '${l10n.onboardingGoalLabel}: ${_formatGoal(l10n, goal)}'),
                 ],
               ),
             ),
@@ -1593,13 +1580,20 @@ class _SummaryStep extends HookConsumerWidget {
           // unambiguous "Complete Setup".
           AppCard(
             padding: EdgeInsets.zero,
-            child: ListTile(
-              title: Text(
-                  AppLocalizations.of(context)!.onboardingBuildScheduleTitle),
-              subtitle: Text(
-                AppLocalizations.of(context)!.onboardingBuildScheduleSubtitle,
-              ),
-              leading: const Icon(Icons.event_available),
+            // InsetRow, not ListTile: `AppCard` is a ContentSurface, so there
+            // is no Material ancestor for a ListTile to resolve against and it
+            // asserted on every build of this step. Tapping the row toggles
+            // too -- as a SwitchListTile it always did, and losing that on the
+            // one control that decides whether the plan gets generated at all
+            // is not a trade worth making.
+            child: InsetRow(
+              icon: Icons.event_available,
+              title: AppLocalizations.of(context)!.onboardingBuildScheduleTitle,
+              subtitle:
+                  AppLocalizations.of(context)!.onboardingBuildScheduleSubtitle,
+              onTap: isCompleting
+                  ? null
+                  : () => buildFullSchedule.value = !buildFullSchedule.value,
               trailing: CupertinoSwitch(
                   value: buildFullSchedule.value,
                   onChanged: isCompleting
@@ -1632,16 +1626,23 @@ class _SummaryStep extends HookConsumerWidget {
     );
   }
 
-  String _formatGoal(String goal) {
+  /// Maps a stored goal *id* to its display label.
+  ///
+  /// Takes [l10n] rather than returning English literals: the four names have
+  /// been in the ARB as `onboardingGoal*` all along, so this was rendering the
+  /// id raw in Hebrew for no reason other than not being wired up. The stored
+  /// value stays the id -- translating in place is the mistake ISSUES #84
+  /// warns about.
+  String _formatGoal(AppLocalizations l10n, String goal) {
     switch (goal) {
       case 'fat_loss':
-        return 'Fat Loss';
+        return l10n.onboardingGoalFatLoss;
       case 'muscle_gain':
-        return 'Muscle Gain';
+        return l10n.onboardingGoalMuscleBuild;
       case 'maintenance':
-        return 'Maintenance';
+        return l10n.onboardingGoalMaintenance;
       case 'mobility_rehab':
-        return 'Mobility/Rehab';
+        return l10n.onboardingGoalMobilityRehab;
       default:
         return goal;
     }
@@ -1678,12 +1679,15 @@ class _TargetRow extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyLarge,
           ),
         ),
-        Text(
+        // Every value here is "<number> <unit>", which bidi reorders inside an
+        // RTL paragraph -- "kcal 2550" instead of "2550 kcal" (ISSUES #102).
+        // Fixed once here rather than at the four call sites.
+        RTLHelper.numericLTR(Text(
           value,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
-        ),
+        )),
       ],
     );
   }

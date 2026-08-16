@@ -75,12 +75,15 @@ void main() {
 
     final day = DateTime(2026, 8, 4);
 
-    test('loggedAt wins even when createdAt and the meal name both suggest a different time', () async {
+    test(
+        'loggedAt wins even when createdAt and the meal name both suggest a different time',
+        () async {
       await db.insertMeal(MealData(
         id: 'meal-1',
         date: 20260804,
         name: 'Breakfast', // keyword fallback would guess 08:00
-        createdAt: DateTime(2026, 8, 4, 8, 5), // same-day createdAt would win normally
+        createdAt:
+            DateTime(2026, 8, 4, 8, 5), // same-day createdAt would win normally
         updatedAt: DateTime(2026, 8, 4, 8, 5),
         loggedAt: DateTime(2026, 8, 4, 14, 45), // explicit user-set time
       ));

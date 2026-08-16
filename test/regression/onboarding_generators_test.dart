@@ -61,19 +61,23 @@ void main() {
   setUp(AppDatabase.resetForTesting);
 
   group('WorkoutTemplateGenerator', () {
-    test('does not invent exercises -- every pick comes from the library', () async {
+    test('does not invent exercises -- every pick comes from the library',
+        () async {
       final db = AppDatabase();
-      final libraryBefore = (await db.getAllExercises()).map((e) => e.id).toSet();
+      final libraryBefore =
+          (await db.getAllExercises()).map((e) => e.id).toSet();
 
       await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
 
-      final libraryAfter = (await db.getAllExercises()).map((e) => e.id).toSet();
+      final libraryAfter =
+          (await db.getAllExercises()).map((e) => e.id).toSet();
       expect(libraryAfter, libraryBefore,
           reason: 'the old generator inserted its own near-duplicate '
               "exercises ('Barbell Bench Press' alongside 'Bench Press')");
 
       for (final template in await db.getAllWorkoutTemplates()) {
-        for (final te in await db.getTemplateExercisesByTemplateId(template.id)) {
+        for (final te
+            in await db.getTemplateExercisesByTemplateId(template.id)) {
           expect(libraryBefore, contains(te.exerciseId),
               reason: 'template references an exercise outside the library');
         }
@@ -93,7 +97,8 @@ void main() {
         // display time rather than deleted -- only assert on what this
         // generator produced.
         if (template.origin != TemplateOrigin.generated) continue;
-        for (final te in await db.getTemplateExercisesByTemplateId(template.id)) {
+        for (final te
+            in await db.getTemplateExercisesByTemplateId(template.id)) {
           final exercise = byId[te.exerciseId]!;
           expect(exercise.equipment, contains(Equipment.bodyweight),
               reason: '${exercise.name} needs equipment this user lacks');
@@ -114,9 +119,11 @@ void main() {
       var checked = 0;
       for (final template in await db.getAllWorkoutTemplates()) {
         if (template.origin != TemplateOrigin.generated) continue;
-        for (final te in await db.getTemplateExercisesByTemplateId(template.id)) {
+        for (final te
+            in await db.getTemplateExercisesByTemplateId(template.id)) {
           final exercise = byId[te.exerciseId]!;
-          expect(exercise.contraindicatedFor, isNot(contains(BodyPart.shoulder)),
+          expect(
+              exercise.contraindicatedFor, isNot(contains(BodyPart.shoulder)),
               reason: '${exercise.name} is unsafe for this shoulder injury');
           expect(exercise.contraindicatedFor, isNot(contains(BodyPart.neck)),
               reason: '${exercise.name} is unsafe for this neck injury');
@@ -158,7 +165,8 @@ void main() {
   });
 
   group('MealTemplateGenerator', () {
-    test('does not invent foods -- every item comes from the catalog', () async {
+    test('does not invent foods -- every item comes from the catalog',
+        () async {
       final db = AppDatabase();
       final catalogBefore = (await db.getAllFoods()).map((f) => f.id).toSet();
 
@@ -248,8 +256,9 @@ void main() {
 
     test('meal count drives how many templates are generated', () async {
       final db = AppDatabase();
-      final two = await MealTemplateGenerator(db, _profile(mealCountPerDay: '2'))
-          .generateTemplates();
+      final two =
+          await MealTemplateGenerator(db, _profile(mealCountPerDay: '2'))
+              .generateTemplates();
 
       AppDatabase.resetForTesting();
       final db2 = AppDatabase();
@@ -297,7 +306,8 @@ void main() {
     });
   });
 
-  test('generators leave the food catalog usable by ProfileFit end to end', () async {
+  test('generators leave the food catalog usable by ProfileFit end to end',
+      () async {
     // Guards the seam the shared converter bug lived in: if foodItemFromData
     // ever stops carrying tags again, generation silently stops filtering.
     final db = AppDatabase();

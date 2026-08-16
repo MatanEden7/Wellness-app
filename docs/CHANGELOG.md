@@ -5,6 +5,51 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Real UIKit, an Apple-shaped calendar, and the Hebrew that was already there (2026-08-16)
+
+Branch `feat/liquid-glass-native-ios`.
+
+**The native presentation bridge was dead code.** `PresentationHostApiImpl.swift`
+implements alerts, action sheets, menus, date pickers, share and haptics on real
+UIKit; `PresentationHostApiSetup.setUp` registers it at launch; pigeon generates
+the Dart. Nothing ever called it. Every dialog and picker in the app was Flutter
+drawing an iOS look-alike while the genuine `UIAlertController` sat unused.
+`lib/core/ios/native_ui.dart` is the door to it, and rewriting the shared helpers
+in `sheets.dart` made every existing call site native for free.
+
+By count: 32 SnackBars became a real `UIVisualEffectView` capsule on the app
+window (`BannerPresenter.swift` -- UIKit ships no toast, so the alternatives
+were a Flutter-drawn Material bar or writing the iOS one); 12
+`showDatePicker`/`showTimePicker` became `UIDatePicker` in a
+`UISheetPresentationController`; 12 Material switches became `CupertinoSwitch`;
+8 `AlertDialog` + `RadioListTile` pickers became native action sheets; every
+`InkWell` became `Pressable`, which also removed the `Material` wrappers that
+existed only to give the ripple a surface.
+
+**The calendar reads as Apple's.** Today is red -- the one colour that says
+"you are here" on every Apple calendar, and it had been themed to
+`colorScheme.primary`, which meant nothing. Event rows became flat,
+hairline-separated, time-led rows with a colour capsule instead of rounded cards
+with 44pt icon badges. Weekday headings dropped to `S M T W T F S`, the day
+header reads "Wednesday, 19 August" (or Today/Tomorrow/Yesterday), and there is
+a Today button.
+
+**Onboarding never created the plan** -- `saveProfile()` flipped
+`setup_completed`, the router's `refreshListenable` fired, and the wizard was
+torn down mid-generation. See ISSUES #103.
+
+**The Hebrew was mostly already written.** Across the Profile page, onboarding,
+the meal editor, the calendar and the settings tables, the recurring finding was
+ARB keys that existed and were never wired -- 35 of 55 literals on the Profile
+page, and all 28 of its picker option labels. ~60 genuinely new strings were
+added; the rest was wiring. Generated plans, meal templates, seeded workout
+templates, food names, units and brand descriptors now all follow the
+language. See ISSUES #102, #107, #108.
+
+**The device suite ran again** after being unrunnable since the native chrome
+landed (ISSUES #106), and found three real product bugs on the way (#104, #105,
+plus the `InsetRow` overflow).
+
 ### Liquid Glass across the app, and nine native-chrome bugs (2026-08-12)
 
 Branch `feat/platform-native-ui`. Two pieces: the native chrome bugs found by

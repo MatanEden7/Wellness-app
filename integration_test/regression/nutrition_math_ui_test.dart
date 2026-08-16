@@ -42,7 +42,9 @@ import '../support/app_launcher.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('typing 150g of Chicken Breast previews and saves the correct macros', (tester) async {
+  testWidgets(
+      'typing 150g of Chicken Breast previews and saves the correct macros',
+      (tester) async {
     final l10n = await loadL10n(AppLanguage.english);
     await pumpApp(tester);
 
@@ -74,7 +76,8 @@ void main() {
     await tester.enterText(amountField, '150');
     await settle(tester);
 
-    expect(find.text('248 cal'), findsOneWidget, reason: '165 kcal/100g * 1.5 = 247.5, rounds to 248');
+    expect(find.text('248 cal'), findsOneWidget,
+        reason: '165 kcal/100g * 1.5 = 247.5, rounds to 248');
     expect(find.text('P: 46.5g'), findsOneWidget);
     expect(find.text('C: 0g'), findsOneWidget);
     expect(find.text('F: 5.4g'), findsOneWidget);

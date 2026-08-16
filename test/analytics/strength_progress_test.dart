@@ -40,7 +40,8 @@ void main() {
 
     test('more reps at the same weight is more estimated 1RM', () {
       // The entire reason the chart plots e1RM instead of raw load.
-      expect(estimatedOneRepMax(80, 10), greaterThan(estimatedOneRepMax(80, 8)));
+      expect(
+          estimatedOneRepMax(80, 10), greaterThan(estimatedOneRepMax(80, 8)));
     });
   });
 
@@ -53,8 +54,8 @@ void main() {
       ]);
 
       expect(progress.keys.toSet(), {'bench', 'row'});
-      expect(progress['bench']!.sessions.map((s) => s.topWeightKg),
-          [60.0, 62.5]);
+      expect(
+          progress['bench']!.sessions.map((s) => s.topWeightKg), [60.0, 62.5]);
     });
 
     test('the top set is the heaviest, breaking ties on reps', () {
@@ -96,8 +97,8 @@ void main() {
 
   group('plateau detection', () {
     PlateauStatus? statusFor(List<TrainingSession> sessions) {
-      final found =
-          detectPlateaus(buildExerciseProgress(sessions)).where((p) => p.exerciseId == 'bench');
+      final found = detectPlateaus(buildExerciseProgress(sessions))
+          .where((p) => p.exerciseId == 'bench');
       return found.isEmpty ? null : found.first;
     }
 

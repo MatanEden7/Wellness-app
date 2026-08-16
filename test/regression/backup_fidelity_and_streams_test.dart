@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/calendar/data/calendar_service.dart';
-import 'package:wellness_app/features/meals/data/repositories.dart' show foodItemFromData;
+import 'package:wellness_app/features/meals/data/repositories.dart'
+    show foodItemFromData;
 import 'package:wellness_app/services/export_import_service.dart';
 import 'package:wellness_app/services/meal_template_generator.dart';
 import 'package:wellness_app/services/profile_fit.dart';
@@ -176,7 +177,8 @@ void main() {
 
       await roundTrip();
 
-      expect((await database.getMealById('from-event'))?.sourceEventId, 'evt-99',
+      expect(
+          (await database.getMealById('from-event'))?.sourceEventId, 'evt-99',
           reason: 'losing the link resurrects the calendar duplicate of '
               'ISSUES #57/#64 on every restore');
     });
@@ -216,8 +218,9 @@ void main() {
       final meal = MealData(
           id: 'm', date: 20260805, name: 'A', createdAt: now, updatedAt: now);
 
-      expect(await emissions(database.watchMealsStream(),
-              () => database.insertMeal(meal)),
+      expect(
+          await emissions(
+              database.watchMealsStream(), () => database.insertMeal(meal)),
           greaterThan(0));
       expect(
           await emissions(

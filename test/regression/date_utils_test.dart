@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wellness_app/core/date_utils.dart';
+import 'package:wellness_app/l10n/app_localizations_en.dart';
 
 /// Coverage for `lib/core/date_utils.dart`'s [AppDateUtils] -- note this is a
 /// SEPARATE class from the same-named one in `lib/core/utils.dart` (covered
@@ -27,7 +28,8 @@ void main() {
   });
 
   group('startOfWeek', () {
-    test('a Sunday maps to itself (Israeli convention: weeks start Sunday)', () {
+    test('a Sunday maps to itself (Israeli convention: weeks start Sunday)',
+        () {
       final sunday = DateTime(2026, 3, 1); // a Sunday
       expect(AppDateUtils.startOfWeek(sunday), DateTime(2026, 3, 1));
     });
@@ -80,7 +82,8 @@ void main() {
     final start = DateTime(2026, 3, 1);
     final end = DateTime(2026, 3, 8);
 
-    test('is half-open: the start instant counts, the end instant does not', () {
+    test('is half-open: the start instant counts, the end instant does not',
+        () {
       expect(AppDateUtils.isInRange(start, start, end), isTrue,
           reason: 'a record logged at exactly midnight on day 1 must count');
       expect(AppDateUtils.isInRange(end, start, end), isFalse);
@@ -91,7 +94,8 @@ void main() {
     });
 
     test('values outside the range on either side do not count', () {
-      expect(AppDateUtils.isInRange(DateTime(2026, 2, 28), start, end), isFalse);
+      expect(
+          AppDateUtils.isInRange(DateTime(2026, 2, 28), start, end), isFalse);
       expect(AppDateUtils.isInRange(DateTime(2026, 3, 9), start, end), isFalse);
     });
   });
@@ -104,11 +108,12 @@ void main() {
 
   group('formatDuration', () {
     test('omits the hours segment under an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(minutes: 45)), '45m');
+      expect(AppDateUtils.formatDuration(const Duration(minutes: 45), AppLocalizationsEn()), '45m');
     });
 
     test('includes both segments over an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(hours: 1, minutes: 30)), '1h 30m');
+      expect(AppDateUtils.formatDuration(const Duration(hours: 1, minutes: 30), AppLocalizationsEn()),
+          '1h 30m');
     });
   });
 }

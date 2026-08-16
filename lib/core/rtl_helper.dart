@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// Helper class for RTL support
@@ -20,6 +21,23 @@ class RTLHelper {
       child: child,
     );
   }
+
+  /// The "go to the previous thing" chevron, pointing the way it means.
+  ///
+  /// `CupertinoIcons.chevron_back` and `chevron_forward` read as directional
+  /// but their glyphs are fixed — back is always left-pointing. A `Row` mirrors
+  /// its children under RTL, so the Previous control correctly moves to the
+  /// right-hand side and then still draws a left-pointing arrow: both chevrons
+  /// end up pointing at the wrong neighbour. Choosing the glyph by direction is
+  /// what keeps "previous" pointing towards where previous actually is.
+  static IconData chevronBack(BuildContext context) => isRTL(context)
+      ? CupertinoIcons.chevron_forward
+      : CupertinoIcons.chevron_back;
+
+  /// The mirror of [chevronBack], for "go to the next thing".
+  static IconData chevronForward(BuildContext context) => isRTL(context)
+      ? CupertinoIcons.chevron_back
+      : CupertinoIcons.chevron_forward;
 
   /// Wrap numeric content to always be LTR
   static Widget numericLTR(Widget child) {

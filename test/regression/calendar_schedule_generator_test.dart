@@ -51,7 +51,8 @@ void main() {
   setUp(AppDatabase.resetForTesting);
 
   test('buildSchedule produces workout, meal, and sleep events', () async {
-    final generator = CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: 3));
+    final generator = CalendarScheduleGenerator(
+        AppDatabase(), _profile(trainingDaysPerWeek: 3));
     final events = await generator.buildSchedule();
 
     expect(events.any((e) => e.type == EventType.workout), isTrue);
@@ -90,8 +91,7 @@ void main() {
             reason: 'seven days a week has nowhere else to go');
       }
 
-      for (final event
-          in events.where((e) => e.type == EventType.workout)) {
+      for (final event in events.where((e) => e.type == EventType.workout)) {
         expect(event.recurrenceDays, [event.scheduledAt.weekday],
             reason: 'the recurrence rule must agree with the day it starts '
                 'on, or the series drifts off its own schedule');
@@ -116,7 +116,8 @@ void main() {
   });
 
   test('workout events recur weekly, one per training day requested', () async {
-    final generator = CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: 4));
+    final generator = CalendarScheduleGenerator(
+        AppDatabase(), _profile(trainingDaysPerWeek: 4));
     final events = await generator.buildSchedule();
     final workouts = events.where((e) => e.type == EventType.workout).toList();
 
@@ -126,13 +127,17 @@ void main() {
     }
   });
 
-  test('mobility/rehab-only templates do not block workout generation, but are excluded from rotation', () async {
+  test(
+      'mobility/rehab-only templates do not block workout generation, but are excluded from rotation',
+      () async {
     // Exercise the guard: main-rotation templates come from the starter
     // catalog which always includes non-mobility templates, so this should
     // never hit the "skip" branch in normal operation.
-    final generator = CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: 3));
+    final generator = CalendarScheduleGenerator(
+        AppDatabase(), _profile(trainingDaysPerWeek: 3));
     final events = await generator.buildSchedule();
-    final workoutTitles = events.where((e) => e.type == EventType.workout).map((e) => e.title);
+    final workoutTitles =
+        events.where((e) => e.type == EventType.workout).map((e) => e.title);
 
     for (final title in workoutTitles) {
       expect(title.toLowerCase(), isNot(contains('mobility')));
@@ -141,20 +146,29 @@ void main() {
   });
 
   group('meal event count matches the profile\'s meal count', () {
-    final expectedCounts = {'2': 2, '3': 3, '4': 4, 'intermittent_fasting_16_8': 3};
+    final expectedCounts = {
+      '2': 2,
+      '3': 3,
+      '4': 4,
+      'intermittent_fasting_16_8': 3
+    };
 
     for (final entry in expectedCounts.entries) {
-      test('mealCountPerDay=${entry.key} produces ${entry.value} meal events', () async {
-        final generator =
-            CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: 3, mealCountPerDay: entry.key));
+      test('mealCountPerDay=${entry.key} produces ${entry.value} meal events',
+          () async {
+        final generator = CalendarScheduleGenerator(AppDatabase(),
+            _profile(trainingDaysPerWeek: 3, mealCountPerDay: entry.key));
         final events = await generator.buildSchedule();
-        expect(events.where((e) => e.type == EventType.meal), hasLength(entry.value));
+        expect(events.where((e) => e.type == EventType.meal),
+            hasLength(entry.value));
       });
     }
   });
 
-  test('meal events recur daily and are pinned to a real seeded meal template', () async {
-    final generator = CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: 3));
+  test('meal events recur daily and are pinned to a real seeded meal template',
+      () async {
+    final generator = CalendarScheduleGenerator(
+        AppDatabase(), _profile(trainingDaysPerWeek: 3));
     final events = await generator.buildSchedule();
     final meals = events.where((e) => e.type == EventType.meal).toList();
 
@@ -167,8 +181,11 @@ void main() {
         reason: 'meal events should reference a real template when any exist');
   });
 
-  test('the sleep event is a single daily recurrence at the documented bedtime hour', () async {
-    final generator = CalendarScheduleGenerator(AppDatabase(), _profile(trainingDaysPerWeek: 3));
+  test(
+      'the sleep event is a single daily recurrence at the documented bedtime hour',
+      () async {
+    final generator = CalendarScheduleGenerator(
+        AppDatabase(), _profile(trainingDaysPerWeek: 3));
     final events = await generator.buildSchedule();
     final sleep = events.singleWhere((e) => e.type == EventType.sleep);
 

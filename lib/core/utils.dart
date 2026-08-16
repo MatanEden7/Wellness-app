@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 // import 'package:vibration/vibration.dart';  // Temporarily disabled
 
 // Use AppDateUtils to avoid conflicts with Flutter's DateUtils
@@ -49,14 +50,17 @@ class AppDateUtils {
     return DateTime(now.year, now.month, now.day);
   }
 
-  static String formatDuration(Duration duration) {
+  /// See the note on the other AppDateUtils.formatDuration -- there are two
+  /// classes by that name in this repo and callers resolve to whichever they
+  /// imported unprefixed, so both carry the localised form.
+  static String formatDuration(Duration duration, AppLocalizations l10n) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
 
     if (hours > 0) {
-      return '${hours}h ${minutes}m';
+      return l10n.durationHm('$hours', '$minutes');
     } else {
-      return '${minutes}m';
+      return l10n.durationM('$minutes');
     }
   }
 

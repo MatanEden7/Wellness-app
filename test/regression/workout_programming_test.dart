@@ -49,8 +49,10 @@ void main() {
       // Undershooting is its own failure -- a 20-minute "workout" for someone
       // who set aside three quarters of an hour is a wasted session.
       for (final goal in goals.where((g) => g != 'mobility_rehab')) {
-        final minutes = WorkoutProgramming.sessionDuration(session(goal)).inMinutes;
-        expect(minutes, inInclusiveRange(38, 55), reason: '$goal: $minutes min');
+        final minutes =
+            WorkoutProgramming.sessionDuration(session(goal)).inMinutes;
+        expect(minutes, inInclusiveRange(38, 55),
+            reason: '$goal: $minutes min');
       }
     });
 
@@ -64,18 +66,30 @@ void main() {
       // Counting rest after the final set inflates every estimate by a full
       // rest interval per exercise -- about eight minutes across a session.
       final one = WorkoutProgramming.exerciseDuration(
-          sets: 1, reps: 10, rest: const Duration(seconds: 120), isCompound: false);
+          sets: 1,
+          reps: 10,
+          rest: const Duration(seconds: 120),
+          isCompound: false);
       final two = WorkoutProgramming.exerciseDuration(
-          sets: 2, reps: 10, rest: const Duration(seconds: 120), isCompound: false);
+          sets: 2,
+          reps: 10,
+          rest: const Duration(seconds: 120),
+          isCompound: false);
 
       expect(two - one, const Duration(seconds: 120 + 30));
     });
 
     test('compounds cost their warm-up ramp', () {
       final compound = WorkoutProgramming.exerciseDuration(
-          sets: 3, reps: 8, rest: const Duration(seconds: 120), isCompound: true);
+          sets: 3,
+          reps: 8,
+          rest: const Duration(seconds: 120),
+          isCompound: true);
       final isolation = WorkoutProgramming.exerciseDuration(
-          sets: 3, reps: 8, rest: const Duration(seconds: 120), isCompound: false);
+          sets: 3,
+          reps: 8,
+          rest: const Duration(seconds: 120),
+          isCompound: false);
 
       expect(compound, greaterThan(isolation),
           reason: 'you do not walk up to a heavy squat and do a working set');
@@ -96,8 +110,10 @@ void main() {
   group('volume', () {
     test('rises with experience, for every goal', () {
       for (final goal in goals) {
-        final beginner = WorkoutProgramming.weeklySetsPerMuscle(goal, 'beginner');
-        final advanced = WorkoutProgramming.weeklySetsPerMuscle(goal, 'advanced');
+        final beginner =
+            WorkoutProgramming.weeklySetsPerMuscle(goal, 'beginner');
+        final advanced =
+            WorkoutProgramming.weeklySetsPerMuscle(goal, 'advanced');
         expect(advanced, greaterThanOrEqualTo(beginner), reason: goal);
       }
     });
@@ -106,13 +122,14 @@ void main() {
       for (final experience in experiences) {
         expect(
           WorkoutProgramming.weeklySetsPerMuscle('muscle_gain', experience),
-          greaterThan(
-              WorkoutProgramming.weeklySetsPerMuscle('maintenance', experience)),
+          greaterThan(WorkoutProgramming.weeklySetsPerMuscle(
+              'maintenance', experience)),
         );
         expect(
           WorkoutProgramming.weeklySetsPerMuscle('mobility_rehab', experience),
-          lessThan(
-              WorkoutProgramming.weeklySetsPerMuscle('maintenance', experience) + 1),
+          lessThan(WorkoutProgramming.weeklySetsPerMuscle(
+                  'maintenance', experience) +
+              1),
         );
       }
     });
@@ -177,7 +194,10 @@ void main() {
     test('women are not prescribed male upper-body loads', () {
       // Ignoring sex would over-prescribe for half of all users. The gap is
       // larger on upper body than lower, which is why both are checked.
-      for (final loadClass in [LoadClass.benchPattern, LoadClass.pressPattern]) {
+      for (final loadClass in [
+        LoadClass.benchPattern,
+        LoadClass.pressPattern
+      ]) {
         expect(weight(loadClass: loadClass, sex: 'female')!,
             lessThan(weight(loadClass: loadClass, sex: 'male')!),
             reason: loadClass.name);
@@ -203,8 +223,7 @@ void main() {
         for (final experience in experiences) {
           final kg = weight(loadClass: loadClass, experience: experience);
           if (kg == null) continue;
-          expect(kg % 2.5, 0,
-              reason: '$kg kg cannot be loaded on a real bar');
+          expect(kg % 2.5, 0, reason: '$kg kg cannot be loaded on a real bar');
           expect(kg, greaterThanOrEqualTo(2.5));
         }
       }
@@ -281,12 +300,14 @@ void main() {
     test('core bracing comes last', () {
       // Everything else relies on the trunk holding position, so it is the one
       // thing that should be tired at the end rather than the start.
-      final core =
-          WorkoutProgramming.orderRank(MovementPattern.coreBrace, Mechanic.isolation);
+      final core = WorkoutProgramming.orderRank(
+          MovementPattern.coreBrace, Mechanic.isolation);
       for (final pattern in MovementPattern.values) {
         if (pattern == MovementPattern.coreBrace) continue;
-        expect(core,
-            greaterThan(WorkoutProgramming.orderRank(pattern, Mechanic.compound)),
+        expect(
+            core,
+            greaterThan(
+                WorkoutProgramming.orderRank(pattern, Mechanic.compound)),
             reason: pattern.name);
       }
     });

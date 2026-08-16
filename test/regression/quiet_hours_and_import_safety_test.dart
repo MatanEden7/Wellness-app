@@ -114,8 +114,8 @@ void main() {
     // and every action button goes through.
     late NotificationService service;
 
-    setUp(() =>
-        service = NotificationService(FlutterLocalNotificationsPlugin()));
+    setUp(
+        () => service = NotificationService(FlutterLocalNotificationsPlugin()));
 
     test('a well-formed payload round-trips', () {
       final parsed = service.parsePayload('meal|evt-1|tpl-1');
@@ -183,8 +183,8 @@ void main() {
     });
 
     test('valid JSON with no payload envelope is rejected safely', () async {
-      await expectLater(
-          service.importFromJson('{"version":"1.0.0"}'), throwsA(isA<TypeError>()));
+      await expectLater(service.importFromJson('{"version":"1.0.0"}'),
+          throwsA(isA<TypeError>()));
       await expectDataIntact();
     });
 
@@ -205,7 +205,8 @@ void main() {
       await expectDataIntact();
     });
 
-    test('an item referencing a food not in the payload still imports', () async {
+    test('an item referencing a food not in the payload still imports',
+        () async {
       // Macros are snapshotted onto the item at log time (see
       // `crud_matrix_test.dart`), so a missing catalog entry costs the name
       // and nothing else. Dropping the item would silently change the day's

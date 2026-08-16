@@ -13,7 +13,8 @@ import '../support/app_launcher.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('profile card prompts setup when no profile is saved', (tester) async {
+  testWidgets('profile card prompts setup when no profile is saved',
+      (tester) async {
     await pumpApp(tester); // setupCompleted: true, but no profile seeded.
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -22,7 +23,8 @@ void main() {
     expect(find.text('Tap to complete setup'), findsOneWidget);
   });
 
-  testWidgets('profile card summarizes weight + goal when a profile is saved', (tester) async {
+  testWidgets('profile card summarizes weight + goal when a profile is saved',
+      (tester) async {
     await pumpApp(tester, profile: testProfile());
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);
@@ -50,17 +52,19 @@ void main() {
     expect(find.text(l10n.theme), findsOneWidget);
     expect(find.text(l10n.language), findsOneWidget);
 
-    await tester.scrollUntilVisible(find.text('HEALTH'), 200, scrollable: scrollable);
+    await tester.scrollUntilVisible(find.text('HEALTH'), 200,
+        scrollable: scrollable);
     expect(find.text('HEALTH'), findsOneWidget);
     expect(find.text(l10n.nutritionGoals), findsOneWidget);
 
     await tester.scrollUntilVisible(
-        find.text(l10n.dataManagement.toUpperCase()), 200, scrollable: scrollable);
+        find.text(l10n.dataManagement.toUpperCase()), 200,
+        scrollable: scrollable);
     expect(find.text(l10n.dataManagement.toUpperCase()), findsOneWidget);
     expect(find.text(l10n.resetAllData), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-        find.text(l10n.about.toUpperCase()), 200, scrollable: scrollable);
+    await tester.scrollUntilVisible(find.text(l10n.about.toUpperCase()), 200,
+        scrollable: scrollable);
     expect(find.text(l10n.about.toUpperCase()), findsOneWidget);
   });
 
@@ -68,7 +72,8 @@ void main() {
   // every test in profile_test.dart already does that exact navigation as
   // its first step and would fail there if the wiring broke.
 
-  testWidgets('nutrition goals summary reflects how many goals are set', (tester) async {
+  testWidgets('nutrition goals summary reflects how many goals are set',
+      (tester) async {
     await pumpApp(tester, profile: testProfile());
 
     await tapDashboardAction(tester, DashboardKeys.settingsAction);

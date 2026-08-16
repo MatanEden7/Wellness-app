@@ -165,8 +165,8 @@ void main() {
     test('the asset is declared in pubspec.yaml', () {
       // An asset that exists on disk but is not declared is not bundled, and
       // setAsset() fails at runtime on device while working fine in tests.
-      expect(File('pubspec.yaml').readAsStringSync(),
-          contains('- assets/audio/'));
+      expect(
+          File('pubspec.yaml').readAsStringSync(), contains('- assets/audio/'));
     });
   });
 }

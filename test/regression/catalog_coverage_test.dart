@@ -111,7 +111,8 @@ void main() {
               foods.where((f) => ProfileFit.foodFits(f, profile)).toList();
           final proteins = available.where(isProteinSource).toList();
 
-          final label = '$diet + excluding ${exclusions.isEmpty ? "nothing" : exclusions.join("/")}';
+          final label =
+              '$diet + excluding ${exclusions.isEmpty ? "nothing" : exclusions.join("/")}';
 
           expect(proteins.length, greaterThanOrEqualTo(3),
               reason: '$label has only ${proteins.length} protein source(s): '
@@ -128,13 +129,21 @@ void main() {
       // hemp/pumpkin/sunflower/chia seeds were added.
       final profile = profileWith(
         dietType: 'herbivore',
-        exclusions: const ['soy', 'gluten', 'nuts', 'dairy', 'eggs', 'shellfish'],
+        exclusions: const [
+          'soy',
+          'gluten',
+          'nuts',
+          'dairy',
+          'eggs',
+          'shellfish'
+        ],
         equipment: const ['none'],
         injuries: const [],
       );
 
       final proteins = foods
-          .where((f) => ProfileFit.foodFits(f, profile) && f.proteinPerUnit >= 8)
+          .where(
+              (f) => ProfileFit.foodFits(f, profile) && f.proteinPerUnit >= 8)
           .map((f) => f.name)
           .toList();
 
@@ -189,7 +198,9 @@ void main() {
       }
     });
 
-    test('every single injury still leaves a full-body program, even with no equipment', () {
+    test(
+        'every single injury still leaves a full-body program, even with no equipment',
+        () {
       for (final injury in const [
         'shoulder',
         'back',
@@ -211,7 +222,9 @@ void main() {
       }
     });
 
-    test('the worst case -- no equipment and every injury at once -- still trains', () {
+    test(
+        'the worst case -- no equipment and every injury at once -- still trains',
+        () {
       // Not a realistic user, but it is reachable through the UI, and it is
       // the single strongest guarantee that joint-sparing alternatives exist
       // for every muscle group.
@@ -219,7 +232,15 @@ void main() {
         dietType: 'omnivore',
         exclusions: const [],
         equipment: const ['none'],
-        injuries: const ['shoulder', 'back', 'knee', 'ankle', 'elbow', 'hip', 'neck'],
+        injuries: const [
+          'shoulder',
+          'back',
+          'knee',
+          'ankle',
+          'elbow',
+          'hip',
+          'neck'
+        ],
       );
 
       expectFullBodyCoverage(profile, 'no equipment + every injury');
@@ -263,7 +284,13 @@ void main() {
     // Foods legitimately have no tags when they are plain plants (rice,
     // broccoli), so the assertion is narrower: anything obviously of animal
     // origin must be tagged, checked via a spot list.
-    for (final name in const ['Chicken Breast', 'Salmon', 'Eggs', 'Milk', 'Honey']) {
+    for (final name in const [
+      'Chicken Breast',
+      'Salmon',
+      'Eggs',
+      'Milk',
+      'Honey'
+    ]) {
       final food = foods.firstWhere((f) => f.name == name);
       expect(food.tags, isNotEmpty, reason: '$name must carry origin tags');
     }

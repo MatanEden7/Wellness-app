@@ -15,20 +15,28 @@ void main() {
       'bands only': {Equipment.bodyweight, Equipment.bands},
       'dumbbells': {Equipment.bodyweight, Equipment.dumbbells},
       'full gym': {
-        Equipment.bodyweight, Equipment.dumbbells, Equipment.barbellRack,
-        Equipment.machines, Equipment.bands, Equipment.kettlebells,
-        Equipment.cable, Equipment.pullupBar,
+        Equipment.bodyweight,
+        Equipment.dumbbells,
+        Equipment.barbellRack,
+        Equipment.machines,
+        Equipment.bands,
+        Equipment.kettlebells,
+        Equipment.cable,
+        Equipment.pullupBar,
       },
     };
 
     debugPrint('\nREHAB POOL per body part (generator takes up to 5):');
-    debugPrint('${'body part'.padRight(12)}${kits.keys.map((k) => k.padLeft(17)).join()}');
+    debugPrint(
+        '${'body part'.padRight(12)}${kits.keys.map((k) => k.padLeft(17)).join()}');
     for (final part in BodyPart.values) {
       final row = StringBuffer(part.name.padRight(12));
       for (final kit in kits.values) {
-        final n = all.where((e) =>
-            e.rehabFor.contains(part) &&
-            (e.equipment.isEmpty || e.equipment.any(kit.contains))).length;
+        final n = all
+            .where((e) =>
+                e.rehabFor.contains(part) &&
+                (e.equipment.isEmpty || e.equipment.any(kit.contains)))
+            .length;
         row.write(('$n${n < 4 ? "  <<" : ""}').padLeft(17));
       }
       debugPrint(row.toString());
@@ -36,13 +44,20 @@ void main() {
 
     debugPrint('\nTRAINING POOL per muscle (non-rehab):');
     final train = all.where((e) => e.primaryMuscle != 'Rehab').toList();
-    final muscles = train.map((e) => e.primaryMuscle).whereType<String>().toSet().toList()..sort();
+    final muscles = train
+        .map((e) => e.primaryMuscle)
+        .whereType<String>()
+        .toSet()
+        .toList()
+      ..sort();
     for (final m in muscles) {
       final row = StringBuffer(m.padRight(12));
       for (final kit in kits.values) {
-        final n = train.where((e) =>
-            e.primaryMuscle == m &&
-            (e.equipment.isEmpty || e.equipment.any(kit.contains))).length;
+        final n = train
+            .where((e) =>
+                e.primaryMuscle == m &&
+                (e.equipment.isEmpty || e.equipment.any(kit.contains)))
+            .length;
         row.write(('$n${n < 3 ? "  <<" : ""}').padLeft(17));
       }
       debugPrint(row.toString());

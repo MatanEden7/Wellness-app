@@ -286,17 +286,83 @@ same kind of screen.
 | [`controls.dart`](lib/core/ios/controls.dart) | `AppSegmented`, `AppSearchField`, `AppFilterBar`, `FilterBanner` |
 | [`date_strip.dart`](lib/core/ios/date_strip.dart) | The day picker shared by the meals and workouts home screens |
 | [`shortcuts.dart`](lib/core/ios/shortcuts.dart) | `ShortcutRow` — the labelled tiles that lead to an area's secondary screens |
+| [`native_ui.dart`](lib/core/ios/native_ui.dart) | **The door to real UIKit.** `NativeUI.confirm/actionSheet/menu/pickDateTime/share/haptic/banner` call the Swift in `ios/Runner/Presentation/`, so these are genuine `UIAlertController`/`UIDatePicker`/`UIActivityViewController`, not look-alikes |
+| [`pickers.dart`](lib/core/ios/pickers.dart) | `showAppDatePicker` / `showAppTimePicker` — native `UIDatePicker` in a sheet, Cupertino wheels as the fallback. Replaces Material's calendar grid and clock face |
+| [`feedback.dart`](lib/core/ios/feedback.dart) | `showAppBanner/Success/Error` and `showAppInfo` — the SnackBar replacement. UIKit ships no toast, so on iOS this is a real `UIVisualEffectView` capsule on the app window (`BannerPresenter.swift`) |
+| [`pressable.dart`](lib/core/ios/pressable.dart) | `Pressable` — iOS press feedback in place of the ink ripple: content dims (`PressStyle.fade`) or takes a grey wash (`PressStyle.highlight`). Also removes `InkWell`'s hidden need for a `Material` ancestor |
 
 It is Material underneath by design: `theme.dart`'s eight themes, the per-area
 meals/workouts/sleep colours and the custom colour picker all keep working, and
 the app still builds sanely on Android. Cupertino is used for the pieces where
-Material has no iOS-shaped equivalent (action sheets, alerts, the sliding
-segmented control, search field, glyphs).
+Material has no iOS-shaped equivalent (the sliding segmented control, search
+field, glyphs).
+
+**Two tiers, and which one you get.** `nativeChromeActiveProvider` and
+`NativeUI.isAvailable` decide whether a surface is drawn by UIKit or by Flutter:
+
+* *Native tier* (iOS, bridge attached) — the navigation bar, tab bar, alerts,
+  action sheets, menus, date pickers, share sheet and confirmation banner are
+  UIKit objects owned by `RootContainerViewController`. **They are not in
+  Flutter's widget tree**, so `find.byType`/`find.byKey` cannot see them.
+* *Flutter tier* (Android, iOS < 15, bridge absent, and every widget/integration
+  test) — the same pages render behind the same keys with the Cupertino
+  fallbacks in `sheets.dart`, `pickers.dart` and `feedback.dart`.
+
+The integration suite forces the Flutter tier for exactly that reason (see
+`integration_test/support/app_launcher.dart`). The consequence is that **nothing
+automated covers the native chrome** — that needs XCUITest.
+
+Do not add an `InkWell` or a bare `ListTile` inside a `ContentSurface` or
+`GlassSheet`: both resolve their ink and background against the nearest
+`Material`, and there is none, so Flutter asserts rather than degrading. Use
+`Pressable` or `InsetRow` (ISSUES #104).
 
 **Meals and workouts are deliberately symmetrical.** Home screen (day picker →
 day totals → entries → "+"), templates screen, catalog/library screen — the two
 areas have the same three screens in the same shapes, and the routes match too
 (`/{meals,workouts}/templates`, `.../templates/new`, `.../templates/:id`).
+
+### Bilingual content
+
+The app is English + Hebrew, and **content** is bilingual in the data rather
+than through ARB keys — an ARB key per seeded food would be unmanageable.
+
+| Carrier | Field | Reader |
+|---|---|---|
+| `FoodItem`, `MealTemplate`, `WorkoutTemplateData` | `nameHe` | `displayName(AppLanguage)` |
+| `FoodItem` | `brand` | `displayBrand(AppLanguage)` — maps 59 descriptors in one place |
+| `FoodCategory`, `FoodTag`, `Equipment`, `BodyPart` | — | `label(AppLanguage)` with `_english`/`_hebrew` switches |
+| Stored unit strings (`100g`, `tbsp`) | — | `FoodNutritionMath.localizedUnit(AppLanguage, unit)` |
+
+Two rules that came out of getting this wrong repeatedly:
+
+1. **Always render through the `display*` accessor.** The bug is never a missing
+   translation, it is a widget reading `.name` when `nameHe` is sitting right
+   beside it. That was the whole of ISSUES #107.
+2. **Never translate an id in place.** Stored values (`maintenance`,
+   `barbell_rack`) stay as ids; map them to a label at render time.
+
+For *chrome* strings the ARB is the source of truth, and it is much fuller than
+it looks — check for an existing key before adding one. Across ISSUES #84/#102/
+#107 the large majority of "missing translations" were keys that already existed
+and were never wired.
+
+**Generation bakes the language in.** `CalendarScheduleGenerator` takes an
+`AppLanguage` and stores event titles in it, because event titles are persisted.
+Rehab template names are pinned to English deliberately, so stored rows do not
+inherit whichever locale happened to be active.
+
+### RTL
+
+`RTLHelper` carries the two non-obvious pieces:
+
+* `numericLTR` — a `'$value $unit'` string has its LTR run reordered inside an
+  RTL paragraph, so `170 cm` renders as `cm 170`. `InsetRow` applies this to
+  *number-led* values only; word values keep the ambient direction.
+* `chevronBack` / `chevronForward` — `CupertinoIcons.chevron_back` reads as
+  directional but its glyph is fixed. A `Row` mirrors under RTL, so a Previous
+  control moves to the right and still draws a left-pointing arrow. Pick the
+  glyph by direction (ISSUES #108).
 
 ### Feature Modules
 

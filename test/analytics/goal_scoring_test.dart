@@ -17,8 +17,8 @@ void main() {
   final wed = DateTime(2026, 8, 5);
 
   DateRange rangeOf(int days, {DateTime? endingOn}) {
-    final end = AppDateUtils.startOfDay(endingOn ?? wed)
-        .add(const Duration(days: 1));
+    final end =
+        AppDateUtils.startOfDay(endingOn ?? wed).add(const Duration(days: 1));
     return DateRange(
       DateTime(end.year, end.month, end.day - days),
       end,

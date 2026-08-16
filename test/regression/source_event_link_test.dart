@@ -106,7 +106,8 @@ void main() {
     ));
 
     final session = await repo.getSessionById('session-1');
-    await repo.updateSession(session!.copyWith(endedAt: DateTime(2026, 8, 4, 19)));
+    await repo
+        .updateSession(session!.copyWith(endedAt: DateTime(2026, 8, 4, 19)));
 
     final stored = await db.getWorkoutSessionById('session-1');
     expect(stored!.endedAt, DateTime(2026, 8, 4, 19));
@@ -118,10 +119,12 @@ void main() {
 
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
-      service = CalendarService(await SharedPreferences.getInstance(), AppDatabase());
+      service =
+          CalendarService(await SharedPreferences.getInstance(), AppDatabase());
     });
 
-    test('saving an edited event updates it instead of adding a second one', () async {
+    test('saving an edited event updates it instead of adding a second one',
+        () async {
       final event = ScheduledEvent.create(
         title: 'Morning run',
         type: EventType.workout,
@@ -139,7 +142,8 @@ void main() {
       expect(events.single.title, 'Evening run');
     });
 
-    test('a recurring occurrence id must be resolved to its base before saving', () async {
+    test('a recurring occurrence id must be resolved to its base before saving',
+        () async {
       final base = ScheduledEvent.create(
         title: 'Daily meal',
         type: EventType.meal,

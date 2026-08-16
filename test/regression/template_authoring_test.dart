@@ -82,14 +82,18 @@ void main() {
       final repo = container.read(workoutTemplatesRepositoryProvider);
 
       await repo.createTemplate(
-        WorkoutTemplate(id: 'authored', name: 'My split', notes: 'leg day', exercises: [
-          TemplateExercise(
-              id: 'a',
-              templateId: 'authored',
-              exerciseId: exercises[0].id,
-              orderIndex: 0,
-              defaultSets: 4),
-        ]),
+        WorkoutTemplate(
+            id: 'authored',
+            name: 'My split',
+            notes: 'leg day',
+            exercises: [
+              TemplateExercise(
+                  id: 'a',
+                  templateId: 'authored',
+                  exerciseId: exercises[0].id,
+                  orderIndex: 0,
+                  defaultSets: 4),
+            ]),
       );
 
       final loaded = await repo.getTemplateById('authored');
@@ -172,7 +176,8 @@ void main() {
               'its delete to this template');
     });
 
-    test('a hand-authored template is TemplateOrigin.user, so regeneration '
+    test(
+        'a hand-authored template is TemplateOrigin.user, so regeneration '
         'cannot eat it', () async {
       await container.read(workoutTemplatesRepositoryProvider).createTemplate(
             WorkoutTemplate.create(name: 'Mine'),
@@ -211,8 +216,7 @@ void main() {
             ),
           );
 
-      final items =
-          await db.getMealTemplateItemsByTemplateId('authored-meal');
+      final items = await db.getMealTemplateItemsByTemplateId('authored-meal');
       expect(items, hasLength(1),
           reason: 'an empty meal template is a dead Approve button on every '
               'reminder pinned to it');
@@ -231,8 +235,7 @@ void main() {
             ),
           );
 
-      expect(
-          (await db.getMealTemplateById('authored-meal'))?.origin,
+      expect((await db.getMealTemplateById('authored-meal'))?.origin,
           TemplateOrigin.user);
     });
   });

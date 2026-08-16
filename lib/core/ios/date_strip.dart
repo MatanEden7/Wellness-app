@@ -8,6 +8,7 @@ import '../design/scroll_edge.dart';
 import 'glass.dart';
 import '../utils.dart';
 import '../design/tokens.dart';
+import '../rtl_helper.dart';
 
 /// The day picker that anchors the meals and workouts home screens.
 ///
@@ -116,7 +117,7 @@ class DateStrip extends StatelessWidget {
                   child: Row(
                     children: [
                       _Chevron(
-                        icon: CupertinoIcons.chevron_back,
+                        icon: RTLHelper.chevronBack(context),
                         tooltip: l10n.previous,
                         onPressed: () =>
                             onChanged(date.subtract(Duration(days: stepDays))),
@@ -137,7 +138,7 @@ class DateStrip extends StatelessWidget {
                         ),
                       ),
                       _Chevron(
-                        icon: CupertinoIcons.chevron_forward,
+                        icon: RTLHelper.chevronForward(context),
                         tooltip: l10n.next,
                         onPressed: canGoForward
                             ? () =>

@@ -8,6 +8,7 @@ import '../features/workouts/domain/models.dart';
 import 'profile_fit.dart';
 import 'user_profile_service.dart';
 import 'workout_programming.dart';
+import 'package:wellness_app/services/language_service.dart';
 
 /// Builds workout templates for a profile by **selecting from the seeded
 /// exercise library**, not by inventing exercises.
@@ -103,8 +104,8 @@ class WorkoutTemplateGenerator {
           all.where((e) => e.rehabFor.contains(part) && _fits(e)).toList();
       if (rehab.isEmpty) continue;
       created.add(await _write(
-        'Physiotherapy — ${part.label}',
-        'Rehab work for your ${part.label.toLowerCase()}. Low load; safe on '
+        'Physiotherapy — ${part.label(AppLanguage.english)}',
+        'Rehab work for your ${part.label(AppLanguage.english).toLowerCase()}. Low load; safe on '
             'a rest day.',
         rehab.take(5).toList(),
         // Rehab is always programmed as rehab, whatever the training goal:

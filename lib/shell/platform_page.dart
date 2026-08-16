@@ -13,6 +13,7 @@ import '../core/platform/shell_kind.dart';
 import '../core/platform/shell_provider.dart';
 import '../core/ui_constants.dart';
 import 'material/material_page_shell.dart';
+import 'package:wellness_app/l10n/app_localizations.dart';
 
 // ─── Chrome data contract ─────────────────────────────────────────────────────
 
@@ -235,6 +236,13 @@ void _maybeSyncChrome(BuildContext context, WidgetRef ref, PageChrome chrome) {
   final route = ModalRoute.of(context);
   if (route != null && !route.isCurrent) return;
 
+  // Resolved here, not in _pushChromeToNative, which has no BuildContext --
+  // and captured now rather than inside the animation listener below, where
+  // the element may already be defunct. Without it Swift falls back to a
+  // hardcoded "Back" (NavBarHostController), which is what put an English
+  // word in the navigation bar of every child page in Hebrew.
+  final backLabel = AppLocalizations.of(context)?.back;
+
   final animation = route?.animation;
   if (animation != null && !animation.isCompleted) {
     // Animation in progress: register a one-shot listener so the nav bar
@@ -255,17 +263,17 @@ void _maybeSyncChrome(BuildContext context, WidgetRef ref, PageChrome chrome) {
       animation.removeStatusListener(onStatus);
       final pending = _pendingChrome.remove(animation);
       if (status == AnimationStatus.completed && pending != null) {
-        _pushChromeToNative(pending);
+        _pushChromeToNative(pending, backLabel);
       }
     };
     animation.addStatusListener(onStatus);
     return;
   }
 
-  _pushChromeToNative(chrome);
+  _pushChromeToNative(chrome, backLabel);
 }
 
-void _pushChromeToNative(PageChrome chrome) {
+void _pushChromeToNative(PageChrome chrome, String? backLabel) {
   // Update the global action map so onChromeAction can dispatch to the right
   // callback. Plain map write — safe during build (no Riverpod notifier).
   currentChromeActions
@@ -282,7 +290,7 @@ void _pushChromeToNative(PageChrome chrome) {
           title: chrome.title,
           largeTitle: chrome.largeTitle,
           showBack: chrome.showBack,
-          backLabel: chrome.backTooltip,
+          backLabel: chrome.backTooltip ?? backLabel,
           actions: chrome.actions.map((a) {
             final sf =
                 a.sfSymbolName ?? (a.icon != null ? _sfSymbol(a.icon!) : null);

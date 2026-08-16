@@ -169,9 +169,15 @@ void main() {
     // Onboarding, regeneration and the tests all rely on this. A solver that
     // drifts between runs makes every downstream failure unreproducible.
     final first = solveWith(
-        protein: catalog[0], carb: catalog[1], fat: catalog[2], veg: catalog[3]);
+        protein: catalog[0],
+        carb: catalog[1],
+        fat: catalog[2],
+        veg: catalog[3]);
     final second = solveWith(
-        protein: catalog[0], carb: catalog[1], fat: catalog[2], veg: catalog[3]);
+        protein: catalog[0],
+        carb: catalog[1],
+        fat: catalog[2],
+        veg: catalog[3]);
 
     expect(first.map((p) => '${p.food.id}:${p.amount}').toList(),
         second.map((p) => '${p.food.id}:${p.amount}').toList());
@@ -182,10 +188,7 @@ void main() {
     // generator must degrade, not crash mid-onboarding.
     expect(
       MealPortionSolver.solve(
-          kcalTarget: 700,
-          proteinTarget: 45,
-          carbsTarget: 70,
-          fatTarget: 20),
+          kcalTarget: 700, proteinTarget: 45, carbsTarget: 70, fatTarget: 20),
       isEmpty,
     );
   });

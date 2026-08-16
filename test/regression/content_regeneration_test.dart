@@ -48,7 +48,8 @@ void main() {
 
   setUp(AppDatabase.resetForTesting);
 
-  test('regeneration replaces generated templates but keeps the user\'s', () async {
+  test('regeneration replaces generated templates but keeps the user\'s',
+      () async {
     final db = AppDatabase();
     final service = ContentRegenerationService(db);
 
@@ -119,7 +120,8 @@ void main() {
     var checked = 0;
     for (final template in await db.getAllMealTemplates()) {
       if (template.origin != TemplateOrigin.generated) continue;
-      for (final item in await db.getMealTemplateItemsByTemplateId(template.id)) {
+      for (final item
+          in await db.getMealTemplateItemsByTemplateId(template.id)) {
         final food = byId[item.foodId]!;
         expect(food.tags.map((t) => t.name), isNot(contains('meat')),
             reason: '${food.name} should not survive a switch to herbivore');
@@ -137,7 +139,8 @@ void main() {
     // are never replaced -- so there is nothing to warn about.
     expect((await service.preview()).isEmpty, isTrue);
 
-    final meals = await MealTemplateGenerator(db, _profile()).generateTemplates();
+    final meals =
+        await MealTemplateGenerator(db, _profile()).generateTemplates();
     final workouts =
         await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
 

@@ -25,14 +25,26 @@ UserProfile _profile({
   String mealCountPerDay = '3',
 }) =>
     UserProfile(
-      sex: 'male', ageYears: 30, heightCm: 180, weightKg: 80,
-      goal: 'maintenance', activityLevel: 'moderate',
-      trainingDaysPerWeek: trainingDaysPerWeek, equipment: equipment,
-      dietType: dietType, mealCountPerDay: mealCountPerDay,
-      exclusions: exclusions, injuries: injuries,
-      energyUnit: 'kcal', weightUnit: 'g',
-      bmr: 1800, tdee: 2500, calorieTarget: 2500,
-      proteinTargetG: 150, fatTargetG: 70, carbsTargetG: 280,
+      sex: 'male',
+      ageYears: 30,
+      heightCm: 180,
+      weightKg: 80,
+      goal: 'maintenance',
+      activityLevel: 'moderate',
+      trainingDaysPerWeek: trainingDaysPerWeek,
+      equipment: equipment,
+      dietType: dietType,
+      mealCountPerDay: mealCountPerDay,
+      exclusions: exclusions,
+      injuries: injuries,
+      energyUnit: 'kcal',
+      weightUnit: 'g',
+      bmr: 1800,
+      tdee: 2500,
+      calorieTarget: 2500,
+      proteinTargetG: 150,
+      fatTargetG: 70,
+      carbsTargetG: 280,
     );
 
 /// Every profile combination worth asserting nutrition accuracy on.
@@ -40,7 +52,8 @@ final _profiles = <String, UserProfile>{
   'omnivore, 3 meals': _profile(),
   'omnivore, 2 meals': _profile(mealCountPerDay: '2'),
   'omnivore, 4 meals': _profile(mealCountPerDay: '4'),
-  'intermittent fasting': _profile(mealCountPerDay: 'intermittent_fasting_16_8'),
+  'intermittent fasting':
+      _profile(mealCountPerDay: 'intermittent_fasting_16_8'),
   'vegan': _profile(dietType: 'herbivore'),
   'vegan, no soy/gluten/nuts': _profile(
     dietType: 'herbivore',
@@ -115,14 +128,26 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final bulking = UserProfile(
-        sex: 'male', ageYears: 30, heightCm: 180, weightKg: 80,
-        goal: 'muscle_gain', activityLevel: 'moderate',
-        trainingDaysPerWeek: 4, equipment: const ['dumbbells'],
-        dietType: 'omnivore', mealCountPerDay: '3',
-        exclusions: const [], injuries: const [],
-        energyUnit: 'kcal', weightUnit: 'g',
-        bmr: 1780, tdee: 2759, calorieTarget: 3030,
-        proteinTargetG: 160, fatTargetG: 84, carbsTargetG: 409,
+        sex: 'male',
+        ageYears: 30,
+        heightCm: 180,
+        weightKg: 80,
+        goal: 'muscle_gain',
+        activityLevel: 'moderate',
+        trainingDaysPerWeek: 4,
+        equipment: const ['dumbbells'],
+        dietType: 'omnivore',
+        mealCountPerDay: '3',
+        exclusions: const [],
+        injuries: const [],
+        energyUnit: 'kcal',
+        weightUnit: 'g',
+        bmr: 1780,
+        tdee: 2759,
+        calorieTarget: 3030,
+        proteinTargetG: 160,
+        fatTargetG: 84,
+        carbsTargetG: 409,
       );
 
       final created =
@@ -165,7 +190,8 @@ void main() {
 
     test('no meal lists the same food twice', () async {
       final db = AppDatabase();
-      final created = await MealTemplateGenerator(db, _profile()).generateTemplates();
+      final created =
+          await MealTemplateGenerator(db, _profile()).generateTemplates();
       for (final t in created) {
         final ids = (await db.getMealTemplateItemsByTemplateId(t.id))
             .map((i) => i.foodId)
@@ -178,7 +204,8 @@ void main() {
 
     test('portions are physically sensible for their unit', () async {
       final db = AppDatabase();
-      final created = await MealTemplateGenerator(db, _profile()).generateTemplates();
+      final created =
+          await MealTemplateGenerator(db, _profile()).generateTemplates();
       final foods = {for (final f in await db.getAllFoods()) f.id: f};
       for (final t in created) {
         for (final i in await db.getMealTemplateItemsByTemplateId(t.id)) {
@@ -210,7 +237,8 @@ void main() {
   });
 
   group('workout plan matches the profile', () {
-    test('one training session per requested day, for every frequency', () async {
+    test('one training session per requested day, for every frequency',
+        () async {
       for (var days = 1; days <= 7; days++) {
         AppDatabase.resetForTesting();
         final db = AppDatabase();
@@ -230,7 +258,8 @@ void main() {
           await WorkoutTemplateGenerator(db, _profile(trainingDaysPerWeek: 6))
               .generateTemplates();
       final names = created.map((t) => t.name).toList();
-      expect(names.toSet().length, names.length, reason: 'duplicate names: $names');
+      expect(names.toSet().length, names.length,
+          reason: 'duplicate names: $names');
     });
 
     test('every injury gets its own physiotherapy session', () async {
@@ -238,8 +267,7 @@ void main() {
         AppDatabase.resetForTesting();
         final db = AppDatabase();
         final created = await WorkoutTemplateGenerator(
-                db, _profile(injuries: [injury.profileId]))
-            .generateTemplates();
+            db, _profile(injuries: [injury.profileId])).generateTemplates();
         final physio =
             created.where((t) => t.name.startsWith('Physiotherapy')).toList();
         expect(physio, hasLength(1),
@@ -253,7 +281,8 @@ void main() {
       final created =
           await WorkoutTemplateGenerator(db, _profile(injuries: ['shoulder']))
               .generateTemplates();
-      final physio = created.firstWhere((t) => t.name.startsWith('Physiotherapy'));
+      final physio =
+          created.firstWhere((t) => t.name.startsWith('Physiotherapy'));
 
       final exercises = {for (final e in await db.getAllExercises()) e.id: e};
       final items = await db.getTemplateExercisesByTemplateId(physio.id);
@@ -261,7 +290,8 @@ void main() {
       for (final item in items) {
         // Drawn from rehabFor, not merely "not contraindicated" -- being safe
         // with a bad shoulder is not the same as rehabilitating one.
-        expect(exercises[item.exerciseId]!.rehabFor, contains(BodyPart.shoulder),
+        expect(
+            exercises[item.exerciseId]!.rehabFor, contains(BodyPart.shoulder),
             reason: '${exercises[item.exerciseId]!.name} is not rehab work');
       }
     });
@@ -269,10 +299,11 @@ void main() {
     test('no session is left nearly empty by contraindications', () async {
       // A shoulder+neck injury guts Push day; the backfill should top it up.
       final db = AppDatabase();
-      final created = await WorkoutTemplateGenerator(
-              db, _profile(injuries: ['shoulder', 'neck'], trainingDaysPerWeek: 5))
+      final created = await WorkoutTemplateGenerator(db,
+              _profile(injuries: ['shoulder', 'neck'], trainingDaysPerWeek: 5))
           .generateTemplates();
-      for (final t in created.where((t) => !t.name.startsWith('Physiotherapy'))) {
+      for (final t
+          in created.where((t) => !t.name.startsWith('Physiotherapy'))) {
         final count = (await db.getTemplateExercisesByTemplateId(t.id)).length;
         expect(count, greaterThanOrEqualTo(4),
             reason: '${t.name} only has $count exercises');

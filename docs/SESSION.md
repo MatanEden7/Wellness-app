@@ -4,6 +4,70 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-16 — Real UIKit, an Apple calendar, and the Hebrew that was already there
+
+**Current task:** None. Branch `feat/liquid-glass-native-ios`. Installed on the
+iPhone 17 simulator and on the Matan Eden iPhone (release, iOS 27.0).
+`flutter analyze` clean; device suites green; fast suite not re-run after the
+final localisation batch.
+
+**Asked for, in order:** make the whole app native iOS Liquid Glass; make the
+calendar look like Apple's; deploy to the phone; run the tests and fix what
+breaks; then a long tail of "this is still English" reported from live
+screenshots.
+
+**Three findings reframed the work.**
+
+1. **The native presentation bridge was dead code.** `PresentationHostApiImpl.swift`
+   implements alerts, action sheets, menus, date pickers, share and haptics on
+   real UIKit, `AppDelegate` registers it, pigeon generates the Dart — and no
+   Dart ever called it. Every dialog in the app was Flutter drawing a
+   look-alike beside an unused `UIAlertController`. Rewriting the shared helpers
+   in `sheets.dart` made every existing call site native at once.
+
+2. **Onboarding was destroying its own output.** `saveProfile()` flipped
+   `setup_completed`; the router takes the profile service as its
+   `refreshListenable` and redirects off `/onboarding` immediately — while the
+   three generators were still awaiting. The calendar schedule runs last and is
+   the only one going through `ref.read`, so it died on the disposed container.
+   The user reported it as "onboarding doesn't create the plan"; the
+   `ProviderContainer that was already disposed` line had been in the test logs
+   all along.
+
+3. **The Hebrew was mostly already written.** ISSUES #84 estimated "~29 new
+   Hebrew strings" for the Profile page. In the event 35 of its 55 literals
+   already had ARB keys, and *all 28* of its picker option labels did. The same
+   held for goal names, BMR/TDEE, macro abbreviations, food names and the back
+   button. ~60 strings were genuinely new; the rest was wiring.
+
+**A pattern worth carrying forward:** twice, a fix looked complete and a second
+copy of the same switch lived elsewhere. `_goalLabel` existed in both
+`profile_page` and `settings_stub`; `formatDuration` exists on *two* classes
+named `AppDateUtils`, and callers resolve to whichever they imported
+unprefixed. Both times the first fix left the bug visibly alive.
+
+**On the test suite.** The device suite had been unrunnable since the native
+chrome landed — 21 of 23 sanity tests died before reaching their screen, because
+the bars are UIKit objects and the finders look for Flutter widgets. Forcing the
+Flutter tier in the launcher fixed that and got sanity to 23/23, regression to
+25/25 and the e2e journey green — at the cost of no longer covering the native
+chrome at all. That needs XCUITest. Repairing the suite also surfaced three real
+product bugs (#104 `ListTile` in glass, #105 the analytics `OverflowBox`, plus
+an `InsetRow` overflow of my own making).
+
+**Owner preference recorded:** don't run the full suites to check a small
+change — they are slow (sanity ~7min, regression ~9min, and the notification
+scheduling e2e blocks on a native permission dialog for hours). Prefer
+`flutter analyze`, then a single named file.
+
+**Next task:** run the fast suite against the localisation batch — it touched
+`drift_database.dart`, the recipe catalog and two shared `formatDuration`
+signatures, which is exactly what those tests exist to catch. Then decide
+whether the validation-message refactor is worth it, and get a native-speaker
+pass over the ~60 new Hebrew strings.
+
+---
+
 ## 2026-08-12 (later) — The UI design pass: a real Liquid Glass system
 
 **Current task:** None. Branch `feat/platform-native-ui`, built and installed on the

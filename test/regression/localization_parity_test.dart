@@ -11,7 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// if either file has an empty translated value for a key it does define.
 void main() {
   Map<String, dynamic> messageKeys(String path) {
-    final raw = jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
+    final raw =
+        jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
     final result = <String, dynamic>{};
     for (final entry in raw.entries) {
       if (entry.key.startsWith('@')) continue; // metadata block, not a message
@@ -28,7 +29,9 @@ void main() {
     he = messageKeys('lib/l10n/app_he.arb');
   });
 
-  test('both ARB files define at least one message key (sanity the parse worked)', () {
+  test(
+      'both ARB files define at least one message key (sanity the parse worked)',
+      () {
     expect(en, isNotEmpty);
     expect(he, isNotEmpty);
   });
@@ -38,22 +41,29 @@ void main() {
     expect(
       missingInHebrew,
       isEmpty,
-      reason: 'Keys present in app_en.arb but missing from app_he.arb: $missingInHebrew',
+      reason:
+          'Keys present in app_en.arb but missing from app_he.arb: $missingInHebrew',
     );
   });
 
-  test('every Hebrew key exists in English (no orphaned/stale translations)', () {
+  test('every Hebrew key exists in English (no orphaned/stale translations)',
+      () {
     final extraInHebrew = he.keys.toSet().difference(en.keys.toSet());
     expect(
       extraInHebrew,
       isEmpty,
-      reason: 'Keys present in app_he.arb but missing from app_en.arb: $extraInHebrew',
+      reason:
+          'Keys present in app_he.arb but missing from app_en.arb: $extraInHebrew',
     );
   });
 
   test('no message value is an empty string in either locale', () {
-    final emptyEn = en.entries.where((e) => e.value is String && (e.value as String).trim().isEmpty).map((e) => e.key);
-    final emptyHe = he.entries.where((e) => e.value is String && (e.value as String).trim().isEmpty).map((e) => e.key);
+    final emptyEn = en.entries
+        .where((e) => e.value is String && (e.value as String).trim().isEmpty)
+        .map((e) => e.key);
+    final emptyHe = he.entries
+        .where((e) => e.value is String && (e.value as String).trim().isEmpty)
+        .map((e) => e.key);
 
     expect(emptyEn, isEmpty, reason: 'Empty English translations: $emptyEn');
     expect(emptyHe, isEmpty, reason: 'Empty Hebrew translations: $emptyHe');

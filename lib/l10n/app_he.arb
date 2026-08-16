@@ -63,6 +63,7 @@
   "hours": "שעות",
   "minutes": "דקות",
   "kcal": "קק\"ל",
+  "centimetersShort": "ס\"מ",
   "addFood": "הוסף מזון",
   "foodName": "שם המזון",
   "save": "שמור",
@@ -830,5 +831,156 @@
   "glassOff": "כבוי",
   "glassSubtle": "עדין",
   "glassFull": "מלא",
-  "glassEffectReducedByAccessibility": "כבוי — הפחתת שקיפות פעילה"
+  "glassEffectReducedByAccessibility": "כבוי — הפחתת שקיפות פעילה",
+  "profileTitle": "הפרופיל שלי",
+  "profileNotCompleted": "הגדרת הפרופיל לא הושלמה",
+  "profileSectionBody": "נתוני גוף",
+  "profileSectionGoal": "מטרה ופעילות",
+  "profileSectionTargets": "יעדי תזונה",
+  "profileSectionFood": "מזון ותזונה",
+  "profileSectionUnits": "יחידות",
+  "profileTrainingDaysWeek": "ימי אימון בשבוע",
+  "profileCalorieTarget": "יעד קלוריות",
+  "profileProteinTarget": "יעד חלבון",
+  "profileCarbsTarget": "יעד פחמימות",
+  "profileFatTarget": "יעד שומן",
+  "profileInjuries": "פציעות",
+  "profileEnergyUnit": "יחידת אנרגיה",
+  "profileRecalculate": "חישוב מחדש לפי גוף ומטרה",
+  "profileRegenTitle": "לעדכן את התבניות שלך?",
+  "healthSection": "בריאות",
+  "calendarSelectRecentMeal": "בחר ארוחה אחרונה",
+  "calendarSelectRecentWorkout": "בחר אימון אחרון",
+  "filterShowingEverything": "מוצג הכל",
+  "foodBrandHint": "לדוגמה: רגיל, אורגני וכו׳",
+  "foodUnitHint": "גרם, מ״ל, יחידה, כוס וכו׳",
+  "foodTagsContains": "מכיל",
+  "foodTagsContainsHelp": "משמש להסתרת המזון כשהוא מתנגש בתפריט או בהחרגות שלך. השאר ריק אם אינו מכיל אף אחד מהם.",
+  "foodTagsAnimalOrigin": "מקור מן החי",
+  "foodTagsAnimalOriginHelp": "משמש לתפריטים מהצומח.",
+  "mealNotesHint": "הערות נוספות על הארוחה",
+  "mealTemplateNameHint": "לדוגמה: ארוחת בוקר עתירת חלבון, חטיף לפני אימון",
+  "mealTemplateNotesHint": "הערות על תבנית הארוחה",
+  "colorRolePrimary": "ראשי",
+  "colorRoleBackground": "רקע",
+  "colorRoleSurface": "משטח",
+  "exerciseNameHint": "לדוגמה: לחיצת חזה, סקוואט",
+  "exerciseMuscleHint": "לדוגמה: חזה, רגליים, גב",
+  "exerciseNotesHint": "דגשי ביצוע, וריאציות וכו׳",
+  "exerciseEquipmentNeeded": "ציוד נדרש",
+  "exerciseEquipmentHelp": "בחר כל אפשרות שניתן לבצע איתה. אם תשאיר ריק, התרגיל ייחשב כזמין תמיד.",
+  "exerciseAvoidInjury": "להימנע בפציעה ב",
+  "exerciseAvoidInjuryHelp": "התרגיל יוסתר עבור מי שדיווח על אחת מהפציעות האלה.",
+  "workoutTemplateNameHint": "לדוגמה: יום דחיפה, גוף מלא",
+  "workoutTemplateNotesHint": "הערות על תבנית האימון",
+  "templateNoExercisesAdded": "לא נוספו תרגילים",
+  "templateNoExercisesHelp": "הוסף תרגילים כדי לבנות את תבנית האימון",
+  "templateNoExercises": "אין תרגילים",
+  "templateRepsEmptyHint": "השאר ריק לחזרות משתנות",
+  "workoutLoading": "טוען אימון...",
+  "sleepInProgress": "בתהליך...",
+  "profileRegenBody": "הפרופיל שלך השתנה באופן שמשפיע על הארוחות והאימונים שמתאימים לך.\n\nבנייה מחדש תחליף {meals} תבניות ארוחה שנוצרו אוטומטית ו-{workouts} תבניות אימון שנוצרו אוטומטית. כל מה שיצרת או ערכת בעצמך נשמר.",
+  "@profileRegenBody": {
+    "placeholders": {
+      "meals": {
+        "type": "int"
+      },
+      "workouts": {
+        "type": "int"
+      }
+    }
+  },
+  "themeOcean": "אוקיינוס",
+  "themeForest": "יער",
+  "themeSunset": "שקיעה",
+  "themeLavender": "לבנדר",
+  "themeMidnight": "חצות",
+  "themeCustom": "מותאם אישית",
+  "themeOceanDesc": "כחולים וטורקיזים מרגיעים",
+  "themeForestDesc": "ירוקים טבעיים ומאוזנים",
+  "themeSunsetDesc": "חמים ואנרגטי",
+  "themeLavenderDesc": "רגוע ויצירתי",
+  "themeMidnightDesc": "כחול כהה ומעודן",
+  "themeCustomDesc": "התאם את הצבעים שלך",
+  "appearanceThemeColors": "צבעי ערכת נושא",
+  "appearanceSectionColors": "צבעי מקטעים",
+  "appearanceNutritionColors": "צבעי תזונה",
+  "appearancePreview": "תצוגה מקדימה",
+  "appearanceCustomAll": "התאם את כל צבעי האפליקציה. השינויים חלים מיד.",
+  "appearanceCustomSection": "התאם את צבעי המקטעים. עבור לערכת נושא מותאמת כדי לערוך את צבעי הערכה.",
+  "tapToCompleteSetup": "הקש להשלמת ההגדרה",
+  "goalsSetCount": "{count}/4 יעדים הוגדרו",
+  "@goalsSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perUnit": "לכל {unit}:",
+  "@perUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionPerUnit": "ערכים תזונתיים לכל {unit}:",
+  "@nutritionPerUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "unitPer100g": "הערכים התזונתיים הם ל-100 גרם",
+  "unitPerGram": "הערכים התזונתיים הם לגרם",
+  "unitPerMl": "הערכים התזונתיים הם למ\"ל",
+  "unitPerOz": "הערכים התזונתיים הם לאונקיה",
+  "unitPerCount": "הערכים התזונתיים הם ל{unit}",
+  "@unitPerCount": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "durationHm": "{h} ש' {m} ד'",
+  "@durationHm": {
+    "placeholders": {
+      "h": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "durationM": "{m} ד'",
+  "@durationM": {
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "durationLabel": "משך",
+  "activeFor": "פעיל {duration}",
+  "@activeFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "scheduled": "מתוכנן",
+  "brandGeneric": "רגיל",
+  "amountWithUnit": "כמות ({unit})",
+  "@amountWithUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  }
 }

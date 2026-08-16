@@ -100,8 +100,10 @@ void main() {
         DateTime(2026, 8, 10): 1000.0,
       };
 
-      final mean = bucketize(byDay, range, AnalyticsBucket.week, BucketReducer.mean);
-      final sum = bucketize(byDay, range, AnalyticsBucket.week, BucketReducer.sum);
+      final mean =
+          bucketize(byDay, range, AnalyticsBucket.week, BucketReducer.mean);
+      final sum =
+          bucketize(byDay, range, AnalyticsBucket.week, BucketReducer.sum);
 
       expect(mean.points.first.value, closeTo(2500, 0.001));
       expect(sum.points.first.value, closeTo(5000, 0.001));

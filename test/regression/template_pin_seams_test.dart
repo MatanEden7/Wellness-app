@@ -144,7 +144,8 @@ void main() {
     // immediately when context is null. A bare MaterialApp is enough -- the
     // `context.push` that follows the insert throws without a GoRouter, but
     // the handler catches it and the session is already written by then.
-    testWidgets('Start Workout does not carry the dead template onto the session',
+    testWidgets(
+        'Start Workout does not carry the dead template onto the session',
         (tester) async {
       final event = await firstEventOf(EventType.workout);
       await database.deleteWorkoutTemplate(event.templateId!);
@@ -175,7 +176,9 @@ void main() {
       final event = await firstEventOf(EventType.meal);
       await database.deleteMealTemplate(event.templateId!);
 
-      await container.read(calendarStateProvider.notifier).repinDanglingTemplates();
+      await container
+          .read(calendarStateProvider.notifier)
+          .repinDanglingTemplates();
 
       final liveIds =
           (await database.getAllMealTemplates()).map((t) => t.id).toSet();
@@ -193,8 +196,8 @@ void main() {
     /// passes -- and Approve would build a meal containing nothing.
     Future<ScheduledEvent> emptiedMealEvent() async {
       final event = await firstEventOf(EventType.meal);
-      for (final item
-          in await database.getMealTemplateItemsByTemplateId(event.templateId!)) {
+      for (final item in await database
+          .getMealTemplateItemsByTemplateId(event.templateId!)) {
         await database.deleteFood(item.foodId);
       }
       return event;
@@ -246,7 +249,9 @@ void main() {
         sourceEventId: event.id,
       ));
 
-      await container.read(calendarStateProvider.notifier).deleteEvent(event.id);
+      await container
+          .read(calendarStateProvider.notifier)
+          .deleteEvent(event.id);
 
       expect(await database.getAllMeals(), hasLength(1),
           reason: 'deleting a plan must never delete what was logged');

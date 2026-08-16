@@ -105,7 +105,8 @@ void main() {
       await db.flush();
 
       final json = jsonDecode(store.contents!) as Map<String, dynamic>;
-      for (final row in (json['exercises'] as List).cast<Map<String, dynamic>>()) {
+      for (final row
+          in (json['exercises'] as List).cast<Map<String, dynamic>>()) {
         row.remove('movementPattern');
         row.remove('mechanic');
         row.remove('loadClass');
@@ -184,8 +185,8 @@ void main() {
       AppDatabase.resetForTesting();
       final store = _MemStore();
       final db = AppDatabase(store: store);
-      await db.insertExercise(ExerciseData(
-          id: 'mine', name: 'Sandbag carry', unit: 'kg'));
+      await db.insertExercise(
+          ExerciseData(id: 'mine', name: 'Sandbag carry', unit: 'kg'));
       await db.flush();
 
       AppDatabase.resetForTesting();
@@ -214,7 +215,8 @@ void main() {
         loadClass: LoadClass.deadliftPattern,
       );
 
-      final restored = ExerciseData.fromJson(jsonDecode(jsonEncode(original.toJson())));
+      final restored =
+          ExerciseData.fromJson(jsonDecode(jsonEncode(original.toJson())));
 
       expect(restored.movementPattern, MovementPattern.hinge);
       expect(restored.mechanic, Mechanic.compound);
