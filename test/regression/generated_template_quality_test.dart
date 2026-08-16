@@ -7,6 +7,7 @@ import 'package:wellness_app/features/workouts/domain/exercise_tags.dart';
 import 'package:wellness_app/services/meal_template_generator.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
 import 'package:wellness_app/services/workout_template_generator.dart';
+import 'package:wellness_app/services/language_service.dart';
 
 /// Quality, not just legality.
 ///
@@ -272,7 +273,12 @@ void main() {
             created.where((t) => t.name.startsWith('Physiotherapy')).toList();
         expect(physio, hasLength(1),
             reason: 'no physiotherapy session for a ${injury.name} injury');
-        expect(physio.single.name, contains(injury.label));
+        // `label` takes a language now. The template *name* is stored in
+        // English (rehab names are pinned there deliberately, so stored
+        // rows do not inherit whichever locale was active), so assert
+        // against the English label.
+        expect(physio.single.name,
+            contains(injury.label(AppLanguage.english)));
       }
     });
 
