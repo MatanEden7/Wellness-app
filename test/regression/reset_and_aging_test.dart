@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
@@ -72,8 +73,10 @@ void main() {
 
   Future<void> seedRealisticState() async {
     final profile = _profile();
-    await WorkoutTemplateGenerator(database, profile).generateTemplates();
-    await MealTemplateGenerator(database, profile).generateTemplates();
+    await WorkoutTemplateGenerator(database, profile, AppLanguage.english)
+        .generateTemplates();
+    await MealTemplateGenerator(database, profile, AppLanguage.english)
+        .generateTemplates();
     await container.read(calendarStateProvider.notifier).addEvents(
         await CalendarScheduleGenerator(database, profile).buildSchedule());
     await database.insertMeal(MealData(

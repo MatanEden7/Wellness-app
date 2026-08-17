@@ -171,49 +171,7 @@ void main() {
       final reloaded = AppDatabase(store: store);
       await reloaded.load();
       final row = (await reloaded.getAllFoods()).firstWhere((f) => f.id == '1');
-      expect(row.nameHe, isNull);
       expect(row.category, FoodCategory.other);
-    });
-
-    test('gets Hebrew names backfilled onto the rows it already had', () async {
-      final store = FakeSnapshotStore(_legacySnapshot(_legacyIds));
-      final db = AppDatabase(store: store);
-      await db.load();
-
-      final chicken = (await db.getAllFoods()).firstWhere((f) => f.id == '1');
-      expect(chicken.nameHe, 'חזה עוף');
-    });
-
-    test('keeps a Hebrew name the user set rather than overwriting it',
-        () async {
-      final store = FakeSnapshotStore(_legacySnapshot(['1']));
-      final db = AppDatabase(store: store);
-      await db.load();
-
-      final chicken = (await db.getAllFoods()).firstWhere((f) => f.id == '1');
-      await db.updateFood(FoodItemData(
-        id: chicken.id,
-        name: chicken.name,
-        nameHe: 'העוף שלי',
-        brand: chicken.brand,
-        unit: chicken.unit,
-        kcalPerUnit: chicken.kcalPerUnit,
-        proteinPerUnit: chicken.proteinPerUnit,
-        carbsPerUnit: chicken.carbsPerUnit,
-        fatPerUnit: chicken.fatPerUnit,
-        isStarter: chicken.isStarter,
-        tags: chicken.tags,
-        createdAt: chicken.createdAt,
-        updatedAt: DateTime.now(),
-      ));
-      await db.flush();
-
-      final reloaded = AppDatabase(store: store);
-      await reloaded.load();
-      expect(
-        (await reloaded.getAllFoods()).firstWhere((f) => f.id == '1').nameHe,
-        'העוף שלי',
-      );
     });
 
     test('does not duplicate anything when loaded twice', () async {
@@ -278,15 +236,6 @@ void main() {
       await second.load();
       expect(
           (await second.getAllExercises()).any((e) => e.id == '60'), isFalse);
-    });
-
-    test('backfills Hebrew names onto rows it already had', () async {
-      final store = FakeSnapshotStore(_legacyExerciseSnapshot());
-      final db = AppDatabase(store: store);
-      await db.load();
-      final squat = (await db.getAllExercises()).firstWhere((e) => e.id == '8');
-      expect(squat.nameHe, isNotNull);
-      expect(squat.primaryMuscleHe, isNotNull);
     });
   });
 

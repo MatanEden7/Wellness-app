@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/date_utils.dart';
 import '../../core/template_origin.dart';
+import '../../core/app_language.dart';
 import '../../features/meals/domain/food_category.dart';
 import '../../features/meals/domain/food_tags.dart';
 import '../catalog/starter_exercises.dart';
@@ -185,8 +186,156 @@ class AppDatabase {
 
   static const int _snapshotVersion = 1;
 
-  AppDatabase({SnapshotStore? store}) : _store = store {
-    _initializeWithSampleData();
+  /// The language every seeded row and generated template on this install is
+  /// written in, fixed the first time the catalog is seeded.
+  ///
+  /// This is what makes a language switch cheap: content is resolved once,
+  /// here, and never again. Switching the app to Hebrew afterwards re-labels
+  /// the chrome around a food, not the food -- so a template the user has been
+  /// following all week does not silently rename itself, and nothing has to
+  /// keep two names per row in sync.
+  static AppLanguage? _contentLanguage;
+
+  /// The recorded content language, defaulting to English for a database that
+  /// has not been seeded yet. Only the backfills and the new-row merge read it
+  /// through this fallback; [seedCatalogFor] sets the real value.
+  static AppLanguage get _seededLanguage =>
+      _contentLanguage ?? AppLanguage.english;
+
+  /// The language this install's content is written in, or null if the catalog
+  /// has never been seeded (a fresh install that has not finished onboarding).
+  static AppLanguage? get contentLanguage => _contentLanguage;
+
+  /// Builds the database.
+  ///
+  /// [seedLanguage] non-null seeds the catalog immediately in that language.
+  /// The app passes **null** -- nothing may be seeded before onboarding's
+  /// language step has run, or the catalog would be written in a language the
+  /// user never chose. The English default exists for tests, which want a
+  /// populated catalog without a wizard.
+  AppDatabase({
+    SnapshotStore? store,
+    AppLanguage? seedLanguage = AppLanguage.english,
+  }) : _store = store {
+    if (seedLanguage != null) _initializeWithSampleData(seedLanguage);
+  }
+
+  /// Rewrites every seeded row into [language], keyed by id.
+  ///
+  /// This is what makes "the app is in Hebrew" mean *the whole app*. Names are
+  /// still resolved once and stored -- nothing renders through a language
+  /// switch -- but a deliberate language change re-runs that resolution over
+  /// the rows that already exist, instead of leaving a Hebrew UI listing
+  /// "Chicken Breast".
+  ///
+  /// Three properties make it safe to run on real data:
+  ///
+  ///   * **Ids never move.** A logged meal references a food by id, and a set
+  ///     entry references an exercise by id. Only the display fields change,
+  ///     so nothing the user recorded is touched or orphaned.
+  ///   * **A row the user edited is left alone.** "Edited" is knowable rather
+  ///     than guessed: a seeded row should currently read exactly as the *old*
+  ///     language seeded it. If it does not, the user renamed it, and their
+  ///     name is not ours to overwrite.
+  ///   * **Foods the user added are skipped entirely** -- they are not in the
+  ///     starter catalog, so there is nothing to translate them from.
+  ///
+  /// Returns how many rows were rewritten. See `ContentLanguageService`, which
+  /// pairs this with regenerating the templates.
+  Future<int> relanguageCatalog(AppLanguage language) async {
+    final from = _seededLanguage;
+    if (from == language) return 0;
+
+    final wasFood = {for (final f in _getSampleFoods(from)) f.id: f};
+    final nowFood = {for (final f in _getSampleFoods(language)) f.id: f};
+    var changed = 0;
+
+    for (var i = 0; i < _foods.length; i++) {
+      final row = _foods[i];
+      final before = wasFood[row.id];
+      final after = nowFood[row.id];
+      // Not a starter row, or the user renamed it -- either way, not ours.
+      if (before == null || after == null || row.name != before.name) continue;
+
+      final updated = FoodItemData(
+        id: row.id,
+        name: after.name,
+        // Only re-language a brand the user left as the seed wrote it.
+        brand: row.brand == before.brand ? after.brand : row.brand,
+        unit: row.unit,
+        kcalPerUnit: row.kcalPerUnit,
+        proteinPerUnit: row.proteinPerUnit,
+        carbsPerUnit: row.carbsPerUnit,
+        fatPerUnit: row.fatPerUnit,
+        isStarter: row.isStarter,
+        tags: row.tags,
+        category: row.category,
+        createdAt: row.createdAt,
+        // Not an edit the user made, so `updatedAt` does not move.
+        updatedAt: row.updatedAt,
+      );
+      _foods[i] = updated;
+      _foodsById[updated.id] = updated;
+      changed++;
+    }
+
+    final wasEx = {for (final e in _getSampleExercises(from)) e.id: e};
+    final nowEx = {for (final e in _getSampleExercises(language)) e.id: e};
+
+    for (var i = 0; i < _exercises.length; i++) {
+      final row = _exercises[i];
+      final before = wasEx[row.id];
+      final after = nowEx[row.id];
+      if (before == null || after == null || row.name != before.name) continue;
+
+      final updated = ExerciseData(
+        id: row.id,
+        name: after.name,
+        primaryMuscle: row.primaryMuscle == before.primaryMuscle
+            ? after.primaryMuscle
+            : row.primaryMuscle,
+        unit: row.unit,
+        // Same rule as the name: only re-language a cue the user left alone.
+        notes: row.notes == before.notes ? after.notes : row.notes,
+        equipment: row.equipment,
+        contraindicatedFor: row.contraindicatedFor,
+        rehabFor: row.rehabFor,
+        movementPattern: row.movementPattern,
+        mechanic: row.mechanic,
+        loadClass: row.loadClass,
+      );
+      _exercises[i] = updated;
+      _exercisesById[updated.id] = updated;
+      changed++;
+    }
+
+    _contentLanguage = language;
+    debugPrint('[DB] Re-languaged $changed catalog rows '
+        '${from.code} -> ${language.code}');
+    _foodsController.add(null);
+    _workoutsController.add(null);
+    await _saveNow();
+    return changed;
+  }
+
+  /// Seeds the food catalog and exercise library in [language], once.
+  ///
+  /// Called from onboarding as soon as the language step is answered and
+  /// before any generator runs, so the generators have a catalog to pick from
+  /// and everything they write matches it. A no-op once content exists: the
+  /// language is chosen once per install, not re-chosen on every launch.
+  Future<void> seedCatalogFor(AppLanguage language) async {
+    if (_foods.isNotEmpty && _exercises.isNotEmpty) {
+      debugPrint('[DB] Catalog already seeded in '
+          '${_contentLanguage?.code ?? "unknown"}; leaving it alone');
+      return;
+    }
+    _initializeWithSampleData(language);
+    debugPrint('[DB] Seeded ${_foods.length} foods / ${_exercises.length} '
+        'exercises in ${language.code}');
+    _foodsController.add(null);
+    _workoutsController.add(null);
+    await _saveNow();
   }
 
   /// Restores previously saved data. Call once, before `runApp`.
@@ -228,6 +377,13 @@ class AppDatabase {
   }
 
   void _applySnapshot(Map<String, dynamic> json) {
+    // Read before anything below needs it: both backfills and the new-row
+    // merge resolve seed names through it.
+    final rawLanguage = json['contentLanguage'];
+    if (rawLanguage != null) {
+      _contentLanguage = AppLanguage.fromCode(rawLanguage);
+    }
+
     List<T> decode<T>(String key, T Function(Map<String, dynamic>) fromJson) {
       final list = json[key] as List<dynamic>?;
       if (list == null) return <T>[];
@@ -288,7 +444,7 @@ class AppDatabase {
       rawIntroduced: json['introducedFoodIds'],
       introduced: _introducedFoodIds,
       legacyIds: _legacyStarterFoodIds,
-      seeded: _getSampleFoods(),
+      seeded: _getSampleFoods(_seededLanguage),
       live: _foods,
       index: _foodsById,
       idOf: (f) => f.id,
@@ -298,7 +454,7 @@ class AppDatabase {
       rawIntroduced: json['introducedExerciseIds'],
       introduced: _introducedExerciseIds,
       legacyIds: _legacyStarterExerciseIds,
-      seeded: _getSampleExercises(),
+      seeded: _getSampleExercises(_seededLanguage),
       live: _exercises,
       index: _exercisesById,
       idOf: (e) => e.id,
@@ -384,28 +540,22 @@ class AppDatabase {
   /// safe to run on every load:
   ///
   ///   * **Field-level.** Only a field the row does not already have is
-  ///     filled. A Hebrew name or category the user set is never overwritten.
+  ///     filled. A category the user set is never overwritten.
   ///   * **Never resurrects.** It walks the *restored* list, not the seed, so
   ///     a food the user deleted stays deleted.
   ///
   /// A renamed row is skipped entirely: if the user has turned "Chicken
-  /// Breast" into something else, the seed's Hebrew name and category no
-  /// longer describe it.
+  /// Breast" into something else, the seed's category no longer describes it.
   void _backfillSeededFoodMetadata() {
-    final seeded = {for (final f in _getSampleFoods()) f.id: f};
+    final seeded = {for (final f in _getSampleFoods(_seededLanguage)) f.id: f};
     for (var i = 0; i < _foods.length; i++) {
       final restored = _foods[i];
-      final needsName = restored.nameHe == null;
-      final needsCategory = restored.category == FoodCategory.other;
-      if (!needsName && !needsCategory) continue;
+      if (restored.category != FoodCategory.other) continue;
 
       final template = seeded[restored.id];
       if (template == null || template.name != restored.name) continue;
 
-      final filled = restored.withSeedDefaults(
-        nameHe: needsName ? template.nameHe : null,
-        category: needsCategory ? template.category : null,
-      );
+      final filled = restored.withSeedDefaults(category: template.category);
       _foods[i] = filled;
       _foodsById[filled.id] = filled;
     }
@@ -429,7 +579,9 @@ class AppDatabase {
   ///     a seeded exercise the user deleted stays deleted -- the same contract
   ///     `persistence_test` pins for starter foods.
   void _backfillExerciseMetadata() {
-    final seeded = {for (final e in _getSampleExercises()) e.id: e};
+    final seeded = {
+      for (final e in _getSampleExercises(_seededLanguage)) e.id: e
+    };
     if (seeded.isEmpty) return;
 
     for (var i = 0; i < _exercises.length; i++) {
@@ -440,24 +592,12 @@ class AppDatabase {
       final needsTags = restored.movementPattern == null ||
           restored.mechanic == null ||
           restored.loadClass == null;
-      // Hebrew names arrived after the movement tags did, so a snapshot can
-      // legitimately need one and not the other.
-      final needsHebrew =
-          restored.nameHe == null || restored.primaryMuscleHe == null;
-      if (!needsTags && !needsHebrew) continue;
-
-      // A renamed row is no longer the exercise the seed describes, so its
-      // Hebrew name would be wrong. The movement tags still apply -- they
-      // describe the row's own recorded pattern, which renaming does not
-      // change -- so only the names are withheld.
-      final renamed = template.name != restored.name;
+      if (!needsTags) continue;
 
       final filled = restored.withMetadataDefaults(
         movementPattern: template.movementPattern,
         mechanic: template.mechanic,
         loadClass: template.loadClass,
-        nameHe: renamed ? null : template.nameHe,
-        primaryMuscleHe: renamed ? null : template.primaryMuscleHe,
       );
       _exercises[i] = filled;
       _exercisesById[filled.id] = filled;
@@ -498,6 +638,11 @@ class AppDatabase {
         // as which it currently holds -- see [_mergeNewStarterFoods].
         'introducedFoodIds': _introducedFoodIds.toList()..sort(),
         'introducedExerciseIds': _introducedExerciseIds.toList()..sort(),
+        // The language this install's content was written in. Persisted so a
+        // catalog addition on a later build is merged in the same language as
+        // the rows around it, rather than in whatever the UI happens to be set
+        // to -- see [_mergeNewSeededRows].
+        'contentLanguage': _contentLanguage?.code,
       };
 
   /// Notifies listeners of a change and queues a debounced snapshot write.
@@ -581,6 +726,7 @@ class AppDatabase {
     _bodyWeightEntries.clear();
     _introducedFoodIds.clear();
     _introducedExerciseIds.clear();
+    _contentLanguage = null;
     _foodsById.clear();
     _mealsById.clear();
     _mealTemplatesById.clear();
@@ -591,9 +737,16 @@ class AppDatabase {
     _bodyWeightEntriesById.clear();
   }
 
-  void _initializeWithSampleData() {
+  /// Seeds the catalog in [language] and records it as this install's content
+  /// language. Only ever writes the food catalog and the exercise library --
+  /// there are no shipped templates. Every meal and workout template a user
+  /// sees is generated from their onboarding profile or built by them, so
+  /// there is exactly one place a template can come from and one language it
+  /// can be in.
+  void _initializeWithSampleData(AppLanguage language) {
+    _contentLanguage ??= language;
     if (_foods.isEmpty) {
-      final sampleFoods = _getSampleFoods();
+      final sampleFoods = _getSampleFoods(language);
       // A fresh install has been offered everything the current build ships,
       // so nothing here is "new" to it on the next load.
       _introducedFoodIds.addAll(sampleFoods.map((f) => f.id));
@@ -603,25 +756,11 @@ class AppDatabase {
       }
     }
     if (_exercises.isEmpty) {
-      final sampleExercises = _getSampleExercises();
+      final sampleExercises = _getSampleExercises(language);
       _introducedExerciseIds.addAll(sampleExercises.map((e) => e.id));
       _exercises.addAll(sampleExercises);
       for (final exercise in sampleExercises) {
         _exercisesById[exercise.id] = exercise;
-      }
-    }
-    if (_workoutTemplates.isEmpty) {
-      for (final entry in _getBuiltInWorkoutTemplates()) {
-        _workoutTemplates.add(entry.template);
-        _workoutTemplatesById[entry.template.id] = entry.template;
-        _templateExercises.addAll(entry.exercises);
-      }
-    }
-    if (_mealTemplates.isEmpty) {
-      for (final entry in _getBuiltInMealTemplates()) {
-        _mealTemplates.add(entry.template);
-        _mealTemplatesById[entry.template.id] = entry.template;
-        _mealTemplateItems.addAll(entry.items);
       }
     }
   }
@@ -1215,7 +1354,8 @@ class AppDatabase {
         '[DATABASE] ✅ Cleared workouts and sessions (kept built-in workout templates)');
 
     // Clear user-created exercises (keep sample exercises)
-    final sampleExerciseIds = _getSampleExercises().map((e) => e.id).toSet();
+    final sampleExerciseIds =
+        _getSampleExercises(_seededLanguage).map((e) => e.id).toSet();
     _exercises
         .removeWhere((exercise) => !sampleExerciseIds.contains(exercise.id));
     debugPrint('[DATABASE] ✅ Cleared user exercises (kept sample exercises)');
@@ -1543,6 +1683,9 @@ class AppDatabase {
   /// one and its payload contains the catalog, so reseeding there would
   /// duplicate every food and exercise.
   ///
+  /// Re-seeds in this install's recorded content language, so a reset does
+  /// not silently move a Hebrew user's catalog to English.
+  ///
   /// Settings' "Reset all data" used to call [clearAllData] directly and left
   /// the app unusable: the seed only ever runs from the constructor, and the
   /// singleton is long since constructed by the time anyone reaches Settings,
@@ -1552,7 +1695,7 @@ class AppDatabase {
   /// here, so no database call can reach it.
   Future<void> resetToFactoryState() async {
     await clearAllData();
-    _initializeWithSampleData();
+    _initializeWithSampleData(_seededLanguage);
     _touch(_foodsController);
     _touch(_mealsController);
     _touch(_mealTemplatesController);
@@ -1591,19 +1734,26 @@ class AppDatabase {
   Future<T> transaction<T>(Future<T> Function() action) async => await action();
 
   // Sample data methods
-  /// The shipped food catalog, mapped from `StarterFoodCatalog`.
+  /// The shipped food catalog, mapped from `StarterFoodCatalog` and resolved
+  /// into [language].
   ///
   /// The rows themselves live in `lib/data/catalog/starter_foods.dart` --
   /// including where every number comes from, and why ids are append-only.
-  List<FoodItemData> _getSampleFoods() {
+  /// Those rows carry both languages because that is the convenient shape to
+  /// *author* in; what lands in the database is a single name, picked here and
+  /// then fixed. That split is the whole point: the numbers are maintained
+  /// once, and the app never has to re-decide what a food is called.
+  List<FoodItemData> _getSampleFoods(AppLanguage language) {
     final createdAt = DateTime.now().subtract(const Duration(days: 1));
+    final hebrew = language == AppLanguage.hebrew;
     return [
       for (final food in StarterFoodCatalog.all)
         FoodItemData(
           id: food.id,
-          name: food.name,
-          nameHe: food.nameHe,
-          brand: food.brand,
+          // No fallback: `StarterFood.nameHe` is required, so every row in
+          // the catalog is translated and either language is complete.
+          name: hebrew ? food.nameHe : food.name,
+          brand: hebrew ? _hebrewBrand(food.brand) : food.brand,
           unit: food.unit,
           kcalPerUnit: food.kcal,
           proteinPerUnit: food.protein,
@@ -1618,21 +1768,61 @@ class AppDatabase {
     ];
   }
 
-  /// The shipped exercise library, mapped from `StarterExerciseLibrary`.
+  /// The Hebrew for a catalog `brand`.
+  ///
+  /// `brand` is a descriptor rather than a trademark -- "Cooked", "Skinless",
+  /// "Canned in Water", or a pack weight -- so it is content, and gets frozen
+  /// with the rest of the row instead of being re-translated on every build.
+  /// Pure weights ("110g", "300ml") and anything unmapped keep their text,
+  /// which beats showing nothing.
+  static String? _hebrewBrand(String? brand) {
+    if (brand == null) return null;
+    const map = {
+      'Generic': 'רגיל',
+      'Cooked': 'מבושל',
+      'Boiled': 'מבושל',
+      'Canned': 'משומר',
+      'Canned in Water': 'משומר במים',
+      'Canned in oil': 'משומר בשמן',
+      'Skinless': 'ללא עור',
+      'Low Fat': 'דל שומן',
+      'Unsweetened': 'ללא סוכר',
+      'Vanilla': 'וניל',
+      'Whole Wheat': 'חיטה מלאה',
+      'Extra Virgin': 'כתית מעולה',
+      'Sirloin': 'סינטה',
+      'Cheese': 'גבינה',
+      'Fried, breaded': 'מטוגן בציפוי',
+      'Roasted, with skin': 'צלוי, עם העור',
+      'Leg, roasted': 'שוק, צלוי',
+      'White, cooked': 'לבן, מבושל',
+      'Two eggs': 'שתי ביצים',
+      'Fresh': 'טרי',
+      'Lean': 'רזה',
+      '85% Lean': '85% רזה',
+      '93% Lean': '93% רזה',
+    };
+    return map[brand] ?? brand;
+  }
+
+  /// The shipped exercise library, mapped from `StarterExerciseLibrary` and
+  /// resolved into [language]. See [_getSampleFoods] for why the authoring
+  /// rows are bilingual and the seeded ones are not.
   ///
   /// The rows themselves live in `lib/data/catalog/starter_exercises.dart`,
   /// along with the coverage invariants they have to satisfy and why.
-  List<ExerciseData> _getSampleExercises() {
+  List<ExerciseData> _getSampleExercises(AppLanguage language) {
+    final hebrew = language == AppLanguage.hebrew;
     return [
       for (final e in StarterExerciseLibrary.all)
         ExerciseData(
           id: e.id,
-          name: e.name,
-          nameHe: e.nameHe,
-          primaryMuscle: e.primaryMuscle,
-          primaryMuscleHe: e.primaryMuscleHe,
+          name: hebrew ? e.nameHe : e.name,
+          primaryMuscle: hebrew ? e.primaryMuscleHe : e.primaryMuscle,
+          // `unit` is deliberately *not* translated: it is an id the weight
+          // logic branches on. See `exerciseUnitLabel`.
           unit: e.unit,
-          notes: e.notes,
+          notes: hebrew ? e.notesHe : e.notes,
           equipment: e.equipment,
           contraindicatedFor: e.contraindicatedFor,
           rehabFor: e.rehabFor,
@@ -1642,197 +1832,6 @@ class AppDatabase {
         ),
     ];
   }
-
-  // Built-in workout templates so the Workouts tab has real content on
-  // first launch, not just an empty state -- built entirely from the
-  // exercise library above (ids '1'-'16').
-  List<({WorkoutTemplateData template, List<TemplateExerciseData> exercises})>
-      _getBuiltInWorkoutTemplates() {
-    var nextTemplateId = 1;
-    var nextExerciseEntryId = 1;
-
-    ({WorkoutTemplateData template, List<TemplateExerciseData> exercises})
-        template(
-      String name, {
-      required String notes,
-      required List<String> exerciseIds,
-      int sets = 3,
-      int reps = 10,
-      // Built-ins carried no nameHe, so a Hebrew user's template list was a
-      // mix: generated sessions translated, seeded ones not.
-      String? nameHe,
-    }) {
-      final templateId = 'builtin-workout-${nextTemplateId++}';
-      final exercises = <TemplateExerciseData>[];
-      for (var i = 0; i < exerciseIds.length; i++) {
-        exercises.add(TemplateExerciseData(
-          id: 'builtin-workout-ex-${nextExerciseEntryId++}',
-          templateId: templateId,
-          exerciseId: exerciseIds[i],
-          orderIndex: i,
-          defaultSets: sets,
-          defaultReps: reps,
-        ));
-      }
-      return (
-        // Seeded before any profile exists, so it is neither generated nor
-        // the user's -- see TemplateOrigin. Marking it correctly keeps it
-        // out of anything regeneration replaces.
-        template: WorkoutTemplateData(
-            id: templateId,
-            name: name,
-            nameHe: nameHe,
-            notes: notes,
-            origin: TemplateOrigin.builtin),
-        exercises: exercises,
-      );
-    }
-
-    return [
-      template(
-        'Full-Body Beginner',
-        notes:
-            'A simple 3x/week starting point covering every major muscle group.',
-        exerciseIds: [
-          '8',
-          '1',
-          '6',
-          '12',
-          '16'
-        ], // Squats, Push-ups, Barbell Rows, Overhead Press, Plank
-        reps: 10,
-        nameHe: 'גוף מלא למתחילים',
-      ),
-      template(
-        'Upper Body (Upper/Lower Split)',
-        notes: 'Pair with "Lower Body" on alternating days.',
-        exerciseIds: [
-          '2',
-          '6',
-          '12',
-          '14',
-          '15'
-        ], // Bench Press, Barbell Rows, Overhead Press, Bicep Curls, Dips,
-        nameHe: 'פלג גוף עליון (פיצול עליון/תחתון)',
-      ),
-      template(
-        'Lower Body (Upper/Lower Split)',
-        notes: 'Pair with "Upper Body" on alternating days.',
-        exerciseIds: [
-          '8',
-          '9',
-          '10',
-          '11'
-        ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises,
-        nameHe: 'פלג גוף תחתון (פיצול עליון/תחתון)',
-      ),
-      template(
-        'Push Day (Push/Pull/Legs)',
-        notes: 'Chest, shoulders, triceps.',
-        exerciseIds: [
-          '2',
-          '12',
-          '3',
-          '13',
-          '15'
-        ], // Bench Press, Overhead Press, Chest Fly, Lateral Raises, Dips,
-        nameHe: 'אימון דחיפה (דחיפה/משיכה/רגליים)',
-      ),
-      template(
-        'Pull Day (Push/Pull/Legs)',
-        notes: 'Back and biceps.',
-        exerciseIds: [
-          '5',
-          '4',
-          '6',
-          '7',
-          '14'
-        ], // Deadlift, Pull-ups, Barbell Rows, Lat Pulldown, Bicep Curls
-        sets: 3,
-        reps: 8,
-        nameHe: 'אימון משיכה (דחיפה/משיכה/רגליים)',
-      ),
-      template(
-        'Leg Day (Push/Pull/Legs)',
-        notes: 'Quads, hamstrings, glutes, calves.',
-        exerciseIds: [
-          '8',
-          '9',
-          '10',
-          '11'
-        ], // Squats, Romanian Deadlift, Walking Lunges, Calf Raises
-        sets: 4,
-        reps: 8,
-        nameHe: 'אימון רגליים (דחיפה/משיכה/רגליים)',
-      ),
-    ];
-  }
-
-  // Built-in meal templates so the Meals > Templates tab has real content
-  // on first launch -- built entirely from the food catalog above.
-  // Amounts are stored quantities (see FoodServingKind): for "100g"-unit
-  // foods, 1.0 = 100g; for piece/tbsp-unit foods, 1.0 = one piece/tbsp.
-  List<({MealTemplateData template, List<MealTemplateItemData> items})>
-      _getBuiltInMealTemplates() {
-    var nextTemplateId = 1;
-    var nextItemId = 1;
-
-    ({MealTemplateData template, List<MealTemplateItemData> items}) template(
-      String name, {
-      required String description,
-      required List<(String foodId, double amount)> foods,
-    }) {
-      final templateId = 'builtin-meal-${nextTemplateId++}';
-      final now = DateTime.now().subtract(const Duration(days: 1));
-      final items = foods
-          .map((f) => MealTemplateItemData(
-                id: 'builtin-meal-item-${nextItemId++}',
-                templateId: templateId,
-                foodId: f.$1,
-                amount: f.$2,
-              ))
-          .toList();
-      return (
-        // See the workout equivalent above.
-        template: MealTemplateData(
-            id: templateId,
-            name: name,
-            description: description,
-            origin: TemplateOrigin.builtin,
-            createdAt: now,
-            updatedAt: now),
-        items: items,
-      );
-    }
-
-    return [
-      template(
-        'Balanced Breakfast',
-        description: 'Oats, Greek yogurt, banana, and blueberries.',
-        foods: [('15', 0.6), ('9', 1.5), ('32', 1), ('35', 0.5)],
-      ),
-      template(
-        'High-Protein Lunch',
-        description: 'Chicken breast, brown rice, and broccoli.',
-        foods: [('1', 1.5), ('13', 1.5), ('23', 1.0), ('40', 1)],
-      ),
-      template(
-        'Post-Workout Recovery',
-        description: 'Turkey breast, sweet potato, and spinach.',
-        foods: [('4', 1.2), ('19', 1.5), ('24', 0.5)],
-      ),
-      template(
-        'Light Dinner',
-        description: 'Salmon, quinoa, zucchini, and tomato.',
-        foods: [('2', 1.2), ('16', 1.0), ('30', 1.0), ('27', 1.0)],
-      ),
-      template(
-        'Veggie Power Bowl',
-        description: 'Tofu, chickpeas, kale, and avocado.',
-        foods: [('8', 1.0), ('22', 1.0), ('25', 0.5), ('36', 0.5), ('40', 1)],
-      ),
-    ];
-  }
 }
 
 // Simple data classes for in-memory storage, persisted as a JSON snapshot
@@ -1840,7 +1839,6 @@ class AppDatabase {
 class FoodItemData {
   final String id;
   final String name;
-  final String? nameHe;
   final String? brand;
   final String unit;
   final double kcalPerUnit;
@@ -1863,7 +1861,6 @@ class FoodItemData {
   FoodItemData({
     required this.id,
     required this.name,
-    this.nameHe,
     this.brand,
     required this.unit,
     required this.kcalPerUnit,
@@ -1880,7 +1877,6 @@ class FoodItemData {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'nameHe': nameHe,
         'brand': brand,
         'unit': unit,
         'kcalPerUnit': kcalPerUnit,
@@ -1897,7 +1893,6 @@ class FoodItemData {
   factory FoodItemData.fromJson(Map<String, dynamic> json) => FoodItemData(
         id: json['id'] as String,
         name: json['name'] as String,
-        nameHe: json['nameHe'] as String?,
         brand: json['brand'] as String?,
         unit: json['unit'] as String,
         kcalPerUnit: (json['kcalPerUnit'] as num).toDouble(),
@@ -1920,11 +1915,9 @@ class FoodItemData {
   /// `AppDatabase._backfillSeededFoodMetadata`. A null argument leaves the
   /// current value alone. Does not touch `updatedAt`: nothing the user did
   /// changed, and bumping it would make a pure migration look like an edit.
-  FoodItemData withSeedDefaults({String? nameHe, FoodCategory? category}) =>
-      FoodItemData(
+  FoodItemData withSeedDefaults({FoodCategory? category}) => FoodItemData(
         id: id,
         name: name,
-        nameHe: nameHe ?? this.nameHe,
         brand: brand,
         unit: unit,
         kcalPerUnit: kcalPerUnit,
@@ -2067,9 +2060,7 @@ class MealItemData {
 class MealTemplateData {
   final String id;
   final String name;
-  final String? nameHe;
   final String? description;
-  final String? descriptionHe;
 
   /// See [WorkoutTemplateData.origin].
   final TemplateOrigin origin;
@@ -2079,9 +2070,7 @@ class MealTemplateData {
   MealTemplateData({
     required this.id,
     required this.name,
-    this.nameHe,
     this.description,
-    this.descriptionHe,
     this.origin = TemplateOrigin.user,
     required this.createdAt,
     required this.updatedAt,
@@ -2090,9 +2079,7 @@ class MealTemplateData {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'nameHe': nameHe,
         'description': description,
-        'descriptionHe': descriptionHe,
         'origin': origin.key,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
@@ -2102,9 +2089,7 @@ class MealTemplateData {
       MealTemplateData(
         id: json['id'] as String,
         name: json['name'] as String,
-        nameHe: json['nameHe'] as String?,
         description: json['description'] as String?,
-        descriptionHe: json['descriptionHe'] as String?,
         // Absent on rows predating this field -> TemplateOrigin.user, which
         // regeneration never replaces.
         origin: TemplateOrigin.fromKey(json['origin']),
@@ -2145,9 +2130,7 @@ class MealTemplateItemData {
 class ExerciseData {
   final String id;
   final String name;
-  final String? nameHe;
   final String? primaryMuscle;
-  final String? primaryMuscleHe;
   final String unit;
   final String? notes;
 
@@ -2183,9 +2166,7 @@ class ExerciseData {
   ExerciseData({
     required this.id,
     required this.name,
-    this.nameHe,
     this.primaryMuscle,
-    this.primaryMuscleHe,
     required this.unit,
     this.notes,
     this.equipment = const <Equipment>{},
@@ -2199,9 +2180,7 @@ class ExerciseData {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'nameHe': nameHe,
         'primaryMuscle': primaryMuscle,
-        'primaryMuscleHe': primaryMuscleHe,
         'unit': unit,
         'notes': notes,
         'equipment': EquipmentCodec.encode(equipment),
@@ -2215,9 +2194,7 @@ class ExerciseData {
   factory ExerciseData.fromJson(Map<String, dynamic> json) => ExerciseData(
         id: json['id'] as String,
         name: json['name'] as String,
-        nameHe: json['nameHe'] as String?,
         primaryMuscle: json['primaryMuscle'] as String?,
-        primaryMuscleHe: json['primaryMuscleHe'] as String?,
         unit: json['unit'] as String,
         notes: json['notes'] as String?,
         // Absent on rows written before these fields existed -> empty.
@@ -2238,15 +2215,11 @@ class ExerciseData {
     MovementPattern? movementPattern,
     Mechanic? mechanic,
     LoadClass? loadClass,
-    String? nameHe,
-    String? primaryMuscleHe,
   }) =>
       ExerciseData(
         id: id,
         name: name,
-        nameHe: this.nameHe ?? nameHe,
         primaryMuscle: primaryMuscle,
-        primaryMuscleHe: this.primaryMuscleHe ?? primaryMuscleHe,
         unit: unit,
         notes: notes,
         equipment: equipment,
@@ -2261,12 +2234,10 @@ class ExerciseData {
 class WorkoutTemplateData {
   final String id;
   final String name;
-  final String? nameHe;
   final String? notes;
-  final String? notesHe;
 
-  /// Whether this template was seeded, generated from the profile, or built
-  /// by the user -- regeneration only ever replaces [TemplateOrigin.generated].
+  /// Whether this template was generated from the profile or built by the
+  /// user -- regeneration only ever replaces [TemplateOrigin.generated].
   final TemplateOrigin origin;
 
   /// Whether this template manages its own breaks -- see
@@ -2277,9 +2248,7 @@ class WorkoutTemplateData {
   WorkoutTemplateData({
     required this.id,
     required this.name,
-    this.nameHe,
     this.notes,
-    this.notesHe,
     this.origin = TemplateOrigin.user,
     this.customRest = false,
   });
@@ -2287,9 +2256,7 @@ class WorkoutTemplateData {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'nameHe': nameHe,
         'notes': notes,
-        'notesHe': notesHe,
         'origin': origin.key,
         'customRest': customRest,
       };
@@ -2298,9 +2265,7 @@ class WorkoutTemplateData {
       WorkoutTemplateData(
         id: json['id'] as String,
         name: json['name'] as String,
-        nameHe: json['nameHe'] as String?,
         notes: json['notes'] as String?,
-        notesHe: json['notesHe'] as String?,
         // See MealTemplateData.fromJson.
         origin: TemplateOrigin.fromKey(json['origin']),
         customRest: json['customRest'] as bool? ?? false,

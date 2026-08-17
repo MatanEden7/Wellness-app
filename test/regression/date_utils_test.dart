@@ -108,11 +108,16 @@ void main() {
 
   group('formatDuration', () {
     test('omits the hours segment under an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(minutes: 45), AppLocalizationsEn()), '45m');
+      expect(
+          AppDateUtils.formatDuration(
+              const Duration(minutes: 45), AppLocalizationsEn()),
+          '45m');
     });
 
     test('includes both segments over an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(hours: 1, minutes: 30), AppLocalizationsEn()),
+      expect(
+          AppDateUtils.formatDuration(
+              const Duration(hours: 1, minutes: 30), AppLocalizationsEn()),
           '1h 30m');
     });
   });

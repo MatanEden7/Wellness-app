@@ -39,7 +39,12 @@ class AnalyticsPage extends ConsumerWidget {
     return PlatformPage(
       chrome: PageChrome(
         title: l10n.analyticsTitle,
-        pinnedHeaderHeight: 52,
+        // The 56 default, not the 52 this used to override it to. A segmented
+        // control at 14pt fits in 52 with Latin glyphs and overflows it by a
+        // pixel with Hebrew ones, which are taller at the same point size --
+        // and the overflow stripe is the first thing a user sees on the
+        // screen. There is nothing this control needs the extra 4px back for.
+        pinnedHeaderHeight: 56,
         pinnedHeader: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: UIConstants.screenHorizontalPadding,

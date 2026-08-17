@@ -81,13 +81,14 @@ class _StrengthSectionState extends ConsumerState<StrengthSection> {
             : null;
 
     return AnalyticsCard(
-      title: AnalyticsFormat.exerciseName(view.exercises[exerciseId], language),
+      title: AnalyticsFormat.exerciseName(view.exercises[exerciseId]),
       onTitleTap: () => _pickExercise(context, view, language),
       trailing: scrubbed == null
           ? (progress.bestE1rm == null
               ? l10n.analyticsBodyweightLabel
-              : l10n.analyticsBestE1rm(AnalyticsFormat.kg(progress.bestE1rm)))
-          : l10n.analyticsTopSet(AnalyticsFormat.kg(scrubbed.topWeightKg),
+              : l10n.analyticsBestE1rm(
+                  AnalyticsFormat.kg(progress.bestE1rm, l10n)))
+          : l10n.analyticsTopSet(AnalyticsFormat.kg(scrubbed.topWeightKg, l10n),
               '${scrubbed.repsAtTopWeight}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,8 +101,8 @@ class _StrengthSectionState extends ConsumerState<StrengthSection> {
           else ...[
             ChartSemantics(
               label: describeSeries(
-                name:
-                    '${AnalyticsFormat.exerciseName(view.exercises[exerciseId], language)} estimated 1RM',
+                name: l10n.estimated1rmFor(
+                    AnalyticsFormat.exerciseName(view.exercises[exerciseId])),
                 series: e1rm,
                 bucket: AnalyticsBucket.day,
                 unit: 'kg',
@@ -163,8 +164,7 @@ class _StrengthSectionState extends ConsumerState<StrengthSection> {
             children: [
               for (final id in ids)
                 ListTile(
-                  title: Text(AnalyticsFormat.exerciseName(
-                      view.exercises[id], language)),
+                  title: Text(AnalyticsFormat.exerciseName(view.exercises[id])),
                   subtitle: Text(AppLocalizations.of(context)!
                       .analyticsSessionCount(
                           '${view.strength[id]!.sessionCount}')),
@@ -217,7 +217,7 @@ class _PlateauStrip extends StatelessWidget {
                   Expanded(
                     child: Text(
                       AnalyticsFormat.exerciseName(
-                          view.exercises[status.exerciseId], language),
+                          view.exercises[status.exerciseId]),
                       style: theme.textTheme.bodySmall,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -240,7 +240,7 @@ class _PlateauStrip extends StatelessWidget {
   }
 
   String _describe(PlateauStatus status) {
-    final weight = AnalyticsFormat.kg(status.lastTopWeightKg);
+    final weight = AnalyticsFormat.kg(status.lastTopWeightKg, l10n);
     if (status.isPersonalBest) return l10n.analyticsPlateauNewBest(weight);
     if (status.daysSinceIncrease == 0) {
       return l10n.analyticsPlateauMovedUp(weight);

@@ -37,6 +37,51 @@ void main() {
     now = DateTime(2026, 8, 5, 12);
   });
 
+  /// A workout template with two exercise rows.
+  ///
+  /// Built here rather than taken from the seeded catalog: nothing ships
+  /// pre-built any more, so `getAllWorkoutTemplates().first` has nothing to
+  /// return until something generates or creates one. A fixture is the
+  /// honest way to test cascade behaviour anyway -- it says what the rows are
+  /// instead of depending on whatever the seed happened to contain.
+  Future<WorkoutTemplateData> aWorkoutTemplate() async {
+    final template = WorkoutTemplateData(id: 'wt-fixture', name: 'Push Day');
+    await db.insertWorkoutTemplate(template);
+    final exercises = await db.getAllExercises();
+    for (var i = 0; i < 2; i++) {
+      await db.insertTemplateExercise(TemplateExerciseData(
+        id: 'wt-fixture-row-$i',
+        templateId: template.id,
+        exerciseId: exercises[i].id,
+        orderIndex: i,
+        defaultSets: 3,
+        defaultReps: 10,
+      ));
+    }
+    return template;
+  }
+
+  /// A meal template with two food items. See [aWorkoutTemplate].
+  Future<MealTemplateData> aMealTemplate() async {
+    final template = MealTemplateData(
+      id: 'mt-fixture',
+      name: 'Chicken and rice',
+      createdAt: now,
+      updatedAt: now,
+    );
+    await db.insertMealTemplate(template);
+    final foods = await db.getAllFoods();
+    for (var i = 0; i < 2; i++) {
+      await db.insertMealTemplateItem(MealTemplateItemData(
+        id: 'mt-fixture-item-$i',
+        templateId: template.id,
+        foodId: foods[i].id,
+        amount: 1.0,
+      ));
+    }
+    return template;
+  }
+
   Future<MealData> aMeal({String id = 'meal-1'}) async {
     final meal = MealData(
       id: id,
@@ -221,7 +266,7 @@ void main() {
 
   group('workout template', () {
     test('deleting a template takes its exercise rows with it', () async {
-      final template = (await db.getAllWorkoutTemplates()).first;
+      final template = await aWorkoutTemplate();
       expect(await db.getTemplateExercisesByTemplateId(template.id), isNotEmpty,
           reason: 'fixture check -- a template with no exercises proves '
               'nothing about cascading');
@@ -232,7 +277,7 @@ void main() {
     });
 
     test('a template exercise can be edited and removed on its own', () async {
-      final template = (await db.getAllWorkoutTemplates()).first;
+      final template = await aWorkoutTemplate();
       final rows = await db.getTemplateExercisesByTemplateId(template.id);
       final row = rows.first;
 
@@ -255,7 +300,7 @@ void main() {
 
   group('meal template item', () {
     test('can be edited and removed without touching the template', () async {
-      final template = (await db.getAllMealTemplates()).first;
+      final template = await aMealTemplate();
       final items = await db.getMealTemplateItemsByTemplateId(template.id);
       final item = items.first;
 
@@ -359,7 +404,7 @@ void main() {
     // user logged because something it merely *references* was removed.
     test('deleting a workout template keeps sessions performed from it',
         () async {
-      final template = (await db.getAllWorkoutTemplates()).first;
+      final template = await aWorkoutTemplate();
       await db.insertWorkoutSession(WorkoutSessionData(
         id: 'performed',
         startedAt: now,

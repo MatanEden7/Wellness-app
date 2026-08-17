@@ -703,7 +703,8 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
                   final template = templates
                       .where((t) => t.id == session.templateId)
                       .firstOrNull;
-                  final displayName = template?.name ?? 'Custom Workout';
+                  final displayName = template?.name ??
+                      AppLocalizations.of(context)!.customWorkoutTitle;
 
                   return DropdownMenuItem(
                     value: session.templateId ?? session.id,
@@ -734,7 +735,8 @@ class _TemplateAndExistingSelector extends HookConsumerWidget {
                     final template = templates
                         .where((t) => t.id == session.templateId)
                         .firstOrNull;
-                    final displayName = template?.name ?? 'Custom Workout';
+                    final displayName = template?.name ??
+                        AppLocalizations.of(context)!.customWorkoutTitle;
                     onTemplateSelected(value, displayName);
                   }
                 },

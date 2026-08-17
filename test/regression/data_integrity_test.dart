@@ -47,6 +47,21 @@ void main() {
 
     test('deleting a food removes meal template items that reference it',
         () async {
+      // Built here rather than borrowed from a shipped template: nothing
+      // ships pre-built any more, so the fixture has to say what it is.
+      await db.insertMealTemplate(MealTemplateData(
+        id: 'mt-1',
+        name: 'Uses food 1',
+        createdAt: DateTime(2026, 8, 2),
+        updatedAt: DateTime(2026, 8, 2),
+      ));
+      await db.insertMealTemplateItem(MealTemplateItemData(
+        id: 'mti-1',
+        templateId: 'mt-1',
+        foodId: '1',
+        amount: 1.0,
+      ));
+
       final before = (await db.getAllMealTemplateItems())
           .where((i) => i.foodId == '1')
           .length;
@@ -73,10 +88,19 @@ void main() {
         orderIndex: 0,
         reps: 10,
       ));
+      await db.insertWorkoutTemplate(
+          WorkoutTemplateData(id: 'wt-1', name: 'Uses exercise 8'));
+      await db.insertTemplateExercise(TemplateExerciseData(
+        id: 'wte-1',
+        templateId: 'wt-1',
+        exerciseId: '8',
+        orderIndex: 0,
+        defaultSets: 3,
+      ));
       expect(
         (await db.getAllTemplateExercises()).where((e) => e.exerciseId == '8'),
         isNotEmpty,
-        reason: 'fixture sanity: exercise 8 is in built-in templates',
+        reason: 'fixture sanity: exercise 8 is in a template',
       );
 
       await db.deleteExercise('8');
@@ -111,18 +135,21 @@ void main() {
 
     test('an updated workout template reads back the new value by id',
         () async {
-      await db.updateWorkoutTemplate(WorkoutTemplateData(
-        id: 'builtin-workout-1',
-        name: 'Renamed Plan',
-      ));
+      await db.insertWorkoutTemplate(
+          WorkoutTemplateData(id: 'wt-1', name: 'Original Plan'));
 
-      expect((await db.getWorkoutTemplateById('builtin-workout-1'))!.name,
-          'Renamed Plan');
+      await db.updateWorkoutTemplate(
+          WorkoutTemplateData(id: 'wt-1', name: 'Renamed Plan'));
+
+      expect((await db.getWorkoutTemplateById('wt-1'))!.name, 'Renamed Plan');
     });
 
     test('a deleted workout template no longer resolves by id', () async {
-      await db.deleteWorkoutTemplate('builtin-workout-1');
-      expect(await db.getWorkoutTemplateById('builtin-workout-1'), isNull);
+      await db.insertWorkoutTemplate(
+          WorkoutTemplateData(id: 'wt-1', name: 'Doomed Plan'));
+
+      await db.deleteWorkoutTemplate('wt-1');
+      expect(await db.getWorkoutTemplateById('wt-1'), isNull);
     });
 
     test('an updated session and sleep entry read back by id', () async {

@@ -207,8 +207,8 @@ class _FoodList extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: FilterBanner(
                   icon: Icons.filter_alt_outlined,
-                  message: '$hiddenCount hidden by your profile',
-                  actionLabel: 'Show all',
+                  message: l10n.hiddenByProfile(hiddenCount),
+                  actionLabel: l10n.showAllContent,
                   onAction: () =>
                       ref.read(showAllContentProvider.notifier).state = true,
                 ),
@@ -302,7 +302,7 @@ class _FoodCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final name = food.displayName(language);
+    final name = food.name;
 
     return SwipeActionRow(
       rowKey: ValueKey(food.id),
@@ -349,7 +349,7 @@ class _FoodCard extends StatelessWidget {
                         if (food.brand != null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            food.displayBrand(language)!,
+                            food.brand!,
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(fontSize: 14),
                             maxLines: 1,
@@ -483,7 +483,7 @@ class FoodEditorPage extends HookConsumerWidget {
                     '${nameController.text.length}/${TextLimits.foodNameMaxLength}',
               ),
               maxLength: TextLimits.foodNameMaxLength,
-              validator: TextLimits.validateFoodName,
+              validator: (v) => TextLimits.validateFoodName(v, l10n),
             ),
             const SizedBox(height: AppSpacing.md),
             TextFormField(
@@ -500,7 +500,7 @@ class FoodEditorPage extends HookConsumerWidget {
                 labelText: l10n.unit,
                 hintText: AppLocalizations.of(context)!.foodUnitHint,
               ),
-              validator: (value) => Validators.required(value, l10n.unit),
+              validator: (value) => Validators.required(value, l10n.unit, l10n),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -518,8 +518,8 @@ class FoodEditorPage extends HookConsumerWidget {
                     controller: kcalController,
                     decoration: InputDecoration(labelText: l10n.caloriesLabel),
                     keyboardType: TextInputType.number,
-                    validator: (value) =>
-                        Validators.nonNegativeNumber(value, l10n.caloriesLabel),
+                    validator: (value) => Validators.nonNegativeNumber(
+                        value, l10n.caloriesLabel, l10n),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -529,7 +529,7 @@ class FoodEditorPage extends HookConsumerWidget {
                     decoration: InputDecoration(labelText: l10n.proteinGrams),
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        Validators.nonNegativeNumber(value, 'Protein'),
+                        Validators.nonNegativeNumber(value, l10n.protein, l10n),
                   ),
                 ),
               ],
@@ -543,7 +543,7 @@ class FoodEditorPage extends HookConsumerWidget {
                     decoration: InputDecoration(labelText: l10n.carbsGrams),
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        Validators.nonNegativeNumber(value, 'Carbs'),
+                        Validators.nonNegativeNumber(value, l10n.carbs, l10n),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -553,7 +553,7 @@ class FoodEditorPage extends HookConsumerWidget {
                     decoration: InputDecoration(labelText: l10n.fatGrams),
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        Validators.nonNegativeNumber(value, 'Fat'),
+                        Validators.nonNegativeNumber(value, l10n.fat, l10n),
                   ),
                 ),
               ],
@@ -644,7 +644,8 @@ class FoodEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        showAppError(context, 'Error saving food: $e');
+        showAppError(
+            context, AppLocalizations.of(context)!.errorSavingFood('$e'));
       }
     } finally {
       isLoading.value = false;

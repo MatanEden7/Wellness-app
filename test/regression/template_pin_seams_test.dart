@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -87,8 +88,10 @@ void main() {
     ]);
 
     final profile = _profile();
-    await WorkoutTemplateGenerator(database, profile).generateTemplates();
-    await MealTemplateGenerator(database, profile).generateTemplates();
+    await WorkoutTemplateGenerator(database, profile, AppLanguage.english)
+        .generateTemplates();
+    await MealTemplateGenerator(database, profile, AppLanguage.english)
+        .generateTemplates();
     await container.read(calendarStateProvider.notifier).addEvents(
         await CalendarScheduleGenerator(database, profile).buildSchedule());
   });

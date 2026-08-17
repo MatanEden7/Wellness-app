@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/services/content_regeneration_service.dart';
@@ -54,8 +55,10 @@ void main() {
     final service = ContentRegenerationService(db);
 
     // Generate once, then add something the user made themselves.
-    await MealTemplateGenerator(db, _profile()).generateTemplates();
-    await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
+    await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+        .generateTemplates();
+    await WorkoutTemplateGenerator(db, _profile(), AppLanguage.english)
+        .generateTemplates();
     await db.insertMealTemplate(MealTemplateData(
       id: 'mine',
       name: 'My own recipe',
@@ -69,13 +72,8 @@ void main() {
       origin: TemplateOrigin.user,
     ));
 
-    final builtInMealIds = (await db.getAllMealTemplates())
-        .where((t) => t.origin == TemplateOrigin.builtin)
-        .map((t) => t.id)
-        .toSet();
-    expect(builtInMealIds, isNotEmpty, reason: 'expected seeded built-ins');
-
-    await service.regenerate(_profile(dietType: 'herbivore'));
+    await service.regenerate(
+        _profile(dietType: 'herbivore'), AppLanguage.english);
 
     final meals = await db.getAllMealTemplates();
     final workouts = await db.getAllWorkoutTemplates();
@@ -83,10 +81,6 @@ void main() {
     expect(meals.map((t) => t.id), contains('mine'),
         reason: "never delete the user's own templates");
     expect(workouts.map((t) => t.id), contains('my-workout'));
-    for (final id in builtInMealIds) {
-      expect(meals.map((t) => t.id), contains(id),
-          reason: 'built-ins are filtered at display time, not deleted');
-    }
     expect(meals.where((t) => t.origin == TemplateOrigin.generated), isNotEmpty,
         reason: 'a fresh generated set should exist');
   });
@@ -95,12 +89,12 @@ void main() {
     final db = AppDatabase();
     final service = ContentRegenerationService(db);
 
-    await service.regenerate(_profile());
+    await service.regenerate(_profile(), AppLanguage.english);
     final afterFirst = (await db.getAllMealTemplates())
         .where((t) => t.origin == TemplateOrigin.generated)
         .length;
 
-    await service.regenerate(_profile());
+    await service.regenerate(_profile(), AppLanguage.english);
     final afterSecond = (await db.getAllMealTemplates())
         .where((t) => t.origin == TemplateOrigin.generated)
         .length;
@@ -113,8 +107,9 @@ void main() {
     final db = AppDatabase();
     final service = ContentRegenerationService(db);
 
-    await service.regenerate(_profile());
-    await service.regenerate(_profile(dietType: 'herbivore'));
+    await service.regenerate(_profile(), AppLanguage.english);
+    await service.regenerate(
+        _profile(dietType: 'herbivore'), AppLanguage.english);
 
     final byId = {for (final f in await db.getAllFoods()) f.id: f};
     var checked = 0;
@@ -140,9 +135,11 @@ void main() {
     expect((await service.preview()).isEmpty, isTrue);
 
     final meals =
-        await MealTemplateGenerator(db, _profile()).generateTemplates();
+        await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+            .generateTemplates();
     final workouts =
-        await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
+        await WorkoutTemplateGenerator(db, _profile(), AppLanguage.english)
+            .generateTemplates();
 
     final preview = await service.preview();
     expect(preview.mealTemplates, meals.length);
@@ -152,10 +149,12 @@ void main() {
   test('deleting a generated meal template takes its items with it', () async {
     final db = AppDatabase();
     final created =
-        await MealTemplateGenerator(db, _profile()).generateTemplates();
+        await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+            .generateTemplates();
     expect(created, isNotEmpty);
 
-    await ContentRegenerationService(db).regenerate(_profile());
+    await ContentRegenerationService(db)
+        .regenerate(_profile(), AppLanguage.english);
 
     for (final template in created) {
       expect(await db.getMealTemplateItemsByTemplateId(template.id), isEmpty,

@@ -101,8 +101,8 @@ class _TrainingSectionState extends ConsumerState<TrainingSection> {
             ),
             (
               label: l10n.analyticsTimeSpent,
-              value:
-                  AnalyticsFormat.hours((view.trainingMinutes.total ?? 0) / 60),
+              value: AnalyticsFormat.hours(
+                  (view.trainingMinutes.total ?? 0) / 60, l10n),
             ),
           ]),
           if (view.setsPerMuscle.isNotEmpty) ...[

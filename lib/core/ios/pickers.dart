@@ -18,8 +18,13 @@ Future<DateTime?> showAppDatePicker({
   DateTime? first,
   DateTime? last,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final native = await NativeUI.pickDateTime(
     mode: 'date',
+    // The app's language, not the device's -- see NativeUI.pickDateTime.
+    localeIdentifier: Localizations.localeOf(context).languageCode,
+    cancelLabel: l10n.cancel,
+    doneLabel: l10n.done,
     initial: initial,
     minimum: first,
     maximum: last,
@@ -47,7 +52,14 @@ Future<TimeOfDay?> showAppTimePicker({
   final seed =
       DateTime(now.year, now.month, now.day, initial.hour, initial.minute);
 
-  final native = await NativeUI.pickDateTime(mode: 'time', initial: seed);
+  final l10n = AppLocalizations.of(context)!;
+  final native = await NativeUI.pickDateTime(
+    mode: 'time',
+    localeIdentifier: Localizations.localeOf(context).languageCode,
+    cancelLabel: l10n.cancel,
+    doneLabel: l10n.done,
+    initial: seed,
+  );
   if (native != null) {
     final picked = native.value;
     return picked == null

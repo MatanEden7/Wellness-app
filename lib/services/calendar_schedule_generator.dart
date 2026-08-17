@@ -13,27 +13,19 @@ class CalendarScheduleGenerator {
 
   /// The language the plan is being generated in.
   ///
-  /// Event titles are *stored*, so this decides what a user sees on their
-  /// calendar forever after. Both generators already fill `nameHe` on their
-  /// templates; this class was copying `template.name` -- the English field --
-  /// so a plan built during Hebrew onboarding came out in English even though
-  /// the Hebrew names existed alongside it.
+  /// Only used for the labels this class writes *itself* -- the sleep event
+  /// and the meal slots it falls back to when no template exists. A title
+  /// taken from a template is simply that template's name: the template was
+  /// already written in one language by the generator that made it, and
+  /// copying it is what keeps the calendar and the plan saying the same
+  /// thing.
+  ///
+  /// Event titles are stored, so this decides what the user sees on their
+  /// calendar from here on.
   final AppLanguage _language;
 
   CalendarScheduleGenerator(this._database, this._profile,
       [this._language = AppLanguage.english]);
-
-  /// Picks the Hebrew name when generating in Hebrew and one exists.
-  ///
-  /// The *Data classes carry `nameHe` but not the `displayName()` the domain
-  /// models have, so the same fallback rule lives here: an untranslated
-  /// template keeps its English name rather than showing a blank.
-  String _named(String name, String? nameHe) =>
-      _language == AppLanguage.hebrew &&
-              nameHe != null &&
-              nameHe.trim().isNotEmpty
-          ? nameHe
-          : name;
 
   /// Builds the events a new user's calendar should start with.
   ///
@@ -85,7 +77,7 @@ class CalendarScheduleGenerator {
       final firstOccurrence = _nextWeekdayOnOrAfter(firstDay, weekday);
 
       events.add(ScheduledEvent.create(
-        title: _named(template.name, template.nameHe),
+        title: template.name,
         type: EventType.workout,
         scheduledAt: DateTime(firstOccurrence.year, firstOccurrence.month,
             firstOccurrence.day, _workoutHour),
@@ -108,7 +100,8 @@ class CalendarScheduleGenerator {
       // Pin to a generated template when there is one, so the notification's
       // "Approve" action has something to build the meal from.
       // Same preference as workouts: a generated template is guaranteed to
-      // respect the user's diet and exclusions, a built-in is not.
+      // respect the user's diet and exclusions, one the user hand-built is
+      // not.
       final generated = mealTemplates
           .where((t) => t.origin == TemplateOrigin.generated)
           .toList();
@@ -116,9 +109,7 @@ class CalendarScheduleGenerator {
       final template = pool.isEmpty ? null : pool[i % pool.length];
 
       events.add(ScheduledEvent.create(
-        title: template == null
-            ? slot.label
-            : _named(template.name, template.nameHe),
+        title: template == null ? slot.label : template.name,
         type: EventType.meal,
         scheduledAt: DateTime(
             today.year, today.month, today.day, slot.hour, slot.minute),

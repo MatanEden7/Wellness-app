@@ -176,7 +176,7 @@ class _MealTemplateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final name = template.displayName(language);
+    final name = template.name;
 
     return SwipeActionRow(
       rowKey: ValueKey(template.id),
@@ -256,8 +256,7 @@ class _MealTemplateCard extends StatelessWidget {
               if (template.description != null) ...[
                 const SizedBox(height: 8),
                 Text(
-                  template.displayDescription(language) ??
-                      template.description!,
+                  template.description ?? template.description!,
                   style: theme.textTheme.bodySmall?.copyWith(fontSize: 14),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

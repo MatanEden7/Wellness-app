@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/app_language.dart';
 import '../data/db/drift_database.dart';
 import '../features/calendar/data/calendar_service.dart';
 import '../features/workouts/domain/rest_time.dart';
@@ -112,11 +113,17 @@ class DemoSeedService {
   // ------------------------------------------------------------------ plan
 
   Future<void> _generatePlan(UserProfile profile) async {
-    await WorkoutTemplateGenerator(_database, profile).generateTemplates();
-    await MealTemplateGenerator(_database, profile).generateTemplates();
+    // The demo seed is an English fixture: it exists to populate a build for
+    // screenshots and manual checks, not to exercise the language choice.
+    const language = AppLanguage.english;
+    await WorkoutTemplateGenerator(_database, profile, language)
+        .generateTemplates();
+    await MealTemplateGenerator(_database, profile, language)
+        .generateTemplates();
 
     final schedule =
-        await CalendarScheduleGenerator(_database, profile).buildSchedule();
+        await CalendarScheduleGenerator(_database, profile, language)
+            .buildSchedule();
     for (final event in schedule) {
       await _calendarService.saveEvent(event);
     }
@@ -141,9 +148,7 @@ class DemoSeedService {
     await _database.updateWorkoutTemplate(WorkoutTemplateData(
       id: first.id,
       name: first.name,
-      nameHe: first.nameHe,
       notes: first.notes,
-      notesHe: first.notesHe,
       origin: first.origin,
       customRest: true,
     ));

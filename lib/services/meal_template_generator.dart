@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/app_language.dart';
 import '../core/template_origin.dart';
+import '../data/catalog/starter_foods.dart';
 import '../data/db/drift_database.dart';
 import '../features/meals/data/repositories.dart';
 import 'meal_portion_solver.dart';
@@ -24,10 +26,15 @@ import 'user_profile_service.dart';
 /// Both are now handled by [FoodTag] + [ProfileFit], which the browsing UI
 /// uses too -- so what gets generated and what gets shown can't disagree.
 class MealTemplateGenerator {
-  MealTemplateGenerator(this._database, this._profile);
+  MealTemplateGenerator(this._database, this._profile, this._language);
 
   final AppDatabase _database;
   final UserProfile _profile;
+
+  /// The language every template this generator writes is named in. Resolved
+  /// once, here -- see the note on `WorkoutTemplateGenerator._language`.
+  final AppLanguage _language;
+
   final _uuid = const Uuid();
 
   Future<List<MealTemplateData>> generateTemplates() async {
@@ -36,7 +43,7 @@ class MealTemplateGenerator {
       debugPrint('[MEAL-GEN] No foods fit this profile; skipping');
       return const [];
     }
-    final byName = {for (final f in available) f.name: f};
+    final byRecipeKey = _byRecipeKey(available);
 
     final meals = _mealPlan();
     final created = <MealTemplateData>[];
@@ -44,11 +51,11 @@ class MealTemplateGenerator {
 
     for (var i = 0; i < meals.length; i++) {
       final meal = meals[i];
-      final recipe = _pickRecipe(meal.kind, byName, usedRecipes);
+      final recipe = _pickRecipe(meal.kind, byRecipeKey, usedRecipes);
       if (recipe == null) continue;
       usedRecipes.add(recipe.name);
 
-      final resolved = _resolve(recipe, byName);
+      final resolved = _resolve(recipe, byRecipeKey);
       final portions = MealPortionSolver.solve(
         protein: resolved[RecipeRole.protein],
         carb: resolved[RecipeRole.carb],
@@ -71,14 +78,15 @@ class MealTemplateGenerator {
       final template = MealTemplateData(
         id: _uuid.v4(),
         // Named for the dish, prefixed with when it is eaten, so the list
-        // reads like a meal plan rather than a set of macro buckets.
-        name: '${meal.name}: ${recipe.name}',
-        // Composed the same way as `name`, from the slot's Hebrew label and
-        // the recipe's. Null when the recipe has no Hebrew name -- displayName()
-        // falls back to English, which beats a half-translated title.
-        nameHe:
-            recipe.nameHe == null ? null : '${meal.nameHe}: ${recipe.nameHe}',
-        description: recipe.description,
+        // reads like a meal plan rather than a set of macro buckets. Composed
+        // in one language: an untranslated recipe falls back to English for
+        // the dish *and* the slot, so a title is never half-Hebrew.
+        name: _language == AppLanguage.hebrew && recipe.nameHe != null
+            ? '${meal.nameHe}: ${recipe.nameHe}'
+            : '${meal.name}: ${recipe.name}',
+        description: _language == AppLanguage.hebrew
+            ? (recipe.descriptionHe ?? recipe.description)
+            : recipe.description,
         origin: TemplateOrigin.generated,
         createdAt: now,
         updatedAt: now,
@@ -98,6 +106,28 @@ class MealTemplateGenerator {
 
     debugPrint('[MEAL-GEN] Generated ${created.length} meal templates');
     return created;
+  }
+
+  /// The available foods, keyed by the **English catalog name** a recipe
+  /// names them by.
+  ///
+  /// Recipes name their ingredients in English ('Eggs', 'Whole Wheat Bread')
+  /// because that is what a recipe is about, and those names are stable. The
+  /// seeded row's own `name` is not a usable key any more: it is written in
+  /// whichever language the user chose, so on a Hebrew install every recipe
+  /// lookup missed and the generator produced **zero** meal templates while
+  /// reporting nothing wrong.
+  ///
+  /// Going through the starter catalog's id restores a language-independent
+  /// join: recipe name -> starter id -> the seeded row, whatever it is called.
+  /// A food the user added themselves is not reachable this way, which is
+  /// correct -- recipes are written against the shipped catalog.
+  static Map<String, FoodItemData> _byRecipeKey(List<FoodItemData> available) {
+    final byId = {for (final f in available) f.id: f};
+    return {
+      for (final starter in StarterFoodCatalog.all)
+        if (byId[starter.id] != null) starter.name: byId[starter.id]!,
+    };
   }
 
   /// The first recipe for this slot whose required ingredients all exist and

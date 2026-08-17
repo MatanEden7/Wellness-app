@@ -20,6 +20,7 @@ import '../../../services/profile_filter_service.dart';
 import '../../../services/profile_fit.dart';
 import '../../meals/ui/food_catalog_page.dart' show MismatchBadge;
 import '../domain/exercise_tags.dart';
+import '../domain/exercise_unit.dart';
 import '../domain/models.dart';
 import '../../../core/ios/feedback.dart';
 
@@ -118,8 +119,7 @@ class ExerciseLibraryPage extends HookConsumerWidget {
             // shown an empty "Shoulders" pill.
             final muscles = <String>{
               for (final e in fitting)
-                if (e.displayPrimaryMuscle(language) != null)
-                  e.displayPrimaryMuscle(language)!,
+                if (e.primaryMuscle != null) e.primaryMuscle!,
             }.toList()
               ..sort();
             // A group that stops existing must not leave the list stuck
@@ -131,12 +131,10 @@ class ExerciseLibraryPage extends HookConsumerWidget {
             final query = search.value.trim().toLowerCase();
             final exercises = fitting
                 .where((e) =>
-                    activeMuscle == null ||
-                    e.displayPrimaryMuscle(language) == activeMuscle)
+                    activeMuscle == null || e.primaryMuscle == activeMuscle)
                 .where((e) =>
                     query.isEmpty ||
                     e.name.toLowerCase().contains(query) ||
-                    (e.nameHe?.toLowerCase().contains(query) ?? false) ||
                     (e.primaryMuscle?.toLowerCase().contains(query) ?? false))
                 .toList();
 
@@ -159,8 +157,8 @@ class ExerciseLibraryPage extends HookConsumerWidget {
                   SliverToBoxAdapter(
                     child: FilterBanner(
                       icon: Icons.filter_alt_outlined,
-                      message: '$hiddenCount hidden by your profile',
-                      actionLabel: 'Show all',
+                      message: l10n.hiddenByProfile(hiddenCount),
+                      actionLabel: l10n.showAllContent,
                       onAction: () => ref
                           .read(showAllContentProvider.notifier)
                           .state = true,
@@ -257,7 +255,7 @@ class _ExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final name = exercise.displayName(language);
+    final name = exercise.name;
 
     return SwipeActionRow(
       rowKey: ValueKey(exercise.id),
@@ -337,8 +335,7 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      exercise.displayPrimaryMuscle(language) ??
-                          exercise.primaryMuscle!,
+                      exercise.primaryMuscle ?? exercise.primaryMuscle!,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -360,7 +357,8 @@ class _ExerciseCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
-                    '${l10n.weightUnit}: ${exercise.unit}',
+                    '${l10n.weightUnit}: '
+                    '${exerciseUnitLabel(exercise.unit, l10n)}',
                     style: theme.textTheme.bodySmall,
                   ),
                 ],
@@ -445,7 +443,7 @@ class ExerciseEditorPage extends HookConsumerWidget {
               ),
               maxLength: 40,
               validator: (value) =>
-                  Validators.required(value, l10n.exerciseName),
+                  Validators.required(value, l10n.exerciseName, l10n),
             ),
             const SizedBox(height: AppSpacing.md),
             TextFormField(
@@ -557,7 +555,8 @@ class ExerciseEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        showAppError(context, 'Error saving exercise: $e');
+        showAppError(
+            context, AppLocalizations.of(context)!.errorSavingExercise('$e'));
       }
     } finally {
       isLoading.value = false;

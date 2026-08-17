@@ -23,16 +23,24 @@ void main() {
     });
 
     test('formatDuration omits the hours segment when under an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(minutes: 45), AppLocalizationsEn()), '45m');
+      expect(
+          AppDateUtils.formatDuration(
+              const Duration(minutes: 45), AppLocalizationsEn()),
+          '45m');
     });
 
     test('formatDuration includes both segments over an hour', () {
-      expect(AppDateUtils.formatDuration(const Duration(hours: 1, minutes: 30), AppLocalizationsEn()),
+      expect(
+          AppDateUtils.formatDuration(
+              const Duration(hours: 1, minutes: 30), AppLocalizationsEn()),
           '1h 30m');
     });
 
     test('formatDuration handles an exact hour with 0 minutes', () {
-      expect(AppDateUtils.formatDuration(const Duration(hours: 2), AppLocalizationsEn()), '2h 0m');
+      expect(
+          AppDateUtils.formatDuration(
+              const Duration(hours: 2), AppLocalizationsEn()),
+          '2h 0m');
     });
 
     test('formatSleepDuration computes the difference between two DateTimes',
@@ -69,29 +77,35 @@ void main() {
   });
 
   group('Validators', () {
+    // The validators take the localisations now, because their messages are
+    // shown under a form field and belong in the ARB like any other chrome
+    // string. English is loaded here: these tests are about the *rules*
+    // (rejects zero, accepts 5.5), not the wording.
+    final l10n = AppLocalizationsEn();
+
     test('required rejects null, empty, and whitespace-only input', () {
-      expect(Validators.required(null), isNotNull);
-      expect(Validators.required(''), isNotNull);
-      expect(Validators.required('   '), isNotNull);
-      expect(Validators.required('ok'), isNull);
+      expect(Validators.required(null, 'Field', l10n), isNotNull);
+      expect(Validators.required('', 'Field', l10n), isNotNull);
+      expect(Validators.required('   ', 'Field', l10n), isNotNull);
+      expect(Validators.required('ok', 'Field', l10n), isNull);
     });
 
     test('positiveNumber rejects zero, negatives, and non-numeric text', () {
-      expect(Validators.positiveNumber('0'), isNotNull);
-      expect(Validators.positiveNumber('-5'), isNotNull);
-      expect(Validators.positiveNumber('abc'), isNotNull);
-      expect(Validators.positiveNumber('5.5'), isNull);
+      expect(Validators.positiveNumber('0', 'Field', l10n), isNotNull);
+      expect(Validators.positiveNumber('-5', 'Field', l10n), isNotNull);
+      expect(Validators.positiveNumber('abc', 'Field', l10n), isNotNull);
+      expect(Validators.positiveNumber('5.5', 'Field', l10n), isNull);
     });
 
     test('nonNegativeNumber accepts zero but rejects negatives', () {
-      expect(Validators.nonNegativeNumber('0'), isNull);
-      expect(Validators.nonNegativeNumber('-1'), isNotNull);
+      expect(Validators.nonNegativeNumber('0', 'Field', l10n), isNull);
+      expect(Validators.nonNegativeNumber('-1', 'Field', l10n), isNotNull);
     });
 
     test('positiveInteger rejects decimals and non-positive values', () {
-      expect(Validators.positiveInteger('3'), isNull);
-      expect(Validators.positiveInteger('3.5'), isNotNull);
-      expect(Validators.positiveInteger('0'), isNotNull);
+      expect(Validators.positiveInteger('3', 'Field', l10n), isNull);
+      expect(Validators.positiveInteger('3.5', 'Field', l10n), isNotNull);
+      expect(Validators.positiveInteger('0', 'Field', l10n), isNotNull);
     });
   });
 }

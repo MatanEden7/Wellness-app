@@ -317,8 +317,9 @@ void main() {
       for (final food in foods) {
         final row = seeded[food.id];
         expect(row, isNotNull, reason: '${food.name} was not seeded');
+        // Seeded in English by default, so the row carries the English name
+        // and nothing else. `content_language_test` covers the Hebrew seed.
         expect(row!.name, food.name);
-        expect(row.nameHe, food.nameHe);
         expect(row.brand, food.brand);
         expect(row.unit, food.unit);
         expect(row.kcalPerUnit, food.kcal);

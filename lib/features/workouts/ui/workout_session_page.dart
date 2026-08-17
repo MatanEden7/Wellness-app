@@ -14,6 +14,7 @@ import '../../../services/notification_preferences_service.dart';
 import '../../../services/time_service.dart';
 import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
+import '../domain/exercise_unit.dart';
 import '../domain/models.dart';
 import '../domain/rest_time.dart';
 import '../domain/session_actions.dart';
@@ -165,7 +166,9 @@ class WorkoutSessionPage extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Exercise ${currentExerciseIndex.value + 1} of ${exercises.value.length}',
+                      AppLocalizations.of(context)!.exerciseXOfY(
+                          currentExerciseIndex.value + 1,
+                          exercises.value.length),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -642,7 +645,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
                             children: [
                               if (!isExerciseComplete) ...[
                                 Text(
-                                  'SET ${completedSets.length + 1} OF $targetSets',
+                                  AppLocalizations.of(context)!.setXOfY(
+                                      completedSets.length + 1, targetSets),
                                   style: theme.textTheme.labelLarge?.copyWith(
                                     letterSpacing: 1.5,
                                     fontWeight: FontWeight.w600,
@@ -687,7 +691,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                               exercise.unit == 'bodyweight'
                                           ? AppLocalizations.of(context)!
                                               .bodyweight
-                                          : '${Formatters.formatWeight(weight)} ${exercise.unit}',
+                                          : '${Formatters.formatWeight(weight)} '
+                                              '${exerciseUnitLabel(exercise.unit, AppLocalizations.of(context)!)}',
                                       style: theme.textTheme.headlineSmall
                                           ?.copyWith(
                                         fontWeight: FontWeight.bold,
@@ -715,7 +720,8 @@ class _ExerciseSetsView extends HookConsumerWidget {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  '$targetSets sets completed',
+                                  AppLocalizations.of(context)!
+                                      .setsCompletedCount(targetSets),
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: theme.textTheme.bodySmall?.color,
                                   ),
@@ -959,8 +965,9 @@ class _ExerciseSetsView extends HookConsumerWidget {
                     const SizedBox(width: 8),
                     Text(
                       isResting
-                          ? 'Skip Rest'
-                          : 'Complete Set ${completedSets.length + 1}',
+                          ? AppLocalizations.of(context)!.skipRest
+                          : AppLocalizations.of(context)!
+                              .completeSetNumber(completedSets.length + 1),
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w600),
                     ),
@@ -1010,7 +1017,8 @@ class _CompactSetChip extends StatelessWidget {
             if (setEntry.weight != null) ...[
               Text(' × ', style: TextStyle(color: Colors.grey.shade600)),
               Text(
-                '${Formatters.formatWeight(setEntry.weight!)}${exercise.unit}',
+                '${Formatters.formatWeight(setEntry.weight!)}'
+                '${exerciseUnitLabel(exercise.unit, AppLocalizations.of(context)!)}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -1304,7 +1312,8 @@ class _CompletedWorkoutView extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 Text(
-                  '${session.sets.length} sets completed',
+                  AppLocalizations.of(context)!
+                      .setsCompletedCount(session.sets.length),
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ],
@@ -1345,7 +1354,7 @@ class _CompletedWorkoutView extends StatelessWidget {
                                 size: 16, color: Colors.green),
                             const SizedBox(width: AppSpacing.xs),
                             Text(
-                              'Set ${index + 1}: ',
+                              '${AppLocalizations.of(context)!.setNumberLabel(index + 1)}: ',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -1353,11 +1362,13 @@ class _CompletedWorkoutView extends StatelessWidget {
                                     fontWeight: FontWeight.w500,
                                   ),
                             ),
-                            Text('${set.reps} reps'),
+                            Text(AppLocalizations.of(context)!
+                                .repsCount(set.reps)),
                             if (set.weight != null) ...[
                               const Text(' × '),
                               Text(
-                                '${Formatters.formatWeight(set.weight!)} ${exercise.unit}',
+                                '${Formatters.formatWeight(set.weight!)} '
+                                '${exerciseUnitLabel(exercise.unit, AppLocalizations.of(context)!)}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),

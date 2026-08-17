@@ -7,6 +7,7 @@ import '../../../core/widgets.dart';
 import '../../../services/language_service.dart';
 import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
+import '../domain/exercise_unit.dart';
 import '../domain/models.dart';
 import '../domain/rest_time.dart';
 import 'workout_keys.dart';
@@ -90,17 +91,11 @@ class _ExercisePickerSheet extends HookConsumerWidget {
               final needle = query.value.trim().toLowerCase();
               final matches = snapshot.data!.where((exercise) {
                 if (needle.isEmpty) return true;
-                final muscle =
-                    exercise.displayPrimaryMuscle(language)?.toLowerCase() ??
-                        '';
-                return exercise
-                        .displayName(language)
-                        .toLowerCase()
-                        .contains(needle) ||
+                final muscle = exercise.primaryMuscle?.toLowerCase() ?? '';
+                return exercise.name.toLowerCase().contains(needle) ||
                     muscle.contains(needle);
               }).toList()
-                ..sort((a, b) =>
-                    a.displayName(language).compareTo(b.displayName(language)));
+                ..sort((a, b) => a.name.compareTo(b.name));
 
               if (matches.isEmpty) {
                 return Padding(
@@ -186,7 +181,7 @@ class _ExerciseRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final muscle = exercise.displayPrimaryMuscle(language);
+    final muscle = exercise.primaryMuscle;
     final hasDetails = muscle != null ||
         exercise.notes != null ||
         exercise.equipment.isNotEmpty;
@@ -215,7 +210,7 @@ class _ExerciseRow extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            exercise.displayName(language),
+                            exercise.name,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -327,7 +322,6 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final language = ref.watch(currentLanguageProvider);
     final prefs = ref.watch(preferencesServiceProvider);
     final workoutsColor = prefs.workoutsColor;
 
@@ -358,7 +352,7 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
     );
 
     return AppSheet(
-      title: exercise.displayName(language),
+      title: exercise.name,
       icon: Icons.fitness_center,
       iconColor: workoutsColor,
       child: Column(
@@ -373,7 +367,8 @@ class ExercisePrescriptionSheet extends HookConsumerWidget {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    labelText: '${l10n.weight} (${exercise.unit})',
+                    labelText: '${l10n.weight} '
+                        '(${exerciseUnitLabel(exercise.unit, l10n)})',
                     // Empty means bodyweight, not zero -- and the label has to
                     // float for that to be readable before the field is
                     // tapped. See the template editor's weight field.

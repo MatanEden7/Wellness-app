@@ -227,7 +227,8 @@ class _QuickMealItemRow extends HookConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  snapshot.data?.name ?? 'Food Item',
+                  snapshot.data?.name ??
+                      AppLocalizations.of(context)!.foodItemLabel,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -236,7 +237,8 @@ class _QuickMealItemRow extends HookConsumerWidget {
                 ),
               ),
               Text(
-                '${Formatters.formatCalories(item.kcal)} cal',
+                '${Formatters.formatCalories(item.kcal)} '
+                '${AppLocalizations.of(context)!.caloriesShort}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               IconButton(

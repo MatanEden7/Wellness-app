@@ -15,6 +15,7 @@ import '../../../core/widgets.dart';
 import '../../../core/utils.dart';
 import '../../../core/validation.dart';
 import '../data/repositories.dart';
+import '../domain/exercise_unit.dart';
 import '../domain/models.dart';
 import '../domain/rest_time.dart';
 import '../../../core/ios/glass.dart';
@@ -95,7 +96,7 @@ class TemplateEditorPage extends HookConsumerWidget {
             ),
             style: const TextStyle(fontSize: 16),
             maxLength: TextLimits.workoutTemplateNameMaxLength,
-            validator: TextLimits.validateWorkoutTemplateName,
+            validator: (v) => TextLimits.validateWorkoutTemplateName(v, l10n),
           ),
           const SizedBox(height: 20),
 
@@ -121,7 +122,7 @@ class TemplateEditorPage extends HookConsumerWidget {
             style: const TextStyle(fontSize: 16),
             maxLines: 3,
             maxLength: TextLimits.generalNoteMaxLength,
-            validator: TextLimits.validateGeneralNote,
+            validator: (v) => TextLimits.validateGeneralNote(v, l10n),
           ),
           const SizedBox(height: 24),
 
@@ -325,7 +326,8 @@ class TemplateEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        showAppError(context, 'Error saving template: $e');
+        showAppError(
+            context, AppLocalizations.of(context)!.errorSavingTemplate('$e'));
       }
     } finally {
       isLoading.value = false;
@@ -481,12 +483,12 @@ class _TemplateExerciseCard extends ConsumerWidget {
 
     return <String>[
       exercise.defaultReps == null
-          ? '${exercise.defaultSets} sets'
+          ? l10n.setsCount(exercise.defaultSets)
           : '${exercise.defaultSets} x ${exercise.defaultReps}',
       if (isBodyweight)
         l10n.bodyweight
       else
-        '${Formatters.formatWeight(weight)} ${unit ?? 'kg'}',
+        '${Formatters.formatWeight(weight)} ${exerciseUnitLabel(unit, l10n)}',
       if (exercise.defaultRestSeconds != null)
         formatRest(exercise.defaultRestSeconds!),
     ].join(' \u00b7 ');
@@ -796,8 +798,7 @@ class _ExerciseSelectorDialog extends ConsumerWidget {
                       return EmptyState(
                         title:
                             AppLocalizations.of(context)!.templateNoExercises,
-                        subtitle:
-                            'Create exercises in the Exercise Library first',
+                        subtitle: l10n.createExercisesFirst,
                         icon: Icons.fitness_center,
                       );
                     }

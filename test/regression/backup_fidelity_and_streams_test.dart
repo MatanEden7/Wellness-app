@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
@@ -75,7 +76,8 @@ void main() {
         database,
         CalendarService(await SharedPreferences.getInstance(), database),
       );
-      await MealTemplateGenerator(database, _profile()).generateTemplates();
+      await MealTemplateGenerator(database, _profile(), AppLanguage.english)
+          .generateTemplates();
     });
 
     Future<void> roundTrip() async =>

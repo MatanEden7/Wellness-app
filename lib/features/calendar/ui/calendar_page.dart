@@ -1016,11 +1016,15 @@ class CalendarPage extends ConsumerWidget {
                   final hours = snapshot.data;
                   return StatTile(
                     title: AppLocalizations.of(context)!.sleep,
-                    value:
-                        hours != null ? '${hours.toStringAsFixed(1)}h' : 'N/A',
+                    value: hours != null
+                        ? '${hours.toStringAsFixed(1)}'
+                            ' ${AppLocalizations.of(context)!.hoursShort}'
+                        : AppLocalizations.of(context)!.notAvailableShort,
                     subtitle: hours != null
-                        ? (hours >= 7 ? 'Good rest' : 'Need more')
-                        : 'No data',
+                        ? (hours >= 7
+                            ? AppLocalizations.of(context)!.goodRest
+                            : AppLocalizations.of(context)!.needMore)
+                        : AppLocalizations.of(context)!.noData,
                     icon: Icons.bedtime,
                     color: Colors.purple,
                     isCompact: true,

@@ -161,11 +161,32 @@ class AnchorRect {
 class DatePickerSpec {
   const DatePickerSpec({
     required this.mode,  // 'date' | 'time' | 'datetime'
+    required this.localeIdentifier,
+    required this.cancelLabel,
+    required this.doneLabel,
     this.initialTimestamp,
     this.minTimestamp,
     this.maxTimestamp,
   });
   final String mode;
+
+  /// The app's language ('en' | 'he'), applied to `UIDatePicker.locale`.
+  ///
+  /// A UIDatePicker with no locale follows the *device*, so a Hebrew app on an
+  /// English phone showed an English calendar -- month name, weekday headers
+  /// and all -- inside an otherwise Hebrew screen. The app's language is the
+  /// one the user chose, so it is the one that wins.
+  final String localeIdentifier;
+
+  /// The sheet's two buttons, translated on the Dart side.
+  ///
+  /// They used to be `NSLocalizedString("Cancel")`, which needs a Localizable
+  /// bundle per language in the iOS target. There is none, so it returned the
+  /// key -- permanently English. Dart already has both strings in the ARB, so
+  /// passing them across is one source of truth instead of two.
+  final String cancelLabel;
+  final String doneLabel;
+
   final int? initialTimestamp;   // milliseconds since epoch
   final int? minTimestamp;
   final int? maxTimestamp;

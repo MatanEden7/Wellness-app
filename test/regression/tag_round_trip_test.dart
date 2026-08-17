@@ -182,13 +182,13 @@ void main() {
       final workout = WorkoutTemplateData(
         id: 'wt1',
         name: 'y',
-        origin: TemplateOrigin.builtin,
+        origin: TemplateOrigin.user,
       );
 
       expect(MealTemplateData.fromJson(meal.toJson()).origin,
           TemplateOrigin.generated);
       expect(WorkoutTemplateData.fromJson(workout.toJson()).origin,
-          TemplateOrigin.builtin);
+          TemplateOrigin.user);
     });
 
     test('rows written before tagging existed still load', () {

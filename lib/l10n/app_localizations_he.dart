@@ -2733,4 +2733,200 @@ class AppLocalizationsHe extends AppLocalizations {
   String amountWithUnit(String unit) {
     return 'כמות ($unit)';
   }
+
+  @override
+  String hiddenByProfile(int count) {
+    return '$count מוסתרים לפי הפרופיל שלך';
+  }
+
+  @override
+  String get showAllContent => 'הצג הכול';
+
+  @override
+  String get rebuild => 'בנה מחדש';
+
+  @override
+  String repsCount(int count) {
+    return '$count חזרות';
+  }
+
+  @override
+  String get generateTestData => 'צור נתוני בדיקה';
+
+  @override
+  String get goodRest => 'שינה טובה';
+
+  @override
+  String get skipRest => 'דלג על המנוחה';
+
+  @override
+  String completeSetNumber(int number) {
+    return 'סיים סט $number';
+  }
+
+  @override
+  String get minutesShort => 'דק׳';
+
+  @override
+  String get targetsUpdated => 'היעדים עודכנו';
+
+  @override
+  String rebuiltTemplates(int count) {
+    return 'נבנו מחדש $count תבניות';
+  }
+
+  @override
+  String get equipmentNone => 'ללא ציוד';
+
+  @override
+  String get equipmentBands => 'גומיות התנגדות';
+
+  @override
+  String get equipmentCable => 'מכונת כבלים';
+
+  @override
+  String get equipmentPullupBar => 'מוט מתח';
+
+  @override
+  String get customWorkoutTitle => 'אימון מותאם';
+
+  @override
+  String get foodItemLabel => 'פריט מזון';
+
+  @override
+  String get nutritionGoalsHelp =>
+      'הגדירו את יעדי התזונה היומיים. השאירו שדה ריק כדי לבטל יעד.';
+
+  @override
+  String get createExercisesFirst => 'צרו תרגילים בספריית התרגילים תחילה';
+
+  @override
+  String errorSavingFood(String error) {
+    return 'שמירת המזון נכשלה: $error';
+  }
+
+  @override
+  String errorSavingMeal(String error) {
+    return 'שמירת הארוחה נכשלה: $error';
+  }
+
+  @override
+  String errorSavingExercise(String error) {
+    return 'שמירת התרגיל נכשלה: $error';
+  }
+
+  @override
+  String errorSavingTemplate(String error) {
+    return 'שמירת התבנית נכשלה: $error';
+  }
+
+  @override
+  String errorUpdatingSleep(String error) {
+    return 'עדכון רישום השינה נכשל: $error';
+  }
+
+  @override
+  String errorImportFailed(String error) {
+    return 'הייבוא נכשל: $error';
+  }
+
+  @override
+  String errorSetupFailed(String error) {
+    return 'ההגדרה נכשלה: $error';
+  }
+
+  @override
+  String get autoAdjustedForReadability => 'הותאם אוטומטית לקריאות';
+
+  @override
+  String pickColorFor(String label) {
+    return 'בחרו צבע ל$label';
+  }
+
+  @override
+  String fieldRequired(String field) {
+    return 'יש למלא $field';
+  }
+
+  @override
+  String fieldMaxLength(String field, int max) {
+    return '$field יכול להכיל עד $max תווים';
+  }
+
+  @override
+  String get noteLabel => 'הערה';
+
+  @override
+  String get thisField => 'שדה זה';
+
+  @override
+  String fieldMustBeNumber(String field) {
+    return '$field חייב להיות מספר תקין';
+  }
+
+  @override
+  String fieldMustBePositive(String field) {
+    return '$field חייב להיות גדול מ-0';
+  }
+
+  @override
+  String fieldMustBeNonNegative(String field) {
+    return '$field חייב להיות 0 או יותר';
+  }
+
+  @override
+  String fieldMustBeWholeNumber(String field) {
+    return '$field חייב להיות מספר שלם תקין';
+  }
+
+  @override
+  String a11ySliderValue(String label, String value) {
+    return 'מחוון $label, ערך נוכחי $value';
+  }
+
+  @override
+  String get unitBand => 'גומייה';
+
+  @override
+  String get unitLb => 'ליברות';
+
+  @override
+  String setsCount(int count) {
+    return '$count סטים';
+  }
+
+  @override
+  String exerciseXOfY(int current, int total) {
+    return 'תרגיל $current מתוך $total';
+  }
+
+  @override
+  String setXOfY(int current, int total) {
+    return 'סט $current מתוך $total';
+  }
+
+  @override
+  String setNumberLabel(int number) {
+    return 'סט $number';
+  }
+
+  @override
+  String get hoursShort => 'שע׳';
+
+  @override
+  String get notAvailableShort => 'אין נתונים';
+
+  @override
+  String get minutesShortM => 'דק׳';
+
+  @override
+  String get secondsShort => 'שנ׳';
+
+  @override
+  String get importSucceeded => 'הייבוא הושלם';
+
+  @override
+  String estimated1rmFor(String name) {
+    return 'חזרה מרבית משוערת ל$name';
+  }
 }

@@ -103,7 +103,12 @@ Future<Widget> buildTestApp({
     await prefs.setString('user_profile', jsonEncode(profile.toJson()));
   }
   AppDatabase.resetForTesting();
-  final database = AppDatabase();
+  // Seeded in the language under test, because that is now the only place the
+  // language enters the catalog -- the rows carry one name and the UI never
+  // re-picks. An English-seeded database driven through a Hebrew UI would show
+  // an English catalog, which is the real behaviour but not what these runs
+  // are checking.
+  final database = AppDatabase(seedLanguage: language);
   if (seed != null) await seed(database);
   final preferencesService = PreferencesService(prefs);
   final userProfileService = UserProfileService(prefs);
@@ -117,8 +122,7 @@ Future<Widget> buildTestApp({
       NotificationService(FlutterLocalNotificationsPlugin());
   final notificationPrefs = NotificationPreferencesNotifier(prefs);
 
-  // AppDatabase seeds the starter catalog in its constructor; no store is
-  // passed, so nothing is persisted between tests.
+  // No store is passed, so nothing is persisted between tests.
 
   return ProviderScope(
     overrides: [

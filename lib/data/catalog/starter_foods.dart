@@ -45,8 +45,16 @@
 ///
 /// ## Hebrew
 ///
-/// `nameHe` is filled in for every row, and food search matches both names in
-/// either language mode (`FoodItem.matchesSearch`).
+/// `nameHe` is filled in for every row, and is **authoring data, not a
+/// runtime field**. `AppDatabase._getSampleFoods` picks one of the two names
+/// when the catalog is seeded -- in the language chosen at onboarding -- and
+/// writes that single name to the row. Nothing downstream carries both, so
+/// changing the app language later does not rename anybody's food.
+///
+/// Keeping both names in one file is deliberate: it is the numbers that are
+/// expensive to maintain and dangerous to get wrong (see the audit above), and
+/// duplicating 42 rows of macros into a second Hebrew file to avoid sharing a
+/// *name* would trade a trivial problem for a serious one.
 library;
 
 import '../../features/meals/domain/food_category.dart';

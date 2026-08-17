@@ -21,6 +21,8 @@ import '../../../core/design/tokens.dart';
 import '../../../core/ios/feedback.dart';
 import '../../../core/ios/sheets.dart';
 import 'package:wellness_app/l10n/app_localizations.dart';
+import '../../../features/workouts/domain/exercise_tags.dart';
+import '../../../services/language_service.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -85,20 +87,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       title: l10n.profileRegenTitle,
       message: l10n.profileRegenBody(
           preview.mealTemplates, preview.workoutTemplates),
-      confirmLabel: 'Rebuild',
+      confirmLabel: l10n.rebuild,
       // Rebuilding is additive and reversible -- red would overstate it.
       isDestructive: false,
     );
     if (!confirmed) return;
 
-    final created = await service.regenerate(profile);
+    // The user asked for a rebuild, so the replacements are written in the
+    // language they are using now -- the one moment content is allowed to
+    // change language, and only because they pressed the button.
+    final created = await service.regenerate(
+      profile,
+      ref.read(currentLanguageProvider),
+    );
     // Regeneration rebuilds templates under fresh ids, leaving every
     // calendar event onboarding pinned to the old ones pointing at nothing.
     // Silent until the user presses "Approve" or "Start Workout" on a
     // reminder and it does nothing at all.
     await ref.read(calendarStateProvider.notifier).repinDanglingTemplates();
     if (mounted) {
-      showAppSuccess(context, 'Rebuilt $created templates');
+      showAppSuccess(context, l10n.rebuiltTemplates(created));
     }
   }
 
@@ -125,7 +133,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
     await _saveProfile(updated);
     if (mounted) {
-      showAppSuccess(context, 'Targets updated');
+      showAppSuccess(context, l10n.targetsUpdated);
     }
   }
 
@@ -377,15 +385,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     if (p == null) return;
     final result = await _push<List<String>>(_MultiPickerPage(
       title: l10n.profileInjuries,
+      // From the enum, for the same reason as the equipment list below: the
+      // hand-typed version had Hebrew for the first four body parts and bare
+      // English for the last three, because `BodyPart` grew and this copy did
+      // not. `BodyPart` owns both languages and the profile ids.
       options: [
         _Option('none', l10n.onboardingExclusionsNone),
-        _Option('shoulder', l10n.onboardingInjuriesShoulder),
-        _Option('back', l10n.onboardingInjuriesBack),
-        _Option('knee', l10n.onboardingInjuriesKnee),
-        _Option('ankle', l10n.onboardingInjuriesAnkle),
-        _Option('elbow', 'Elbow'),
-        _Option('hip', 'Hip'),
-        _Option('neck', 'Neck'),
+        for (final part in BodyPart.values)
+          _Option(
+              part.profileId, part.label(ref.read(currentLanguageProvider))),
       ],
       current: p.injuries,
       noneValue: 'none',
@@ -400,15 +408,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     if (p == null) return;
     final result = await _push<List<String>>(_MultiPickerPage(
       title: l10n.equipmentLabel,
+      // Built from the enum rather than re-typed: `Equipment` already owns
+      // both the profile ids and their labels in both languages, and a second
+      // hand-written copy here was English-only and free to drift out of step
+      // with the filtering that actually uses these ids.
       options: [
-        _Option('none', 'No Equipment'),
-        _Option('dumbbells', 'Dumbbells'),
-        _Option('barbell_rack', 'Barbell & Rack'),
-        _Option('machines', 'Machines'),
-        _Option('bands', 'Resistance Bands'),
-        _Option('kettlebells', 'Kettlebells'),
-        _Option('cable', 'Cable Machine'),
-        _Option('pullup_bar', 'Pull-up Bar'),
+        for (final e in Equipment.values)
+          _Option(e.profileId, e.label(ref.read(currentLanguageProvider))),
       ],
       current: p.equipment,
       noneValue: 'none',

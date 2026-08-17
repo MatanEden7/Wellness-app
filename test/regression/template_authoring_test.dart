@@ -150,9 +150,24 @@ void main() {
     test('editing does not leak rows into other templates', () async {
       final exercises = await db.getAllExercises();
       final repo = container.read(workoutTemplatesRepositoryProvider);
-      final neighbour = (await db.getAllWorkoutTemplates()).first;
+
+      // The neighbour is authored here rather than taken from the seed:
+      // nothing ships pre-built, so there is no template to borrow until one
+      // is made.
+      await repo.createTemplate(
+        WorkoutTemplate(id: 'neighbour', name: 'Leg Day', exercises: [
+          TemplateExercise(
+              id: 'n0',
+              templateId: 'neighbour',
+              exerciseId: exercises[1].id,
+              orderIndex: 0,
+              defaultSets: 3),
+        ]),
+      );
+      final neighbour = (await db.getWorkoutTemplateById('neighbour'))!;
       final neighbourRowsBefore =
           (await db.getTemplateExercisesByTemplateId(neighbour.id)).length;
+      expect(neighbourRowsBefore, 1, reason: 'fixture check');
 
       await repo.createTemplate(
         WorkoutTemplate(id: 'authored', name: 'v1', exercises: [

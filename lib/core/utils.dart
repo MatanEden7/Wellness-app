@@ -73,61 +73,50 @@ class AppDateUtils {
 }
 
 class Validators {
-  static String? required(String? value, [String? fieldName]) {
+  /// Field validators, localised.
+  ///
+  /// Each takes the localisations and the already-translated field name, so
+  /// the message reads as one sentence in either language. They used to build
+  /// English by interpolation ("$field is required"), which no ARB key could
+  /// reach and which produced English errors under a Hebrew form.
+  static String? required(
+      String? value, String fieldName, AppLocalizations l10n) {
     if (value == null || value.trim().isEmpty) {
-      return '${fieldName ?? 'This field'} is required';
+      return l10n.fieldRequired(fieldName);
     }
     return null;
   }
 
-  static String? positiveNumber(String? value, [String? fieldName]) {
-    if (value == null || value.trim().isEmpty) {
-      return '${fieldName ?? 'This field'} is required';
-    }
+  static String? positiveNumber(
+      String? value, String fieldName, AppLocalizations l10n) {
+    final missing = required(value, fieldName, l10n);
+    if (missing != null) return missing;
 
-    final number = double.tryParse(value);
-    if (number == null) {
-      return '${fieldName ?? 'This field'} must be a valid number';
-    }
-
-    if (number <= 0) {
-      return '${fieldName ?? 'This field'} must be greater than 0';
-    }
-
+    final number = double.tryParse(value!);
+    if (number == null) return l10n.fieldMustBeNumber(fieldName);
+    if (number <= 0) return l10n.fieldMustBePositive(fieldName);
     return null;
   }
 
-  static String? nonNegativeNumber(String? value, [String? fieldName]) {
-    if (value == null || value.trim().isEmpty) {
-      return '${fieldName ?? 'This field'} is required';
-    }
+  static String? nonNegativeNumber(
+      String? value, String fieldName, AppLocalizations l10n) {
+    final missing = required(value, fieldName, l10n);
+    if (missing != null) return missing;
 
-    final number = double.tryParse(value);
-    if (number == null) {
-      return '${fieldName ?? 'This field'} must be a valid number';
-    }
-
-    if (number < 0) {
-      return '${fieldName ?? 'This field'} must be 0 or greater';
-    }
-
+    final number = double.tryParse(value!);
+    if (number == null) return l10n.fieldMustBeNumber(fieldName);
+    if (number < 0) return l10n.fieldMustBeNonNegative(fieldName);
     return null;
   }
 
-  static String? positiveInteger(String? value, [String? fieldName]) {
-    if (value == null || value.trim().isEmpty) {
-      return '${fieldName ?? 'This field'} is required';
-    }
+  static String? positiveInteger(
+      String? value, String fieldName, AppLocalizations l10n) {
+    final missing = required(value, fieldName, l10n);
+    if (missing != null) return missing;
 
-    final number = int.tryParse(value);
-    if (number == null) {
-      return '${fieldName ?? 'This field'} must be a valid whole number';
-    }
-
-    if (number <= 0) {
-      return '${fieldName ?? 'This field'} must be greater than 0';
-    }
-
+    final number = int.tryParse(value!);
+    if (number == null) return l10n.fieldMustBeWholeNumber(fieldName);
+    if (number <= 0) return l10n.fieldMustBePositive(fieldName);
     return null;
   }
 }

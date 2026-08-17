@@ -2,6 +2,9 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
+import 'package:wellness_app/services/meal_template_generator.dart';
+import 'package:wellness_app/services/workout_template_generator.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/calendar/domain/models.dart';
 import 'package:wellness_app/services/calendar_schedule_generator.dart';
@@ -45,14 +48,37 @@ UserProfile _profile({
       carbsTargetG: 300,
     );
 
+/// A database populated the way onboarding populates one: catalog seeded in
+/// the chosen language, then templates generated from the profile.
+///
+/// Nothing ships pre-built any more -- the built-in templates are gone, and
+/// generation from the onboarding profile is the only source. A schedule
+/// built against a bare database therefore has nothing to pin to, which is
+/// correct and is exactly why onboarding generates *before* it schedules.
+/// These tests have to follow the same order to be testing the real one.
+///
+/// Resets first because the database's storage is static: without it, a loop
+/// that builds a plan per training-day count accumulates every previous
+/// iteration's templates.
+Future<AppDatabase> _plannedFor(UserProfile profile) async {
+  AppDatabase.resetForTesting();
+  final db = AppDatabase();
+  await WorkoutTemplateGenerator(db, profile, AppLanguage.english)
+      .generateTemplates();
+  await MealTemplateGenerator(db, profile, AppLanguage.english)
+      .generateTemplates();
+  return db;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(AppDatabase.resetForTesting);
 
   test('buildSchedule produces workout, meal, and sleep events', () async {
-    final generator = CalendarScheduleGenerator(
-        AppDatabase(), _profile(trainingDaysPerWeek: 3));
+    final profile = _profile(trainingDaysPerWeek: 3);
+    final generator =
+        CalendarScheduleGenerator(await _plannedFor(profile), profile);
     final events = await generator.buildSchedule();
 
     expect(events.any((e) => e.type == EventType.workout), isTrue);
@@ -67,8 +93,9 @@ void main() {
     // five -- someone who asked for six days silently got five. The real rule
     // is that the weekend is only used once the working week is full.
     for (final days in [1, 2, 3, 4, 5, 6, 7]) {
-      final generator = CalendarScheduleGenerator(
-          AppDatabase(), _profile(trainingDaysPerWeek: days));
+      final profile = _profile(trainingDaysPerWeek: days);
+      final generator =
+          CalendarScheduleGenerator(await _plannedFor(profile), profile);
       final events = await generator.buildSchedule();
       final weekdays = events
           .where((e) => e.type == EventType.workout)
@@ -102,8 +129,9 @@ void main() {
   test('every requested training day gets its own session', () async {
     // The count used to be capped at 5, so 6 and 7 silently became 5.
     for (final days in [1, 2, 3, 4, 5, 6, 7]) {
-      final generator = CalendarScheduleGenerator(
-          AppDatabase(), _profile(trainingDaysPerWeek: days));
+      final profile = _profile(trainingDaysPerWeek: days);
+      final generator =
+          CalendarScheduleGenerator(await _plannedFor(profile), profile);
       final events = await generator.buildSchedule();
       final weekdays = events
           .where((e) => e.type == EventType.workout)
@@ -116,8 +144,9 @@ void main() {
   });
 
   test('workout events recur weekly, one per training day requested', () async {
-    final generator = CalendarScheduleGenerator(
-        AppDatabase(), _profile(trainingDaysPerWeek: 4));
+    final profile = _profile(trainingDaysPerWeek: 4);
+    final generator =
+        CalendarScheduleGenerator(await _plannedFor(profile), profile);
     final events = await generator.buildSchedule();
     final workouts = events.where((e) => e.type == EventType.workout).toList();
 
@@ -130,11 +159,12 @@ void main() {
   test(
       'mobility/rehab-only templates do not block workout generation, but are excluded from rotation',
       () async {
-    // Exercise the guard: main-rotation templates come from the starter
-    // catalog which always includes non-mobility templates, so this should
-    // never hit the "skip" branch in normal operation.
-    final generator = CalendarScheduleGenerator(
-        AppDatabase(), _profile(trainingDaysPerWeek: 3));
+    // Exercise the guard: a generated plan for an uninjured profile always
+    // includes non-mobility templates, so this should never hit the "skip"
+    // branch in normal operation.
+    final profile = _profile(trainingDaysPerWeek: 3);
+    final generator =
+        CalendarScheduleGenerator(await _plannedFor(profile), profile);
     final events = await generator.buildSchedule();
     final workoutTitles =
         events.where((e) => e.type == EventType.workout).map((e) => e.title);
@@ -156,8 +186,10 @@ void main() {
     for (final entry in expectedCounts.entries) {
       test('mealCountPerDay=${entry.key} produces ${entry.value} meal events',
           () async {
-        final generator = CalendarScheduleGenerator(AppDatabase(),
-            _profile(trainingDaysPerWeek: 3, mealCountPerDay: entry.key));
+        final profile =
+            _profile(trainingDaysPerWeek: 3, mealCountPerDay: entry.key);
+        final generator =
+            CalendarScheduleGenerator(await _plannedFor(profile), profile);
         final events = await generator.buildSchedule();
         expect(events.where((e) => e.type == EventType.meal),
             hasLength(entry.value));
@@ -167,15 +199,16 @@ void main() {
 
   test('meal events recur daily and are pinned to a real seeded meal template',
       () async {
-    final generator = CalendarScheduleGenerator(
-        AppDatabase(), _profile(trainingDaysPerWeek: 3));
+    final profile = _profile(trainingDaysPerWeek: 3);
+    final generator =
+        CalendarScheduleGenerator(await _plannedFor(profile), profile);
     final events = await generator.buildSchedule();
     final meals = events.where((e) => e.type == EventType.meal).toList();
 
     for (final m in meals) {
       expect(m.recurrenceType, RecurrenceType.daily);
     }
-    // The starter catalog seeds meal templates, so every generated meal
+    // Onboarding generates meal templates before it schedules, so every meal
     // event should be pinned to one rather than falling back to a bare label.
     expect(meals.every((m) => m.templateId != null), isTrue,
         reason: 'meal events should reference a real template when any exist');
@@ -184,8 +217,9 @@ void main() {
   test(
       'the sleep event is a single daily recurrence at the documented bedtime hour',
       () async {
-    final generator = CalendarScheduleGenerator(
-        AppDatabase(), _profile(trainingDaysPerWeek: 3));
+    final profile = _profile(trainingDaysPerWeek: 3);
+    final generator =
+        CalendarScheduleGenerator(await _plannedFor(profile), profile);
     final events = await generator.buildSchedule();
     final sleep = events.singleWhere((e) => e.type == EventType.sleep);
 

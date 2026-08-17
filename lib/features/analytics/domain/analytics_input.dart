@@ -110,17 +110,16 @@ class WeighIn {
 /// `Exercise` model (and its localisation extensions) into the pure layer.
 class ExerciseRef {
   final String id;
+
+  /// Already in the user's language: the row was seeded in it and is never
+  /// re-resolved. See `AppDatabase.seedCatalogFor`.
   final String name;
-  final String? nameHe;
   final String? primaryMuscle;
-  final String? primaryMuscleHe;
 
   const ExerciseRef({
     required this.id,
     required this.name,
-    this.nameHe,
     this.primaryMuscle,
-    this.primaryMuscleHe,
   });
 }
 

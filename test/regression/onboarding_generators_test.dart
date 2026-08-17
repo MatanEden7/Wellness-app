@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:wellness_app/core/template_origin.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/meals/data/repositories.dart';
@@ -67,7 +68,8 @@ void main() {
       final libraryBefore =
           (await db.getAllExercises()).map((e) => e.id).toSet();
 
-      await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
+      await WorkoutTemplateGenerator(db, _profile(), AppLanguage.english)
+          .generateTemplates();
 
       final libraryAfter =
           (await db.getAllExercises()).map((e) => e.id).toSet();
@@ -87,7 +89,8 @@ void main() {
     test('never picks an exercise the user lacks equipment for', () async {
       final db = AppDatabase();
       // Bodyweight only -- the case the old generator handled worst.
-      await WorkoutTemplateGenerator(db, _profile(equipment: ['none']))
+      await WorkoutTemplateGenerator(
+              db, _profile(equipment: ['none']), AppLanguage.english)
           .generateTemplates();
 
       final byId = {for (final e in await db.getAllExercises()) e.id: e};
@@ -111,9 +114,8 @@ void main() {
     test('never picks an exercise contraindicated by an injury', () async {
       final db = AppDatabase();
       await WorkoutTemplateGenerator(
-        db,
-        _profile(injuries: ['shoulder', 'neck']),
-      ).generateTemplates();
+              db, _profile(injuries: ['shoulder', 'neck']), AppLanguage.english)
+          .generateTemplates();
 
       final byId = {for (final e in await db.getAllExercises()) e.id: e};
       var checked = 0;
@@ -137,14 +139,16 @@ void main() {
       final db = AppDatabase();
       final builtIn = (await db.getAllWorkoutTemplates()).length;
 
-      await WorkoutTemplateGenerator(db, _profile(trainingDaysPerWeek: 3))
+      await WorkoutTemplateGenerator(
+              db, _profile(trainingDaysPerWeek: 3), AppLanguage.english)
           .generateTemplates();
       final afterThree = (await db.getAllWorkoutTemplates()).length - builtIn;
 
       AppDatabase.resetForTesting();
       final db2 = AppDatabase();
       final builtIn2 = (await db2.getAllWorkoutTemplates()).length;
-      await WorkoutTemplateGenerator(db2, _profile(trainingDaysPerWeek: 5))
+      await WorkoutTemplateGenerator(
+              db2, _profile(trainingDaysPerWeek: 5), AppLanguage.english)
           .generateTemplates();
       final afterFive = (await db2.getAllWorkoutTemplates()).length - builtIn2;
 
@@ -155,7 +159,8 @@ void main() {
         () async {
       final db = AppDatabase();
       final created =
-          await WorkoutTemplateGenerator(db, _profile()).generateTemplates();
+          await WorkoutTemplateGenerator(db, _profile(), AppLanguage.english)
+              .generateTemplates();
 
       expect(created, isNotEmpty);
       for (final template in created) {
@@ -170,7 +175,8 @@ void main() {
       final db = AppDatabase();
       final catalogBefore = (await db.getAllFoods()).map((f) => f.id).toSet();
 
-      await MealTemplateGenerator(db, _profile()).generateTemplates();
+      await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+          .generateTemplates();
 
       expect((await db.getAllFoods()).map((f) => f.id).toSet(), catalogBefore,
           reason: 'the old generator inserted its own per-diet food lists');
@@ -186,9 +192,10 @@ void main() {
     test('never includes a food the user excludes', () async {
       final db = AppDatabase();
       await MealTemplateGenerator(
-        db,
-        _profile(exclusions: ['dairy', 'gluten', 'nuts']),
-      ).generateTemplates();
+              db,
+              _profile(exclusions: ['dairy', 'gluten', 'nuts']),
+              AppLanguage.english)
+          .generateTemplates();
 
       final byId = {for (final f in await db.getAllFoods()) f.id: f};
       var checked = 0;
@@ -211,7 +218,8 @@ void main() {
 
     test('a vegan gets nothing of animal origin', () async {
       final db = AppDatabase();
-      await MealTemplateGenerator(db, _profile(dietType: 'herbivore'))
+      await MealTemplateGenerator(
+              db, _profile(dietType: 'herbivore'), AppLanguage.english)
           .generateTemplates();
 
       final byId = {for (final f in await db.getAllFoods()) f.id: f};
@@ -238,12 +246,20 @@ void main() {
       // essentially nothing before the catalog was expanded.
       final db = AppDatabase();
       final created = await MealTemplateGenerator(
-        db,
-        _profile(
-          dietType: 'herbivore',
-          exclusions: ['soy', 'gluten', 'nuts', 'dairy', 'eggs', 'shellfish'],
-        ),
-      ).generateTemplates();
+              db,
+              _profile(
+                dietType: 'herbivore',
+                exclusions: [
+                  'soy',
+                  'gluten',
+                  'nuts',
+                  'dairy',
+                  'eggs',
+                  'shellfish'
+                ],
+              ),
+              AppLanguage.english)
+          .generateTemplates();
 
       expect(created, isNotEmpty,
           reason: 'this profile must still receive meal templates');
@@ -256,15 +272,15 @@ void main() {
 
     test('meal count drives how many templates are generated', () async {
       final db = AppDatabase();
-      final two =
-          await MealTemplateGenerator(db, _profile(mealCountPerDay: '2'))
-              .generateTemplates();
+      final two = await MealTemplateGenerator(
+              db, _profile(mealCountPerDay: '2'), AppLanguage.english)
+          .generateTemplates();
 
       AppDatabase.resetForTesting();
       final db2 = AppDatabase();
-      final four =
-          await MealTemplateGenerator(db2, _profile(mealCountPerDay: '4'))
-              .generateTemplates();
+      final four = await MealTemplateGenerator(
+              db2, _profile(mealCountPerDay: '4'), AppLanguage.english)
+          .generateTemplates();
 
       expect(two.length, 2);
       expect(four.length, 4);
@@ -273,7 +289,8 @@ void main() {
     test('generated templates are marked generated', () async {
       final db = AppDatabase();
       final created =
-          await MealTemplateGenerator(db, _profile()).generateTemplates();
+          await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+              .generateTemplates();
 
       expect(created, isNotEmpty);
       for (final template in created) {
@@ -284,7 +301,8 @@ void main() {
     test('portions land in a sane range, not 2kg of rice', () async {
       final db = AppDatabase();
       final created =
-          await MealTemplateGenerator(db, _profile()).generateTemplates();
+          await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+              .generateTemplates();
 
       final byId = {for (final f in await db.getAllFoods()) f.id: f};
       for (final template in created) {

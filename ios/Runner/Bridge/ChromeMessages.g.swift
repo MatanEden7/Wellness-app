@@ -424,6 +424,21 @@ struct AnchorRect {
 /// Generated class from Pigeon that represents data sent in messages.
 struct DatePickerSpec {
   var mode: String
+  /// The app's language ('en' | 'he'), applied to `UIDatePicker.locale`.
+  ///
+  /// A UIDatePicker with no locale follows the *device*, so a Hebrew app on an
+  /// English phone showed an English calendar -- month name, weekday headers
+  /// and all -- inside an otherwise Hebrew screen. The app's language is the
+  /// one the user chose, so it is the one that wins.
+  var localeIdentifier: String
+  /// The sheet's two buttons, translated on the Dart side.
+  ///
+  /// They used to be `NSLocalizedString("Cancel")`, which needs a Localizable
+  /// bundle per language in the iOS target. There is none, so it returned the
+  /// key -- permanently English. Dart already has both strings in the ARB, so
+  /// passing them across is one source of truth instead of two.
+  var cancelLabel: String
+  var doneLabel: String
   var initialTimestamp: Int64? = nil
   var minTimestamp: Int64? = nil
   var maxTimestamp: Int64? = nil
@@ -432,12 +447,18 @@ struct DatePickerSpec {
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> DatePickerSpec? {
     let mode = pigeonVar_list[0] as! String
-    let initialTimestamp: Int64? = nilOrValue(pigeonVar_list[1])
-    let minTimestamp: Int64? = nilOrValue(pigeonVar_list[2])
-    let maxTimestamp: Int64? = nilOrValue(pigeonVar_list[3])
+    let localeIdentifier = pigeonVar_list[1] as! String
+    let cancelLabel = pigeonVar_list[2] as! String
+    let doneLabel = pigeonVar_list[3] as! String
+    let initialTimestamp: Int64? = nilOrValue(pigeonVar_list[4])
+    let minTimestamp: Int64? = nilOrValue(pigeonVar_list[5])
+    let maxTimestamp: Int64? = nilOrValue(pigeonVar_list[6])
 
     return DatePickerSpec(
       mode: mode,
+      localeIdentifier: localeIdentifier,
+      cancelLabel: cancelLabel,
+      doneLabel: doneLabel,
       initialTimestamp: initialTimestamp,
       minTimestamp: minTimestamp,
       maxTimestamp: maxTimestamp
@@ -446,6 +467,9 @@ struct DatePickerSpec {
   func toList() -> [Any?] {
     return [
       mode,
+      localeIdentifier,
+      cancelLabel,
+      doneLabel,
       initialTimestamp,
       minTimestamp,
       maxTimestamp,

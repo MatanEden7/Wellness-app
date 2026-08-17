@@ -1,21 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AppLanguage {
-  english('en', 'English'),
-  hebrew('he', 'עברית');
+import '../core/app_language.dart';
 
-  const AppLanguage(this.code, this.displayName);
-
-  final String code;
-  final String displayName;
-
-  Locale get locale => Locale(code);
-
-  // Hebrew is RTL (right-to-left)
-  bool get isRTL => code == 'he';
-}
+// AppLanguage itself lives in core/ so the data layer can name a language
+// without depending on Flutter -- see core/app_language.dart. Re-exported here
+// because every existing call site imports it from this file.
+export '../core/app_language.dart';
 
 // Provider for the language service
 final languageServiceProvider = Provider<LanguageService>((ref) {

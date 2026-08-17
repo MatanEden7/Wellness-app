@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/template_origin.dart';
-import '../../../services/language_service.dart';
 import 'exercise_tags.dart';
 
 part 'models.freezed.dart';
@@ -14,12 +13,10 @@ const _uuid = Uuid();
 class Exercise with _$Exercise {
   const factory Exercise({
     required String id,
+    // Written once, in the language the library was seeded in, and never
+    // re-resolved. See `AppDatabase.seedCatalogFor`.
     required String name,
-    // Hebrew name, filled in separately -- see ExerciseDisplayName.
-    // Null until translated.
-    String? nameHe,
     String? primaryMuscle,
-    String? primaryMuscleHe,
     required String unit, // kg/lb
     String? notes,
     // What this exercise needs. Empty means "unspecified", treated as
@@ -36,18 +33,14 @@ class Exercise with _$Exercise {
 
   factory Exercise.create({
     required String name,
-    String? nameHe,
     String? primaryMuscle,
-    String? primaryMuscleHe,
     required String unit,
     String? notes,
   }) {
     return Exercise(
       id: _uuid.v4(),
       name: name,
-      nameHe: nameHe,
       primaryMuscle: primaryMuscle,
-      primaryMuscleHe: primaryMuscleHe,
       unit: unit,
       notes: notes,
     );
@@ -57,32 +50,14 @@ class Exercise with _$Exercise {
       _$ExerciseFromJson(json);
 }
 
-extension ExerciseDisplayName on Exercise {
-  /// The name to show for [language]: Hebrew if selected and translated,
-  /// English otherwise. Lets the library ship English-only today and grow
-  /// Hebrew names later without any further UI changes.
-  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
-          nameHe != null &&
-          nameHe!.trim().isNotEmpty
-      ? nameHe!
-      : name;
-
-  String? displayPrimaryMuscle(AppLanguage language) =>
-      language == AppLanguage.hebrew &&
-              primaryMuscleHe != null &&
-              primaryMuscleHe!.trim().isNotEmpty
-          ? primaryMuscleHe
-          : primaryMuscle;
-}
-
 @freezed
 class WorkoutTemplate with _$WorkoutTemplate {
   const factory WorkoutTemplate({
     required String id,
+    // Written once, in the language the template was generated or created in.
+    // A later language switch leaves it alone.
     required String name,
-    String? nameHe,
     String? notes,
-    String? notesHe,
     // See MealTemplate.origin -- same contract, same safe default.
     @Default(TemplateOrigin.user) TemplateOrigin origin,
 
@@ -100,36 +75,17 @@ class WorkoutTemplate with _$WorkoutTemplate {
 
   factory WorkoutTemplate.create({
     required String name,
-    String? nameHe,
     String? notes,
-    String? notesHe,
   }) {
     return WorkoutTemplate(
       id: _uuid.v4(),
       name: name,
-      nameHe: nameHe,
       notes: notes,
-      notesHe: notesHe,
     );
   }
 
   factory WorkoutTemplate.fromJson(Map<String, dynamic> json) =>
       _$WorkoutTemplateFromJson(json);
-}
-
-extension WorkoutTemplateDisplayName on WorkoutTemplate {
-  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
-          nameHe != null &&
-          nameHe!.trim().isNotEmpty
-      ? nameHe!
-      : name;
-
-  String? displayNotes(AppLanguage language) =>
-      language == AppLanguage.hebrew &&
-              notesHe != null &&
-              notesHe!.trim().isNotEmpty
-          ? notesHe
-          : notes;
 }
 
 @freezed
@@ -305,5 +261,8 @@ class WorkoutSessionWithTemplate {
     this.templateName,
   });
 
-  String get displayName => templateName ?? 'Custom Workout';
+  // No `displayName` fallback here on purpose. It used to return a hardcoded
+  // English "Custom Workout", which is chrome rather than content and so
+  // belongs in the ARB -- call sites use
+  // `templateName ?? l10n.customWorkoutTitle`, which is translated.
 }

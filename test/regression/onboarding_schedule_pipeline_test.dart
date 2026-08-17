@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wellness_app/core/date_utils.dart';
@@ -70,8 +71,10 @@ void main() {
 
   /// Runs the exact sequence `onboarding_page.dart` runs on "finish".
   Future<void> completeOnboarding(UserProfile profile) async {
-    await WorkoutTemplateGenerator(database, profile).generateTemplates();
-    await MealTemplateGenerator(database, profile).generateTemplates();
+    await WorkoutTemplateGenerator(database, profile, AppLanguage.english)
+        .generateTemplates();
+    await MealTemplateGenerator(database, profile, AppLanguage.english)
+        .generateTemplates();
 
     final schedule =
         await CalendarScheduleGenerator(database, profile).buildSchedule();
@@ -242,7 +245,7 @@ void main() {
 
       // What the Profile screen does when a content-affecting field changes.
       await ContentRegenerationService(database)
-          .regenerate(_profile(dietType: 'vegan'));
+          .regenerate(_profile(dietType: 'vegan'), AppLanguage.english);
 
       expect(await danglingEvents(), isNotEmpty,
           reason: 'sanity check on the test itself: regeneration is expected '
@@ -259,7 +262,7 @@ void main() {
     test('re-pins to the regenerated templates, not the built-ins', () async {
       await completeOnboarding(_profile());
       await ContentRegenerationService(database)
-          .regenerate(_profile(dietType: 'vegan'));
+          .regenerate(_profile(dietType: 'vegan'), AppLanguage.english);
       await container
           .read(calendarStateProvider.notifier)
           .repinDanglingTemplates();
@@ -288,7 +291,7 @@ void main() {
         ..sort();
 
       await ContentRegenerationService(database)
-          .regenerate(_profile(dietType: 'vegan'));
+          .regenerate(_profile(dietType: 'vegan'), AppLanguage.english);
       await container
           .read(calendarStateProvider.notifier)
           .repinDanglingTemplates();
@@ -326,7 +329,7 @@ void main() {
           .saveEvent(target.copyWith(templateId: userTemplateId));
 
       await ContentRegenerationService(database)
-          .regenerate(_profile(dietType: 'vegan'));
+          .regenerate(_profile(dietType: 'vegan'), AppLanguage.english);
       await container
           .read(calendarStateProvider.notifier)
           .repinDanglingTemplates();

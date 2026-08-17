@@ -379,7 +379,6 @@ void main() {
       expect(ProfileFit.isReplaceable(TemplateOrigin.generated), isTrue);
       expect(ProfileFit.isReplaceable(TemplateOrigin.user), isFalse,
           reason: 'never destroy what the user built');
-      expect(ProfileFit.isReplaceable(TemplateOrigin.builtin), isFalse);
     });
 
     test('a template with no recorded origin is treated as the user\'s', () {

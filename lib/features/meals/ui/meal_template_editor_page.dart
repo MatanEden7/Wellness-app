@@ -77,7 +77,7 @@ class MealTemplateEditorPage extends HookConsumerWidget {
                   '${nameController.text.length}/${TextLimits.mealNameMaxLength}',
             ),
             maxLength: TextLimits.mealNameMaxLength,
-            validator: TextLimits.validateMealName,
+            validator: (v) => TextLimits.validateMealName(v, l10n),
           ),
           const SizedBox(height: AppSpacing.md),
 
@@ -92,7 +92,7 @@ class MealTemplateEditorPage extends HookConsumerWidget {
             ),
             maxLines: 2,
             maxLength: TextLimits.generalNoteMaxLength,
-            validator: TextLimits.validateGeneralNote,
+            validator: (v) => TextLimits.validateGeneralNote(v, l10n),
           ),
           const SizedBox(height: AppSpacing.lg),
 
@@ -354,7 +354,7 @@ class _TemplateItemCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      food.displayName(language),
+                      food.name,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: AppSpacing.xs),
@@ -512,7 +512,7 @@ class _TemplateItemDialog extends HookConsumerWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      food.displayName(language),
+                                      food.name,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
@@ -522,7 +522,7 @@ class _TemplateItemDialog extends HookConsumerWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '${food.displayBrand(language) ?? AppLocalizations.of(context)!.brandGeneric} • ${FoodNutritionMath.localizedUnit(language, FoodNutritionMath.displayUnitLabel(food))}',
+                                      '${food.brand ?? AppLocalizations.of(context)!.brandGeneric} • ${FoodNutritionMath.localizedUnit(language, FoodNutritionMath.displayUnitLabel(food))}',
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                       maxLines: 1,

@@ -159,14 +159,27 @@ class NativeUI {
   // ─── Date picker ───────────────────────────────────────────────────────────
 
   /// A real `UIDatePicker`. [mode] is `'date'`, `'time'` or `'datetime'`.
+  ///
+  /// [localeIdentifier] and the two button labels are passed across rather
+  /// than resolved on the Swift side. UIKit would otherwise use the *device*
+  /// locale for the calendar and fall back to the untranslated key for the
+  /// buttons -- so a Hebrew app on an English phone presented an English
+  /// month, English weekday headers and "Cancel"/"Done". Dart already knows
+  /// the app's language and already has both strings in the ARB.
   static Future<NativeResult<DateTime?>?> pickDateTime({
     required String mode,
+    required String localeIdentifier,
+    required String cancelLabel,
+    required String doneLabel,
     DateTime? initial,
     DateTime? minimum,
     DateTime? maximum,
   }) async {
     final result = await _call((api) => api.presentDatePicker(DatePickerSpec(
           mode: mode,
+          localeIdentifier: localeIdentifier,
+          cancelLabel: cancelLabel,
+          doneLabel: doneLabel,
           initialTimestamp: initial?.millisecondsSinceEpoch,
           minTimestamp: minimum?.millisecondsSinceEpoch,
           maxTimestamp: maximum?.millisecondsSinceEpoch,

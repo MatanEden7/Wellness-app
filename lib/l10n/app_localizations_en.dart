@@ -2749,4 +2749,201 @@ class AppLocalizationsEn extends AppLocalizations {
   String amountWithUnit(String unit) {
     return 'Amount ($unit)';
   }
+
+  @override
+  String hiddenByProfile(int count) {
+    return '$count hidden by your profile';
+  }
+
+  @override
+  String get showAllContent => 'Show all';
+
+  @override
+  String get rebuild => 'Rebuild';
+
+  @override
+  String repsCount(int count) {
+    return '$count reps';
+  }
+
+  @override
+  String get generateTestData => 'Generate Test Data';
+
+  @override
+  String get goodRest => 'Good rest';
+
+  @override
+  String get skipRest => 'Skip Rest';
+
+  @override
+  String completeSetNumber(int number) {
+    return 'Complete Set $number';
+  }
+
+  @override
+  String get minutesShort => 'min';
+
+  @override
+  String get targetsUpdated => 'Targets updated';
+
+  @override
+  String rebuiltTemplates(int count) {
+    return 'Rebuilt $count templates';
+  }
+
+  @override
+  String get equipmentNone => 'No Equipment';
+
+  @override
+  String get equipmentBands => 'Resistance Bands';
+
+  @override
+  String get equipmentCable => 'Cable Machine';
+
+  @override
+  String get equipmentPullupBar => 'Pull-up Bar';
+
+  @override
+  String get customWorkoutTitle => 'Custom Workout';
+
+  @override
+  String get foodItemLabel => 'Food Item';
+
+  @override
+  String get nutritionGoalsHelp =>
+      'Set your daily nutrition targets. Leave a field empty to disable that goal.';
+
+  @override
+  String get createExercisesFirst =>
+      'Create exercises in the Exercise Library first';
+
+  @override
+  String errorSavingFood(String error) {
+    return 'Error saving food: $error';
+  }
+
+  @override
+  String errorSavingMeal(String error) {
+    return 'Error saving meal: $error';
+  }
+
+  @override
+  String errorSavingExercise(String error) {
+    return 'Error saving exercise: $error';
+  }
+
+  @override
+  String errorSavingTemplate(String error) {
+    return 'Error saving template: $error';
+  }
+
+  @override
+  String errorUpdatingSleep(String error) {
+    return 'Error updating sleep entry: $error';
+  }
+
+  @override
+  String errorImportFailed(String error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String errorSetupFailed(String error) {
+    return 'Setup failed: $error';
+  }
+
+  @override
+  String get autoAdjustedForReadability => 'Auto-adjusted for readability';
+
+  @override
+  String pickColorFor(String label) {
+    return 'Pick $label Color';
+  }
+
+  @override
+  String fieldRequired(String field) {
+    return '$field is required';
+  }
+
+  @override
+  String fieldMaxLength(String field, int max) {
+    return '$field must be $max characters or less';
+  }
+
+  @override
+  String get noteLabel => 'Note';
+
+  @override
+  String get thisField => 'This field';
+
+  @override
+  String fieldMustBeNumber(String field) {
+    return '$field must be a valid number';
+  }
+
+  @override
+  String fieldMustBePositive(String field) {
+    return '$field must be greater than 0';
+  }
+
+  @override
+  String fieldMustBeNonNegative(String field) {
+    return '$field must be 0 or greater';
+  }
+
+  @override
+  String fieldMustBeWholeNumber(String field) {
+    return '$field must be a valid whole number';
+  }
+
+  @override
+  String a11ySliderValue(String label, String value) {
+    return '$label slider, current value $value';
+  }
+
+  @override
+  String get unitBand => 'band';
+
+  @override
+  String get unitLb => 'lb';
+
+  @override
+  String setsCount(int count) {
+    return '$count sets';
+  }
+
+  @override
+  String exerciseXOfY(int current, int total) {
+    return 'Exercise $current of $total';
+  }
+
+  @override
+  String setXOfY(int current, int total) {
+    return 'SET $current OF $total';
+  }
+
+  @override
+  String setNumberLabel(int number) {
+    return 'Set $number';
+  }
+
+  @override
+  String get hoursShort => 'h';
+
+  @override
+  String get notAvailableShort => 'N/A';
+
+  @override
+  String get minutesShortM => 'm';
+
+  @override
+  String get secondsShort => 's';
+
+  @override
+  String get importSucceeded => 'Import successful';
+
+  @override
+  String estimated1rmFor(String name) {
+    return '$name estimated 1RM';
+  }
 }

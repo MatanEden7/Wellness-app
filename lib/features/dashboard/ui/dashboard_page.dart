@@ -138,7 +138,7 @@ class DashboardPage extends HookConsumerWidget {
         ChromeAction(
           icon: CupertinoIcons.lab_flask,
           sfSymbolName: 'flask',
-          tooltip: 'Generate Test Data',
+          tooltip: l10n.generateTestData,
           onPressed: () {
             final isHebrew =
                 Localizations.localeOf(context).languageCode == 'he';
@@ -515,7 +515,8 @@ class _DashboardContent extends HookConsumerWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Active: ${activeWorkout.displayName}',
+                '${AppLocalizations.of(context)!.active}: '
+                '${activeWorkout.templateName ?? AppLocalizations.of(context)!.customWorkoutTitle}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Colors.orange.shade700,
@@ -621,7 +622,8 @@ class _DashboardContent extends HookConsumerWidget {
                   children: [
                     // Step 3: Name with maxLines and ellipsis
                     Text(
-                      workoutWithTemplate.displayName,
+                      workoutWithTemplate.templateName ??
+                          l10n.customWorkoutTitle,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -1143,7 +1145,8 @@ class _DashboardContent extends HookConsumerWidget {
             ? l10n.noDataAvailable
             : isWeek
                 ? '${data.nightCount} ${l10n.nights} · '
-                    '${data.averageHours.toStringAsFixed(1)}h ${l10n.nightlyAverage}'
+                    '${data.averageHours.toStringAsFixed(1)} ${l10n.hoursShort} '
+                    '${l10n.nightlyAverage}'
                 : (data.averageHours >= 7 ? l10n.wellRested : l10n.needMore);
 
         return ContentSurface(
@@ -1182,7 +1185,7 @@ class _DashboardContent extends HookConsumerWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     headlineHours != null
-                        ? '${headlineHours.toStringAsFixed(1)}h'
+                        ? '${headlineHours.toStringAsFixed(1)} ${l10n.hoursShort}'
                         : '−',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: sleepColor,

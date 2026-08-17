@@ -73,7 +73,8 @@ void main() {
         AppDatabase.resetForTesting();
         final db = AppDatabase();
         final created =
-            await MealTemplateGenerator(db, profile).generateTemplates();
+            await MealTemplateGenerator(db, profile, AppLanguage.english)
+                .generateTemplates();
         expect(created, isNotEmpty, reason: '$label got no meal templates');
 
         final foods = {for (final f in await db.getAllFoods()) f.id: f};
@@ -152,7 +153,8 @@ void main() {
       );
 
       final created =
-          await MealTemplateGenerator(db, bulking).generateTemplates();
+          await MealTemplateGenerator(db, bulking, AppLanguage.english)
+              .generateTemplates();
       final foods = {for (final f in await db.getAllFoods()) f.id: f};
       var kcal = 0.0, carbs = 0.0;
       for (final t in created) {
@@ -182,7 +184,7 @@ void main() {
         AppDatabase.resetForTesting();
         final db = AppDatabase();
         final created = await MealTemplateGenerator(
-                db, _profile(mealCountPerDay: entry.key))
+                db, _profile(mealCountPerDay: entry.key), AppLanguage.english)
             .generateTemplates();
         expect(created.length, entry.value,
             reason: 'asked for ${entry.key} meals, got ${created.length}');
@@ -192,7 +194,8 @@ void main() {
     test('no meal lists the same food twice', () async {
       final db = AppDatabase();
       final created =
-          await MealTemplateGenerator(db, _profile()).generateTemplates();
+          await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+              .generateTemplates();
       for (final t in created) {
         final ids = (await db.getMealTemplateItemsByTemplateId(t.id))
             .map((i) => i.foodId)
@@ -206,7 +209,8 @@ void main() {
     test('portions are physically sensible for their unit', () async {
       final db = AppDatabase();
       final created =
-          await MealTemplateGenerator(db, _profile()).generateTemplates();
+          await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+              .generateTemplates();
       final foods = {for (final f in await db.getAllFoods()) f.id: f};
       for (final t in created) {
         for (final i in await db.getMealTemplateItemsByTemplateId(t.id)) {
@@ -244,7 +248,7 @@ void main() {
         AppDatabase.resetForTesting();
         final db = AppDatabase();
         final created = await WorkoutTemplateGenerator(
-                db, _profile(trainingDaysPerWeek: days))
+                db, _profile(trainingDaysPerWeek: days), AppLanguage.english)
             .generateTemplates();
         final training =
             created.where((t) => !t.name.startsWith('Physiotherapy')).length;
@@ -255,9 +259,9 @@ void main() {
 
     test('session names stay distinct when the split repeats', () async {
       final db = AppDatabase();
-      final created =
-          await WorkoutTemplateGenerator(db, _profile(trainingDaysPerWeek: 6))
-              .generateTemplates();
+      final created = await WorkoutTemplateGenerator(
+              db, _profile(trainingDaysPerWeek: 6), AppLanguage.english)
+          .generateTemplates();
       final names = created.map((t) => t.name).toList();
       expect(names.toSet().length, names.length,
           reason: 'duplicate names: $names');
@@ -268,7 +272,8 @@ void main() {
         AppDatabase.resetForTesting();
         final db = AppDatabase();
         final created = await WorkoutTemplateGenerator(
-            db, _profile(injuries: [injury.profileId])).generateTemplates();
+                db, _profile(injuries: [injury.profileId]), AppLanguage.english)
+            .generateTemplates();
         final physio =
             created.where((t) => t.name.startsWith('Physiotherapy')).toList();
         expect(physio, hasLength(1),
@@ -277,16 +282,15 @@ void main() {
         // English (rehab names are pinned there deliberately, so stored
         // rows do not inherit whichever locale was active), so assert
         // against the English label.
-        expect(physio.single.name,
-            contains(injury.label(AppLanguage.english)));
+        expect(physio.single.name, contains(injury.label(AppLanguage.english)));
       }
     });
 
     test('physio sessions contain genuinely rehabilitative work', () async {
       final db = AppDatabase();
-      final created =
-          await WorkoutTemplateGenerator(db, _profile(injuries: ['shoulder']))
-              .generateTemplates();
+      final created = await WorkoutTemplateGenerator(
+              db, _profile(injuries: ['shoulder']), AppLanguage.english)
+          .generateTemplates();
       final physio =
           created.firstWhere((t) => t.name.startsWith('Physiotherapy'));
 
@@ -305,8 +309,10 @@ void main() {
     test('no session is left nearly empty by contraindications', () async {
       // A shoulder+neck injury guts Push day; the backfill should top it up.
       final db = AppDatabase();
-      final created = await WorkoutTemplateGenerator(db,
-              _profile(injuries: ['shoulder', 'neck'], trainingDaysPerWeek: 5))
+      final created = await WorkoutTemplateGenerator(
+              db,
+              _profile(injuries: ['shoulder', 'neck'], trainingDaysPerWeek: 5),
+              AppLanguage.english)
           .generateTemplates();
       for (final t
           in created.where((t) => !t.name.startsWith('Physiotherapy'))) {

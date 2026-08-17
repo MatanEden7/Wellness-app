@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/features/workouts/domain/exercise_tags.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
@@ -68,10 +69,12 @@ void main() {
           ({
             WorkoutTemplateData template,
             List<TemplateExerciseData> rows
-          })>> generate(UserProfile p) async {
+          })>> generate(UserProfile p,
+      [AppLanguage language = AppLanguage.english]) async {
     AppDatabase.resetForTesting();
-    final db = AppDatabase();
-    final created = await WorkoutTemplateGenerator(db, p).generateTemplates();
+    final db = AppDatabase(seedLanguage: language);
+    final created =
+        await WorkoutTemplateGenerator(db, p, language).generateTemplates();
     return [
       for (final t in created)
         (
@@ -138,7 +141,8 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created =
-          await WorkoutTemplateGenerator(db, profile()).generateTemplates();
+          await WorkoutTemplateGenerator(db, profile(), AppLanguage.english)
+              .generateTemplates();
 
       for (final template in created) {
         final rows = await db.getTemplateExercisesByTemplateId(template.id);
@@ -173,7 +177,8 @@ void main() {
                     profile(
                         goal: goal,
                         experience: experience,
-                        equipment: equipment))
+                        equipment: equipment),
+                    AppLanguage.english)
                 .generateTemplates();
 
             for (final template in created) {
@@ -193,7 +198,9 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created = await WorkoutTemplateGenerator(
-              db, profile(equipment: const ['barbell_rack', 'dumbbells']))
+              db,
+              profile(equipment: const ['barbell_rack', 'dumbbells']),
+              AppLanguage.english)
           .generateTemplates();
 
       for (final template in created) {
@@ -217,7 +224,8 @@ void main() {
                 db,
                 profile(
                     experience: experience,
-                    equipment: const ['barbell_rack', 'dumbbells', 'bands']))
+                    equipment: const ['barbell_rack', 'dumbbells', 'bands']),
+                AppLanguage.english)
             .generateTemplates();
 
         for (final template in created) {
@@ -249,7 +257,8 @@ void main() {
                 db,
                 profile(
                     experience: experience,
-                    equipment: const ['barbell_rack', 'dumbbells']))
+                    equipment: const ['barbell_rack', 'dumbbells']),
+                AppLanguage.english)
             .generateTemplates();
         var sum = 0.0;
         for (final t in created) {
@@ -272,7 +281,8 @@ void main() {
                 db,
                 profile(
                     weightKg: bodyweight,
-                    equipment: const ['barbell_rack', 'dumbbells']))
+                    equipment: const ['barbell_rack', 'dumbbells']),
+                AppLanguage.english)
             .generateTemplates();
         for (final t in created) {
           for (final row in await db.getTemplateExercisesByTemplateId(t.id)) {
@@ -308,7 +318,9 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created = await WorkoutTemplateGenerator(
-              db, profile(equipment: const ['barbell_rack', 'dumbbells']))
+              db,
+              profile(equipment: const ['barbell_rack', 'dumbbells']),
+              AppLanguage.english)
           .generateTemplates();
 
       for (final template in created) {
@@ -338,13 +350,15 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created = await WorkoutTemplateGenerator(
-          db,
-          profile(equipment: const [
-            'barbell_rack',
-            'dumbbells',
-            'cable',
-            'pullup_bar'
-          ])).generateTemplates();
+              db,
+              profile(equipment: const [
+                'barbell_rack',
+                'dumbbells',
+                'cable',
+                'pullup_bar'
+              ]),
+              AppLanguage.english)
+          .generateTemplates();
 
       for (final template in created) {
         if (template.name.startsWith('Physiotherapy')) continue;
@@ -369,13 +383,15 @@ void main() {
       AppDatabase.resetForTesting();
       final db = AppDatabase();
       final created = await WorkoutTemplateGenerator(
-          db,
-          profile(days: 6, equipment: const [
-            'barbell_rack',
-            'dumbbells',
-            'cable',
-            'pullup_bar'
-          ])).generateTemplates();
+              db,
+              profile(days: 6, equipment: const [
+                'barbell_rack',
+                'dumbbells',
+                'cable',
+                'pullup_bar'
+              ]),
+              AppLanguage.english)
+          .generateTemplates();
 
       final muscles = <String>{};
       for (final template in created) {
@@ -401,7 +417,8 @@ void main() {
               db,
               profile(
                   days: 3,
-                  equipment: const ['barbell_rack', 'dumbbells', 'pullup_bar']))
+                  equipment: const ['barbell_rack', 'dumbbells', 'pullup_bar']),
+              AppLanguage.english)
           .generateTemplates();
 
       final names = <String>{};
@@ -418,13 +435,23 @@ void main() {
       expect(names, contains('Squats'));
     });
 
-    test('templates carry a Hebrew name', () async {
-      // WorkoutTemplateData has always had nameHe and the generator never
-      // filled it, so a Hebrew user's plan came out entirely in English.
-      final plans = await generate(profile(days: 6));
-      for (final plan in plans) {
-        expect(plan.template.nameHe, isNotNull,
-            reason: '"${plan.template.name}" has no Hebrew name');
+    test('templates are named in the generator\'s language, not both',
+        () async {
+      // A template carries one name, written in the language onboarding was
+      // done in. The failure this pins is a plan that comes out half English
+      // and half Hebrew -- or one that renames itself when the user changes
+      // the app language later.
+      final hebrew = await generate(profile(days: 6), AppLanguage.hebrew);
+      for (final plan in hebrew) {
+        expect(plan.template.name, matches(RegExp(r'[\u0590-\u05FF]')),
+            reason: '"${plan.template.name}" is not in Hebrew');
+      }
+
+      final english = await generate(profile(days: 6), AppLanguage.english);
+      for (final plan in english) {
+        expect(plan.template.name, isNot(matches(RegExp(r'[\u0590-\u05FF]'))),
+            reason:
+                '"${plan.template.name}" leaked Hebrew into an English plan');
       }
     });
 

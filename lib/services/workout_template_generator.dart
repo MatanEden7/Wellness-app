@@ -22,11 +22,24 @@ import 'package:wellness_app/services/language_service.dart';
 /// fields on [Exercise] and every choice goes through [ProfileFit], so the
 /// generator and the browsing UI agree by construction.
 class WorkoutTemplateGenerator {
-  WorkoutTemplateGenerator(this._database, this._profile);
+  WorkoutTemplateGenerator(this._database, this._profile, this._language);
 
   final AppDatabase _database;
   final UserProfile _profile;
+
+  /// The language every template this generator writes is named in.
+  ///
+  /// Resolved here, once, and written into the row. The template does not
+  /// carry a second name to be re-picked later: a plan the user has been
+  /// following does not rename itself because they changed the app language,
+  /// and the calendar entry pinned to it still says what it said yesterday.
+  final AppLanguage _language;
+
   final _uuid = const Uuid();
+
+  /// Picks the [_language] side of a pair of authored strings.
+  String _text(String english, String hebrew) =>
+      _language == AppLanguage.hebrew ? hebrew : english;
 
   /// Muscle groups a session should cover, matched against
   /// `Exercise.primaryMuscle`. Still used for *coverage* accounting, which is
@@ -91,7 +104,12 @@ class WorkoutTemplateGenerator {
     for (final day in plan) {
       final picks = _pick(available, day.patterns, day.muscles, perSession);
       if (picks.isEmpty) continue;
-      created.add(await _write(day.name, day.notes, picks, scheme: scheme));
+      created.add(await _write(
+        _text(day.name, day.nameHe),
+        _text(day.notes, day.notesHe),
+        picks,
+        scheme: scheme,
+      ));
     }
 
     // Plus a physiotherapy session per reported injury, built from the
@@ -104,9 +122,15 @@ class WorkoutTemplateGenerator {
           all.where((e) => e.rehabFor.contains(part) && _fits(e)).toList();
       if (rehab.isEmpty) continue;
       created.add(await _write(
-        'Physiotherapy — ${part.label(AppLanguage.english)}',
-        'Rehab work for your ${part.label(AppLanguage.english).toLowerCase()}. Low load; safe on '
-            'a rest day.',
+        _text(
+          'Physiotherapy — ${part.label(AppLanguage.english)}',
+          'פיזיותרפיה — ${part.label(AppLanguage.hebrew)}',
+        ),
+        _text(
+          'Rehab work for your ${part.label(AppLanguage.english).toLowerCase()}. '
+              'Low load; safe on a rest day.',
+          'עבודת שיקום ל${part.label(AppLanguage.hebrew)}. עומס נמוך; בטוח ליום מנוחה.',
+        ),
         rehab.take(5).toList(),
         // Rehab is always programmed as rehab, whatever the training goal:
         // low load, well short of failure. Tissue tolerance, not volume.
@@ -143,7 +167,6 @@ class WorkoutTemplateGenerator {
     final template = WorkoutTemplateData(
       id: _uuid.v4(),
       name: name,
-      nameHe: _hebrewName(name),
       notes: '$notes\n\n${_progressionNote(scheme)}',
       // Marked generated so a later profile change can replace it without
       // touching anything the user built. See ProfileFit.isReplaceable.
@@ -213,50 +236,19 @@ class WorkoutTemplateGenerator {
   /// Muscles touched by the sessions written in this run.
   final Set<String> _lastPickedMuscles = <String>{};
 
-  /// Hebrew name for a generated session.
-  ///
-  /// `WorkoutTemplateData` has carried `nameHe` all along and the generator
-  /// never filled it, so a Hebrew user's generated plan came out entirely in
-  /// English while the rest of the app was translated. Returns null for
-  /// anything unmapped -- `displayName()` already falls back to the English
-  /// name, which is better than a wrong translation.
-  static String? _hebrewName(String english) {
-    const names = {
-      'Full Body': 'אימון גוף מלא',
-      'Full Body A': 'גוף מלא א',
-      'Full Body B': 'גוף מלא ב',
-      'Full Body C': 'גוף מלא ג',
-      'Upper Body': 'פלג גוף עליון',
-      'Upper Body A': 'פלג גוף עליון א',
-      'Upper Body B': 'פלג גוף עליון ב',
-      'Lower Body': 'פלג גוף תחתון',
-      'Lower Body A': 'פלג גוף תחתון א',
-      'Lower Body B': 'פלג גוף תחתון ב',
-      'Push Day': 'אימון דחיפה',
-      'Push Day A': 'אימון דחיפה א',
-      'Push Day B': 'אימון דחיפה ב',
-      'Pull Day': 'אימון משיכה',
-      'Pull Day A': 'אימון משיכה א',
-      'Pull Day B': 'אימון משיכה ב',
-      'Leg Day': 'אימון רגליים',
-      'Leg Day A': 'אימון רגליים א',
-      'Leg Day B': 'אימון רגליים ב',
-      'Mobility & Core': 'ניידות וליבה',
-    };
-    if (names.containsKey(english)) return names[english];
-    // Physiotherapy sessions are named after the body part at runtime.
-    if (english.startsWith('Physiotherapy')) return 'פיזיותרפיה';
-    return null;
-  }
-
   /// The overload rule, written onto the template so it travels with the
   /// plan. Static templates cannot progress by themselves; the user is the
   /// one applying this, so it has to be stated rather than assumed.
-  String _progressionNote(RepScheme scheme) =>
-      'Leave ${scheme.repsInReserve} rep(s) in reserve on every set. '
-      'When you hit ${scheme.reps} reps on all ${scheme.sets} sets, add '
-      '2.5kg upper body / 5kg lower body next time. '
-      'Weights shown are a starting estimate -- adjust on your first set.';
+  String _progressionNote(RepScheme scheme) => _text(
+        'Leave ${scheme.repsInReserve} rep(s) in reserve on every set. '
+            'When you hit ${scheme.reps} reps on all ${scheme.sets} sets, add '
+            '2.5kg upper body / 5kg lower body next time. '
+            'Weights shown are a starting estimate -- adjust on your first set.',
+        'השאירו ${scheme.repsInReserve} חזרות במלאי בכל סט. '
+            'כשתגיעו ל-${scheme.reps} חזרות בכל ${scheme.sets} הסטים, הוסיפו '
+            '2.5 ק"ג בפלג הגוף העליון / 5 ק"ג בתחתון בפעם הבאה. '
+            'המשקלים המוצגים הם הערכת פתיחה -- התאימו אותם בסט הראשון.',
+      );
 
   /// Exactly [days] sessions, chosen so that every muscle is trained at
   /// least twice a week wherever the frequency allows.
@@ -274,77 +266,110 @@ class WorkoutTemplateGenerator {
     switch (count) {
       case 1:
         return const [
-          _SessionPlan('Full Body', 'Everything, once a week', _allPatterns,
-              _allTrained),
+          _SessionPlan(
+              'Full Body', 'Everything, once a week', _allPatterns, _allTrained,
+              nameHe: 'אימון גוף מלא', notesHe: 'הכול, פעם בשבוע'),
         ];
       case 2:
         return const [
           _SessionPlan(
-              'Full Body A', 'Every major pattern', _allPatterns, _allTrained),
+              'Full Body A', 'Every major pattern', _allPatterns, _allTrained,
+              nameHe: 'גוף מלא א', notesHe: 'כל דפוסי התנועה המרכזיים'),
           _SessionPlan('Full Body B', 'Same coverage, different lifts',
-              _allPatterns, _allTrained),
+              _allPatterns, _allTrained,
+              nameHe: 'גוף מלא ב', notesHe: 'אותו כיסוי, תרגילים אחרים'),
         ];
       case 3:
         return const [
           _SessionPlan(
-              'Full Body A', 'Every major pattern', _allPatterns, _allTrained),
+              'Full Body A', 'Every major pattern', _allPatterns, _allTrained,
+              nameHe: 'גוף מלא א', notesHe: 'כל דפוסי התנועה המרכזיים'),
           _SessionPlan('Full Body B', 'Same coverage, different lifts',
-              _allPatterns, _allTrained),
+              _allPatterns, _allTrained,
+              nameHe: 'גוף מלא ב', notesHe: 'אותו כיסוי, תרגילים אחרים'),
           _SessionPlan('Full Body C', 'Third variation to keep it fresh',
-              _allPatterns, _allTrained),
+              _allPatterns, _allTrained,
+              nameHe: 'גוף מלא ג', notesHe: 'וריאציה שלישית לשמירה על גיוון'),
         ];
       case 4:
         return const [
           _SessionPlan('Upper Body A', 'Chest, back, shoulders and arms',
-              [..._pushPatterns, ..._pullPatterns], [..._push, ..._pull]),
+              [..._pushPatterns, ..._pullPatterns], [..._push, ..._pull],
+              nameHe: 'פלג גוף עליון א', notesHe: 'חזה, גב, כתפיים וידיים'),
           _SessionPlan('Lower Body A', 'Legs and trunk',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'פלג גוף תחתון א', notesHe: 'רגליים וליבה'),
           _SessionPlan('Upper Body B', 'Upper body, second variation',
-              [..._pullPatterns, ..._pushPatterns], [..._pull, ..._push]),
+              [..._pullPatterns, ..._pushPatterns], [..._pull, ..._push],
+              nameHe: 'פלג גוף עליון ב',
+              notesHe: 'פלג גוף עליון, וריאציה שנייה'),
           _SessionPlan('Lower Body B', 'Lower body, second variation',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'פלג גוף תחתון ב',
+              notesHe: 'פלג גוף תחתון, וריאציה שנייה'),
         ];
       case 5:
         return const [
           _SessionPlan('Upper Body', 'Chest, back, shoulders and arms',
-              [..._pushPatterns, ..._pullPatterns], [..._push, ..._pull]),
+              [..._pushPatterns, ..._pullPatterns], [..._push, ..._pull],
+              nameHe: 'פלג גוף עליון', notesHe: 'חזה, גב, כתפיים וידיים'),
           _SessionPlan('Lower Body', 'Legs and trunk',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'פלג גוף תחתון', notesHe: 'רגליים וליבה'),
           _SessionPlan(
-              'Push Day', 'Chest, shoulders and triceps', _pushPatterns, _push),
-          _SessionPlan('Pull Day', 'Back and biceps', _pullPatterns, _pull),
+              'Push Day', 'Chest, shoulders and triceps', _pushPatterns, _push,
+              nameHe: 'אימון דחיפה', notesHe: 'חזה, כתפיים ותלת-ראשי'),
+          _SessionPlan('Pull Day', 'Back and biceps', _pullPatterns, _pull,
+              nameHe: 'אימון משיכה', notesHe: 'גב ודו-ראשי'),
           _SessionPlan('Leg Day', 'Quads, hamstrings, glutes and trunk',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'אימון רגליים',
+              notesHe: 'ארבע-ראשי, ירך אחורית, ישבן וליבה'),
         ];
       case 6:
         return const [
           _SessionPlan('Push Day A', 'Chest, shoulders and triceps',
-              _pushPatterns, _push),
-          _SessionPlan('Pull Day A', 'Back and biceps', _pullPatterns, _pull),
+              _pushPatterns, _push,
+              nameHe: 'אימון דחיפה א', notesHe: 'חזה, כתפיים ותלת-ראשי'),
+          _SessionPlan('Pull Day A', 'Back and biceps', _pullPatterns, _pull,
+              nameHe: 'אימון משיכה א', notesHe: 'גב ודו-ראשי'),
           _SessionPlan('Leg Day A', 'Quads, hamstrings, glutes and trunk',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'אימון רגליים א',
+              notesHe: 'ארבע-ראשי, ירך אחורית, ישבן וליבה'),
           _SessionPlan(
-              'Push Day B', 'Push, second variation', _pushPatterns, _push),
+              'Push Day B', 'Push, second variation', _pushPatterns, _push,
+              nameHe: 'אימון דחיפה ב', notesHe: 'דחיפה, וריאציה שנייה'),
           _SessionPlan(
-              'Pull Day B', 'Pull, second variation', _pullPatterns, _pull),
+              'Pull Day B', 'Pull, second variation', _pullPatterns, _pull,
+              nameHe: 'אימון משיכה ב', notesHe: 'משיכה, וריאציה שנייה'),
           _SessionPlan('Leg Day B', 'Legs, second variation',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'אימון רגליים ב', notesHe: 'רגליים, וריאציה שנייה'),
         ];
       default:
         return const [
           _SessionPlan('Push Day A', 'Chest, shoulders and triceps',
-              _pushPatterns, _push),
-          _SessionPlan('Pull Day A', 'Back and biceps', _pullPatterns, _pull),
+              _pushPatterns, _push,
+              nameHe: 'אימון דחיפה א', notesHe: 'חזה, כתפיים ותלת-ראשי'),
+          _SessionPlan('Pull Day A', 'Back and biceps', _pullPatterns, _pull,
+              nameHe: 'אימון משיכה א', notesHe: 'גב ודו-ראשי'),
           _SessionPlan('Leg Day A', 'Quads, hamstrings, glutes and trunk',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'אימון רגליים א',
+              notesHe: 'ארבע-ראשי, ירך אחורית, ישבן וליבה'),
           _SessionPlan(
-              'Push Day B', 'Push, second variation', _pushPatterns, _push),
+              'Push Day B', 'Push, second variation', _pushPatterns, _push,
+              nameHe: 'אימון דחיפה ב', notesHe: 'דחיפה, וריאציה שנייה'),
           _SessionPlan(
-              'Pull Day B', 'Pull, second variation', _pullPatterns, _pull),
+              'Pull Day B', 'Pull, second variation', _pullPatterns, _pull,
+              nameHe: 'אימון משיכה ב', notesHe: 'משיכה, וריאציה שנייה'),
           _SessionPlan('Leg Day B', 'Legs, second variation',
-              [..._legPatterns, ..._corePatterns], [..._legs, ..._core]),
+              [..._legPatterns, ..._corePatterns], [..._legs, ..._core],
+              nameHe: 'אימון רגליים ב', notesHe: 'רגליים, וריאציה שנייה'),
           _SessionPlan('Mobility & Core', 'Light trunk and mobility work',
-              _corePatterns, _core),
+              _corePatterns, _core,
+              nameHe: 'ניידות וליבה', notesHe: 'עבודת ליבה וניידות קלה'),
         ];
     }
   }
@@ -454,10 +479,28 @@ class WorkoutTemplateGenerator {
 }
 
 class _SessionPlan {
-  const _SessionPlan(this.name, this.notes, this.patterns, this.muscles);
+  const _SessionPlan(
+    this.name,
+    this.notes,
+    this.patterns,
+    this.muscles, {
+    required this.nameHe,
+    required this.notesHe,
+  });
 
   final String name;
   final String notes;
+
+  /// The Hebrew side of [name] / [notes].
+  ///
+  /// Both languages are authored here, next to each other, because that is
+  /// the readable place to keep a translation honest. Only one of them is
+  /// ever written to a template -- the generator picks at write time and the
+  /// row keeps a single name. Required rather than nullable: a session plan
+  /// without Hebrew would silently emit an English template into a Hebrew
+  /// plan, which is exactly the mixed-language result this refactor removes.
+  final String nameHe;
+  final String notesHe;
 
   /// Muscles this session's accessory work may target.
   ///

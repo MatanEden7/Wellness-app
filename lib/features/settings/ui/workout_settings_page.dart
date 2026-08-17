@@ -74,7 +74,8 @@ class WorkoutSettingsPage extends HookConsumerWidget {
                       ),
                     ),
                     Text(
-                      '${restTime.value}s',
+                      '${restTime.value}'
+                      '${AppLocalizations.of(context)!.secondsShort}',
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,

@@ -191,9 +191,7 @@ class AnalyticsRepository {
         e.id: ExerciseRef(
           id: e.id,
           name: e.name,
-          nameHe: e.nameHe,
           primaryMuscle: e.primaryMuscle,
-          primaryMuscleHe: e.primaryMuscleHe,
         ),
     };
   }

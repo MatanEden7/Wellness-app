@@ -9,12 +9,12 @@
 /// safe implementation: it would either skip regeneration entirely or wipe
 /// hand-built templates along with the generated ones.
 enum TemplateOrigin {
-  /// Seeded by `AppDatabase` on first launch, before any profile exists.
-  /// Replaceable, but only ever by a regeneration the user agreed to.
-  builtin,
-
-  /// Produced by a generator from the user's profile. Safe to replace when
-  /// the profile changes.
+  /// Produced by a generator from the user's profile, in the language chosen
+  /// at onboarding. Safe to replace when the profile changes.
+  ///
+  /// This is now the *only* non-user origin. Nothing is seeded before
+  /// onboarding: there are no shipped templates to be in the wrong language,
+  /// and no second source of content to keep in sync with this one.
   generated,
 
   /// Created or edited by the user. Never replaced automatically.

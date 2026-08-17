@@ -54,9 +54,9 @@ class _SleepSectionState extends ConsumerState<SleepSection> {
           ? l10n.sleep
           : AnalyticsFormat.scrubDate(scrubbed.t, view.bucket, l10n),
       trailing: scrubbed == null
-          ? l10n
-              .analyticsAvgValue(AnalyticsFormat.hours(view.sleepHours.average))
-          : AnalyticsFormat.hours(scrubbed.value),
+          ? l10n.analyticsAvgValue(
+              AnalyticsFormat.hours(view.sleepHours.average, l10n))
+          : AnalyticsFormat.hours(scrubbed.value, l10n),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -98,7 +98,7 @@ class _SleepSectionState extends ConsumerState<SleepSection> {
           StatStrip(stats: [
             (
               label: l10n.average,
-              value: AnalyticsFormat.hours(view.sleepHours.average)
+              value: AnalyticsFormat.hours(view.sleepHours.average, l10n)
             ),
             (
               label: l10n.analyticsNights,
@@ -108,7 +108,7 @@ class _SleepSectionState extends ConsumerState<SleepSection> {
               label: l10n.analyticsBedtimeSwing,
               value: view.bedtimeConsistency == null
                   ? '--'
-                  : '±${AnalyticsFormat.hours(view.bedtimeConsistency)}'
+                  : '±${AnalyticsFormat.hours(view.bedtimeConsistency, l10n)}'
             ),
           ]),
         ],

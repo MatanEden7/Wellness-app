@@ -130,12 +130,26 @@ class OnboardingPage extends HookConsumerWidget {
         await prefs.setCarbsGoal(profile.carbsTargetG);
         await prefs.setFatGoal(profile.fatTargetG);
 
+        // Everything below is written in this one language and then left
+        // alone. Changing the app language later re-labels the chrome, not
+        // the plan -- see AppDatabase.contentLanguage.
+        final language = selectedLanguage.value == 'he'
+            ? AppLanguage.hebrew
+            : AppLanguage.english;
+
+        // Seed the catalog first, in that language. Nothing is seeded at
+        // launch: a catalog written before this point would be in a language
+        // the user never chose. Both generators pick from it, so it has to
+        // exist before either runs.
+        await database.seedCatalogFor(language);
+
         // Generate workout templates
-        final workoutGen = WorkoutTemplateGenerator(database, profile);
+        final workoutGen =
+            WorkoutTemplateGenerator(database, profile, language);
         await workoutGen.generateTemplates();
 
         // Generate meal templates
-        final mealGen = MealTemplateGenerator(database, profile);
+        final mealGen = MealTemplateGenerator(database, profile, language);
         await mealGen.generateTemplates();
 
         // Lay out the starting calendar schedule (workouts, meals, sleep),
@@ -147,13 +161,8 @@ class OnboardingPage extends HookConsumerWidget {
         // exists, so what lands on the calendar respects the same diet,
         // equipment and injury constraints as everything else.
         if (buildFullSchedule.value) {
-          final calendarGen = CalendarScheduleGenerator(
-            database,
-            profile,
-            selectedLanguage.value == 'he'
-                ? AppLanguage.hebrew
-                : AppLanguage.english,
-          );
+          final calendarGen =
+              CalendarScheduleGenerator(database, profile, language);
           await calendarNotifier.addEvents(await calendarGen.buildSchedule());
         } else {
           debugPrint(
@@ -176,7 +185,8 @@ class OnboardingPage extends HookConsumerWidget {
         isCompleting.value = false;
         // Show error to user if mounted
         if (context.mounted) {
-          showAppError(context, 'Setup failed: $e');
+          showAppError(
+              context, AppLocalizations.of(context)!.errorSetupFailed('$e'));
         }
       }
     }
@@ -782,14 +792,14 @@ class _GoalsStep extends StatelessWidget {
                   min: 2,
                   max: 7,
                   divisions: 5,
-                  label: '${trainingDays.value} days',
+                  label: '${trainingDays.value} ${l10n.onboardingDays}',
                   onChanged: (value) => trainingDays.value = value.toInt(),
                 ),
               ),
               SizedBox(
                 width: 70,
                 child: Text(
-                  '${trainingDays.value} days',
+                  '${trainingDays.value} ${l10n.onboardingDays}',
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.end,
                 ),

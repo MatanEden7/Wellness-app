@@ -235,8 +235,7 @@ abstract final class ProfileFit {
   /// Whether regeneration is allowed to replace this template.
   ///
   /// Only generated content is ever replaced -- anything the user made or
-  /// edited is theirs, and built-in seed content is left alone so the
-  /// catalog doesn't shrink irreversibly.
+  /// edited is theirs.
   static bool isReplaceable(TemplateOrigin origin) =>
       origin == TemplateOrigin.generated;
 }

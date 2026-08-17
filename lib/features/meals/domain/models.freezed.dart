@@ -20,11 +20,11 @@ FoodItem _$FoodItemFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FoodItem {
-  String get id => throw _privateConstructorUsedError;
-  String get name =>
-      throw _privateConstructorUsedError; // Hebrew name, filled in separately from the English data -- see
-// FoodItemDisplayName.displayName below. Null until translated.
-  String? get nameHe => throw _privateConstructorUsedError;
+  String get id =>
+      throw _privateConstructorUsedError; // Written once, in the language the catalog was seeded in, and never
+// re-resolved. See `AppDatabase.seedCatalogFor`: switching the app
+// language changes the UI chrome around this food, not the food.
+  String get name => throw _privateConstructorUsedError;
   String? get brand => throw _privateConstructorUsedError;
   String get unit => throw _privateConstructorUsedError;
   double get kcalPerUnit => throw _privateConstructorUsedError;
@@ -58,7 +58,6 @@ abstract class $FoodItemCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
-      String? nameHe,
       String? brand,
       String unit,
       double kcalPerUnit,
@@ -87,7 +86,6 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? nameHe = freezed,
     Object? brand = freezed,
     Object? unit = null,
     Object? kcalPerUnit = null,
@@ -109,10 +107,6 @@ class _$FoodItemCopyWithImpl<$Res, $Val extends FoodItem>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      nameHe: freezed == nameHe
-          ? _value.nameHe
-          : nameHe // ignore: cast_nullable_to_non_nullable
-              as String?,
       brand: freezed == brand
           ? _value.brand
           : brand // ignore: cast_nullable_to_non_nullable
@@ -172,7 +166,6 @@ abstract class _$$FoodItemImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
-      String? nameHe,
       String? brand,
       String unit,
       double kcalPerUnit,
@@ -199,7 +192,6 @@ class __$$FoodItemImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? nameHe = freezed,
     Object? brand = freezed,
     Object? unit = null,
     Object? kcalPerUnit = null,
@@ -221,10 +213,6 @@ class __$$FoodItemImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      nameHe: freezed == nameHe
-          ? _value.nameHe
-          : nameHe // ignore: cast_nullable_to_non_nullable
-              as String?,
       brand: freezed == brand
           ? _value.brand
           : brand // ignore: cast_nullable_to_non_nullable
@@ -279,7 +267,6 @@ class _$FoodItemImpl implements _FoodItem {
   const _$FoodItemImpl(
       {required this.id,
       required this.name,
-      this.nameHe,
       this.brand,
       required this.unit,
       required this.kcalPerUnit,
@@ -298,12 +285,11 @@ class _$FoodItemImpl implements _FoodItem {
 
   @override
   final String id;
+// Written once, in the language the catalog was seeded in, and never
+// re-resolved. See `AppDatabase.seedCatalogFor`: switching the app
+// language changes the UI chrome around this food, not the food.
   @override
   final String name;
-// Hebrew name, filled in separately from the English data -- see
-// FoodItemDisplayName.displayName below. Null until translated.
-  @override
-  final String? nameHe;
   @override
   final String? brand;
   @override
@@ -350,7 +336,7 @@ class _$FoodItemImpl implements _FoodItem {
 
   @override
   String toString() {
-    return 'FoodItem(id: $id, name: $name, nameHe: $nameHe, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, tags: $tags, category: $category, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'FoodItem(id: $id, name: $name, brand: $brand, unit: $unit, kcalPerUnit: $kcalPerUnit, proteinPerUnit: $proteinPerUnit, carbsPerUnit: $carbsPerUnit, fatPerUnit: $fatPerUnit, isStarter: $isStarter, tags: $tags, category: $category, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -360,7 +346,6 @@ class _$FoodItemImpl implements _FoodItem {
             other is _$FoodItemImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.brand, brand) || other.brand == brand) &&
             (identical(other.unit, unit) || other.unit == unit) &&
             (identical(other.kcalPerUnit, kcalPerUnit) ||
@@ -388,7 +373,6 @@ class _$FoodItemImpl implements _FoodItem {
       runtimeType,
       id,
       name,
-      nameHe,
       brand,
       unit,
       kcalPerUnit,
@@ -419,7 +403,6 @@ abstract class _FoodItem implements FoodItem {
   const factory _FoodItem(
       {required final String id,
       required final String name,
-      final String? nameHe,
       final String? brand,
       required final String unit,
       required final double kcalPerUnit,
@@ -437,11 +420,10 @@ abstract class _FoodItem implements FoodItem {
 
   @override
   String get id;
-  @override
+  @override // Written once, in the language the catalog was seeded in, and never
+// re-resolved. See `AppDatabase.seedCatalogFor`: switching the app
+// language changes the UI chrome around this food, not the food.
   String get name;
-  @override // Hebrew name, filled in separately from the English data -- see
-// FoodItemDisplayName.displayName below. Null until translated.
-  String? get nameHe;
   @override
   String? get brand;
   @override
@@ -1461,11 +1443,11 @@ MealTemplate _$MealTemplateFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MealTemplate {
-  String get id => throw _privateConstructorUsedError;
+  String get id =>
+      throw _privateConstructorUsedError; // Written once, in the language the template was generated or created in.
+// A later language switch leaves it alone -- see AppDatabase.contentLanguage.
   String get name => throw _privateConstructorUsedError;
-  String? get nameHe => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
-  String? get descriptionHe => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt =>
       throw _privateConstructorUsedError; // Where this template came from, so regeneration can replace what it
@@ -1490,9 +1472,7 @@ abstract class $MealTemplateCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
-      String? nameHe,
       String? description,
-      String? descriptionHe,
       DateTime createdAt,
       DateTime updatedAt,
       TemplateOrigin origin,
@@ -1514,9 +1494,7 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? nameHe = freezed,
     Object? description = freezed,
-    Object? descriptionHe = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? origin = null,
@@ -1531,17 +1509,9 @@ class _$MealTemplateCopyWithImpl<$Res, $Val extends MealTemplate>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      nameHe: freezed == nameHe
-          ? _value.nameHe
-          : nameHe // ignore: cast_nullable_to_non_nullable
-              as String?,
       description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      descriptionHe: freezed == descriptionHe
-          ? _value.descriptionHe
-          : descriptionHe // ignore: cast_nullable_to_non_nullable
               as String?,
       createdAt: null == createdAt
           ? _value.createdAt
@@ -1574,9 +1544,7 @@ abstract class _$$MealTemplateImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
-      String? nameHe,
       String? description,
-      String? descriptionHe,
       DateTime createdAt,
       DateTime updatedAt,
       TemplateOrigin origin,
@@ -1596,9 +1564,7 @@ class __$$MealTemplateImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? nameHe = freezed,
     Object? description = freezed,
-    Object? descriptionHe = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? origin = null,
@@ -1613,17 +1579,9 @@ class __$$MealTemplateImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      nameHe: freezed == nameHe
-          ? _value.nameHe
-          : nameHe // ignore: cast_nullable_to_non_nullable
-              as String?,
       description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      descriptionHe: freezed == descriptionHe
-          ? _value.descriptionHe
-          : descriptionHe // ignore: cast_nullable_to_non_nullable
               as String?,
       createdAt: null == createdAt
           ? _value.createdAt
@@ -1651,9 +1609,7 @@ class _$MealTemplateImpl implements _MealTemplate {
   const _$MealTemplateImpl(
       {required this.id,
       required this.name,
-      this.nameHe,
       this.description,
-      this.descriptionHe,
       required this.createdAt,
       required this.updatedAt,
       this.origin = TemplateOrigin.user,
@@ -1665,14 +1621,12 @@ class _$MealTemplateImpl implements _MealTemplate {
 
   @override
   final String id;
+// Written once, in the language the template was generated or created in.
+// A later language switch leaves it alone -- see AppDatabase.contentLanguage.
   @override
   final String name;
   @override
-  final String? nameHe;
-  @override
   final String? description;
-  @override
-  final String? descriptionHe;
   @override
   final DateTime createdAt;
   @override
@@ -1695,7 +1649,7 @@ class _$MealTemplateImpl implements _MealTemplate {
 
   @override
   String toString() {
-    return 'MealTemplate(id: $id, name: $name, nameHe: $nameHe, description: $description, descriptionHe: $descriptionHe, createdAt: $createdAt, updatedAt: $updatedAt, origin: $origin, items: $items)';
+    return 'MealTemplate(id: $id, name: $name, description: $description, createdAt: $createdAt, updatedAt: $updatedAt, origin: $origin, items: $items)';
   }
 
   @override
@@ -1705,11 +1659,8 @@ class _$MealTemplateImpl implements _MealTemplate {
             other is _$MealTemplateImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.nameHe, nameHe) || other.nameHe == nameHe) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            (identical(other.descriptionHe, descriptionHe) ||
-                other.descriptionHe == descriptionHe) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -1720,17 +1671,8 @@ class _$MealTemplateImpl implements _MealTemplate {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      name,
-      nameHe,
-      description,
-      descriptionHe,
-      createdAt,
-      updatedAt,
-      origin,
-      const DeepCollectionEquality().hash(_items));
+  int get hashCode => Object.hash(runtimeType, id, name, description, createdAt,
+      updatedAt, origin, const DeepCollectionEquality().hash(_items));
 
   @JsonKey(ignore: true)
   @override
@@ -1750,9 +1692,7 @@ abstract class _MealTemplate implements MealTemplate {
   const factory _MealTemplate(
       {required final String id,
       required final String name,
-      final String? nameHe,
       final String? description,
-      final String? descriptionHe,
       required final DateTime createdAt,
       required final DateTime updatedAt,
       final TemplateOrigin origin,
@@ -1763,14 +1703,11 @@ abstract class _MealTemplate implements MealTemplate {
 
   @override
   String get id;
-  @override
+  @override // Written once, in the language the template was generated or created in.
+// A later language switch leaves it alone -- see AppDatabase.contentLanguage.
   String get name;
   @override
-  String? get nameHe;
-  @override
   String? get description;
-  @override
-  String? get descriptionHe;
   @override
   DateTime get createdAt;
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../core/app_language.dart';
 import '../data/db/drift_database.dart';
 import 'meal_template_generator.dart';
 import 'profile_fit.dart';
@@ -53,20 +54,28 @@ class ContentRegenerationService {
     );
   }
 
-  /// Deletes every generated template and rebuilds from [profile].
+  /// Deletes every generated template and rebuilds from [profile], in
+  /// [language].
+  ///
+  /// [language] is the app's *current* language, not the one the discarded
+  /// templates were written in. Regeneration is the one moment a rewrite is
+  /// legitimate: the user asked for these templates to be replaced, so the
+  /// replacements are written in the language they are using now. Nothing
+  /// else in the app re-languages content behind their back.
   ///
   /// Returns how many templates were created. Safe to call when nothing was
   /// previously generated -- it simply generates for the first time.
-  Future<int> regenerate(UserProfile profile) async {
+  Future<int> regenerate(UserProfile profile, AppLanguage language) async {
     final removedMeals = await _deleteReplaceableMealTemplates();
     final removedWorkouts = await _deleteReplaceableWorkoutTemplates();
     debugPrint('[REGEN] Removed $removedMeals meal / $removedWorkouts workout '
         'generated templates');
 
-    final meals =
-        await MealTemplateGenerator(_database, profile).generateTemplates();
+    final meals = await MealTemplateGenerator(_database, profile, language)
+        .generateTemplates();
     final workouts =
-        await WorkoutTemplateGenerator(_database, profile).generateTemplates();
+        await WorkoutTemplateGenerator(_database, profile, language)
+            .generateTemplates();
 
     debugPrint('[REGEN] Rebuilt ${meals.length} meal / ${workouts.length} '
         'workout templates');

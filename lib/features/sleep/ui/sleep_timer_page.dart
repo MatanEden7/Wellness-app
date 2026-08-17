@@ -648,7 +648,8 @@ class _EditActiveSleepDialog extends HookWidget {
 
       Navigator.of(context).pop(updatedEntry);
     } catch (e) {
-      showAppError(context, 'Error updating sleep entry: $e');
+      showAppError(
+          context, AppLocalizations.of(context)!.errorUpdatingSleep('$e'));
     }
   }
 }

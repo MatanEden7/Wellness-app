@@ -248,13 +248,13 @@ class _DayTrainingCard extends StatelessWidget {
               SummaryStat(
                 icon: Icons.scale,
                 label: l10n.volumeLabel,
-                value: '${Formatters.formatCalories(volume)} kg',
+                value: '${Formatters.formatCalories(volume)} ${l10n.kg}',
                 color: color,
               ),
               SummaryStat(
                 icon: Icons.timer_outlined,
                 label: l10n.duration,
-                value: '$minutes min',
+                value: '$minutes ${l10n.minutesShort}',
                 color: color,
               ),
             ],

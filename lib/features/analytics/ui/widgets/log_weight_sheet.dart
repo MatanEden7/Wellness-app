@@ -100,7 +100,7 @@ class _LogWeightFormState extends State<_LogWeightForm> {
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _submit(),
           decoration: InputDecoration(
-            suffixText: 'kg',
+            suffixText: l10n.kg,
             errorText: _error,
             border: const OutlineInputBorder(),
           ),

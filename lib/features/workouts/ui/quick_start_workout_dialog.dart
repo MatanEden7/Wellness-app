@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets.dart';
-import '../../../services/language_service.dart';
 import '../../../services/preferences_service.dart';
 import '../data/repositories.dart';
 import '../domain/models.dart';
@@ -20,7 +19,6 @@ class QuickStartWorkoutDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final language = ref.watch(currentLanguageProvider);
     final prefs = ref.watch(preferencesServiceProvider);
     final templatesAsync = ref.watch(workoutTemplatesStreamProvider);
 
@@ -58,7 +56,7 @@ class QuickStartWorkoutDialog extends HookConsumerWidget {
                       padding: const EdgeInsets.only(top: 10),
                       child: IconRowTile(
                         icon: Icons.fitness_center,
-                        label: template.displayName(language),
+                        label: template.name,
                         subtitle:
                             l10n.exercisesCount(template.exercises.length),
                         color: prefs.workoutsColor,

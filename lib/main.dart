@@ -120,7 +120,15 @@ Future<LocalStorageDatabase> _createDatabase(
 
 // Local storage database implementation
 class LocalStorageDatabase extends AppDatabase {
-  LocalStorageDatabase(String path) : super(store: FileSnapshotStore(path));
+  /// `seedLanguage: null` is the important half of this.
+  ///
+  /// The catalog is written in one language and then fixed, so it cannot be
+  /// seeded here -- at launch, before onboarding's language step, there is no
+  /// answer to "which language?" except a guess. Onboarding calls
+  /// `seedCatalogFor` as soon as the user has answered. A returning user has
+  /// their catalog restored from the snapshot by `load()`, language and all.
+  LocalStorageDatabase(String path)
+      : super(store: FileSnapshotStore(path), seedLanguage: null);
 }
 
 /// Flushes pending writes when the app leaves the foreground.

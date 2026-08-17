@@ -228,10 +228,9 @@ void main() {
       for (final e in all) {
         final row = seeded[e.id];
         expect(row, isNotNull, reason: '${e.name} was not seeded');
+        // English seed -- see catalog_audit_test for the same note.
         expect(row!.name, e.name);
-        expect(row.nameHe, e.nameHe);
         expect(row.primaryMuscle, e.primaryMuscle);
-        expect(row.primaryMuscleHe, e.primaryMuscleHe);
         expect(row.unit, e.unit);
         expect(row.equipment, e.equipment);
         expect(row.contraindicatedFor, e.contraindicatedFor);

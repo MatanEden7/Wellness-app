@@ -386,12 +386,13 @@ class SettingsStub extends ConsumerWidget {
       await ref.read(exportImportServiceProvider).importFromJson(json);
       if (context.mounted) {
         Navigator.of(context).pop();
-        showAppSuccess(context, '${l10n.importData} successful!');
+        showAppSuccess(context, l10n.importSucceeded);
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.of(context).pop();
-        showAppError(context, 'Import failed: $e');
+        showAppError(
+            context, AppLocalizations.of(context)!.errorImportFailed('$e'));
       }
     }
   }

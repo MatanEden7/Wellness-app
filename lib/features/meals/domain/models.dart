@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/template_origin.dart';
-import '../../../services/language_service.dart';
 import 'food_category.dart';
 import 'food_nutrition_math.dart';
 import 'food_tags.dart';
@@ -16,10 +15,10 @@ const _uuid = Uuid();
 class FoodItem with _$FoodItem {
   const factory FoodItem({
     required String id,
+    // Written once, in the language the catalog was seeded in, and never
+    // re-resolved. See `AppDatabase.seedCatalogFor`: switching the app
+    // language changes the UI chrome around this food, not the food.
     required String name,
-    // Hebrew name, filled in separately from the English data -- see
-    // FoodItemDisplayName.displayName below. Null until translated.
-    String? nameHe,
     String? brand,
     required String unit,
     required double kcalPerUnit,
@@ -42,7 +41,6 @@ class FoodItem with _$FoodItem {
 
   factory FoodItem.create({
     required String name,
-    String? nameHe,
     String? brand,
     required String unit,
     required double kcalPerUnit,
@@ -55,7 +53,6 @@ class FoodItem with _$FoodItem {
     return FoodItem(
       id: _uuid.v4(),
       name: name,
-      nameHe: nameHe,
       brand: brand,
       unit: unit,
       kcalPerUnit: kcalPerUnit,
@@ -72,68 +69,17 @@ class FoodItem with _$FoodItem {
       _$FoodItemFromJson(json);
 }
 
-extension FoodItemDisplayName on FoodItem {
-  /// The name to show for [language]: Hebrew if selected and translated,
-  /// English otherwise. Lets the catalog ship English-only today and grow
-  /// Hebrew names later without any further UI changes.
-  /// Localised brand/qualifier.
-  ///
-  /// `brand` is a descriptor rather than a trademark -- "Cooked", "Skinless",
-  /// "Canned in Water", or a pack weight. 59 distinct values across 234 seeded
-  /// foods, so this maps them once here instead of adding a `brandHe` column
-  /// and 234 edits. Pure weights ("110g", "300ml") fall through to
-  /// `FoodNutritionMath.localizedUnit`, and anything unmapped keeps its
-  /// English text, which beats showing nothing.
-  String? displayBrand(AppLanguage language) {
-    final b = brand;
-    if (b == null || language != AppLanguage.hebrew) return b;
-    const map = {
-      'Generic': 'רגיל',
-      'Cooked': 'מבושל',
-      'Boiled': 'מבושל',
-      'Canned': 'משומר',
-      'Canned in Water': 'משומר במים',
-      'Canned in oil': 'משומר בשמן',
-      'Skinless': 'ללא עור',
-      'Low Fat': 'דל שומן',
-      'Unsweetened': 'ללא סוכר',
-      'Vanilla': 'וניל',
-      'Whole Wheat': 'חיטה מלאה',
-      'Extra Virgin': 'כתית מעולה',
-      'Sirloin': 'סינטה',
-      'Cheese': 'גבינה',
-      'Fried, breaded': 'מטוגן בציפוי',
-      'Roasted, with skin': 'צלוי, עם העור',
-      'Leg, roasted': 'שוק, צלוי',
-      'White, cooked': 'לבן, מבושל',
-      'Two eggs': 'שתי ביצים',
-      'Fresh': 'טרי',
-      'Lean': 'רזה',
-      '85% Lean': '85% רזה',
-      '93% Lean': '93% רזה',
-    };
-    return map[b] ?? b;
-  }
-
-  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
-          nameHe != null &&
-          nameHe!.trim().isNotEmpty
-      ? nameHe!
-      : name;
-
+extension FoodItemSearch on FoodItem {
   /// Whether this food should show up for [query] in a food picker.
   ///
-  /// Matches **both** names regardless of the selected language, not just the
-  /// displayed one. The catalog is bilingual now, and the two habits that
-  /// follow from that are not hypothetical: an English-mode user hunting for
-  /// "חומוס" because that is what the tub says, and a Hebrew-mode user typing
-  /// "whey" because that is what the brand is called. Matching only the
-  /// displayed name makes half the catalog unreachable in each mode.
+  /// One name to match, because the row holds one name: the catalog is seeded
+  /// in a single language and stays in it. `brand` is matched too, since it
+  /// carries the qualifier a user is often actually hunting for -- "canned",
+  /// "cooked", "85% lean".
   bool matchesSearch(String query) {
     final needle = query.trim().toLowerCase();
     if (needle.isEmpty) return true;
     return name.toLowerCase().contains(needle) ||
-        (nameHe?.toLowerCase().contains(needle) ?? false) ||
         (brand?.toLowerCase().contains(needle) ?? false);
   }
 }
@@ -261,10 +207,10 @@ class MealTemplateItem with _$MealTemplateItem {
 class MealTemplate with _$MealTemplate {
   const factory MealTemplate({
     required String id,
+    // Written once, in the language the template was generated or created in.
+    // A later language switch leaves it alone -- see AppDatabase.contentLanguage.
     required String name,
-    String? nameHe,
     String? description,
-    String? descriptionHe,
     required DateTime createdAt,
     required DateTime updatedAt,
     // Where this template came from, so regeneration can replace what it
@@ -277,17 +223,13 @@ class MealTemplate with _$MealTemplate {
 
   factory MealTemplate.create({
     required String name,
-    String? nameHe,
     String? description,
-    String? descriptionHe,
   }) {
     final now = DateTime.now();
     return MealTemplate(
       id: _uuid.v4(),
       name: name,
-      nameHe: nameHe,
       description: description,
-      descriptionHe: descriptionHe,
       createdAt: now,
       updatedAt: now,
     );
@@ -295,19 +237,4 @@ class MealTemplate with _$MealTemplate {
 
   factory MealTemplate.fromJson(Map<String, dynamic> json) =>
       _$MealTemplateFromJson(json);
-}
-
-extension MealTemplateDisplayName on MealTemplate {
-  String displayName(AppLanguage language) => language == AppLanguage.hebrew &&
-          nameHe != null &&
-          nameHe!.trim().isNotEmpty
-      ? nameHe!
-      : name;
-
-  String? displayDescription(AppLanguage language) =>
-      language == AppLanguage.hebrew &&
-              descriptionHe != null &&
-              descriptionHe!.trim().isNotEmpty
-          ? descriptionHe
-          : description;
 }

@@ -40,10 +40,10 @@ void main() {
       await settle(tester);
 
       // Real seeded starter food (see catalog/starter_foods.dart). The name is
-      // asserted per language on purpose: the catalog renders
-      // `food.displayName(language)`, so in Hebrew the row reads "חזה עוף" and
-      // the English literal is genuinely absent. Asserting the English string
-      // in both runs was testing that the bilingual names *don't* work.
+      // asserted per language on purpose: the catalog is *seeded* in the
+      // chosen language, so in Hebrew the row reads "חזה עוף" and the English
+      // literal is genuinely absent. Asserting the English string in both runs
+      // was testing that the translations don't work.
       expect(
         find.text(
             language == AppLanguage.hebrew ? 'חזה עוף' : 'Chicken Breast'),

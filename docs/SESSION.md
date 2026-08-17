@@ -4,6 +4,54 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-16 — Content is written in one language, once
+
+**Task:** stop the app language switch from rewriting every template and catalog
+row. Two content sets, English and Hebrew, that do not share a template.
+
+**Decisions (user's):** names freeze at creation; applies to foods, exercises and
+both template kinds; the shipped built-in templates are dropped entirely in
+favour of onboarding generation; the catalog is seeded at onboarding step 0
+rather than at launch; no migration — the app has no existing users.
+
+**Shape of the change.** Content rows carry one `name`, resolved at seed or
+generation time and never re-resolved. Bilingual pairs survive only as
+*authoring* data (`starter_foods.dart`, `starter_exercises.dart`,
+`meal_recipes.dart`, `_SessionPlan`) — keeping them in one file avoids
+duplicating 42 rows of macro numbers into a second file to avoid sharing a name,
+and the audit tests still guard the numbers. `AppLanguage` moved to
+`core/app_language.dart` so the data layer can name a language without pulling
+in Flutter.
+
+**Found while doing it:** `MealTemplateGenerator` keyed recipe ingredients on the
+English food name, so a Hebrew-seeded catalog resolved nothing and Hebrew
+onboarding would have generated **zero meal templates**, silently. Now resolved
+through `StarterFoodCatalog` ids. The new test is what caught it.
+
+**Follow-up in the same session.** The user reported the Hebrew UI still showing
+English food names. It was **stale data, not a bug**: the earlier `simctl
+uninstall` used the wrong bundle id, so the app ran new code over a pre-change
+snapshot (`contentLanguage: null`, 235 English foods, `origin: builtin`
+templates, `setup_completed: 1`, so `seedCatalogFor` never ran). Wiped and
+reinstalled clean.
+
+That did expose a real gap, though, and the user chose to close it: freezing
+alone means anyone who onboarded in English sees an English catalog in a Hebrew
+UI forever. Added `ContentLanguageService.switchTo` — re-languages the catalog by
+id, regenerates the generated templates, repins and retitles calendar events.
+Wired into `LanguagePage`. Content still never re-languages itself; this is the
+only path, and it needs a deliberate tap.
+
+**Verification:** `flutter analyze` clean across `lib/`, `test/` and
+`integration_test/`; `flutter test test/` — 1172 passing. Built and installed
+clean on the simulator.
+
+**Next:** the Hebrew strings added here (session names/notes, recipe blurbs,
+brand qualifiers, the progression rule) are mine, not a translator's — worth a
+read-through. Owner: **me**.
+
+---
+
 ## 2026-08-16 — Real UIKit, an Apple calendar, and the Hebrew that was already there
 
 **Current task:** None. Branch `feat/liquid-glass-native-ios`. Installed on the

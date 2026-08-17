@@ -50,6 +50,7 @@ class StarterExercise {
     required this.primaryMuscleHe,
     required this.unit,
     required this.notes,
+    required this.notesHe,
     this.equipment = const <Equipment>{},
     this.contraindicatedFor = const <BodyPart>{},
     this.rehabFor = const <BodyPart>{},
@@ -67,6 +68,11 @@ class StarterExercise {
   /// How a set is measured: `kg`, `bodyweight`, `band`, `minutes`.
   final String unit;
   final String notes;
+
+  /// The Hebrew cue. Required, like [nameHe]: these are technique and safety
+  /// instructions, and an exercise that shows Hebrew name over English cue is
+  /// exactly the half-translated result the content-language work removed.
+  final String notesHe;
 
   final Set<Equipment> equipment;
 
@@ -95,6 +101,7 @@ abstract final class StarterExerciseLibrary {
     required String primaryMuscleHe,
     required String unit,
     required String notes,
+    required String notesHe,
     Set<Equipment> equipment = const {Equipment.bodyweight},
     Set<BodyPart> contraindicatedFor = const <BodyPart>{},
     Set<BodyPart> rehabFor = const <BodyPart>{},
@@ -112,6 +119,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: primaryMuscleHe,
         unit: unit,
         notes: notes,
+        notesHe: notesHe,
         equipment: equipment,
         contraindicatedFor: contraindicatedFor,
         rehabFor: rehabFor,
@@ -157,6 +165,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'חזה',
         unit: 'bodyweight',
         notes: 'Start in plank position, lower body to ground, push back up',
+        notesHe: 'התחילו בתנוחת פלאנק, הורידו את הגוף לרצפה ודחפו חזרה למעלה',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPush,
@@ -170,6 +179,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'חזה',
         unit: 'kg',
         notes: 'Keep your back flat and feet on the ground',
+        notesHe: 'שמרו על הגב שטוח והרגליים על הרצפה',
         equipment: const {Equipment.barbellRack},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.horizontalPush,
@@ -184,6 +194,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Slight bend in elbows, lower until a stretch is felt across the chest',
+        notesHe: 'כיפוף קל במרפקים, הורידו עד שמורגשת מתיחה על פני החזה',
         equipment: const {Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -197,6 +208,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'חזה',
         unit: 'bodyweight',
         notes: 'Hands elevated on a bench or step; easier than a floor push-up',
+        notesHe: 'הידיים מוגבהות על ספסל או מדרגה; קל יותר משכיבת סמיכה מהרצפה',
         equipment: const {Equipment.bodyweight},
         pattern: MovementPattern.horizontalPush,
         mechanic: Mechanic.compound,
@@ -209,6 +221,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'חזה',
         unit: 'band',
         notes: 'Anchor the band behind you and press forward at chest height',
+        notesHe: 'עגנו את הגומייה מאחוריכם ודחפו קדימה בגובה החזה',
         equipment: const {Equipment.bands},
         pattern: MovementPattern.horizontalPush,
         mechanic: Mechanic.compound,
@@ -222,6 +235,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Press at roughly 45 degrees -- avoids the neck extension a strict overhead press needs',
+        notesHe:
+            'דחפו בזווית של כ-45 מעלות -- נמנע מיישור הצוואר שדחיקת כתפיים מלאה דורשת',
         equipment: const {Equipment.barbellRack, Equipment.dumbbells},
         pattern: MovementPattern.verticalPush,
         mechanic: Mechanic.compound,
@@ -234,6 +249,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'חזה',
         unit: 'bodyweight',
         notes: 'Feet elevated, which shifts the load onto the upper chest',
+        notesHe: 'הרגליים מוגבהות, מה שמעביר את העומס לחלק העליון של החזה',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPush,
@@ -247,6 +263,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'חזה',
         unit: 'kg',
         notes: 'Slight elbow bend, meet the handles in front of the sternum',
+        notesHe: 'כיפוף קל במרפק, חברו את הידיות לפני עצם החזה',
         equipment: const {Equipment.cable},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -266,6 +283,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'bodyweight',
         notes: 'Full range of motion, chin over bar',
+        notesHe: 'טווח תנועה מלא, הסנטר מעל המוט',
         equipment: const {Equipment.pullupBar},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.verticalPull,
@@ -279,6 +297,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'kg',
         notes: 'Keep your back straight and core engaged',
+        notesHe: 'שמרו על גב ישר וליבה מכווצת',
         equipment: const {Equipment.barbellRack},
         contraindicatedFor: const {BodyPart.back, BodyPart.hip, BodyPart.neck},
         pattern: MovementPattern.hinge,
@@ -292,6 +311,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'kg',
         notes: 'Pull to your lower chest, squeeze shoulder blades',
+        notesHe: 'משכו אל תחתית החזה, כווצו את השכמות',
         equipment: const {Equipment.barbellRack},
         contraindicatedFor: const {BodyPart.back},
         pattern: MovementPattern.horizontalPull,
@@ -306,6 +326,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Pull the bar to your upper chest, avoid leaning back excessively',
+        notesHe: 'משכו את המוט אל החזה העליון, הימנעו מהטיה אחורה מוגזמת',
         equipment: const {Equipment.cable, Equipment.machines},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.verticalPull,
@@ -319,6 +340,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'band',
         notes: 'Anchor at waist height, pull elbows past your ribs',
+        notesHe: 'עגנו בגובה המותן, משכו את המרפקים אל מעבר לצלעות',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPull,
@@ -332,6 +354,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'bodyweight',
         notes: 'Body under a bar or sturdy table, pull chest to the bar',
+        notesHe: 'הגוף מתחת למוט או שולחן יציב, משכו את החזה אל המוט',
         equipment: const {Equipment.barbellRack, Equipment.bodyweight},
         pattern: MovementPattern.horizontalPull,
         mechanic: Mechanic.compound,
@@ -344,6 +367,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'kg',
         notes: 'Chest tall, pull to the navel without leaning back',
+        notesHe: 'החזה זקוף, משכו אל הטבור בלי להטות את הגוף אחורה',
         equipment: const {Equipment.cable, Equipment.machines},
         pattern: MovementPattern.horizontalPull,
         mechanic: Mechanic.compound,
@@ -357,6 +381,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Face down, lift chest and thighs; reps field tracks seconds held',
+        notesHe:
+            'שכיבה על הבטן, הרימו חזה וירכיים; שדה החזרות מודד שניות החזקה',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back},
         pattern: MovementPattern.coreBrace,
@@ -371,6 +397,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Face down, sweep straight arms from hips to overhead without touching the floor',
+        notesHe:
+            'שכיבה על הבטן, העבירו ידיים ישרות מהירכיים אל מעל הראש בלי לגעת ברצפה',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -384,6 +412,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'band',
         notes: 'Arms straight, pull the band apart across the chest',
+        notesHe: 'ידיים ישרות, פתחו את הגומייה לרוחב החזה',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPull,
@@ -397,6 +426,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'גב',
         unit: 'kg',
         notes: 'Knee and hand braced on a bench, pull the elbow past the ribs',
+        notesHe: 'ברך ויד נשענות על ספסל, משכו את המרפק אל מעבר לצלעות',
         equipment: const {Equipment.dumbbells},
         pattern: MovementPattern.horizontalPull,
         mechanic: Mechanic.compound,
@@ -415,6 +445,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'כתפיים',
         unit: 'kg',
         notes: 'Press straight up, keep core tight',
+        notesHe: 'דחפו ישר למעלה, שמרו על ליבה מכווצת',
         equipment: const {Equipment.barbellRack, Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.verticalPush,
@@ -429,6 +460,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Raise dumbbells to the sides until arms are parallel to the floor',
+        notesHe: 'הרימו משקולות לצדדים עד שהידיים מקבילות לרצפה',
         equipment: const {Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -442,6 +474,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'כתפיים',
         unit: 'band',
         notes: 'Stand on the band, raise to shoulder height',
+        notesHe: 'עמדו על הגומייה, הרימו עד גובה הכתפיים',
         equipment: const {Equipment.bands},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -456,6 +489,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Pull to the forehead with elbows high; a rear-delt and posture staple',
+        notesHe:
+            'משכו אל המצח כשהמרפקים גבוהים; תרגיל יסוד לכתף האחורית וליציבה',
         equipment: const {Equipment.bands, Equipment.cable},
         rehabFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPull,
@@ -470,6 +505,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Hips high, lower the crown of the head to the floor -- a bodyweight overhead press',
+        notesHe:
+            'הירכיים גבוהות, הורידו את קודקוד הראש לרצפה -- דחיקת כתפיים במשקל גוף',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {
           BodyPart.elbow,
@@ -487,6 +524,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'כתפיים',
         unit: 'bodyweight',
         notes: 'Feet on the wall, shoulders stacked; reps field tracks seconds',
+        notesHe: 'הרגליים על הקיר, הכתפיים מיושרות מעל; שדה החזרות מודד שניות',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.verticalPush,
@@ -500,6 +538,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'כתפיים',
         unit: 'kg',
         notes: 'Raise to eye level with no swing',
+        notesHe: 'הרימו עד גובה העיניים בלי תנופה',
         equipment: const {Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -513,6 +552,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'כתפיים',
         unit: 'kg',
         notes: 'Cross the cables and open wide, squeezing the rear delts',
+        notesHe: 'הצליבו את הכבלים ופתחו לרוחב, תוך כיווץ הכתף האחורית',
         equipment: const {Equipment.cable},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -525,6 +565,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'כתפיים',
         unit: 'kg',
         notes: 'Press from the rack position with the ribs down',
+        notesHe: 'דחפו ממצב מדף כשהצלעות מכונסות פנימה',
         equipment: const {Equipment.kettlebells},
         contraindicatedFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.verticalPush,
@@ -544,6 +585,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'דו-ראשי',
         unit: 'kg',
         notes: 'Keep elbows pinned to your sides, curl with control',
+        notesHe: 'שמרו על המרפקים צמודים לגוף, כפפו בשליטה',
         equipment: const {Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -557,6 +599,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'דו-ראשי',
         unit: 'band',
         notes: 'Stand on the band, curl with elbows pinned',
+        notesHe: 'עמדו על הגומייה, כפפו כשהמרפקים צמודים',
         equipment: const {Equipment.bands},
         contraindicatedFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -571,6 +614,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Supine row with an underhand grip, under a bar or a sturdy table',
+        notesHe: 'חתירה בשכיבה באחיזה תחתית, מתחת למוט או שולחן יציב',
         equipment: const {Equipment.bodyweight, Equipment.pullupBar},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPull,
@@ -585,6 +629,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Loop a towel under one foot and curl against your own resistance',
+        notesHe: 'העבירו מגבת מתחת לכף רגל אחת וכפפו כנגד ההתנגדות של עצמכם',
         equipment: const {Equipment.bodyweight},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -598,6 +643,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Underhand grip, pull the chest to the bar -- the biceps mass builder',
+        notesHe: 'אחיזה תחתית, משכו את החזה אל המוט -- בונה המסה של הדו-ראשי',
         equipment: const {Equipment.pullupBar},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.verticalPull,
@@ -611,6 +657,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'דו-ראשי',
         unit: 'kg',
         notes: 'Neutral grip throughout; biases the brachialis',
+        notesHe: 'אחיזה ניטרלית לאורך כל התנועה; מדגישה את השריר הזרועי',
         equipment: const {Equipment.dumbbells},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -623,6 +670,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'דו-ראשי',
         unit: 'kg',
         notes: 'Constant tension through the whole range',
+        notesHe: 'מתח קבוע לאורך כל הטווח',
         equipment: const {Equipment.cable},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -641,6 +689,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'תלת-ראשי',
         unit: 'bodyweight',
         notes: 'Lower until shoulders are below elbows',
+        notesHe: 'הורידו עד שהכתפיים מתחת למרפקים',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.verticalPush,
@@ -654,6 +703,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'תלת-ראשי',
         unit: 'bodyweight',
         notes: 'Hands on a bench behind you, feet forward',
+        notesHe: 'הידיים על ספסל מאחוריכם, הרגליים קדימה',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.verticalPush,
@@ -667,6 +717,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'תלת-ראשי',
         unit: 'band',
         notes: 'Anchor high, extend the elbows fully',
+        notesHe: 'עגנו גבוה, יישרו את המרפקים במלואם',
         equipment: const {Equipment.bands, Equipment.cable},
         contraindicatedFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -681,6 +732,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Hands together under the sternum; the bodyweight triceps builder',
+        notesHe: 'הידיים צמודות מתחת לעצם החזה; בונה התלת-ראשי במשקל גוף',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.horizontalPush,
@@ -694,6 +746,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'תלת-ראשי',
         unit: 'kg',
         notes: 'One dumbbell in both hands, elbows pointing forward',
+        notesHe: 'משקולת אחת בשתי ידיים, המרפקים מכוונים קדימה',
         equipment: const {Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.elbow, BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -707,6 +760,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'תלת-ראשי',
         unit: 'kg',
         notes: 'Lying down, lower to the forehead with the upper arms still',
+        notesHe: 'בשכיבה, הורידו אל המצח כשהזרועות העליונות נייחות',
         equipment: const {Equipment.barbellRack, Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -727,6 +781,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Stand with feet shoulder-width apart, lower body as if sitting back into a chair',
+        notesHe: 'עמדו ברוחב כתפיים, הורידו את הגוף כאילו אתם מתיישבים על כיסא',
         equipment: const {Equipment.barbellRack, Equipment.bodyweight},
         contraindicatedFor: const {
           BodyPart.back,
@@ -745,6 +800,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ארבע-ראשי',
         unit: 'bodyweight',
         notes: 'No load on the spine, unlike a barbell back squat',
+        notesHe: 'אין עומס על עמוד השדרה, בניגוד לסקוואט עם מוט על הגב',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.knee},
         pattern: MovementPattern.squat,
@@ -758,6 +814,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ארבע-ראשי',
         unit: 'bodyweight',
         notes: 'Step onto a knee-height box, control the way down',
+        notesHe: 'עלו על קופסה בגובה הברך, שלטו בירידה',
         equipment: const {Equipment.bodyweight, Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.knee},
         pattern: MovementPattern.lunge,
@@ -772,6 +829,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Isometric hold -- quad work without knee travel; reps field tracks seconds',
+        notesHe:
+            'החזקה איזומטרית -- עבודת ארבע-ראשי בלי תנועה בברך; שדה החזרות מודד שניות',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.knee},
         pattern: MovementPattern.squat,
@@ -785,6 +844,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ארבע-ראשי',
         unit: 'kg',
         notes: 'Back supported throughout',
+        notesHe: 'הגב נתמך לאורך כל התרגיל',
         equipment: const {Equipment.machines},
         contraindicatedFor: const {BodyPart.hip, BodyPart.knee},
         pattern: MovementPattern.squat,
@@ -798,6 +858,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ארבע-ראשי',
         unit: 'kg',
         notes: 'Step backwards rather than forwards -- much kinder on the knee',
+        notesHe: 'צעדו אחורה במקום קדימה -- עדין הרבה יותר על הברך',
         equipment: const {Equipment.bodyweight, Equipment.dumbbells},
         rehabFor: const {BodyPart.knee},
         pattern: MovementPattern.lunge,
@@ -811,6 +872,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ארבע-ראשי',
         unit: 'kg',
         notes: 'Rear foot elevated, torso tall, weight through the front heel',
+        notesHe: 'הרגל האחורית מוגבהת, הגו זקוף, המשקל על העקב הקדמי',
         equipment: const {Equipment.bodyweight, Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.knee},
         pattern: MovementPattern.lunge,
@@ -825,6 +887,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Hold the weight at the chest; the counterweight keeps the torso upright',
+        notesHe: 'החזיקו את המשקל בחזה; משקל הנגד שומר על הגו זקוף',
         equipment: const {Equipment.dumbbells, Equipment.kettlebells},
         contraindicatedFor: const {BodyPart.knee},
         pattern: MovementPattern.squat,
@@ -844,6 +907,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ירך אחורית',
         unit: 'kg',
         notes: 'Hinge at the hips, keep the bar close to your legs',
+        notesHe: 'כופפו מהירכיים, שמרו על המוט קרוב לרגליים',
         equipment: const {Equipment.barbellRack, Equipment.dumbbells},
         contraindicatedFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.hinge,
@@ -857,6 +921,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ירך אחורית',
         unit: 'kg',
         notes: 'Hip hinge, not a squat -- power comes from the glutes',
+        notesHe: 'כיפוף ירכיים, לא סקוואט -- הכוח מגיע מהישבן',
         equipment: const {Equipment.kettlebells},
         contraindicatedFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.hinge,
@@ -870,6 +935,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ירך אחורית',
         unit: 'kg',
         notes: 'Isolates the hamstrings with no spinal load',
+        notesHe: 'מבודד את הירך האחורית בלי עומס על עמוד השדרה',
         equipment: const {Equipment.machines},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -883,6 +949,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Anchor the ankles and lower the torso as slowly as you can, then push back',
+        notesHe:
+            'עגנו את הקרסוליים והורידו את הגו לאט ככל שאפשר, ואז דחפו חזרה',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.knee},
         pattern: MovementPattern.hinge,
@@ -897,6 +965,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'From a bridge, walk the heels away and back while keeping the hips high',
+        notesHe:
+            'ממצב גשר, הרחיקו את העקבים וקרבו אותם תוך שמירה על ירכיים גבוהות',
         equipment: const {Equipment.bodyweight},
         pattern: MovementPattern.hinge,
         mechanic: Mechanic.compound,
@@ -910,6 +980,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Hinge on one leg with a flat back, the other leg extending behind as a counterweight',
+        notesHe:
+            'כיפוף ירכיים על רגל אחת עם גב שטוח, הרגל השנייה נמתחת אחורה כמשקל נגד',
         equipment: const {Equipment.bodyweight, Equipment.dumbbells},
         rehabFor: const {BodyPart.hip},
         pattern: MovementPattern.hinge,
@@ -924,6 +996,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Anchor the band at the ankle and curl the heel towards the glute',
+        notesHe: 'עגנו את הגומייה בקרסול וכפפו את העקב לכיוון הישבן',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -944,6 +1017,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Step forward, lower back knee toward the ground, alternate legs',
+        notesHe:
+            'צעדו קדימה, הורידו את הברך האחורית לכיוון הרצפה, החליפו רגליים',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.ankle, BodyPart.hip, BodyPart.knee},
         pattern: MovementPattern.lunge,
@@ -958,6 +1033,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Drive through the heels; loads the hips with the spine supported',
+        notesHe: 'דחפו דרך העקבים; מעמיס על הירכיים כשעמוד השדרה נתמך',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.hip, BodyPart.knee},
         pattern: MovementPattern.hinge,
@@ -972,6 +1048,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'One foot planted, the other knee hugged in; keep the hips level',
+        notesHe: 'רגל אחת נטועה, הברך השנייה מקורבת לחזה; שמרו על אגן ישר',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.hinge,
@@ -986,6 +1063,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Band above the knees, small controlled steps with the tension held',
+        notesHe: 'גומייה מעל הברכיים, צעדים קטנים ומבוקרים תוך שמירה על המתח',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.hip, BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1000,6 +1078,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Hinge slightly and drive the heel back without arching the lower back',
+        notesHe: 'כופפו מעט ודחפו את העקב אחורה בלי לקמר את הגב התחתון',
         equipment: const {Equipment.cable},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -1013,6 +1092,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Shoulders on a bench, bar across the hips, full lockout at the top',
+        notesHe: 'הכתפיים על ספסל, המוט על הירכיים, נעילה מלאה בסוף התנועה',
         equipment: const {Equipment.barbellRack, Equipment.dumbbells},
         pattern: MovementPattern.hinge,
         mechanic: Mechanic.compound,
@@ -1031,6 +1111,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שוקיים',
         unit: 'bodyweight',
         notes: 'Rise onto your toes, pause, lower slowly',
+        notesHe: 'עלו על קצות האצבעות, עצרו, הורידו לאט',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1044,6 +1125,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שוקיים',
         unit: 'bodyweight',
         notes: 'Full stretch at the bottom, pause at the top',
+        notesHe: 'מתיחה מלאה בתחתית, עצירה בחלק העליון',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1058,6 +1140,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Seated with the band over the ball of the foot, press the toes away',
+        notesHe: 'בישיבה כשהגומייה על כרית כף הרגל, דחפו את האצבעות קדימה',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1071,6 +1154,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שוקיים',
         unit: 'kg',
         notes: 'Knees bent to bias the soleus',
+        notesHe: 'הברכיים כפופות כדי להדגיש את שריר הסוליה',
         equipment: const {Equipment.dumbbells, Equipment.machines},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -1090,6 +1174,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Hold a straight line from shoulders to ankles; reps field tracks seconds held',
+        notesHe:
+            'שמרו על קו ישר מהכתפיים ועד הקרסוליים; שדה החזרות מודד שניות החזקה',
         equipment: const {Equipment.bodyweight},
         pattern: MovementPattern.coreBrace,
         mechanic: Mechanic.isolation,
@@ -1103,6 +1189,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Lower opposite arm and leg with the low back flat; head stays down',
+        notesHe: 'הורידו יד ורגל נגדיות כשהגב התחתון שטוח; הראש נשאר למטה',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back},
         pattern: MovementPattern.coreBrace,
@@ -1117,6 +1204,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Hold a straight line from shoulder to ankle; reps field tracks seconds',
+        notesHe: 'שמרו על קו ישר מהכתף ועד הקרסול; שדה החזרות מודד שניות',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.coreBrace,
@@ -1131,6 +1219,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Opposite arm and leg extended, spine neutral -- a common low-back rehab staple',
+        notesHe:
+            'יד ורגל נגדיות מיושרות, עמוד שדרה ניטרלי -- תרגיל יסוד בשיקום גב תחתון',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.coreBrace,
@@ -1145,6 +1235,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Heavy in both hands, ribs down, walk tall; reps field tracks metres',
+        notesHe:
+            'משקל כבד בשתי הידיים, הצלעות מכונסות, הליכה זקופה; שדה החזרות מודד מטרים',
         equipment: const {Equipment.dumbbells, Equipment.kettlebells},
         contraindicatedFor: const {BodyPart.back},
         pattern: MovementPattern.carry,
@@ -1159,6 +1251,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'kg',
         notes:
             'Loaded on one side only, and you refuse to lean; reps field tracks metres',
+        notesHe:
+            'העומס בצד אחד בלבד, ואתם מסרבים להתכופף לצד; שדה החזרות מודד מטרים',
         equipment: const {Equipment.dumbbells, Equipment.kettlebells},
         contraindicatedFor: const {BodyPart.back},
         pattern: MovementPattern.carry,
@@ -1173,6 +1267,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Press straight out against a side-on band and resist the rotation',
+        notesHe: 'דחפו ישר קדימה כנגד גומייה מהצד והתנגדו לסיבוב',
         equipment: const {Equipment.bands, Equipment.cable},
         rehabFor: const {BodyPart.back},
         pattern: MovementPattern.coreBrace,
@@ -1187,6 +1282,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Plank position, drive the knees in alternately without the hips rising',
+        notesHe: 'מתנוחת פלאנק, הביאו את הברכיים לסירוגין בלי שהירכיים יעלו',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.shoulder},
         pattern: MovementPattern.coreBrace,
@@ -1200,6 +1296,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'ליבה',
         unit: 'bodyweight',
         notes: 'Hang from a bar and curl the knees up; no swinging',
+        notesHe: 'היתלו על מוט וכפפו את הברכיים כלפי מעלה; בלי תנופה',
         equipment: const {Equipment.pullupBar},
         contraindicatedFor: const {BodyPart.back, BodyPart.shoulder},
         pattern: MovementPattern.coreBrace,
@@ -1219,6 +1316,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'אירובי',
         unit: 'min',
         notes: 'Low impact; reps field tracks minutes',
+        notesHe: 'עצימות נמוכה על המפרקים; שדה החזרות מודד דקות',
         equipment: const {Equipment.bodyweight},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -1231,6 +1329,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'אירובי',
         unit: 'min',
         notes: 'Low impact on the ankles and spine; reps field tracks minutes',
+        notesHe: 'עצימות נמוכה על הקרסוליים ועמוד השדרה; שדה החזרות מודד דקות',
         equipment: const {Equipment.machines},
         pattern: MovementPattern.isolation,
         mechanic: Mechanic.isolation,
@@ -1243,6 +1342,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'אירובי',
         unit: 'min',
         notes: 'Light on the toes; reps field tracks minutes',
+        notesHe: 'קלילות על קצות האצבעות; שדה החזרות מודד דקות',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {BodyPart.ankle, BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1256,6 +1356,8 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'אירובי',
         unit: 'min',
         notes: 'Squat, kick back, push up, jump; reps field tracks minutes',
+        notesHe:
+            'סקוואט, בעיטה אחורה, שכיבת סמיכה, קפיצה; שדה החזרות מודד דקות',
         equipment: const {Equipment.bodyweight},
         contraindicatedFor: const {
           BodyPart.back,
@@ -1273,6 +1375,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'אירובי',
         unit: 'min',
         notes: 'Legs, then hips, then arms; reps field tracks minutes',
+        notesHe: 'רגליים, אחר כך ירכיים, אחר כך ידיים; שדה החזרות מודד דקות',
         equipment: const {Equipment.machines},
         pattern: MovementPattern.horizontalPull,
         mechanic: Mechanic.compound,
@@ -1295,6 +1398,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Lean forward, let the arm hang and circle gently; reps field tracks seconds',
+        notesHe:
+            'רכנו קדימה, תנו ליד להישמט וסובבו בעדינות; שדה החזרות מודד שניות',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1309,6 +1414,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Elbow tucked at your side, rotate the forearm outwards -- rotator-cuff staple',
+        notesHe:
+            'המרפק צמוד לגוף, סובבו את האמה כלפי חוץ -- תרגיל יסוד לחפית המסובבים',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1322,6 +1429,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Forearms on the wall, slide up and down keeping contact',
+        notesHe: 'האמות על הקיר, החליקו למעלה ולמטה תוך שמירה על מגע',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1336,6 +1444,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Draw the chin straight back without tilting; deep neck flexor work',
+        notesHe:
+            'משכו את הסנטר ישר אחורה בלי להטות את הראש; עבודת כופפי הצוואר העמוקים',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.neck},
         pattern: MovementPattern.isolation,
@@ -1350,6 +1460,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Press the head lightly into your hand without movement; reps field tracks seconds',
+        notesHe:
+            'לחצו את הראש קלות אל תוך היד בלי תנועה; שדה החזרות מודד שניות',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.neck},
         pattern: MovementPattern.isolation,
@@ -1363,6 +1475,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'On all fours, alternate arching and rounding the spine slowly',
+        notesHe: 'על ארבע, קמרו ועגלו את עמוד השדרה לסירוגין ולאט',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.neck},
         pattern: MovementPattern.isolation,
@@ -1376,6 +1489,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Lying down, flatten the low back into the floor and release',
+        notesHe: 'בשכיבה, שטחו את הגב התחתון אל הרצפה ושחררו',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.isolation,
@@ -1390,6 +1504,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Quad activation without bending the knee -- standard post-knee-injury work',
+        notesHe:
+            'הפעלת הארבע-ראשי בלי כיפוף הברך -- עבודה סטנדרטית אחרי פציעת ברך',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1403,6 +1519,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'band',
         notes: 'Band behind the knee, straighten against the resistance',
+        notesHe: 'גומייה מאחורי הברך, יישרו כנגד ההתנגדות',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1416,6 +1533,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Trace the alphabet with the toes to restore ankle range',
+        notesHe: 'ציירו את האותיות עם האצבעות כדי להחזיר את טווח התנועה בקרסול',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1429,6 +1547,8 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Seated so bodyweight is off the joint; rebuilds calf and ankle',
+        notesHe:
+            'בישיבה כך שמשקל הגוף לא על המפרק; בונה מחדש את שריר התאומים והקרסול',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1443,6 +1563,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Slow eccentric wrist extension -- the standard tennis-elbow protocol',
+        notesHe:
+            'יישור אקסצנטרי איטי של שורש כף היד -- הפרוטוקול המקובל למרפק טניס',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1456,6 +1578,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'band',
         notes: 'Rotate the palm up against light resistance, elbow tucked',
+        notesHe: 'סובבו את כף היד כלפי מעלה כנגד התנגדות קלה, המרפק צמוד',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1469,6 +1592,8 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Side-lying, knees bent, open the top knee -- glute medius work',
+        notesHe:
+            'בשכיבה על הצד, ברכיים כפופות, פתחו את הברך העליונה -- עבודת שריר עכוז אמצעי',
         equipment: const {Equipment.bands, Equipment.bodyweight},
         rehabFor: const {BodyPart.hip},
         pattern: MovementPattern.isolation,
@@ -1482,6 +1607,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Arm straight, gently pull the fingers back; hold and release',
+        notesHe: 'היד ישרה, משכו בעדינות את האצבעות אחורה; החזיקו ושחררו',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1495,6 +1621,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Slow full bend and straighten, no load',
+        notesHe: 'כיפוף ויישור מלאים ואיטיים, ללא עומס',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1508,6 +1635,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Knee travels over the toes with the heel down',
+        notesHe: 'הברך נעה מעל האצבעות כשהעקב על הרצפה',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1521,6 +1649,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Half-kneeling, tuck the pelvis and lean forward gently',
+        notesHe: 'בכריעה על ברך אחת, כנסו את האגן והישענו קדימה בעדינות',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.hip},
         pattern: MovementPattern.isolation,
@@ -1534,6 +1663,8 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Face down, arms in a Y, lift the thumbs towards the ceiling',
+        notesHe:
+            'שכיבה על הבטן, הידיים בצורת Y, הרימו את האגודלים לכיוון התקרה',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1548,6 +1679,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Back flat to the wall, arms trace an arc without losing contact',
+        notesHe: 'הגב צמוד לקיר, הידיים מציירות קשת בלי לאבד מגע',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1561,6 +1693,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Forearm on the frame, rotate away gently; hold and release',
+        notesHe: 'האמה על המשקוף, סובבו הצידה בעדינות; החזיקו ושחררו',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1575,6 +1708,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Arm straight, gently press the fingers down -- the tennis-elbow counterpart',
+        notesHe:
+            'היד ישרה, לחצו בעדינות את האצבעות כלפי מטה -- המקבילה למרפק טניס',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1589,6 +1724,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Wring a towel slowly in both directions for eccentric forearm work',
+        notesHe: 'סחטו מגבת לאט לשני הכיוונים לעבודה אקסצנטרית של האמה',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1603,6 +1739,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Squeeze a rolled towel or ball and hold; reps field tracks seconds',
+        notesHe: 'לחצו מגבת מגולגלת או כדור והחזיקו; שדה החזרות מודד שניות',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.elbow},
         pattern: MovementPattern.isolation,
@@ -1617,6 +1754,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Leg straight, press the back of the knee down and hold the contraction',
+        notesHe: 'הרגל ישרה, לחצו את גב הברך כלפי מטה והחזיקו את הכיווץ',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1631,6 +1769,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Stand on one leg; reps field tracks seconds. Proprioception is the point',
+        notesHe:
+            'עמדו על רגל אחת; שדה החזרות מודד שניות. שיווי המשקל הוא העיקר',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle, BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1644,6 +1784,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Walk on the heels with the toes lifted -- dorsiflexor strength',
+        notesHe: 'הליכה על העקבים כשהאצבעות מורמות -- חיזוק מיישרי כף הרגל',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1658,6 +1799,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Walk on the toes with the heels high; the calf counterpart to the heel walk',
+        notesHe:
+            'הליכה על קצות האצבעות כשהעקבים גבוהים; המקבילה להליכה על העקבים',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1672,6 +1815,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'band',
         notes:
             'Turn the sole outwards against the band -- the classic sprain rebuild',
+        notesHe: 'סובבו את כף הרגל כלפי חוץ כנגד הגומייה -- השיקום הקלאסי לנקע',
         equipment: const {Equipment.bands},
         rehabFor: const {BodyPart.ankle},
         pattern: MovementPattern.isolation,
@@ -1686,6 +1830,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Ankle across the opposite knee, draw the thigh in; hold and release',
+        notesHe: 'הקרסול על הברך הנגדית, משכו את הירך פנימה; החזיקו ושחררו',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.isolation,
@@ -1700,6 +1845,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Lift the leg out to the side without leaning; hold a wall for balance',
+        notesHe:
+            'הרימו את הרגל הצידה בלי להטות את הגוף; היעזרו בקיר לשיווי משקל',
         equipment: const {Equipment.bands, Equipment.bodyweight},
         rehabFor: const {BodyPart.hip, BodyPart.knee},
         pattern: MovementPattern.isolation,
@@ -1714,6 +1861,7 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Ear towards the shoulder, hand resting on the head for weight only',
+        notesHe: 'האוזן לכיוון הכתף, היד מונחת על הראש כמשקל בלבד',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.neck, BodyPart.shoulder},
         pattern: MovementPattern.isolation,
@@ -1727,6 +1875,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'Look towards the armpit and let the head fall gently that way',
+        notesHe: 'הביטו לכיוון בית השחי ותנו לראש ליפול בעדינות לאותו כיוון',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.neck},
         pattern: MovementPattern.isolation,
@@ -1740,6 +1889,7 @@ abstract final class StarterExerciseLibrary {
         primaryMuscleHe: 'שיקום',
         unit: 'bodyweight',
         notes: 'On your back, draw one knee in at a time; hold and release',
+        notesHe: 'בשכיבה על הגב, קרבו ברך אחת בכל פעם; החזיקו ושחררו',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back, BodyPart.hip},
         pattern: MovementPattern.isolation,
@@ -1754,6 +1904,8 @@ abstract final class StarterExerciseLibrary {
         unit: 'bodyweight',
         notes:
             'Face down, press the chest up leaving the hips down -- gentle extension',
+        notesHe:
+            'שכיבה על הבטן, דחפו את החזה כלפי מעלה כשהירכיים נשארות למטה -- יישור עדין',
         equipment: const {Equipment.bodyweight},
         rehabFor: const {BodyPart.back},
         pattern: MovementPattern.isolation,

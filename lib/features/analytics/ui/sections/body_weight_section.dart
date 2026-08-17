@@ -60,8 +60,8 @@ class _BodyWeightSectionState extends ConsumerState<BodyWeightSection> {
           ? l10n.analyticsBodyWeight
           : AnalyticsFormat.scrubDate(scrubbed.t, view.bucket, l10n),
       trailing: scrubbed?.value != null
-          ? AnalyticsFormat.kg(scrubbed!.value)
-          : AnalyticsFormat.kg(view.bodyWeightTrend.latest),
+          ? AnalyticsFormat.kg(scrubbed!.value, l10n)
+          : AnalyticsFormat.kg(view.bodyWeightTrend.latest, l10n),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -91,7 +91,7 @@ class _BodyWeightSectionState extends ConsumerState<BodyWeightSection> {
           StatStrip(stats: [
             (
               label: l10n.analyticsLatest,
-              value: AnalyticsFormat.kg(view.bodyWeight.latest)
+              value: AnalyticsFormat.kg(view.bodyWeight.latest, l10n)
             ),
             (
               label: l10n.analyticsChange,
@@ -101,7 +101,8 @@ class _BodyWeightSectionState extends ConsumerState<BodyWeightSection> {
               label: l10n.analyticsPerWeek,
               value: perWeek == null
                   ? '--'
-                  : '${perWeek > 0 ? '+' : ''}${perWeek.toStringAsFixed(2)} kg'
+                  : '${perWeek > 0 ? '+' : ''}'
+                      '${perWeek.toStringAsFixed(2)} ${l10n.kg}'
             ),
           ]),
           const SizedBox(height: 10),

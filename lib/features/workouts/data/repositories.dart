@@ -99,9 +99,7 @@ class ExercisesRepository {
     return Exercise(
       id: data.id,
       name: data.name,
-      nameHe: data.nameHe,
       primaryMuscle: data.primaryMuscle,
-      primaryMuscleHe: data.primaryMuscleHe,
       unit: data.unit,
       notes: data.notes,
       equipment: data.equipment,
@@ -114,9 +112,7 @@ class ExercisesRepository {
     return ExerciseData(
       id: model.id,
       name: model.name,
-      nameHe: model.nameHe,
       primaryMuscle: model.primaryMuscle,
-      primaryMuscleHe: model.primaryMuscleHe,
       unit: model.unit,
       notes: model.notes,
       equipment: model.equipment,
@@ -204,9 +200,7 @@ class WorkoutTemplatesRepository {
     return WorkoutTemplate(
       id: data.id,
       name: data.name,
-      nameHe: data.nameHe,
       notes: data.notes,
-      notesHe: data.notesHe,
       origin: data.origin,
       customRest: data.customRest,
     );
@@ -216,9 +210,7 @@ class WorkoutTemplatesRepository {
     return WorkoutTemplateData(
       id: model.id,
       name: model.name,
-      nameHe: model.nameHe,
       notes: model.notes,
-      notesHe: model.notesHe,
       origin: model.origin,
       customRest: model.customRest,
     );

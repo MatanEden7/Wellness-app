@@ -10,7 +10,6 @@ _$FoodItemImpl _$$FoodItemImplFromJson(Map<String, dynamic> json) =>
     _$FoodItemImpl(
       id: json['id'] as String,
       name: json['name'] as String,
-      nameHe: json['nameHe'] as String?,
       brand: json['brand'] as String?,
       unit: json['unit'] as String,
       kcalPerUnit: (json['kcalPerUnit'] as num).toDouble(),
@@ -32,7 +31,6 @@ Map<String, dynamic> _$$FoodItemImplToJson(_$FoodItemImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'nameHe': instance.nameHe,
       'brand': instance.brand,
       'unit': instance.unit,
       'kcalPerUnit': instance.kcalPerUnit,
@@ -168,9 +166,7 @@ _$MealTemplateImpl _$$MealTemplateImplFromJson(Map<String, dynamic> json) =>
     _$MealTemplateImpl(
       id: json['id'] as String,
       name: json['name'] as String,
-      nameHe: json['nameHe'] as String?,
       description: json['description'] as String?,
-      descriptionHe: json['descriptionHe'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       origin: $enumDecodeNullable(_$TemplateOriginEnumMap, json['origin']) ??
@@ -185,9 +181,7 @@ Map<String, dynamic> _$$MealTemplateImplToJson(_$MealTemplateImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'nameHe': instance.nameHe,
       'description': instance.description,
-      'descriptionHe': instance.descriptionHe,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
       'origin': _$TemplateOriginEnumMap[instance.origin]!,
@@ -195,7 +189,6 @@ Map<String, dynamic> _$$MealTemplateImplToJson(_$MealTemplateImpl instance) =>
     };
 
 const _$TemplateOriginEnumMap = {
-  TemplateOrigin.builtin: 'builtin',
   TemplateOrigin.generated: 'generated',
   TemplateOrigin.user: 'user',
 };

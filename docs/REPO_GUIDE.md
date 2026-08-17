@@ -39,7 +39,10 @@ What changed: those lists are now **durable**. `AppDatabase` takes a
   seeded catalog rather than failing to launch
 
 Unit tests construct `AppDatabase()` with **no** store, which keeps them
-filesystem-free; pass a `SnapshotStore` to exercise persistence (see
+filesystem-free. That default also seeds the catalog in English so a test has
+content to work with; the app itself passes `seedLanguage: null` and seeds from
+onboarding instead — see "Content language" below. Pass `seedLanguage:
+AppLanguage.hebrew` to exercise the other side; pass a `SnapshotStore` to exercise persistence (see
 [`test/regression/persistence_test.dart`](test/regression/persistence_test.dart)).
 Because the collections are static, tests that mutate data must call
 `AppDatabase.resetForTesting()` in `setUp`.
@@ -237,7 +240,7 @@ theming layer would be a second source of truth for colour.
 
 ### Entry Points
 
-- **[`lib/main.dart`](lib/main.dart)** - App initialization, provider overrides, seed data
+- **[`lib/main.dart`](lib/main.dart)** - App initialization, provider overrides. Deliberately does *not* seed: `LocalStorageDatabase` passes `seedLanguage: null` so no catalog exists until onboarding picks a language
 - **[`lib/app.dart`](lib/app.dart)** - MaterialApp, routing, localization, theme
 
 ### Core Systems
@@ -322,35 +325,88 @@ day totals → entries → "+"), templates screen, catalog/library screen — th
 areas have the same three screens in the same shapes, and the routes match too
 (`/{meals,workouts}/templates`, `.../templates/new`, `.../templates/:id`).
 
-### Bilingual content
+### Content language
 
-The app is English + Hebrew, and **content** is bilingual in the data rather
-than through ARB keys — an ARB key per seeded food would be unmanageable.
+The app is English + Hebrew. **Content is written in one language, once, and
+never re-resolved.** Chrome follows the current language; content does not.
 
-| Carrier | Field | Reader |
+That split is the whole design. Content rows used to carry `name` *and*
+`nameHe` and pick between them at render time, which meant flipping the
+language in Settings rewrote the entire app — every food, exercise and
+generated template renamed itself under a user who was midway through a plan,
+and every new row had to be translated at authoring time or render blank.
+
+| Kind | Example | Language decided |
 |---|---|---|
-| `FoodItem`, `MealTemplate`, `WorkoutTemplateData` | `nameHe` | `displayName(AppLanguage)` |
-| `FoodItem` | `brand` | `displayBrand(AppLanguage)` — maps 59 descriptors in one place |
-| `FoodCategory`, `FoodTag`, `Equipment`, `BodyPart` | — | `label(AppLanguage)` with `_english`/`_hebrew` switches |
-| Stored unit strings (`100g`, `tbsp`) | — | `FoodNutritionMath.localizedUnit(AppLanguage, unit)` |
+| Content (stored rows) | food/exercise names, meal + workout template names and notes, calendar event titles | **once, at seed or generation time** — the row keeps a single `name`, and moves only when the user changes the language |
+| Chrome (rendered labels) | buttons, `FoodCategory`/`FoodTag`/`Equipment`/`BodyPart` labels, unit strings | every build, from the current `AppLanguage` |
 
-Two rules that came out of getting this wrong repeatedly:
+**Content never re-languages itself, but a language switch moves it.** Those are
+two different claims and both matter. Nothing renders through a language lookup,
+so no rebuild can rename anything — that is what stops a plan renaming itself
+under someone mid-week. But picking a language in Settings is an explicit
+instruction, so `ContentLanguageService.switchTo` re-runs the resolution over
+every row that already exists. Otherwise a Hebrew UI would list "Chicken Breast"
+forever for anyone who onboarded in English, which is not "the app is in
+Hebrew".
 
-1. **Always render through the `display*` accessor.** The bug is never a missing
-   translation, it is a widget reading `.name` when `nameHe` is sitting right
-   beside it. That was the whole of ISSUES #107.
-2. **Never translate an id in place.** Stored values (`maintenance`,
+The switch, in order (the order is load-bearing):
+
+1. `AppDatabase.relanguageCatalog` rewrites seeded food and exercise rows **by
+   id**, so logged meals and set entries are untouched. A row whose name no
+   longer matches what the *old* language seeded was edited by the user and is
+   skipped; foods the user added are not in the starter catalog and are skipped
+   too.
+2. `ContentRegenerationService.regenerate` rebuilds the generated templates in
+   the new language — a template name is *composed*, not looked up, so it
+   cannot be rewritten in place. Only `TemplateOrigin.generated` is replaced.
+   Catalog first, or the generators would pick from the old-language rows.
+3. Calendar events are repinned (regeneration mints fresh ids) and retitled —
+   event titles are copies, not references, so a re-languaged template does not
+   reach the calendar on its own.
+
+How content gets its language:
+
+1. Onboarding **step 0** asks. Nothing is seeded before this — `main.dart`
+   constructs the database with `seedLanguage: null` precisely so a catalog
+   cannot be written in a guessed language.
+2. `AppDatabase.seedCatalogFor(language)` seeds the food catalog and exercise
+   library, resolving `StarterFood.nameHe` / `StarterExercise.nameHe` into the
+   single `name` the row keeps. It records the choice in
+   `AppDatabase.contentLanguage`, which is persisted in the snapshot.
+3. `WorkoutTemplateGenerator` and `MealTemplateGenerator` take the same
+   `AppLanguage` and write template names, notes and descriptions in it.
+4. `CalendarScheduleGenerator` copies template names verbatim and uses its
+   `AppLanguage` only for the labels it invents itself (sleep, meal slots).
+
+Rules that came out of getting this wrong:
+
+1. **Bilingual pairs live in authoring data, never in the database.**
+   `starter_foods.dart`, `starter_exercises.dart`, `meal_recipes.dart` and
+   `_SessionPlan` all hold both languages side by side — that is the readable
+   place to keep a translation honest, and it avoids duplicating 42 rows of
+   macro numbers into a second file to avoid sharing a *name*. What reaches a
+   row is one string.
+2. **Never key a lookup on a stored `name`.** `MealTemplateGenerator` resolves
+   recipe ingredients through `StarterFoodCatalog` ids, not names. Matching on
+   `name` silently produced *zero* meal templates on a Hebrew install, because
+   the recipes name their ingredients in English.
+3. **Never translate an id in place.** Stored values (`maintenance`,
    `barbell_rack`) stay as ids; map them to a label at render time.
+4. **Regeneration is the one exception.** `ContentRegenerationService.regenerate`
+   takes the *current* language, because the user pressed a button asking for
+   these templates to be replaced.
+
+There are **no shipped templates.** `TemplateOrigin` has two values, `generated`
+and `user`; the six hardcoded built-in workout templates and the built-in meal
+templates are gone. Onboarding generation is the only source of content the user
+did not make, which means one place a template can come from and one language it
+can be in.
 
 For *chrome* strings the ARB is the source of truth, and it is much fuller than
 it looks — check for an existing key before adding one. Across ISSUES #84/#102/
 #107 the large majority of "missing translations" were keys that already existed
 and were never wired.
-
-**Generation bakes the language in.** `CalendarScheduleGenerator` takes an
-`AppLanguage` and stores event titles in it, because event titles are persisted.
-Rehab template names are pinned to English deliberately, so stored rows do not
-inherit whichever locale happened to be active.
 
 ### RTL
 

@@ -140,7 +140,7 @@ class _WorkoutTemplateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final name = template.displayName(language);
+    final name = template.name;
 
     return SwipeActionRow(
       rowKey: ValueKey(template.id),
@@ -217,10 +217,10 @@ class _WorkoutTemplateCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (template.displayNotes(language) != null) ...[
+              if (template.notes != null) ...[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  template.displayNotes(language)!,
+                  template.notes!,
                   style: theme.textTheme.bodySmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

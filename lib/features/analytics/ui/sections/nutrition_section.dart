@@ -100,7 +100,7 @@ class _NutritionSectionState extends ConsumerState<NutritionSection> {
             ),
             (
               label: l10n.analyticsAvgProtein,
-              value: AnalyticsFormat.grams(view.protein.average)
+              value: AnalyticsFormat.grams(view.protein.average, l10n)
             ),
             (
               label: l10n.analyticsDaysLogged,
@@ -193,6 +193,7 @@ class _MacroBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     // Clamped at 1: a bar that overflows its track cannot show how far over it
     // went anyway, and the percentage next to it already says so.
     final fraction = (goal == null || goal! <= 0 || actual == null)
@@ -221,8 +222,8 @@ class _MacroBar extends StatelessWidget {
           width: 74,
           child: Text(
             goal == null
-                ? AnalyticsFormat.grams(actual)
-                : '${AnalyticsFormat.grams(actual)} · '
+                ? AnalyticsFormat.grams(actual, l10n)
+                : '${AnalyticsFormat.grams(actual, l10n)} · '
                     '${AnalyticsFormat.percent((actual ?? 0) / goal!)}',
             textAlign: TextAlign.end,
             style: theme.textTheme.labelSmall?.copyWith(

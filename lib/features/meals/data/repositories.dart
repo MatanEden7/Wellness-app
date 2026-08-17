@@ -58,7 +58,6 @@ final allMealTemplatesStreamProvider =
 FoodItem foodItemFromData(FoodItemData data) => FoodItem(
       id: data.id,
       name: data.name,
-      nameHe: data.nameHe,
       brand: data.brand,
       unit: data.unit,
       kcalPerUnit: data.kcalPerUnit,
@@ -333,7 +332,6 @@ class MealsRepository {
     return FoodItemData(
       id: model.id,
       name: model.name,
-      nameHe: model.nameHe,
       brand: model.brand,
       unit: model.unit,
       kcalPerUnit: model.kcalPerUnit,
@@ -406,9 +404,7 @@ class MealsRepository {
     return MealTemplate(
       id: data.id,
       name: data.name,
-      nameHe: data.nameHe,
       description: data.description,
-      descriptionHe: data.descriptionHe,
       origin: data.origin,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -419,9 +415,7 @@ class MealsRepository {
     return MealTemplateData(
       id: model.id,
       name: model.name,
-      nameHe: model.nameHe,
       description: model.description,
-      descriptionHe: model.descriptionHe,
       origin: model.origin,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,

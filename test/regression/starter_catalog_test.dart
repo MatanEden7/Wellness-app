@@ -2,13 +2,46 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
+import 'package:wellness_app/services/meal_template_generator.dart';
+import 'package:wellness_app/services/user_profile_service.dart';
+import 'package:wellness_app/services/workout_template_generator.dart';
 
 import 'package:wellness_app/data/db/drift_database.dart';
 
-/// Regression coverage for the expanded starter catalog: foods, exercises,
-/// and the built-in workout/meal templates that ship on first launch (see
-/// AppDatabase._getSampleFoods/_getSampleExercises/_getBuiltInWorkoutTemplates/
-/// _getBuiltInMealTemplates in lib/data/db/drift_database.dart).
+/// Regression coverage for the starter catalog -- the foods and exercises
+/// seeded in the onboarding language (see `AppDatabase.seedCatalogFor` and
+/// `_getSampleFoods`/`_getSampleExercises` in
+/// lib/data/db/drift_database.dart).
+///
+/// The catalog is all that ships. There are no built-in templates any more:
+/// what used to be asserted here as "built-ins exist" is now asserted as
+/// "onboarding generation fills the Templates tab", which is the property
+/// that actually mattered -- a new user must not land on an empty screen.
+UserProfile _profile() => UserProfile(
+      sex: 'male',
+      ageYears: 30,
+      heightCm: 180,
+      weightKg: 80,
+      goal: 'build_muscle',
+      activityLevel: 'moderate',
+      trainingDaysPerWeek: 4,
+      trainingExperience: 'beginner',
+      equipment: const ['full_gym'],
+      dietType: 'omnivore',
+      mealCountPerDay: '3',
+      exclusions: const [],
+      injuries: const [],
+      bmr: 1800,
+      tdee: 2500,
+      calorieTarget: 2600,
+      proteinTargetG: 160,
+      carbsTargetG: 300,
+      fatTargetG: 80,
+      energyUnit: 'kcal',
+      weightUnit: 'kg',
+    );
+
 void main() {
   late AppDatabase database;
 
@@ -52,27 +85,33 @@ void main() {
     }
   });
 
-  test('built-in workout templates exist and each has exercises', () async {
-    final templates = await database.getAllWorkoutTemplates();
+  test('onboarding generation fills the workouts tab, each with exercises',
+      () async {
+    AppDatabase.resetForTesting();
+    final db = AppDatabase();
+    await WorkoutTemplateGenerator(db, _profile(), AppLanguage.english)
+        .generateTemplates();
+    final templates = await db.getAllWorkoutTemplates();
     expect(templates.length, greaterThanOrEqualTo(4));
 
     for (final template in templates) {
-      final exercises =
-          await database.getTemplateExercisesByTemplateId(template.id);
+      final exercises = await db.getTemplateExercisesByTemplateId(template.id);
       expect(exercises, isNotEmpty,
           reason: '${template.name} has no exercises');
     }
   });
 
-  test('built-in meal templates exist and each references real foods',
-      () async {
-    final templates = await database.getAllMealTemplates();
-    expect(templates.length, greaterThanOrEqualTo(4));
+  test('onboarding generation fills the meals tab with real foods', () async {
+    AppDatabase.resetForTesting();
+    final db = AppDatabase();
+    await MealTemplateGenerator(db, _profile(), AppLanguage.english)
+        .generateTemplates();
+    final templates = await db.getAllMealTemplates();
+    expect(templates, isNotEmpty);
 
-    final foodIds = (await database.getAllFoods()).map((f) => f.id).toSet();
+    final foodIds = (await db.getAllFoods()).map((f) => f.id).toSet();
     for (final template in templates) {
-      final items =
-          await database.getMealTemplateItemsByTemplateId(template.id);
+      final items = await db.getMealTemplateItemsByTemplateId(template.id);
       expect(items, isNotEmpty, reason: '${template.name} has no items');
       for (final item in items) {
         expect(foodIds, contains(item.foodId),

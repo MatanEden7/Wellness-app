@@ -39,58 +39,64 @@ class AnalyticsFormat {
     };
   }
 
-  /// Compact number: 2140 -> "2.1k". Keeps the axis readable at 11pt.
+  /// A plain number: 2340 -> "2340".
+  ///
+  /// Deliberately *not* abbreviated. This used to render "2.3k", which is a
+  /// worse label on two counts: the reader has to expand it to know what they
+  /// lifted, and the decimal point is ambiguous in a locale that groups
+  /// numbers differently. Four or five digits fit the axis at 11pt.
+  ///
+  /// Only values under 10 keep a decimal, where the fraction is the
+  /// information -- 7.5 hours of sleep is not 8.
   static String compact(double value) {
-    if (value.abs() >= 10000) return '${(value / 1000).toStringAsFixed(0)}k';
-    if (value.abs() >= 1000) return '${(value / 1000).toStringAsFixed(1)}k';
-    if (value.abs() >= 100) return value.toStringAsFixed(0);
-    return value.toStringAsFixed(value.abs() < 10 ? 1 : 0);
+    if (value.abs() >= 10) return value.toStringAsFixed(0);
+    return value.toStringAsFixed(1);
   }
 
   static String kcal(double? value) =>
       value == null ? '--' : '${value.round()}';
 
-  static String grams(double? value) =>
-      value == null ? '--' : '${value.round()}g';
+  /// Unit-suffixed values.
+  ///
+  /// These take the localisations because the suffix is chrome: 'g'/'kg'/'h'
+  /// read as English inside a Hebrew chart, and there is nothing about the
+  /// number that decides them. The value itself stays Western digits, which is
+  /// what Hebrew uses.
+  static String grams(double? value, AppLocalizations l10n) =>
+      value == null ? '--' : '${value.round()}${l10n.grams}';
 
-  static String kg(double? value) =>
-      value == null ? '--' : '${value.toStringAsFixed(1)} kg';
+  static String kg(double? value, AppLocalizations l10n) =>
+      value == null ? '--' : '${value.toStringAsFixed(1)} ${l10n.kg}';
 
-  static String hours(double? value) {
+  static String hours(double? value, AppLocalizations l10n) {
     if (value == null) return '--';
     final whole = value.floor();
     final minutes = ((value - whole) * 60).round();
-    return minutes == 0 ? '${whole}h' : '${whole}h ${minutes}m';
+    // Spaced: "0 שע׳ 5 דק׳" rather than "0שע׳ 5דק׳". Two number-unit pairs
+    // run together are hard to parse in either script, and worse in RTL where
+    // the digits reorder around the letters.
+    return minutes == 0
+        ? '$whole ${l10n.hoursShort}'
+        : '$whole ${l10n.hoursShort} $minutes ${l10n.minutesShortM}';
   }
 
   static String percent(double fraction) => '${(fraction * 100).round()}%';
 
-  /// Exercise name in the active language, falling back to English.
-  static String exerciseName(ExerciseRef? ref, AppLanguage language) {
-    if (ref == null) return '--';
-    final he = ref.nameHe;
-    return language == AppLanguage.hebrew && he != null && he.trim().isNotEmpty
-        ? he
-        : ref.name;
-  }
+  /// The exercise's name, or a dash when the chart has no exercise for the id.
+  ///
+  /// No language argument: the row carries one name, written when the library
+  /// was seeded, so there is nothing to choose between here.
+  static String exerciseName(ExerciseRef? ref) => ref?.name ?? '--';
 
   /// Muscle name in the active language.
   ///
   /// Untagged exercises are grouped under a translated "Other" rather than the
   /// raw sentinel, which would otherwise surface the string `other` verbatim
   /// in a Hebrew UI.
-  static String muscleName(
-    String muscle,
-    AppLocalizations l10n, {
-    ExerciseRef? sample,
-    AppLanguage language = AppLanguage.english,
-  }) {
+  static String muscleName(String muscle, AppLocalizations l10n) {
     if (muscle == 'other') return l10n.analyticsOtherMuscle;
-
-    final he = sample?.primaryMuscleHe;
-    if (language == AppLanguage.hebrew && he != null && he.trim().isNotEmpty) {
-      return he;
-    }
+    // Already in the content language -- it is the row's own stored
+    // `primaryMuscle`. Capitalisation is a no-op in Hebrew.
     return muscle[0].toUpperCase() + muscle.substring(1);
   }
 }
@@ -108,22 +114,22 @@ String insightText(
 ) {
   final subject = insight.subjectId == null
       ? ''
-      : AnalyticsFormat.exerciseName(exercises[insight.subjectId], language);
+      : AnalyticsFormat.exerciseName(exercises[insight.subjectId]);
   final v = insight.values;
 
   return switch (insight.kind) {
     InsightKind.plateau => l10n.insightPlateau(
         subject,
-        AnalyticsFormat.kg(v['weight']),
+        AnalyticsFormat.kg(v['weight'], l10n),
         '${v['sessions']?.round()}',
       ),
     InsightKind.personalBest => l10n.insightPersonalBest(
         subject,
-        AnalyticsFormat.kg(v['e1rm']),
+        AnalyticsFormat.kg(v['e1rm'], l10n),
       ),
     InsightKind.proteinShortfall => l10n.insightProteinShortfall(
-        AnalyticsFormat.grams(v['actual']),
-        AnalyticsFormat.grams(v['goal']),
+        AnalyticsFormat.grams(v['actual'], l10n),
+        AnalyticsFormat.grams(v['goal'], l10n),
       ),
     InsightKind.calorieDrift => (v['direction'] ?? 0) >= 0
         ? l10n.insightCalorieDriftHigh(
@@ -138,14 +144,13 @@ String insightText(
       l10n.insightVolumeDrop(AnalyticsFormat.percent(v['drop'] ?? 0)),
     InsightKind.sleepDebt => l10n.insightSleepDebt(
         '${v['nights']?.round()}',
-        AnalyticsFormat.hours(v['goal']),
+        AnalyticsFormat.hours(v['goal'], l10n),
       ),
     InsightKind.consistencyWin =>
       l10n.insightConsistencyWin('${v['days']?.round()}'),
     InsightKind.neglectedMuscle => l10n.insightNeglectedMuscle(
         '${v['sets']?.round()}',
-        AnalyticsFormat.muscleName(insight.subjectId ?? 'other', l10n,
-            language: language),
+        AnalyticsFormat.muscleName(insight.subjectId ?? 'other', l10n),
       ),
   };
 }

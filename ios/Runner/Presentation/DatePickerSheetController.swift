@@ -17,6 +17,16 @@ final class DatePickerSheetController: UIViewController {
     private let picker = UIDatePicker()
     private let onDone: (Date?) -> Void
 
+    /// The button titles, handed over from Dart already translated. See
+    /// `DatePickerSpec.cancelLabel`.
+    private let cancelLabel: String
+    private let doneLabel: String
+
+    /// Applied in `viewDidLoad`, not `init`: touching `view` in an
+    /// initialiser forces the view hierarchy to load before the controller is
+    /// finished being built.
+    private let isRTL: Bool
+
     /// Guards against the completion firing twice — once from a button and
     /// again from an interactive dismiss. Dart awaits a single reply, and a
     /// second one on the same pigeon channel is a hard error.
@@ -24,7 +34,25 @@ final class DatePickerSheetController: UIViewController {
 
     init(spec: DatePickerSpec, onDone: @escaping (Date?) -> Void) {
         self.onDone = onDone
+        self.cancelLabel = spec.cancelLabel
+        self.doneLabel = spec.doneLabel
+        // Mirrors the sheet for Hebrew, so Cancel/Done land on the side the
+        // rest of the app puts them on.
+        self.isRTL = Locale.characterDirection(
+            forLanguage: spec.localeIdentifier) == .rightToLeft
         super.init(nibName: nil, bundle: nil)
+
+        // The app's language, not the device's. Drives the month name, the
+        // weekday headers and the calendar's first day of the week; without it
+        // a Hebrew app on an English phone renders an English calendar.
+        let locale = Locale(identifier: spec.localeIdentifier)
+        picker.locale = locale
+        picker.calendar = {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.locale = locale
+            return calendar
+        }()
+
 
         switch spec.mode {
         case "date":
@@ -55,13 +83,14 @@ final class DatePickerSheetController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        if isRTL { view.semanticContentAttribute = .forceRightToLeft }
 
         let cancel = UIButton(type: .system)
-        cancel.setTitle(NSLocalizedString("Cancel", comment: ""), for: .normal)
+        cancel.setTitle(cancelLabel, for: .normal)
         cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
 
         let done = UIButton(type: .system)
-        done.setTitle(NSLocalizedString("Done", comment: ""), for: .normal)
+        done.setTitle(doneLabel, for: .normal)
         done.titleLabel?.font = .preferredFont(forTextStyle: .headline)
         done.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
 

@@ -122,7 +122,7 @@ class AdvancedColorPicker extends HookConsumerWidget {
                       Icon(icon, size: 24),
                       const SizedBox(width: 12),
                       Text(
-                        'Pick $label Color',
+                        AppLocalizations.of(context)!.pickColorFor(label),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -613,7 +613,8 @@ class AdvancedColorPicker extends HookConsumerWidget {
                       ? 'Excellent (AAA)'
                       : passesAA
                           ? 'Good (AA)'
-                          : 'Auto-adjusted for readability',
+                          : AppLocalizations.of(context)!
+                              .autoAdjustedForReadability,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontSize: 11,
                         height: 1.2,
@@ -909,7 +910,8 @@ class _HSVASlider extends HookWidget {
     }, [value]);
 
     return Semantics(
-      label: '$label slider, current value ${value.round()}$suffix',
+      label: AppLocalizations.of(context)!
+          .a11ySliderValue(label, '${value.round()}$suffix'),
       child: Column(
         children: [
           Row(

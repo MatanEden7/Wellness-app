@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
@@ -72,7 +73,8 @@ void main() {
     final store = _MemStore();
     AppDatabase.resetForTesting();
     final db = AppDatabase(store: store);
-    await WorkoutTemplateGenerator(db, profile()).generateTemplates();
+    await WorkoutTemplateGenerator(db, profile(), AppLanguage.english)
+        .generateTemplates();
     final before = await fingerprint(db);
     expect(before, isNotEmpty);
     expect(before.any((f) => !f.endsWith('|null')), isTrue,
@@ -94,7 +96,8 @@ void main() {
     final db = AppDatabase();
     final prefs = await SharedPreferences.getInstance();
     await UserProfileService(prefs).saveProfile(profile());
-    await WorkoutTemplateGenerator(db, profile()).generateTemplates();
+    await WorkoutTemplateGenerator(db, profile(), AppLanguage.english)
+        .generateTemplates();
     final before = await fingerprint(db);
 
     final payload =
@@ -130,7 +133,8 @@ void main() {
       ]);
       addTearDown(container.dispose);
 
-      await WorkoutTemplateGenerator(db, profile(days: days))
+      await WorkoutTemplateGenerator(
+              db, profile(days: days), AppLanguage.english)
           .generateTemplates();
       await container.read(calendarStateProvider.notifier).addEvents(
           await CalendarScheduleGenerator(db, profile(days: days))

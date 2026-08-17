@@ -1,3 +1,5 @@
+import 'package:wellness_app/l10n/app_localizations.dart';
+
 class TextLimits {
   // Text length limits
   static const int mealNameMaxLength = 50;
@@ -7,46 +9,43 @@ class TextLimits {
   static const int generalNoteMaxLength = 500;
 
   // Validation methods
-  static String? validateMealName(String? value) {
+  //
+  // Each takes the localisations rather than returning English: these strings
+  // are shown to the user under a form field, so they belong in the ARB like
+  // every other piece of chrome. Callers pass a closure --
+  // `(v) => TextLimits.validateMealName(v, l10n)` -- which is why these are
+  // not tear-offs any more.
+  static String? validateMealName(String? value, AppLocalizations l10n) =>
+      _validateName(value, l10n.mealName, mealNameMaxLength, l10n);
+
+  static String? validateFoodName(String? value, AppLocalizations l10n) =>
+      _validateName(value, l10n.foodName, foodNameMaxLength, l10n);
+
+  static String? validateWorkoutTemplateName(
+          String? value, AppLocalizations l10n) =>
+      _validateName(
+          value, l10n.templateName, workoutTemplateNameMaxLength, l10n);
+
+  static String? validateSleepNote(String? value, AppLocalizations l10n) =>
+      _validateLength(value, l10n.noteLabel, sleepNoteMaxLength, l10n);
+
+  static String? validateGeneralNote(String? value, AppLocalizations l10n) =>
+      _validateLength(value, l10n.noteLabel, generalNoteMaxLength, l10n);
+
+  /// Required, then bounded.
+  static String? _validateName(
+      String? value, String field, int max, AppLocalizations l10n) {
     if (value == null || value.trim().isEmpty) {
-      return 'Meal name is required';
+      return l10n.fieldRequired(field);
     }
-    if (value.trim().length > mealNameMaxLength) {
-      return 'Meal name must be $mealNameMaxLength characters or less';
-    }
-    return null;
+    return _validateLength(value, field, max, l10n);
   }
 
-  static String? validateFoodName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Food name is required';
-    }
-    if (value.trim().length > foodNameMaxLength) {
-      return 'Food name must be $foodNameMaxLength characters or less';
-    }
-    return null;
-  }
-
-  static String? validateWorkoutTemplateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Template name is required';
-    }
-    if (value.trim().length > workoutTemplateNameMaxLength) {
-      return 'Template name must be $workoutTemplateNameMaxLength characters or less';
-    }
-    return null;
-  }
-
-  static String? validateSleepNote(String? value) {
-    if (value != null && value.trim().length > sleepNoteMaxLength) {
-      return 'Note must be $sleepNoteMaxLength characters or less';
-    }
-    return null;
-  }
-
-  static String? validateGeneralNote(String? value) {
-    if (value != null && value.trim().length > generalNoteMaxLength) {
-      return 'Note must be $generalNoteMaxLength characters or less';
+  /// Bounded only -- an empty optional field is valid.
+  static String? _validateLength(
+      String? value, String field, int max, AppLocalizations l10n) {
+    if (value != null && value.trim().length > max) {
+      return l10n.fieldMaxLength(field, max);
     }
     return null;
   }

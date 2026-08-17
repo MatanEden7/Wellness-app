@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wellness_app/core/app_language.dart';
 import 'package:wellness_app/data/db/drift_database.dart';
 import 'package:wellness_app/services/meal_template_generator.dart';
 import 'package:wellness_app/services/user_profile_service.dart';
@@ -38,7 +39,8 @@ void main() {
 
   test('every generated meal is a named recipe, not a food pile', () async {
     final db = AppDatabase();
-    final created = await MealTemplateGenerator(db, _p()).generateTemplates();
+    final created = await MealTemplateGenerator(db, _p(), AppLanguage.english)
+        .generateTemplates();
     for (final t in created) {
       expect(t.name, contains(':'),
           reason: 'expected "Breakfast: Eggs & Toast" style naming');
@@ -48,7 +50,8 @@ void main() {
 
   test('breakfast is a breakfast', () async {
     final db = AppDatabase();
-    final created = await MealTemplateGenerator(db, _p()).generateTemplates();
+    final created = await MealTemplateGenerator(db, _p(), AppLanguage.english)
+        .generateTemplates();
     final breakfast = created.firstWhere((t) => t.name.startsWith('Breakfast'));
     final foods = {for (final f in await db.getAllFoods()) f.id: f};
     final names = [
@@ -80,7 +83,8 @@ void main() {
 
   test('countable foods come in whole units', () async {
     final db = AppDatabase();
-    final created = await MealTemplateGenerator(db, _p()).generateTemplates();
+    final created = await MealTemplateGenerator(db, _p(), AppLanguage.english)
+        .generateTemplates();
     final foods = {for (final f in await db.getAllFoods()) f.id: f};
     for (final t in created) {
       for (final i in await db.getMealTemplateItemsByTemplateId(t.id)) {
@@ -98,7 +102,8 @@ void main() {
     // 400g of spinach in a breakfast was the symptom of letting a near-zero
     // calorie food absorb a calorie target.
     final db = AppDatabase();
-    final created = await MealTemplateGenerator(db, _p()).generateTemplates();
+    final created = await MealTemplateGenerator(db, _p(), AppLanguage.english)
+        .generateTemplates();
     final foods = {for (final f in await db.getAllFoods()) f.id: f};
     for (final t in created) {
       for (final i in await db.getMealTemplateItemsByTemplateId(t.id)) {
@@ -114,7 +119,8 @@ void main() {
 
   test('egg whites appear alongside whole eggs as the calorie lever', () async {
     final db = AppDatabase();
-    final created = await MealTemplateGenerator(db, _p()).generateTemplates();
+    final created = await MealTemplateGenerator(db, _p(), AppLanguage.english)
+        .generateTemplates();
     final foods = {for (final f in await db.getAllFoods()) f.id: f};
     final breakfast =
         created.firstWhere((t) => t.name.contains('Eggs & Toast'));
@@ -130,7 +136,9 @@ void main() {
   test('a vegan gets vegan recipes, not omnivore ones with gaps', () async {
     final db = AppDatabase();
     final created = await MealTemplateGenerator(
-            db, _p(diet: 'herbivore', ex: ['soy', 'gluten', 'nuts']))
+            db,
+            _p(diet: 'herbivore', ex: ['soy', 'gluten', 'nuts']),
+            AppLanguage.english)
         .generateTemplates();
     expect(created, isNotEmpty);
     for (final t in created) {

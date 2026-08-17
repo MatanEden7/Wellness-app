@@ -4388,7 +4388,7 @@ abstract class AppLocalizations {
   /// **'{count} exercises'**
   String exercisesCount(int count);
 
-  /// setsCompletedCount
+  /// No description provided for @setsCompletedCount.
   ///
   /// In en, this message translates to:
   /// **'{count} sets completed'**
@@ -5191,6 +5191,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount ({unit})'**
   String amountWithUnit(String unit);
+
+  /// No description provided for @hiddenByProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hidden by your profile'**
+  String hiddenByProfile(int count);
+
+  /// No description provided for @showAllContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get showAllContent;
+
+  /// No description provided for @rebuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild'**
+  String get rebuild;
+
+  /// No description provided for @repsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reps'**
+  String repsCount(int count);
+
+  /// No description provided for @generateTestData.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Test Data'**
+  String get generateTestData;
+
+  /// No description provided for @goodRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Good rest'**
+  String get goodRest;
+
+  /// No description provided for @skipRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip Rest'**
+  String get skipRest;
+
+  /// No description provided for @completeSetNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Set {number}'**
+  String completeSetNumber(int number);
+
+  /// No description provided for @minutesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minutesShort;
+
+  /// No description provided for @targetsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Targets updated'**
+  String get targetsUpdated;
+
+  /// No description provided for @rebuiltTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuilt {count} templates'**
+  String rebuiltTemplates(int count);
+
+  /// No description provided for @equipmentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No Equipment'**
+  String get equipmentNone;
+
+  /// No description provided for @equipmentBands.
+  ///
+  /// In en, this message translates to:
+  /// **'Resistance Bands'**
+  String get equipmentBands;
+
+  /// No description provided for @equipmentCable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cable Machine'**
+  String get equipmentCable;
+
+  /// No description provided for @equipmentPullupBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull-up Bar'**
+  String get equipmentPullupBar;
+
+  /// No description provided for @customWorkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Workout'**
+  String get customWorkoutTitle;
+
+  /// No description provided for @foodItemLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Food Item'**
+  String get foodItemLabel;
+
+  /// No description provided for @nutritionGoalsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your daily nutrition targets. Leave a field empty to disable that goal.'**
+  String get nutritionGoalsHelp;
+
+  /// No description provided for @createExercisesFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Create exercises in the Exercise Library first'**
+  String get createExercisesFirst;
+
+  /// No description provided for @errorSavingFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving food: {error}'**
+  String errorSavingFood(String error);
+
+  /// No description provided for @errorSavingMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving meal: {error}'**
+  String errorSavingMeal(String error);
+
+  /// No description provided for @errorSavingExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving exercise: {error}'**
+  String errorSavingExercise(String error);
+
+  /// No description provided for @errorSavingTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving template: {error}'**
+  String errorSavingTemplate(String error);
+
+  /// No description provided for @errorUpdatingSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating sleep entry: {error}'**
+  String errorUpdatingSleep(String error);
+
+  /// No description provided for @errorImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String errorImportFailed(String error);
+
+  /// No description provided for @errorSetupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup failed: {error}'**
+  String errorSetupFailed(String error);
+
+  /// No description provided for @autoAdjustedForReadability.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-adjusted for readability'**
+  String get autoAdjustedForReadability;
+
+  /// No description provided for @pickColorFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick {label} Color'**
+  String pickColorFor(String label);
+
+  /// No description provided for @fieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String fieldRequired(String field);
+
+  /// No description provided for @fieldMaxLength.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be {max} characters or less'**
+  String fieldMaxLength(String field, int max);
+
+  /// No description provided for @noteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get noteLabel;
+
+  /// No description provided for @thisField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field'**
+  String get thisField;
+
+  /// No description provided for @fieldMustBeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be a valid number'**
+  String fieldMustBeNumber(String field);
+
+  /// No description provided for @fieldMustBePositive.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be greater than 0'**
+  String fieldMustBePositive(String field);
+
+  /// No description provided for @fieldMustBeNonNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be 0 or greater'**
+  String fieldMustBeNonNegative(String field);
+
+  /// No description provided for @fieldMustBeWholeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be a valid whole number'**
+  String fieldMustBeWholeNumber(String field);
+
+  /// No description provided for @a11ySliderValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} slider, current value {value}'**
+  String a11ySliderValue(String label, String value);
+
+  /// No description provided for @unitBand.
+  ///
+  /// In en, this message translates to:
+  /// **'band'**
+  String get unitBand;
+
+  /// No description provided for @unitLb.
+  ///
+  /// In en, this message translates to:
+  /// **'lb'**
+  String get unitLb;
+
+  /// No description provided for @setsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sets'**
+  String setsCount(int count);
+
+  /// No description provided for @exerciseXOfY.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise {current} of {total}'**
+  String exerciseXOfY(int current, int total);
+
+  /// No description provided for @setXOfY.
+  ///
+  /// In en, this message translates to:
+  /// **'SET {current} OF {total}'**
+  String setXOfY(int current, int total);
+
+  /// No description provided for @setNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {number}'**
+  String setNumberLabel(int number);
+
+  /// No description provided for @hoursShort.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get hoursShort;
+
+  /// No description provided for @notAvailableShort.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get notAvailableShort;
+
+  /// No description provided for @minutesShortM.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get minutesShortM;
+
+  /// No description provided for @secondsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'s'**
+  String get secondsShort;
+
+  /// No description provided for @importSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Import successful'**
+  String get importSucceeded;
+
+  /// No description provided for @estimated1rmFor.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} estimated 1RM'**
+  String estimated1rmFor(String name);
 }
 
 class _AppLocalizationsDelegate

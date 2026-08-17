@@ -103,7 +103,7 @@ class MealEditorPage extends HookConsumerWidget {
             ),
             style: const TextStyle(fontSize: 16),
             maxLength: TextLimits.mealNameMaxLength,
-            validator: TextLimits.validateMealName,
+            validator: (v) => TextLimits.validateMealName(v, l10n),
           ),
           const SizedBox(height: 20),
 
@@ -226,7 +226,7 @@ class MealEditorPage extends HookConsumerWidget {
             style: const TextStyle(fontSize: 16),
             maxLines: 3,
             maxLength: TextLimits.generalNoteMaxLength,
-            validator: TextLimits.validateGeneralNote,
+            validator: (v) => TextLimits.validateGeneralNote(v, l10n),
           ),
           const SizedBox(height: 24),
 
@@ -436,7 +436,8 @@ class MealEditorPage extends HookConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        showAppError(context, 'Error saving meal: $e');
+        showAppError(
+            context, AppLocalizations.of(context)!.errorSavingMeal('$e'));
       }
     } finally {
       isLoading.value = false;
@@ -557,7 +558,7 @@ class _MealItemCard extends HookConsumerWidget {
                   stream: foodStream,
                   builder: (context, snapshot) {
                     return Text(
-                      snapshot.data?.displayName(language) ?? l10n.unit,
+                      snapshot.data?.name ?? l10n.unit,
                       style: Theme.of(context).textTheme.titleSmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -741,7 +742,7 @@ class FoodSelectorDialog extends HookConsumerWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      food.displayName(language),
+                                      food.name,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
@@ -751,7 +752,7 @@ class FoodSelectorDialog extends HookConsumerWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '${food.displayBrand(language) ?? l10n.brandGeneric} • ${Formatters.formatCalories(food.kcalPerUnit)} ${l10n.caloriesShort}/${FoodNutritionMath.localizedUnit(language, food.unit)}',
+                                      '${food.brand ?? l10n.brandGeneric} • ${Formatters.formatCalories(food.kcalPerUnit)} ${l10n.caloriesShort}/${FoodNutritionMath.localizedUnit(language, food.unit)}',
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                       maxLines: 1,
@@ -816,10 +817,14 @@ class FoodSelectorDialog extends HookConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            Text('${Formatters.formatCalories(kcal)} cal'),
-                            Text('P: ${Formatters.formatMacros(protein)}g'),
-                            Text('C: ${Formatters.formatMacros(carbs)}g'),
-                            Text('F: ${Formatters.formatMacros(fat)}g'),
+                            Text('${Formatters.formatCalories(kcal)} '
+                                '${l10n.caloriesShort}'),
+                            Text('${l10n.proteinShort}: '
+                                '${Formatters.formatMacros(protein)}${l10n.grams}'),
+                            Text('${l10n.carbsShort}: '
+                                '${Formatters.formatMacros(carbs)}${l10n.grams}'),
+                            Text('${l10n.fatShort}: '
+                                '${Formatters.formatMacros(fat)}${l10n.grams}'),
                           ],
                         ),
                       ),

@@ -10,9 +10,7 @@ _$ExerciseImpl _$$ExerciseImplFromJson(Map<String, dynamic> json) =>
     _$ExerciseImpl(
       id: json['id'] as String,
       name: json['name'] as String,
-      nameHe: json['nameHe'] as String?,
       primaryMuscle: json['primaryMuscle'] as String?,
-      primaryMuscleHe: json['primaryMuscleHe'] as String?,
       unit: json['unit'] as String,
       notes: json['notes'] as String?,
       equipment: (json['equipment'] as List<dynamic>?)
@@ -33,9 +31,7 @@ Map<String, dynamic> _$$ExerciseImplToJson(_$ExerciseImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'nameHe': instance.nameHe,
       'primaryMuscle': instance.primaryMuscle,
-      'primaryMuscleHe': instance.primaryMuscleHe,
       'unit': instance.unit,
       'notes': instance.notes,
       'equipment':
@@ -72,9 +68,7 @@ _$WorkoutTemplateImpl _$$WorkoutTemplateImplFromJson(
     _$WorkoutTemplateImpl(
       id: json['id'] as String,
       name: json['name'] as String,
-      nameHe: json['nameHe'] as String?,
       notes: json['notes'] as String?,
-      notesHe: json['notesHe'] as String?,
       origin: $enumDecodeNullable(_$TemplateOriginEnumMap, json['origin']) ??
           TemplateOrigin.user,
       customRest: json['customRest'] as bool? ?? false,
@@ -89,16 +83,13 @@ Map<String, dynamic> _$$WorkoutTemplateImplToJson(
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'nameHe': instance.nameHe,
       'notes': instance.notes,
-      'notesHe': instance.notesHe,
       'origin': _$TemplateOriginEnumMap[instance.origin]!,
       'customRest': instance.customRest,
       'exercises': instance.exercises,
     };
 
 const _$TemplateOriginEnumMap = {
-  TemplateOrigin.builtin: 'builtin',
   TemplateOrigin.generated: 'generated',
   TemplateOrigin.user: 'user',
 };

@@ -4,11 +4,28 @@ Snapshot only — update when overall project status changes, not on every commi
 See `CLAUDE.md` for the doc-tracking rules and `.claude/commands/status.md` /
 `big-status.md` / `my-status.md` for how to regenerate this.
 
-Last updated: 2026-08-16 (real UIKit, Apple calendar, Hebrew wiring)
+Last updated: 2026-08-16 (content language frozen at creation)
 
 ## Current task
 
-None. Branch `feat/liquid-glass-native-ios`, built and installed on the iPhone 17
+None. Branch `rc`: **content is now written in one language, once.** Content rows
+carry a single `name`, resolved when the catalog is seeded (onboarding step 0) or
+when a template is generated, and never re-resolved — switching the app language
+re-labels chrome, not content. The six built-in workout templates and the
+built-in meal templates are gone; onboarding generation is the only source of a
+template the user did not build. Switching language in Settings moves every
+stored row across (`ContentLanguageService`), so Hebrew mode is Hebrew whenever
+the language was picked. 1172 tests passing.
+
+This surfaced a live bug: `MealTemplateGenerator` matched recipe ingredients on
+English food names, so Hebrew onboarding would have produced **zero meal
+templates** without saying so. Fixed by resolving through catalog ids.
+
+Open for **me**: the Hebrew added in that change (session names and notes, recipe
+descriptions, brand qualifiers, the progression rule) was written by Claude, not
+a translator, and deserves a read-through.
+
+Previously, branch `feat/liquid-glass-native-ios`, built and installed on the iPhone 17
 simulator (iOS 26.3) and on the **Matan Eden** iPhone 15 Pro (iOS 27.0, release
 build, team `R6NSBVKVXV`).
 

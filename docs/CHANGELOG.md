@@ -5,6 +5,65 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Content is written in one language, once (2026-08-16)
+
+Branch `rc`.
+
+**Switching the app language used to rewrite the app.** Every content row
+carried `name` *and* `nameHe`, and `displayName(AppLanguage)` picked between
+them at render time. Flipping Settings to Hebrew therefore renamed every food,
+every exercise and every generated template under a user who was midway through
+following a plan — and every new row had to be translated at authoring time or
+render blank.
+
+Content is now resolved **once**, at seed or generation time, and the row keeps
+a single `name`. Chrome still follows the current language; content does not.
+`nameHe`, `primaryMuscleHe`, `notesHe`, `descriptionHe`, `displayName()`,
+`displayBrand()`, `displayNotes()` and `displayDescription()` are all gone.
+
+**Nothing is seeded before a language is chosen.** `main.dart` builds the
+database with `seedLanguage: null`, so a catalog cannot be written in a guessed
+language at launch. Onboarding step 0 asks, then calls
+`AppDatabase.seedCatalogFor(language)` before either generator runs. The choice
+is recorded as `AppDatabase.contentLanguage` and persisted in the snapshot, so a
+later catalog addition is merged in the same language as the rows around it.
+
+**The built-in templates are gone.** The six hardcoded workout templates and the
+built-in meal templates shipped before onboarding, ignored the profile, and were
+the second source of content that had to be kept in sync. `TemplateOrigin` is
+down to `generated` and `user`. Onboarding generation is now the only source of
+a template the user did not build, which is one place it can come from and one
+language it can be in.
+
+Both generators take an `AppLanguage`. `_SessionPlan` gained `nameHe`/`notesHe`
+and `MealRecipe` gained `descriptionHe`, so a Hebrew plan is Hebrew all the way
+down — session names, progression notes, dish names and blurbs — instead of
+Hebrew titles over English notes. `ContentRegenerationService.regenerate` takes
+the *current* language: it is the one moment a rewrite is legitimate, because
+the user pressed the button asking for it.
+
+**A real bug this surfaced.** `MealTemplateGenerator` resolved recipe
+ingredients by matching English food names against the catalog. Against a
+Hebrew-seeded catalog nothing matched, so Hebrew onboarding would have produced
+**zero meal templates** and reported nothing wrong. Recipes now resolve through
+`StarterFoodCatalog` ids, which is language-independent.
+
+**Switching language in Settings moves the content across.** Freezing alone
+left a Hebrew UI listing "Chicken Breast" for anyone who onboarded in English,
+which is not what "the app is in Hebrew" means. `ContentLanguageService.switchTo`
+re-languages the seeded catalog **by id** (so logged meals and set entries are
+untouched), regenerates the generated templates in the new language, then repins
+and retitles the calendar events that copied their titles from them. Rows the
+user renamed, foods they added and templates they built are all left alone —
+"edited" is detected by comparing against what the old language seeded, not
+guessed. Content still never re-languages *itself*; this is the only path that
+moves it, and it runs because someone pressed a row in Settings.
+
+`test/regression/content_language_test.dart` pins the whole contract and
+replaces `bilingual_display_name_test.dart`. Five other regression files stopped
+borrowing built-in templates as fixtures and now build their own, which is what
+they should have been doing anyway.
+
 ### Real UIKit, an Apple-shaped calendar, and the Hebrew that was already there (2026-08-16)
 
 Branch `feat/liquid-glass-native-ios`.

@@ -90,7 +90,7 @@ class _NutritionGoalsPageState extends ConsumerState<NutritionGoalsPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Set your daily nutrition targets. Leave a field empty to disable that goal.',
+              l10n.nutritionGoalsHelp,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context)
                         .colorScheme
