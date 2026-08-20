@@ -30,6 +30,34 @@ public enum BodyPart: String, Codable, Sendable, CaseIterable {
     public static func forProfileId(_ id: String) -> BodyPart? {
         BodyPart(rawValue: id)
     }
+
+    public func label(_ language: AppLanguage) -> String {
+        language == .hebrew ? labelHe : labelEn
+    }
+
+    public var labelEn: String {
+        switch self {
+        case .shoulder: "Shoulder"
+        case .back:     "Back"
+        case .knee:     "Knee"
+        case .ankle:    "Ankle"
+        case .elbow:    "Elbow"
+        case .hip:      "Hip"
+        case .neck:     "Neck"
+        }
+    }
+
+    public var labelHe: String {
+        switch self {
+        case .shoulder: "כתף"
+        case .back:     "גב"
+        case .knee:     "ברך"
+        case .ankle:    "קרסול"
+        case .elbow:    "מרפק"
+        case .hip:      "ירך"
+        case .neck:     "צוואר"
+        }
+    }
 }
 
 public enum MovementPattern: String, Codable, Sendable, CaseIterable {

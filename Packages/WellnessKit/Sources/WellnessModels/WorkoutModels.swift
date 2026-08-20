@@ -38,6 +38,10 @@ public struct Exercise: Identifiable, Codable, Hashable, Sendable {
         self.mechanic = mechanic
         self.loadClass = loadClass
     }
+
+    public var pattern: MovementPattern { movementPattern ?? .isolation }
+    public var mechanicOrDefault: Mechanic { mechanic ?? .isolation }
+    public var loadClassOrDefault: LoadClass { loadClass ?? .none }
 }
 
 public struct WorkoutTemplate: Identifiable, Codable, Hashable, Sendable {
