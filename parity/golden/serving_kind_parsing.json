@@ -1,0 +1,92 @@
+[
+  {
+    "catalogUnitForKind": "100g",
+    "normalized": "100g",
+    "servingKind": "per100g",
+    "unit": "100g"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "30g"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "50g"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "bunch"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "clove"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "cup"
+  },
+  {
+    "catalogUnitForKind": "g",
+    "normalized": "g",
+    "servingKind": "perGram",
+    "unit": "g"
+  },
+  {
+    "catalogUnitForKind": "ml",
+    "normalized": "ml",
+    "servingKind": "perMl",
+    "unit": "ml"
+  },
+  {
+    "catalogUnitForKind": "oz",
+    "normalized": "oz",
+    "servingKind": "perOz",
+    "unit": "oz"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "piece"
+  },
+  {
+    "catalogUnitForKind": "scoop",
+    "normalized": "scoop",
+    "servingKind": "perCount",
+    "unit": "scoop"
+  },
+  {
+    "catalogUnitForKind": "serving",
+    "normalized": "serving",
+    "servingKind": "perCount",
+    "unit": "serving"
+  },
+  {
+    "catalogUnitForKind": "slice",
+    "normalized": "slice",
+    "servingKind": "perCount",
+    "unit": "slice"
+  },
+  {
+    "catalogUnitForKind": "tbsp",
+    "normalized": "tbsp",
+    "servingKind": "perCount",
+    "unit": "tbsp"
+  },
+  {
+    "catalogUnitForKind": "piece",
+    "normalized": "piece",
+    "servingKind": "perCount",
+    "unit": "tsp"
+  }
+]

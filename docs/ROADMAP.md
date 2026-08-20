@@ -294,7 +294,13 @@ exist and are tested; what's missing is the prompt and the replace pass.
 
 ---
 
-## Epic N — Platform-native UI split (Material Android / native iOS chrome)
+## Epic N — Platform-native UI split (Material Android / native iOS chrome) — SUPERSEDED
+
+> **Superseded by `docs/SWIFT_MIGRATION_PLAN.md`.** The Flutter/Pigeon bridge and
+> Material shell are deleted in the native rewrite (Phase 9). All N0–N8 work
+> shipped and served its purpose — it proved the architecture and drove the decision
+> to go fully native — but the chrome contract, bridge layer, and Material shell
+> have no forward path. The Swift migration plan is the successor.
 
 Architecture: **`docs/PLATFORM_UI_ARCHITECTURE.md`** — read it first; this is only the
 work breakdown. Branch: `feat/platform-native-ui`.

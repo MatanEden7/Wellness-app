@@ -1,0 +1,2647 @@
+[
+  {
+    "profile": {
+      "activityLevel": "moderately_active",
+      "ageYears": 25,
+      "bmr": 1723.75,
+      "calorieTarget": 2280.0,
+      "carbsTargetG": 278.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight"
+      ],
+      "exclusions": [],
+      "fatTargetG": 63.0,
+      "goal": "muscle_gain",
+      "heightCm": 175,
+      "injuries": [],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 150.0,
+      "sex": "male",
+      "tdee": 2068.5,
+      "trainingDaysPerWeek": 3,
+      "trainingExperience": "beginner",
+      "weightKg": 75.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "young_male_muscle_bw3",
+    "templateCount": 3,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 35.0,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "1",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "21",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "66",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Full Body A",
+        "notes": "Every major pattern\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "24",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "65",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "66",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Full Body B",
+        "notes": "Same coverage, different lifts\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "93",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "60",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "21",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "66",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Full Body C",
+        "notes": "Third variation to keep it fresh\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "moderately_active",
+      "ageYears": 28,
+      "bmr": 1350.25,
+      "calorieTarget": 1300.0,
+      "carbsTargetG": 105.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "dumbbells",
+        "barbell_rack",
+        "cable"
+      ],
+      "exclusions": [],
+      "fatTargetG": 40.0,
+      "goal": "fat_loss",
+      "heightCm": 165,
+      "injuries": [],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 130.0,
+      "sex": "female",
+      "tdee": 1620.3,
+      "trainingDaysPerWeek": 4,
+      "trainingExperience": "intermediate",
+      "weightKg": 62.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "young_female_fatloss_gym4",
+    "templateCount": 4,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 12.5,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 20.0,
+            "exerciseId": "2",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 20.0,
+            "exerciseId": "7",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 20.0,
+            "exerciseId": "6",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Upper Body A",
+        "notes": "Chest, back, shoulders and arms\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 32.5,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 37.5,
+            "exerciseId": "5",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "97",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "91",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "16",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Lower Body A",
+        "notes": "Legs and trunk\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 12.5,
+            "exerciseId": "12",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "1",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 20.0,
+            "exerciseId": "7",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 20.0,
+            "exerciseId": "22",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "68",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "61",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "32",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Upper Body B",
+        "notes": "Upper body, second variation\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 32.5,
+            "exerciseId": "88",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 37.5,
+            "exerciseId": "9",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "87",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "98",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 5.0,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "11",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "36",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Lower Body B",
+        "notes": "Lower body, second variation\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "moderately_active",
+      "ageYears": 45,
+      "bmr": 1805.0,
+      "calorieTarget": 2170.0,
+      "carbsTargetG": 231.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "dumbbells",
+        "barbell_rack",
+        "machines",
+        "cable"
+      ],
+      "exclusions": [],
+      "fatTargetG": 67.0,
+      "goal": "maintenance",
+      "heightCm": 180,
+      "injuries": [],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 161.0,
+      "sex": "male",
+      "tdee": 2166.0,
+      "trainingDaysPerWeek": 5,
+      "trainingExperience": "advanced",
+      "weightKg": 90.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "mid_male_maint_gym5",
+    "templateCount": 5,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 45.0,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "2",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "7",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "6",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Upper Body",
+        "notes": "Chest, back, shoulders and arms\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 92.5,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 115.0,
+            "exerciseId": "5",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "97",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "30",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Lower Body",
+        "notes": "Legs and trunk\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 45.0,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 45.0,
+            "exerciseId": "12",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "2",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "1",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Push Day",
+        "notes": "Chest, shoulders and triceps\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "7",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "6",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 72.5,
+            "exerciseId": "22",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "14",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "68",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Pull Day",
+        "notes": "Back and biceps\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 92.5,
+            "exerciseId": "28",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 115.0,
+            "exerciseId": "9",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "87",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "98",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "30",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 17.5,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Leg Day",
+        "notes": "Quads, hamstrings, glutes and trunk\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "lightly_active",
+      "ageYears": 60,
+      "bmr": 1189.0,
+      "calorieTarget": 1430.0,
+      "carbsTargetG": 133.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "bands"
+      ],
+      "exclusions": [],
+      "fatTargetG": 48.0,
+      "goal": "mobility_rehab",
+      "heightCm": 160,
+      "injuries": [
+        "knee",
+        "shoulder"
+      ],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 117.0,
+      "sex": "female",
+      "tdee": 1426.8,
+      "trainingDaysPerWeek": 3,
+      "trainingExperience": "beginner",
+      "weightKg": 65.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "older_female_rehab_bands3",
+    "templateCount": 5,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": 2.5,
+            "exerciseId": "80",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "20",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "97",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": 2.5,
+            "exerciseId": "32",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "35",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "33",
+            "isRest": false,
+            "orderIndex": 7
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 8
+          }
+        ],
+        "name": "Full Body A",
+        "notes": "Every major pattern\n\nLeave 4 rep(s) in reserve on every set. When you hit 12 reps on all 2 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "79",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "18",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "21",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "97",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": 2.5,
+            "exerciseId": "32",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "35",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 7
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "66",
+            "isRest": false,
+            "orderIndex": 8
+          }
+        ],
+        "name": "Full Body B",
+        "notes": "Same coverage, different lifts\n\nLeave 4 rep(s) in reserve on every set. When you hit 12 reps on all 2 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "25",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "20",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "97",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": 2.5,
+            "exerciseId": "32",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "35",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "63",
+            "isRest": false,
+            "orderIndex": 7
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "33",
+            "isRest": false,
+            "orderIndex": 8
+          }
+        ],
+        "name": "Full Body C",
+        "notes": "Third variation to keep it fresh\n\nLeave 4 rep(s) in reserve on every set. When you hit 12 reps on all 2 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "81",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "25",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "83",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Physiotherapy — Knee",
+        "notes": "Rehab work for your knee. Low load; safe on a rest day.\n\nLeave 4 rep(s) in reserve on every set. When you hit 12 reps on all 2 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 60,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "20",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "63",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": 2.5,
+            "exerciseId": "32",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "41",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Physiotherapy — Shoulder",
+        "notes": "Rehab work for your shoulder. Low load; safe on a rest day.\n\nLeave 4 rep(s) in reserve on every set. When you hit 12 reps on all 2 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "very_active",
+      "ageYears": 22,
+      "bmr": 1707.5,
+      "calorieTarget": 3570.0,
+      "carbsTargetG": 530.0,
+      "dietType": "vegetarian",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "dumbbells",
+        "barbell_rack",
+        "cable",
+        "pullup_bar"
+      ],
+      "exclusions": [
+        "meat",
+        "fish"
+      ],
+      "fatTargetG": 99.0,
+      "goal": "muscle_gain",
+      "heightCm": 178,
+      "injuries": [],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 140.0,
+      "sex": "male",
+      "tdee": 3244.25,
+      "trainingDaysPerWeek": 5,
+      "trainingExperience": "intermediate",
+      "weightKg": 70.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "young_male_muscle_gym5_veg",
+    "templateCount": 5,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 27.5,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 42.5,
+            "exerciseId": "2",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 42.5,
+            "exerciseId": "6",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Upper Body",
+        "notes": "Chest, back, shoulders and arms\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 55.0,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 70.0,
+            "exerciseId": "5",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Lower Body",
+        "notes": "Legs and trunk\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 27.5,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 42.5,
+            "exerciseId": "2",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Push Day",
+        "notes": "Chest, shoulders and triceps\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 42.5,
+            "exerciseId": "7",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 42.5,
+            "exerciseId": "6",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 42.5,
+            "exerciseId": "22",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "14",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Pull Day",
+        "notes": "Back and biceps\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 55.0,
+            "exerciseId": "88",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 70.0,
+            "exerciseId": "9",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "87",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Leg Day",
+        "notes": "Quads, hamstrings, glutes and trunk\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "lightly_active",
+      "ageYears": 40,
+      "bmr": 1409.0,
+      "calorieTarget": 1350.0,
+      "carbsTargetG": 106.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "dumbbells"
+      ],
+      "exclusions": [
+        "dairy"
+      ],
+      "fatTargetG": 43.0,
+      "goal": "fat_loss",
+      "heightCm": 168,
+      "injuries": [],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 135.0,
+      "sex": "female",
+      "tdee": 1690.8,
+      "trainingDaysPerWeek": 3,
+      "trainingExperience": "beginner",
+      "weightKg": 72.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "mid_female_fatloss_db3_nondairy",
+    "templateCount": 3,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 22.5,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 27.5,
+            "exerciseId": "9",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 10.0,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "1",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "64",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Full Body A",
+        "notes": "Every major pattern\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 22.5,
+            "exerciseId": "88",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "80",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 10.0,
+            "exerciseId": "12",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "21",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "72",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "77",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Full Body B",
+        "notes": "Same coverage, different lifts\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "24",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "85",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "70",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "60",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 75,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "65",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 6
+          },
+          {
+            "defaultReps": 14,
+            "defaultRestSeconds": 45,
+            "defaultSets": 3,
+            "defaultWeight": 2.5,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 7
+          }
+        ],
+        "name": "Full Body C",
+        "notes": "Third variation to keep it fresh\n\nLeave 2 rep(s) in reserve on every set. When you hit 14 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "very_active",
+      "ageYears": 30,
+      "bmr": 1812.5,
+      "calorieTarget": 3440.0,
+      "carbsTargetG": 471.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "dumbbells",
+        "barbell_rack",
+        "machines",
+        "cable",
+        "kettlebells",
+        "pullup_bar"
+      ],
+      "exclusions": [],
+      "fatTargetG": 107.0,
+      "goal": "maintenance",
+      "heightCm": 182,
+      "injuries": [],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 148.0,
+      "sex": "male",
+      "tdee": 3443.75,
+      "trainingDaysPerWeek": 6,
+      "trainingExperience": "advanced",
+      "weightKg": 82.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "young_male_maint_gym6",
+    "templateCount": 6,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 42.5,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 42.5,
+            "exerciseId": "12",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 67.5,
+            "exerciseId": "2",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "1",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "3",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "13",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "76",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Push Day A",
+        "notes": "Chest, shoulders and triceps\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 67.5,
+            "exerciseId": "7",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "4",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 67.5,
+            "exerciseId": "6",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 67.5,
+            "exerciseId": "22",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "14",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Pull Day A",
+        "notes": "Back and biceps\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 85.0,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 107.5,
+            "exerciseId": "5",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "97",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "30",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Leg Day A",
+        "notes": "Quads, hamstrings, glutes and trunk\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 42.5,
+            "exerciseId": "12",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 42.5,
+            "exerciseId": "74",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "1",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "61",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "32",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "77",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Push Day B",
+        "notes": "Push, second variation\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "4",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "67",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 67.5,
+            "exerciseId": "22",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "64",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "68",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Pull Day B",
+        "notes": "Pull, second variation\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 85.0,
+            "exerciseId": "28",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 107.5,
+            "exerciseId": "9",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "87",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 120,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "98",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 4
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "30",
+            "isRest": false,
+            "orderIndex": 5
+          },
+          {
+            "defaultReps": 10,
+            "defaultRestSeconds": 60,
+            "defaultSets": 3,
+            "defaultWeight": 15.0,
+            "exerciseId": "84",
+            "isRest": false,
+            "orderIndex": 6
+          }
+        ],
+        "name": "Leg Day B",
+        "notes": "Legs, second variation\n\nLeave 3 rep(s) in reserve on every set. When you hit 10 reps on all 3 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  },
+  {
+    "profile": {
+      "activityLevel": "moderately_active",
+      "ageYears": 55,
+      "bmr": 1680.0,
+      "calorieTarget": 2220.0,
+      "carbsTargetG": 246.0,
+      "dietType": "omnivore",
+      "energyUnit": "kcal",
+      "equipment": [
+        "bodyweight",
+        "dumbbells"
+      ],
+      "exclusions": [],
+      "fatTargetG": 62.0,
+      "goal": "muscle_gain",
+      "heightCm": 176,
+      "injuries": [
+        "shoulder"
+      ],
+      "mealCountPerDay": "3",
+      "proteinTargetG": 170.0,
+      "sex": "male",
+      "tdee": 2016.0,
+      "trainingDaysPerWeek": 4,
+      "trainingExperience": "intermediate",
+      "weightKg": 85.0,
+      "weightUnit": "kg"
+    },
+    "profileKey": "older_male_muscle_db4_shoulder",
+    "templateCount": 5,
+    "templates": [
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 30.0,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "64",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "77",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "23",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Upper Body A",
+        "notes": "Chest, back, shoulders and arms\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 60.0,
+            "exerciseId": "8",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 77.5,
+            "exerciseId": "9",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "86",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "91",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Lower Body A",
+        "notes": "Legs and trunk\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 30.0,
+            "exerciseId": "19",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "17",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "21",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "68",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Upper Body B",
+        "notes": "Upper body, second variation\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 60.0,
+            "exerciseId": "88",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "80",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 150,
+            "defaultSets": 4,
+            "defaultWeight": 10.0,
+            "exerciseId": "87",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "27",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 8,
+            "defaultRestSeconds": 75,
+            "defaultSets": 4,
+            "defaultWeight": null,
+            "exerciseId": "11",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Lower Body B",
+        "notes": "Lower body, second variation\n\nLeave 2 rep(s) in reserve on every set. When you hit 8 reps on all 4 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      },
+      {
+        "exercises": [
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "62",
+            "isRest": false,
+            "orderIndex": 0
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "41",
+            "isRest": false,
+            "orderIndex": 1
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "43",
+            "isRest": false,
+            "orderIndex": 2
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "100",
+            "isRest": false,
+            "orderIndex": 3
+          },
+          {
+            "defaultReps": 12,
+            "defaultRestSeconds": 45,
+            "defaultSets": 2,
+            "defaultWeight": null,
+            "exerciseId": "101",
+            "isRest": false,
+            "orderIndex": 4
+          }
+        ],
+        "name": "Physiotherapy — Shoulder",
+        "notes": "Rehab work for your shoulder. Low load; safe on a rest day.\n\nLeave 4 rep(s) in reserve on every set. When you hit 12 reps on all 2 sets, add 2.5kg upper body / 5kg lower body next time. Weights shown are a starting estimate -- adjust on your first set.",
+        "origin": "generated"
+      }
+    ]
+  }
+]

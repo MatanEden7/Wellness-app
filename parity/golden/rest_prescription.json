@@ -1,0 +1,908 @@
+[
+  {
+    "formatted": "3:00",
+    "reps": 1,
+    "seconds": 180,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "3:00",
+    "reps": 2,
+    "seconds": 180,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "3:00",
+    "reps": 3,
+    "seconds": 180,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "3:00",
+    "reps": 4,
+    "seconds": 180,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "3:00",
+    "reps": 5,
+    "seconds": 180,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "2:00",
+    "reps": 6,
+    "seconds": 120,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "2:00",
+    "reps": 7,
+    "seconds": 120,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "2:00",
+    "reps": 8,
+    "seconds": 120,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:30",
+    "reps": 9,
+    "seconds": 90,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:30",
+    "reps": 10,
+    "seconds": 90,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:30",
+    "reps": 11,
+    "seconds": 90,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:30",
+    "reps": 12,
+    "seconds": 90,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 13,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 14,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 15,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 16,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 17,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 18,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 19,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "formatted": "1:00",
+    "reps": 20,
+    "seconds": 60,
+    "type": "restSecondsForReps"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 90,
+    "reps": null,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 120,
+    "reps": null,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 90,
+    "reps": 5,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 120,
+    "reps": 5,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 90,
+    "reps": 8,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 120,
+    "reps": 8,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 90,
+    "reps": 12,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 120,
+    "reps": 12,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 90,
+    "reps": 15,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": null,
+    "globalDefaultSeconds": 120,
+    "reps": 15,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 90,
+    "reps": null,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 120,
+    "reps": null,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 90,
+    "reps": 5,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 120,
+    "reps": 5,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 90,
+    "reps": 8,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 120,
+    "reps": 8,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 90,
+    "reps": 12,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 120,
+    "reps": 12,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 90,
+    "reps": 15,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 60,
+    "globalDefaultSeconds": 120,
+    "reps": 15,
+    "resolved": 60,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 90,
+    "reps": null,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 120,
+    "reps": null,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 90,
+    "reps": 5,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 120,
+    "reps": 5,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 90,
+    "reps": 8,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 120,
+    "reps": 8,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 90,
+    "reps": 12,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 120,
+    "reps": 12,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 90,
+    "reps": 15,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 90,
+    "globalDefaultSeconds": 120,
+    "reps": 15,
+    "resolved": 90,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 90,
+    "reps": null,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 120,
+    "reps": null,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 90,
+    "reps": 5,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 120,
+    "reps": 5,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 90,
+    "reps": 8,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 120,
+    "reps": 8,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 90,
+    "reps": 12,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 120,
+    "reps": 12,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 90,
+    "reps": 15,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 120,
+    "globalDefaultSeconds": 120,
+    "reps": 15,
+    "resolved": 120,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 90,
+    "reps": null,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 120,
+    "reps": null,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 90,
+    "reps": 5,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 120,
+    "reps": 5,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 90,
+    "reps": 8,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 120,
+    "reps": 8,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 90,
+    "reps": 12,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 120,
+    "reps": 12,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 90,
+    "reps": 15,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "explicitSeconds": 180,
+    "globalDefaultSeconds": 120,
+    "reps": 15,
+    "resolved": 180,
+    "type": "resolveRestSeconds"
+  },
+  {
+    "compoundRestMs": 150000,
+    "exerciseBudget": 5,
+    "goal": "muscle_gain",
+    "isolationRestMs": 75000,
+    "reps": 8,
+    "repsInReserve": 2,
+    "sets": 4,
+    "type": "schemeFor"
+  },
+  {
+    "compoundRestMs": 75000,
+    "exerciseBudget": 8,
+    "goal": "fat_loss",
+    "isolationRestMs": 45000,
+    "reps": 14,
+    "repsInReserve": 2,
+    "sets": 3,
+    "type": "schemeFor"
+  },
+  {
+    "compoundRestMs": 120000,
+    "exerciseBudget": 7,
+    "goal": "maintenance",
+    "isolationRestMs": 60000,
+    "reps": 10,
+    "repsInReserve": 3,
+    "sets": 3,
+    "type": "schemeFor"
+  },
+  {
+    "compoundRestMs": 60000,
+    "exerciseBudget": 9,
+    "goal": "mobility_rehab",
+    "isolationRestMs": 45000,
+    "reps": 12,
+    "repsInReserve": 4,
+    "sets": 2,
+    "type": "schemeFor"
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "squatPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 35.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "squatPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 60.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "squatPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 82.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "squatPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 27.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "squatPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 45.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "squatPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 62.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "deadliftPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 45.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "deadliftPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 75.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "deadliftPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 102.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "deadliftPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 32.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "deadliftPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 52.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "deadliftPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 77.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "benchPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 27.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "benchPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 45.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "benchPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 65.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "benchPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 17.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "benchPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 27.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "benchPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 37.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "pressPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 17.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "pressPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 30.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "pressPattern",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 42.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "pressPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 10.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "pressPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 17.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "pressPattern",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 27.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "accessory",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 5.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "accessory",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 10.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "accessory",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 15.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "accessory",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 5.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "accessory",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 7.5
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "accessory",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": 10.0
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "none",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": null
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "none",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": null
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "none",
+    "reps": 8,
+    "sex": "male",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": null
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "beginner",
+    "loadClass": "none",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": null
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "intermediate",
+    "loadClass": "none",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": null
+  },
+  {
+    "ageYears": 30,
+    "bodyweightKg": 75.0,
+    "experience": "advanced",
+    "loadClass": "none",
+    "reps": 8,
+    "sex": "female",
+    "type": "startingWeight",
+    "unit": "kg",
+    "weightKg": null
+  }
+]

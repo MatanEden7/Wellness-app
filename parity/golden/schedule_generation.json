@@ -1,0 +1,766 @@
+[
+  {
+    "eventCount": 7,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0001",
+        "title": "Full Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 2,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          2
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0002",
+        "title": "Full Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0003",
+        "title": "Full Body C",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0004",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0005",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0006",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "young_male_muscle_bw3"
+  },
+  {
+    "eventCount": 8,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0007",
+        "title": "Upper Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 1,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          1
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0008",
+        "title": "Lower Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 3,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          3
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0009",
+        "title": "Upper Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0010",
+        "title": "Lower Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0011",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0012",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0013",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "young_female_fatloss_gym4"
+  },
+  {
+    "eventCount": 9,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0014",
+        "title": "Upper Body",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 1,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          1
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0015",
+        "title": "Lower Body",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 2,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          2
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0016",
+        "title": "Push Day",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 3,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          3
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0017",
+        "title": "Pull Day",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0018",
+        "title": "Leg Day",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0019",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0020",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0021",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "mid_male_maint_gym5"
+  },
+  {
+    "eventCount": 7,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0022",
+        "title": "Full Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 2,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          2
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0023",
+        "title": "Full Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0024",
+        "title": "Full Body C",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0025",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0026",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0027",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "older_female_rehab_bands3"
+  },
+  {
+    "eventCount": 9,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0028",
+        "title": "Upper Body",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 1,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          1
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0029",
+        "title": "Lower Body",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 2,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          2
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0030",
+        "title": "Push Day",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 3,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          3
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0031",
+        "title": "Pull Day",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0032",
+        "title": "Leg Day",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0033",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0034",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0035",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "young_male_muscle_gym5_veg"
+  },
+  {
+    "eventCount": 7,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0036",
+        "title": "Full Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 2,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          2
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0037",
+        "title": "Full Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0038",
+        "title": "Full Body C",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0039",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0040",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0041",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "mid_female_fatloss_db3_nondairy"
+  },
+  {
+    "eventCount": 10,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0042",
+        "title": "Push Day A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 1,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          1
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0043",
+        "title": "Pull Day A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 2,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          2
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0044",
+        "title": "Leg Day A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 3,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          3
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0045",
+        "title": "Push Day B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0046",
+        "title": "Pull Day B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 5,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          5
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0047",
+        "title": "Leg Day B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0048",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0049",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0050",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "young_male_maint_gym6"
+  },
+  {
+    "eventCount": 8,
+    "events": [
+      {
+        "dayOfWeek": 7,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          7
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0051",
+        "title": "Upper Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 1,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          1
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0052",
+        "title": "Lower Body A",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 3,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          3
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0053",
+        "title": "Upper Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 7,
+        "minute": 0,
+        "recurrenceDays": [
+          4
+        ],
+        "recurrenceType": "weekly",
+        "templateId": "parity-0054",
+        "title": "Lower Body B",
+        "type": "workout"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 8,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0055",
+        "title": "Breakfast: Eggs & Toast",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 12,
+        "minute": 30,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0056",
+        "title": "Lunch: Chicken, Rice & Broccoli",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 19,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": "parity-0057",
+        "title": "Dinner: Salmon & Sweet Potato",
+        "type": "meal"
+      },
+      {
+        "dayOfWeek": 4,
+        "hour": 22,
+        "minute": 0,
+        "recurrenceDays": [],
+        "recurrenceType": "daily",
+        "templateId": null,
+        "title": "Sleep",
+        "type": "sleep"
+      }
+    ],
+    "profileKey": "older_male_muscle_db4_shoulder"
+  }
+]

@@ -10,6 +10,132 @@ Fast suite: `flutter test test/` (606 tests). Device suite: `integration_test/sa
 
 Requires **Flutter 3.44.8** (see `.fvmrc`).
 
+## Swift migration triage
+
+Each issue triaged into one of three buckets for the native rewrite:
+
+- **fixed-by-rewrite** — the issue existed in Flutter-specific code (UI, navigation,
+  platform bridge, Dart runtime) that is deleted wholesale by the rewrite. No
+  action needed; the class of bug cannot recur.
+- **port-forward** — the fix touched domain logic, data integrity, or business rules
+  that the Swift codebase must also enforce. The golden corpus and/or a ported
+  test covers the behaviour.
+- **still-open** — not yet resolved; remains open regardless of rewrite.
+
+| # | Bucket | Reason |
+|---|---|---|
+| 1 | port-forward | persistence architecture (SwiftData replaces in-memory lists) |
+| 2 | port-forward | profile save/load logic |
+| 3 | port-forward | export/import service logic |
+| 4 | fixed-by-rewrite | Flutter notification tap routing deleted |
+| 5 | fixed-by-rewrite | Flutter calendar widget deleted |
+| 6 | port-forward | recurrence logic |
+| 7 | port-forward | onboarding schedule pipeline |
+| 8 | fixed-by-rewrite | Flutter notification prefs UI deleted |
+| 9 | still-open | needs device verify — **me** |
+| 10 | port-forward | referential integrity (SwiftData relationships) |
+| 11 | port-forward | safe lookup patterns (no force-unwrap) |
+| 12 | port-forward | CRUD stream notifications |
+| 13 | port-forward | stream deduplication logic |
+| 14 | still-open | product decision needed — **me** |
+| 15 | port-forward | date arithmetic |
+| 16 | port-forward | meal time model (`loggedAt`) |
+| 17 | port-forward | week-start convention |
+| 18 | port-forward | midnight-edge date logic |
+| 19 | port-forward | recurrence rollover |
+| 20 | fixed-by-rewrite | Flutter provider churn deleted |
+| 21 | port-forward | calendar query performance |
+| 22 | fixed-by-rewrite | dead Dart code deleted |
+| 23 | fixed-by-rewrite | dead Dart asset deleted |
+| 24 | fixed-by-rewrite | Dart repo cleanup |
+| 25 | fixed-by-rewrite | dead Dart entry point deleted |
+| 26 | fixed-by-rewrite | unused Dart provider deleted |
+| 27 | fixed-by-rewrite | dead Dart service deleted |
+| 28 | fixed-by-rewrite | dead Dart service deleted |
+| 29 | fixed-by-rewrite | Dart analyzer issues deleted with Dart |
+| 30 | port-forward | localisation architecture (String Catalog) |
+| 31 | still-open | needs translator — **me** |
+| 32 | fixed-by-rewrite | Flutter custom painter deleted |
+| 33 | fixed-by-rewrite | Flutter provider cascade deleted |
+| 34 | fixed-by-rewrite | Flutter test harness deleted |
+| 35 | fixed-by-rewrite | Dart pubspec deleted |
+| 36 | fixed-by-rewrite | Dart/Drift dependency deleted |
+| 37 | fixed-by-rewrite | Flutter dialog layout deleted |
+| 38 | fixed-by-rewrite | Flutter emoji rendering deleted |
+| 39 | fixed-by-rewrite | Flutter custom painter deleted |
+| 40 | fixed-by-rewrite | Flutter text scaling deleted |
+| 41 | port-forward | recurrence day-selection logic |
+| 42 | port-forward | DST-safe date iteration |
+| 43 | port-forward | recurrence interval logic |
+| 44 | fixed-by-rewrite | Flutter scroll controller deleted |
+| 45 | fixed-by-rewrite | Flutter layout overflow deleted |
+| 46 | fixed-by-rewrite | Flutter text wrapping deleted |
+| 47 | port-forward | calendar section colours |
+| 48 | fixed-by-rewrite | Dart/Flutter build toolchain deleted |
+| 49 | still-open | Android keystore — **me** |
+| 50 | fixed-by-rewrite | Flutter device deploy deleted |
+| 51 | still-open | bundle ID decision — **me** |
+| 52 | fixed-by-rewrite | Dart `intl` dependency deleted |
+| 53 | fixed-by-rewrite | Flutter `CardThemeData` API deleted |
+| 54 | fixed-by-rewrite | Dart l10n codegen deleted |
+| 55 | fixed-by-rewrite | Flutter layout overflow deleted |
+| 56 | port-forward | localisation string coverage |
+| 57 | port-forward | event completion deduplication (`sourceEventId`) |
+| 58 | port-forward | notification action routing by event type |
+| 59 | port-forward | snooze reschedule logic |
+| 60 | port-forward | template-absent action handling |
+| 61 | port-forward | duplicate session guard |
+| 62 | port-forward | sleep stop action |
+| 63 | port-forward | calendar edit creates-not-duplicates |
+| 64 | port-forward | sourceEventId preservation on edit |
+| 65 | port-forward | createdAt immutability on edit |
+| 66 | port-forward | delete cache invalidation |
+| 67 | fixed-by-rewrite | Flutter share sheet iPad deleted |
+| 68 | fixed-by-rewrite | Flutter provider cascade deleted |
+| 69 | port-forward | notification action wiring and rest timer |
+| 70 | port-forward | workout programming (covered by corpus) |
+| 71 | port-forward | profile + settings backup |
+| 72 | port-forward | analytics localisation |
+| 73 | port-forward | chart accessibility (VoiceOver) |
+| 74 | port-forward | calendar scroll-add visibility |
+| 75 | port-forward | schedule-now deduplication |
+| 76 | port-forward | localisation placeholder ordering |
+| 77 | fixed-by-rewrite | Flutter dialog layout deleted |
+| 78 | port-forward | nutrition target formulas (covered by corpus) |
+| 79 | port-forward | food catalog validation (covered by corpus) |
+| 80 | port-forward | meal portion solver caps (covered by corpus) |
+| 81 | port-forward | food category + macro audit (covered by corpus) |
+| 82 | port-forward | rehab exercise pool (covered by corpus) |
+| 83 | port-forward | food macro accuracy (covered by corpus) |
+| 84 | still-open | Hebrew profile page strings — **me** |
+| 85 | fixed-by-rewrite | Flutter page title deleted |
+| 86 | fixed-by-rewrite | Flutter navigation route deleted |
+| 87 | fixed-by-rewrite | Flutter rendering bug deleted |
+| 88 | fixed-by-rewrite | Flutter icon font deleted |
+| 89 | fixed-by-rewrite | Flutter layout overflow deleted |
+| 90 | port-forward | dashboard timeframe preference |
+| 91 | port-forward | dashboard workout metric preference |
+| 92 | fixed-by-rewrite | Flutter Liquid Glass rendering deleted |
+| 93 | fixed-by-rewrite | Flutter tab bar inset deleted |
+| 94 | fixed-by-rewrite | Flutter tab bar routing deleted |
+| 95 | fixed-by-rewrite | Flutter nav/tab bar z-order deleted |
+| 96 | port-forward | tab bar localisation |
+| 97 | fixed-by-rewrite | Flutter bar inset deleted |
+| 98 | fixed-by-rewrite | Flutter theme background deleted |
+| 99 | fixed-by-rewrite | Flutter bridge error handling deleted |
+| 100 | fixed-by-rewrite | Flutter listener leak deleted |
+| 101 | fixed-by-rewrite | Flutter GlobalKey collision deleted |
+| 102 | port-forward | onboarding localisation |
+| 103 | port-forward | onboarding setup-complete ordering |
+| 104 | fixed-by-rewrite | Flutter ListTile assert deleted |
+| 105 | fixed-by-rewrite | Flutter OverflowBox assert deleted |
+| 106 | fixed-by-rewrite | Flutter device suite harness deleted |
+| 107 | port-forward | generated content language |
+| 108 | port-forward | RTL number+unit formatting |
+| 109 | port-forward | compound/isolation exercise budget (covered by corpus) |
+
+**Triage totals:** 49 fixed-by-rewrite · 54 port-forward · 6 still-open
+
 ## Summary table: severity, status, time
 
 Time is actual for **Fixed** items (rough, from this session), and *estimated
@@ -126,6 +252,7 @@ remaining work is a translator/designer decision, not engineering effort.
 | 106 | Device suite unrunnable since the native chrome landed (21/23 sanity failures) | High | Fixed | ~3h |
 | 107 | Generated plan, templates and catalog rendered English in Hebrew mode | High | Fixed | ~3h |
 | 108 | RTL: number+unit strings reversed, and nav chevrons pointed the wrong way | Medium | Fixed | ~1h |
+| 109 | Compounds exhaust the exercise budget, so ≤3-day plans get no isolation work and every session is identical | High | Fixed | ~1h |
 
 **Totals:** 91 fixed, 1 partly fixed, 4 open. Every remaining item needs you --
 a keystore (#49), a bundle-ID decision (#51), a product decision (#14), and one
@@ -1778,3 +1905,76 @@ right-hand side and then still drew a left-pointing arrow: both chevrons ended
 up pointing at the wrong neighbour. `RTLHelper.chevronBack/chevronForward` pick
 the glyph by direction; applied to the date strip, the calendar day view, the
 workout session stepper and every `InsetRow` disclosure.
+
+### 109. Compounds eat the whole budget, so a 3-day plan has no accessory work  **[FIXED]**
+
+Found while chasing a Hebrew symptom that turned out not to be a Hebrew problem
+at all. The plans are identical in both languages, which is what makes this a
+generator issue rather than a localisation one.
+
+A 3-day profile gets three "variations" that are byte-identical, and none of
+them contains a single isolation exercise:
+
+```
+Full Body A -> com:Quadriceps, com:Hamstrings, com:Shoulders, com:Chest,
+               com:Back, com:Quadriceps, com:Core
+Full Body B -> (the same seven)
+Full Body C -> (the same seven)
+```
+
+`WorkoutTemplateGenerator._pick` runs `takeCompoundRound(0)` before
+`takeIsolationRound(0)`. The round walks `_allPatterns`, which holds **eight**
+patterns, while `WorkoutProgramming.exerciseBudget` allows **seven** exercises
+for this scheme. The budget is therefore full before isolation is ever reached,
+and the deeper rounds that were supposed to create the A/B/C variation have no
+slots left either. 69 isolation exercises in the library are unreachable for
+anybody training three days a week.
+
+At five days it behaves correctly, because the splits use narrower pattern lists
+(`_pushPatterns` is two patterns, not eight) so compounds cannot fill the
+budget alone:
+
+```
+Upper Body -> com:Shoulders, com:Shoulders, com:Chest, com:Chest, com:Back,
+              iso:Biceps, iso:Back
+```
+
+**The fix, in three parts** -- and the third only surfaced because the first two
+were applied:
+
+  * **Reserve accessory slots.** `_pick` holds back a third of the session
+    (minimum one, never the whole thing) so the compound pass cannot take
+    everything. The reservation is lifted for the *deeper* rounds, so a session
+    with more compounds available than muscles to isolate still fills up rather
+    than coming up short.
+  * **Give variation its own mechanism.** `_SessionPlan.variant` offsets where a
+    session starts in each candidate list, and `_rotated` applies it. Full Body
+    B now reaches for the second squat pattern the catalog offers instead of
+    repeating the first. `Leg Day` in the five-day split got one too: it shares
+    its patterns and muscles with `Lower Body`, so the week was shipping the
+    same session twice under two names.
+  * **Interleave `_allPatterns`.** Capping the compound pass immediately exposed
+    that the pattern list was grouped legs-then-push-then-pull, so a truncated
+    pass trained quads three ways and never pulled -- `generated_program_quality`
+    caught it as a barbell owner losing their Bench Press. Interleaved to
+    squat / press / row / hinge / press / pull / lunge / brace, a short session
+    is balanced and a full one is unchanged.
+
+Before and after, three days a week with a rack and dumbbells:
+
+```
+was:  Full Body A -> com:Quadriceps, com:Hamstrings, com:Shoulders, com:Chest,
+                     com:Back, com:Quadriceps, com:Core
+      Full Body B -> (the same seven)      Full Body C -> (the same seven)
+
+now:  Full Body A -> Squats, Deadlift, Landmine Press, Bench Press,
+                     Barbell Rows, iso:Dumbbell Chest Fly, iso:Lateral Raises
+      Full Body B -> Goblet Squat, Romanian Deadlift, Overhead Press, Push-ups,
+                     Single-Arm Dumbbell Row, iso:Chest Fly, iso:Front Raise
+      Full Body C -> Bodyweight Squat, Single-Leg RDL, Pike Push-up,
+                     Incline Push-ups, Inverted Row, iso:Chest Fly, iso:Lateral
+```
+
+Covered by two tests in `generated_program_quality_test.dart`: every session
+contains isolation work and the three signatures differ, and every session
+presses *and* pulls.
