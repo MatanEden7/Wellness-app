@@ -1,0 +1,462 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		13695602794ED35F37D5BFDB /* WellnessModels in Frameworks */ = {isa = PBXBuildFile; productRef = A08C060B654FB815F1B7BFED /* WellnessModels */; };
+		27E993CDA3B293712E110305 /* WellnessDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 4BC5CD9721C305924A3AE932 /* WellnessDomain */; };
+		2DBB7E643FEE36783FF00DCA /* WellnessPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = BD0AE46584D38CCF4859309D /* WellnessPersistence */; };
+		B658F27859FEC53FA5D3E5AD /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = B59BEBC31F09EF2EB51C1FFD /* WellnessServices */; };
+		94D272C4E3E21E349E6DB62A /* WellnessCatalog in Frameworks */ = {isa = PBXBuildFile; productRef = 7E18677FE78CB452EF6BA4E1 /* WellnessCatalog */; };
+		B4AA0F7ABB66F6F780E2F63E /* WellnessStores in Frameworks */ = {isa = PBXBuildFile; productRef = 461A4E969A249767CA60FAE7 /* WellnessStores */; };
+		E48825251D8C702B2B3399EF /* WellnessUI in Frameworks */ = {isa = PBXBuildFile; productRef = 06985C74A568740B780A2B8E /* WellnessUI */; };
+		193C75736ECB1624DB65B7D1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18FBAC9F54A9F06D4D20889B /* RootView.swift */; };
+		1DB30FD120C6906D48D73AFE /* WellnessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */; };
+		24913DA4DB18BA487DCCBB5F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AB05088148331502D25BFC3 /* Foundation.framework */; };
+		3339DBB6A4B62DE0F4D22679 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236A2978E1416FBC3550B7A2 /* AppRouter.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		18FBAC9F54A9F06D4D20889B /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WellnessApp.swift; sourceTree = "<group>"; };
+		236A2978E1416FBC3550B7A2 /* AppRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
+		3AB05088148331502D25BFC3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		57912EC7FF9BB49183945DDB /* Wellness.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Wellness.entitlements; sourceTree = "<group>"; };
+		6A8A2E95F81F4C93797AD346 /* WellnessApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WellnessApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D0C2E55BCA209B0F037885E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB27A132D780ECF257BD3937 /* WellnessKit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = WellnessKit; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B31222C7F1C5522B70773D23 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				13695602794ED35F37D5BFDB /* WellnessModels in Frameworks */,
+				27E993CDA3B293712E110305 /* WellnessDomain in Frameworks */,
+				2DBB7E643FEE36783FF00DCA /* WellnessPersistence in Frameworks */,
+				B658F27859FEC53FA5D3E5AD /* WellnessServices in Frameworks */,
+				94D272C4E3E21E349E6DB62A /* WellnessCatalog in Frameworks */,
+				B4AA0F7ABB66F6F780E2F63E /* WellnessStores in Frameworks */,
+				E48825251D8C702B2B3399EF /* WellnessUI in Frameworks */,
+				24913DA4DB18BA487DCCBB5F /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1374DA0167FC114BADEEAD4C /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = UITests;
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		4D79AE29D6C7C289C423F36E /* Features */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Features;
+			path = Features;
+			sourceTree = "<group>";
+		};
+		4D9CF373C5933D0F8F4D9DD3 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				3AB05088148331502D25BFC3 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		629F97A19E2F0D775E3A73B3 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6D0C2E55BCA209B0F037885E /* Info.plist */,
+			);
+			name = Resources;
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		74123ED0E5C1A70BD09EA011 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				AB27A132D780ECF257BD3937 /* WellnessKit */,
+			);
+			name = Packages;
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		831820DF4F8B33254A505C6E /* App */ = {
+			isa = PBXGroup;
+			children = (
+				236A2978E1416FBC3550B7A2 /* AppRouter.swift */,
+				18FBAC9F54A9F06D4D20889B /* RootView.swift */,
+				1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */,
+				629F97A19E2F0D775E3A73B3 /* Resources */,
+				57912EC7FF9BB49183945DDB /* Wellness.entitlements */,
+			);
+			name = App;
+			path = App;
+			sourceTree = "<group>";
+		};
+		AEADAB0B0A0F3E2AE85F2380 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4D9CF373C5933D0F8F4D9DD3 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D14231226D55678B6EB11B53 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Widgets;
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+		EB8FE8A35CF9F7D8555E69BF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A2E95F81F4C93797AD346 /* WellnessApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F854131D0F578699C61A0D86 = {
+			isa = PBXGroup;
+			children = (
+				EB8FE8A35CF9F7D8555E69BF /* Products */,
+				AEADAB0B0A0F3E2AE85F2380 /* Frameworks */,
+				831820DF4F8B33254A505C6E /* App */,
+				74123ED0E5C1A70BD09EA011 /* Packages */,
+				4D79AE29D6C7C289C423F36E /* Features */,
+				D14231226D55678B6EB11B53 /* Widgets */,
+				1374DA0167FC114BADEEAD4C /* UITests */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A2E83BBD5D00DE8DD929F2DD /* WellnessApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A213237DA9DAB37AF08719D7 /* Build configuration list for PBXNativeTarget "WellnessApp" */;
+			buildPhases = (
+				AEF09DE71F063B803BDB8336 /* Sources */,
+				B31222C7F1C5522B70773D23 /* Frameworks */,
+				276A3C1B9C0715735A7AAAFE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WellnessApp;
+			productName = WellnessApp;
+			productReference = 6A8A2E95F81F4C93797AD346 /* WellnessApp.app */;
+			packageProductDependencies = (
+				A08C060B654FB815F1B7BFED /* WellnessModels */,
+				4BC5CD9721C305924A3AE932 /* WellnessDomain */,
+				BD0AE46584D38CCF4859309D /* WellnessPersistence */,
+				B59BEBC31F09EF2EB51C1FFD /* WellnessServices */,
+				7E18677FE78CB452EF6BA4E1 /* WellnessCatalog */,
+				461A4E969A249767CA60FAE7 /* WellnessStores */,
+				06985C74A568740B780A2B8E /* WellnessUI */,
+			);
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EA7E78B643A7D415F3417B06 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			packageReferences = (
+				16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */,
+			);
+			buildConfigurationList = 5FCBBAFC0FD90E0E03CFEB48 /* Build configuration list for PBXProject "WellnessApp" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F854131D0F578699C61A0D86;
+			minimizedProjectReferenceProxies = 0;
+			preferredProjectObjectVersion = 100;
+			productRefGroup = EB8FE8A35CF9F7D8555E69BF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A2E83BBD5D00DE8DD929F2DD /* WellnessApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		276A3C1B9C0715735A7AAAFE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AEF09DE71F063B803BDB8336 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3339DBB6A4B62DE0F4D22679 /* AppRouter.swift in Sources */,
+				193C75736ECB1624DB65B7D1 /* RootView.swift in Sources */,
+				1DB30FD120C6906D48D73AFE /* WellnessApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		16CCEF224E49AFD201FC0278 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		59E0577F7C42CCAD94BCC717 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		784DD18909714D534FEDDD4D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = App/Wellness.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R6NSBVKVXV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.matan.wellnessx123;
+				PRODUCT_NAME = Wellness;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E46F897C1117A13751B59498 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = App/Wellness.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R6NSBVKVXV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.matan.wellnessx123;
+				PRODUCT_NAME = Wellness;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5FCBBAFC0FD90E0E03CFEB48 /* Build configuration list for PBXProject "WellnessApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				16CCEF224E49AFD201FC0278 /* Debug */,
+				59E0577F7C42CCAD94BCC717 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A213237DA9DAB37AF08719D7 /* Build configuration list for PBXNativeTarget "WellnessApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				784DD18909714D534FEDDD4D /* Release */,
+				E46F897C1117A13751B59498 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+/* Begin XCLocalSwiftPackageReference section */
+		16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/WellnessKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+A08C060B654FB815F1B7BFED /* WellnessModels */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessModels;
+};
+4BC5CD9721C305924A3AE932 /* WellnessDomain */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessDomain;
+};
+BD0AE46584D38CCF4859309D /* WellnessPersistence */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessPersistence;
+};
+B59BEBC31F09EF2EB51C1FFD /* WellnessServices */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessServices;
+};
+7E18677FE78CB452EF6BA4E1 /* WellnessCatalog */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessCatalog;
+};
+461A4E969A249767CA60FAE7 /* WellnessStores */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessStores;
+};
+06985C74A568740B780A2B8E /* WellnessUI */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessUI;
+};
+/* End XCSwiftPackageProductDependency section */
+
+	};
+	rootObject = EA7E78B643A7D415F3417B06 /* Project object */;
+}

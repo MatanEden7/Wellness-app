@@ -5,3 +5,6 @@
 .dart_tool/
 build/
 .DS_Store
+
+# SPM build artifacts
+Packages/WellnessKit/.build/
