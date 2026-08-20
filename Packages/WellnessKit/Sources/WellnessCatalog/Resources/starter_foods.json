@@ -1,0 +1,3195 @@
+[
+  {
+    "id": "1",
+    "name": "Chicken Breast",
+    "nameHe": "חזה עוף",
+    "unit": "100g",
+    "kcal": 165.0,
+    "protein": 31.0,
+    "carbs": 0.0,
+    "fat": 3.6,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Salmon",
+    "nameHe": "סלמון",
+    "unit": "100g",
+    "kcal": 208.0,
+    "protein": 25.0,
+    "carbs": 0.0,
+    "fat": 12.0,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Tuna",
+    "nameHe": "טונה",
+    "brand": "Canned in Water",
+    "unit": "100g",
+    "kcal": 116.0,
+    "protein": 26.0,
+    "carbs": 0.0,
+    "fat": 0.8,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Turkey Breast",
+    "nameHe": "חזה הודו",
+    "unit": "100g",
+    "kcal": 135.0,
+    "protein": 30.0,
+    "carbs": 0.0,
+    "fat": 1.7,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Eggs",
+    "nameHe": "ביצה",
+    "unit": "piece",
+    "kcal": 70.0,
+    "protein": 6.0,
+    "carbs": 0.6,
+    "fat": 5.0,
+    "category": "protein",
+    "tags": [
+      "animalProduct",
+      "eggs"
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Ground Beef",
+    "nameHe": "בשר בקר טחון",
+    "brand": "85% Lean",
+    "unit": "100g",
+    "kcal": 250.0,
+    "protein": 26.0,
+    "carbs": 0.0,
+    "fat": 17.0,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Shrimp",
+    "nameHe": "שרימפס",
+    "unit": "100g",
+    "kcal": 99.0,
+    "protein": 24.0,
+    "carbs": 0.2,
+    "fat": 0.3,
+    "category": "protein",
+    "tags": [
+      "fish",
+      "shellfish"
+    ]
+  },
+  {
+    "id": "8",
+    "name": "Tofu",
+    "nameHe": "טופו",
+    "unit": "100g",
+    "kcal": 76.0,
+    "protein": 8.0,
+    "carbs": 1.9,
+    "fat": 4.8,
+    "category": "protein",
+    "tags": [
+      "soy"
+    ]
+  },
+  {
+    "id": "43",
+    "name": "Tempeh",
+    "nameHe": "טמפה",
+    "unit": "100g",
+    "kcal": 192.0,
+    "protein": 20.3,
+    "carbs": 7.6,
+    "fat": 10.8,
+    "category": "protein",
+    "tags": [
+      "soy"
+    ]
+  },
+  {
+    "id": "44",
+    "name": "Seitan",
+    "nameHe": "סייטן",
+    "brand": "Vital Wheat Gluten",
+    "unit": "100g",
+    "kcal": 370.0,
+    "protein": 75.2,
+    "carbs": 13.8,
+    "fat": 1.9,
+    "category": "protein",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "45",
+    "name": "Edamame",
+    "nameHe": "אדממה",
+    "unit": "100g",
+    "kcal": 121.0,
+    "protein": 11.9,
+    "carbs": 8.9,
+    "fat": 5.2,
+    "category": "protein",
+    "tags": [
+      "soy"
+    ]
+  },
+  {
+    "id": "53",
+    "name": "Egg Whites",
+    "nameHe": "חלבון ביצה",
+    "unit": "100g",
+    "kcal": 52.0,
+    "protein": 10.9,
+    "carbs": 0.7,
+    "fat": 0.2,
+    "category": "protein",
+    "tags": [
+      "animalProduct",
+      "eggs"
+    ]
+  },
+  {
+    "id": "80",
+    "name": "Chicken Thigh",
+    "nameHe": "ירך עוף",
+    "brand": "Skinless",
+    "unit": "100g",
+    "kcal": 209.0,
+    "protein": 26.0,
+    "carbs": 0.0,
+    "fat": 11.0,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "81",
+    "name": "Beef Steak",
+    "nameHe": "סטייק אנטרקוט",
+    "brand": "Sirloin",
+    "unit": "100g",
+    "kcal": 271.0,
+    "protein": 25.0,
+    "carbs": 0.0,
+    "fat": 18.0,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "110",
+    "name": "Ground Turkey",
+    "nameHe": "בשר הודו טחון",
+    "brand": "93% Lean",
+    "unit": "100g",
+    "kcal": 150.0,
+    "protein": 19.7,
+    "carbs": 0.0,
+    "fat": 8.3,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "111",
+    "name": "Sardines",
+    "nameHe": "סרדינים",
+    "brand": "Canned in oil",
+    "unit": "100g",
+    "kcal": 208.0,
+    "protein": 24.6,
+    "carbs": 0.0,
+    "fat": 11.5,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "112",
+    "name": "Tilapia",
+    "nameHe": "אמנון",
+    "unit": "100g",
+    "kcal": 96.0,
+    "protein": 20.1,
+    "carbs": 0.0,
+    "fat": 1.7,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "113",
+    "name": "Cod",
+    "nameHe": "בקלה",
+    "unit": "100g",
+    "kcal": 82.0,
+    "protein": 17.8,
+    "carbs": 0.0,
+    "fat": 0.7,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "114",
+    "name": "Sea Bass",
+    "nameHe": "דניס",
+    "unit": "100g",
+    "kcal": 97.0,
+    "protein": 18.4,
+    "carbs": 0.0,
+    "fat": 2.0,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "115",
+    "name": "Lamb",
+    "nameHe": "כבש",
+    "brand": "Leg, roasted",
+    "unit": "100g",
+    "kcal": 258.0,
+    "protein": 25.6,
+    "carbs": 0.0,
+    "fat": 16.5,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "116",
+    "name": "Beef Liver",
+    "nameHe": "כבד בקר",
+    "unit": "100g",
+    "kcal": 135.0,
+    "protein": 20.4,
+    "carbs": 3.9,
+    "fat": 3.6,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "117",
+    "name": "Turkey Deli Slices",
+    "nameHe": "פרוסות הודו",
+    "unit": "100g",
+    "kcal": 104.0,
+    "protein": 17.0,
+    "carbs": 3.0,
+    "fat": 2.5,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "118",
+    "name": "Beef Hot Dog",
+    "nameHe": "נקניקייה",
+    "brand": "57g",
+    "unit": "piece",
+    "kcal": 180.0,
+    "protein": 6.5,
+    "carbs": 2.0,
+    "fat": 16.0,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "119",
+    "name": "Whole Chicken",
+    "nameHe": "עוף שלם",
+    "brand": "Roasted, with skin",
+    "unit": "100g",
+    "kcal": 239.0,
+    "protein": 27.0,
+    "carbs": 0.0,
+    "fat": 14.0,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "120",
+    "name": "Chicken Wings",
+    "nameHe": "כנפיים",
+    "unit": "100g",
+    "kcal": 203.0,
+    "protein": 30.5,
+    "carbs": 0.0,
+    "fat": 8.1,
+    "category": "protein",
+    "tags": [
+      "meat"
+    ]
+  },
+  {
+    "id": "121",
+    "name": "Tuna in Oil",
+    "nameHe": "טונה בשמן",
+    "unit": "100g",
+    "kcal": 198.0,
+    "protein": 29.0,
+    "carbs": 0.0,
+    "fat": 8.2,
+    "category": "protein",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "9",
+    "name": "Greek Yogurt",
+    "nameHe": "יוגורט יווני",
+    "unit": "100g",
+    "kcal": 59.0,
+    "protein": 10.0,
+    "carbs": 3.6,
+    "fat": 0.4,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "10",
+    "name": "Cottage Cheese",
+    "nameHe": "קוטג׳ דל שומן",
+    "brand": "Low Fat",
+    "unit": "100g",
+    "kcal": 72.0,
+    "protein": 12.0,
+    "carbs": 4.6,
+    "fat": 1.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "11",
+    "name": "Cheddar Cheese",
+    "nameHe": "גבינת צ׳דר",
+    "unit": "100g",
+    "kcal": 403.0,
+    "protein": 25.0,
+    "carbs": 1.3,
+    "fat": 33.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "12",
+    "name": "Milk",
+    "nameHe": "חלב",
+    "brand": "2% Fat",
+    "unit": "ml",
+    "kcal": 0.5,
+    "protein": 0.033,
+    "carbs": 0.047,
+    "fat": 0.02,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "71",
+    "name": "White Cheese 5%",
+    "nameHe": "גבינה לבנה 5%",
+    "unit": "100g",
+    "kcal": 103.0,
+    "protein": 8.5,
+    "carbs": 3.8,
+    "fat": 5.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "72",
+    "name": "Cottage Cheese 5%",
+    "nameHe": "קוטג׳ 5%",
+    "unit": "100g",
+    "kcal": 98.0,
+    "protein": 11.0,
+    "carbs": 3.5,
+    "fat": 5.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "73",
+    "name": "Bulgarian Cheese 16%",
+    "nameHe": "גבינה בולגרית 16%",
+    "unit": "100g",
+    "kcal": 210.0,
+    "protein": 15.0,
+    "carbs": 2.0,
+    "fat": 16.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "74",
+    "name": "Labneh",
+    "nameHe": "לאבנה",
+    "unit": "100g",
+    "kcal": 118.0,
+    "protein": 8.0,
+    "carbs": 4.0,
+    "fat": 7.5,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "75",
+    "name": "Feta Cheese",
+    "nameHe": "גבינת פטה",
+    "unit": "100g",
+    "kcal": 264.0,
+    "protein": 14.0,
+    "carbs": 4.1,
+    "fat": 21.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "76",
+    "name": "Yellow Cheese 28%",
+    "nameHe": "גבינה צהובה 28%",
+    "unit": "100g",
+    "kcal": 353.0,
+    "protein": 25.0,
+    "carbs": 1.0,
+    "fat": 28.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "122",
+    "name": "Whole Milk",
+    "nameHe": "חלב 3%",
+    "brand": "3% Fat",
+    "unit": "ml",
+    "kcal": 0.61,
+    "protein": 0.034,
+    "carbs": 0.047,
+    "fat": 0.033,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "123",
+    "name": "Skim Milk",
+    "nameHe": "חלב דל שומן",
+    "brand": "0% Fat",
+    "unit": "ml",
+    "kcal": 0.34,
+    "protein": 0.034,
+    "carbs": 0.05,
+    "fat": 0.002,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "124",
+    "name": "Plain Yogurt",
+    "nameHe": "יוגורט טבעי",
+    "brand": "3% Fat",
+    "unit": "100g",
+    "kcal": 61.0,
+    "protein": 3.5,
+    "carbs": 4.7,
+    "fat": 3.3,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "125",
+    "name": "Mozzarella",
+    "nameHe": "מוצרלה",
+    "unit": "100g",
+    "kcal": 280.0,
+    "protein": 28.0,
+    "carbs": 3.1,
+    "fat": 17.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "126",
+    "name": "Parmesan",
+    "nameHe": "פרמזן",
+    "unit": "100g",
+    "kcal": 392.0,
+    "protein": 35.8,
+    "carbs": 3.2,
+    "fat": 25.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "127",
+    "name": "Cream Cheese",
+    "nameHe": "גבינת שמנת",
+    "unit": "100g",
+    "kcal": 342.0,
+    "protein": 6.0,
+    "carbs": 4.1,
+    "fat": 34.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "128",
+    "name": "Sour Cream",
+    "nameHe": "שמנת חמוצה",
+    "brand": "15% Fat",
+    "unit": "100g",
+    "kcal": 162.0,
+    "protein": 3.0,
+    "carbs": 4.0,
+    "fat": 15.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "129",
+    "name": "Heavy Cream",
+    "nameHe": "שמנת מתוקה",
+    "brand": "38% Fat",
+    "unit": "100g",
+    "kcal": 352.0,
+    "protein": 2.1,
+    "carbs": 2.8,
+    "fat": 37.0,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "132",
+    "name": "Kefir",
+    "nameHe": "קפיר",
+    "unit": "ml",
+    "kcal": 0.41,
+    "protein": 0.034,
+    "carbs": 0.046,
+    "fat": 0.01,
+    "category": "dairy",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "13",
+    "name": "Brown Rice",
+    "nameHe": "אורז מלא",
+    "unit": "100g",
+    "kcal": 111.0,
+    "protein": 2.3,
+    "carbs": 23.0,
+    "fat": 0.9,
+    "category": "grains"
+  },
+  {
+    "id": "14",
+    "name": "White Rice",
+    "nameHe": "אורז לבן",
+    "unit": "100g",
+    "kcal": 130.0,
+    "protein": 2.7,
+    "carbs": 28.0,
+    "fat": 0.3,
+    "category": "grains"
+  },
+  {
+    "id": "15",
+    "name": "Oats",
+    "nameHe": "שיבולת שועל",
+    "unit": "100g",
+    "kcal": 389.0,
+    "protein": 16.9,
+    "carbs": 66.0,
+    "fat": 6.9,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "16",
+    "name": "Quinoa",
+    "nameHe": "קינואה",
+    "unit": "100g",
+    "kcal": 122.0,
+    "protein": 4.4,
+    "carbs": 22.0,
+    "fat": 1.9,
+    "category": "grains"
+  },
+  {
+    "id": "17",
+    "name": "Pasta",
+    "nameHe": "פסטה",
+    "brand": "Whole Wheat",
+    "unit": "100g",
+    "kcal": 124.0,
+    "protein": 5.0,
+    "carbs": 25.0,
+    "fat": 1.1,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "18",
+    "name": "Whole Wheat Bread",
+    "nameHe": "לחם מחיטה מלאה",
+    "unit": "slice",
+    "kcal": 80.0,
+    "protein": 4.0,
+    "carbs": 14.0,
+    "fat": 1.0,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "19",
+    "name": "Sweet Potato",
+    "nameHe": "בטטה",
+    "unit": "100g",
+    "kcal": 86.0,
+    "protein": 2.0,
+    "carbs": 20.0,
+    "fat": 0.1,
+    "category": "grains"
+  },
+  {
+    "id": "52",
+    "name": "Buckwheat",
+    "nameHe": "כוסמת",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 92.0,
+    "protein": 3.4,
+    "carbs": 19.9,
+    "fat": 0.6,
+    "category": "grains"
+  },
+  {
+    "id": "83",
+    "name": "Potato",
+    "nameHe": "תפוח אדמה",
+    "brand": "Boiled",
+    "unit": "100g",
+    "kcal": 87.0,
+    "protein": 1.9,
+    "carbs": 20.0,
+    "fat": 0.1,
+    "category": "grains"
+  },
+  {
+    "id": "58",
+    "name": "Pita Bread",
+    "nameHe": "פיתה",
+    "brand": "White, 60g",
+    "unit": "piece",
+    "kcal": 165.0,
+    "protein": 5.5,
+    "carbs": 33.0,
+    "fat": 0.8,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "59",
+    "name": "Pita Bread",
+    "nameHe": "פיתה מחיטה מלאה",
+    "brand": "Whole Wheat, 60g",
+    "unit": "piece",
+    "kcal": 150.0,
+    "protein": 6.0,
+    "carbs": 29.0,
+    "fat": 1.5,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "60",
+    "name": "Laffa",
+    "nameHe": "לאפה",
+    "brand": "110g",
+    "unit": "piece",
+    "kcal": 300.0,
+    "protein": 9.0,
+    "carbs": 60.0,
+    "fat": 2.0,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "66",
+    "name": "Couscous",
+    "nameHe": "קוסקוס",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 112.0,
+    "protein": 3.8,
+    "carbs": 23.2,
+    "fat": 0.2,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "67",
+    "name": "Ptitim",
+    "nameHe": "פתיתים",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 130.0,
+    "protein": 4.3,
+    "carbs": 26.0,
+    "fat": 0.5,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "133",
+    "name": "White Bread",
+    "nameHe": "לחם לבן",
+    "brand": "30g",
+    "unit": "slice",
+    "kcal": 79.0,
+    "protein": 2.7,
+    "carbs": 14.7,
+    "fat": 1.0,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "134",
+    "name": "Pasta",
+    "nameHe": "פסטה לבנה",
+    "brand": "White, cooked",
+    "unit": "100g",
+    "kcal": 158.0,
+    "protein": 5.8,
+    "carbs": 31.0,
+    "fat": 0.9,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "135",
+    "name": "Bagel",
+    "nameHe": "בייגל",
+    "brand": "98g",
+    "unit": "piece",
+    "kcal": 271.0,
+    "protein": 10.5,
+    "carbs": 53.0,
+    "fat": 1.7,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "136",
+    "name": "Tortilla",
+    "nameHe": "טורטייה",
+    "brand": "Flour, 45g",
+    "unit": "piece",
+    "kcal": 146.0,
+    "protein": 3.9,
+    "carbs": 24.5,
+    "fat": 3.6,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "137",
+    "name": "Corn Flakes",
+    "nameHe": "קורנפלקס",
+    "unit": "100g",
+    "kcal": 357.0,
+    "protein": 7.5,
+    "carbs": 84.0,
+    "fat": 0.4,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "138",
+    "name": "Granola",
+    "nameHe": "גרנולה",
+    "unit": "100g",
+    "kcal": 471.0,
+    "protein": 10.0,
+    "carbs": 64.0,
+    "fat": 20.0,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "139",
+    "name": "Rice Cake",
+    "nameHe": "פריכית אורז",
+    "brand": "9g",
+    "unit": "piece",
+    "kcal": 35.0,
+    "protein": 0.7,
+    "carbs": 7.3,
+    "fat": 0.3,
+    "category": "grains"
+  },
+  {
+    "id": "140",
+    "name": "Bulgur",
+    "nameHe": "בורגול",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 83.0,
+    "protein": 3.1,
+    "carbs": 18.6,
+    "fat": 0.2,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "141",
+    "name": "Barley",
+    "nameHe": "שעורה",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 123.0,
+    "protein": 2.3,
+    "carbs": 28.2,
+    "fat": 0.4,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "142",
+    "name": "Matza",
+    "nameHe": "מצה",
+    "brand": "28g",
+    "unit": "piece",
+    "kcal": 112.0,
+    "protein": 2.8,
+    "carbs": 23.7,
+    "fat": 0.4,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "143",
+    "name": "Challah",
+    "nameHe": "חלה",
+    "brand": "40g",
+    "unit": "slice",
+    "kcal": 130.0,
+    "protein": 4.0,
+    "carbs": 22.0,
+    "fat": 3.0,
+    "category": "grains",
+    "tags": [
+      "animalProduct",
+      "eggs",
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "144",
+    "name": "Instant Noodles",
+    "nameHe": "נודלס",
+    "brand": "85g pack",
+    "unit": "serving",
+    "kcal": 385.0,
+    "protein": 8.0,
+    "carbs": 54.0,
+    "fat": 15.0,
+    "category": "grains",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "20",
+    "name": "Lentils",
+    "nameHe": "עדשים",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 116.0,
+    "protein": 9.0,
+    "carbs": 20.0,
+    "fat": 0.4,
+    "category": "legumes"
+  },
+  {
+    "id": "21",
+    "name": "Black Beans",
+    "nameHe": "שעועית שחורה",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 132.0,
+    "protein": 8.9,
+    "carbs": 23.0,
+    "fat": 0.5,
+    "category": "legumes"
+  },
+  {
+    "id": "22",
+    "name": "Chickpeas",
+    "nameHe": "גרגרי חומוס",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 164.0,
+    "protein": 8.9,
+    "carbs": 27.0,
+    "fat": 2.6,
+    "category": "legumes"
+  },
+  {
+    "id": "145",
+    "name": "Kidney Beans",
+    "nameHe": "שעועית אדומה",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 127.0,
+    "protein": 8.7,
+    "carbs": 22.8,
+    "fat": 0.5,
+    "category": "legumes"
+  },
+  {
+    "id": "146",
+    "name": "White Beans",
+    "nameHe": "שעועית לבנה",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 139.0,
+    "protein": 9.7,
+    "carbs": 25.1,
+    "fat": 0.4,
+    "category": "legumes"
+  },
+  {
+    "id": "147",
+    "name": "Green Peas",
+    "nameHe": "אפונה",
+    "unit": "100g",
+    "kcal": 81.0,
+    "protein": 5.4,
+    "carbs": 14.5,
+    "fat": 0.4,
+    "category": "legumes"
+  },
+  {
+    "id": "148",
+    "name": "Fava Beans",
+    "nameHe": "פול",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 110.0,
+    "protein": 7.6,
+    "carbs": 19.6,
+    "fat": 0.4,
+    "category": "legumes",
+    "israeli": true
+  },
+  {
+    "id": "149",
+    "name": "Split Peas",
+    "nameHe": "אפונה יבשה",
+    "brand": "Cooked",
+    "unit": "100g",
+    "kcal": 118.0,
+    "protein": 8.3,
+    "carbs": 21.1,
+    "fat": 0.4,
+    "category": "legumes"
+  },
+  {
+    "id": "23",
+    "name": "Broccoli",
+    "nameHe": "ברוקולי",
+    "unit": "100g",
+    "kcal": 34.0,
+    "protein": 2.8,
+    "carbs": 7.0,
+    "fat": 0.4,
+    "category": "vegetables"
+  },
+  {
+    "id": "24",
+    "name": "Spinach",
+    "nameHe": "תרד",
+    "unit": "100g",
+    "kcal": 23.0,
+    "protein": 2.9,
+    "carbs": 3.6,
+    "fat": 0.4,
+    "category": "vegetables"
+  },
+  {
+    "id": "25",
+    "name": "Kale",
+    "nameHe": "קייל",
+    "unit": "100g",
+    "kcal": 49.0,
+    "protein": 4.3,
+    "carbs": 9.0,
+    "fat": 0.9,
+    "category": "vegetables"
+  },
+  {
+    "id": "26",
+    "name": "Carrots",
+    "nameHe": "גזר",
+    "unit": "100g",
+    "kcal": 41.0,
+    "protein": 0.9,
+    "carbs": 9.6,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "27",
+    "name": "Tomato",
+    "nameHe": "עגבנייה",
+    "unit": "100g",
+    "kcal": 18.0,
+    "protein": 0.9,
+    "carbs": 3.9,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "28",
+    "name": "Bell Pepper",
+    "nameHe": "פלפל",
+    "unit": "100g",
+    "kcal": 31.0,
+    "protein": 1.0,
+    "carbs": 6.0,
+    "fat": 0.3,
+    "category": "vegetables"
+  },
+  {
+    "id": "29",
+    "name": "Cucumber",
+    "nameHe": "מלפפון",
+    "unit": "100g",
+    "kcal": 15.0,
+    "protein": 0.7,
+    "carbs": 3.6,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "30",
+    "name": "Zucchini",
+    "nameHe": "קישוא",
+    "unit": "100g",
+    "kcal": 17.0,
+    "protein": 1.2,
+    "carbs": 3.1,
+    "fat": 0.3,
+    "category": "vegetables"
+  },
+  {
+    "id": "31",
+    "name": "Mushrooms",
+    "nameHe": "פטריות",
+    "unit": "100g",
+    "kcal": 22.0,
+    "protein": 3.1,
+    "carbs": 3.3,
+    "fat": 0.3,
+    "category": "vegetables"
+  },
+  {
+    "id": "82",
+    "name": "Sweet Corn",
+    "nameHe": "תירס",
+    "brand": "Canned",
+    "unit": "100g",
+    "kcal": 81.0,
+    "protein": 2.7,
+    "carbs": 18.0,
+    "fat": 0.6,
+    "category": "vegetables"
+  },
+  {
+    "id": "84",
+    "name": "Cauliflower",
+    "nameHe": "כרובית",
+    "unit": "100g",
+    "kcal": 25.0,
+    "protein": 1.9,
+    "carbs": 5.0,
+    "fat": 0.3,
+    "category": "vegetables"
+  },
+  {
+    "id": "85",
+    "name": "Eggplant",
+    "nameHe": "חציל",
+    "unit": "100g",
+    "kcal": 25.0,
+    "protein": 1.0,
+    "carbs": 5.9,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "86",
+    "name": "Onion",
+    "nameHe": "בצל",
+    "unit": "100g",
+    "kcal": 40.0,
+    "protein": 1.1,
+    "carbs": 9.3,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "150",
+    "name": "Lettuce",
+    "nameHe": "חסה",
+    "unit": "100g",
+    "kcal": 15.0,
+    "protein": 1.4,
+    "carbs": 2.9,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "151",
+    "name": "Cabbage",
+    "nameHe": "כרוב",
+    "unit": "100g",
+    "kcal": 25.0,
+    "protein": 1.3,
+    "carbs": 5.8,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "152",
+    "name": "Green Beans",
+    "nameHe": "שעועית ירוקה",
+    "unit": "100g",
+    "kcal": 31.0,
+    "protein": 1.8,
+    "carbs": 7.0,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "153",
+    "name": "Beetroot",
+    "nameHe": "סלק",
+    "unit": "100g",
+    "kcal": 43.0,
+    "protein": 1.6,
+    "carbs": 9.6,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "154",
+    "name": "Garlic",
+    "nameHe": "שום",
+    "unit": "100g",
+    "kcal": 149.0,
+    "protein": 6.4,
+    "carbs": 33.0,
+    "fat": 0.5,
+    "category": "vegetables"
+  },
+  {
+    "id": "155",
+    "name": "Celery",
+    "nameHe": "סלרי",
+    "unit": "100g",
+    "kcal": 16.0,
+    "protein": 0.7,
+    "carbs": 3.0,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "156",
+    "name": "Pumpkin",
+    "nameHe": "דלעת",
+    "unit": "100g",
+    "kcal": 26.0,
+    "protein": 1.0,
+    "carbs": 6.5,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "157",
+    "name": "Asparagus",
+    "nameHe": "אספרגוס",
+    "unit": "100g",
+    "kcal": 20.0,
+    "protein": 2.2,
+    "carbs": 3.9,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "158",
+    "name": "Brussels Sprouts",
+    "nameHe": "כרוב ניצנים",
+    "unit": "100g",
+    "kcal": 43.0,
+    "protein": 3.4,
+    "carbs": 9.0,
+    "fat": 0.3,
+    "category": "vegetables"
+  },
+  {
+    "id": "159",
+    "name": "Okra",
+    "nameHe": "במיה",
+    "unit": "100g",
+    "kcal": 33.0,
+    "protein": 1.9,
+    "carbs": 7.5,
+    "fat": 0.2,
+    "category": "vegetables"
+  },
+  {
+    "id": "160",
+    "name": "Leek",
+    "nameHe": "כרישה",
+    "unit": "100g",
+    "kcal": 61.0,
+    "protein": 1.5,
+    "carbs": 14.2,
+    "fat": 0.3,
+    "category": "vegetables"
+  },
+  {
+    "id": "161",
+    "name": "Radish",
+    "nameHe": "צנון",
+    "unit": "100g",
+    "kcal": 16.0,
+    "protein": 0.7,
+    "carbs": 3.4,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "162",
+    "name": "Butternut Squash",
+    "nameHe": "דלורית",
+    "unit": "100g",
+    "kcal": 45.0,
+    "protein": 1.0,
+    "carbs": 11.7,
+    "fat": 0.1,
+    "category": "vegetables"
+  },
+  {
+    "id": "32",
+    "name": "Banana",
+    "nameHe": "בננה",
+    "unit": "piece",
+    "kcal": 105.0,
+    "protein": 1.3,
+    "carbs": 27.0,
+    "fat": 0.4,
+    "category": "fruit"
+  },
+  {
+    "id": "33",
+    "name": "Apple",
+    "nameHe": "תפוח",
+    "unit": "piece",
+    "kcal": 95.0,
+    "protein": 0.5,
+    "carbs": 25.0,
+    "fat": 0.3,
+    "category": "fruit"
+  },
+  {
+    "id": "34",
+    "name": "Orange",
+    "nameHe": "תפוז",
+    "unit": "piece",
+    "kcal": 62.0,
+    "protein": 1.2,
+    "carbs": 15.4,
+    "fat": 0.2,
+    "category": "fruit"
+  },
+  {
+    "id": "35",
+    "name": "Blueberries",
+    "nameHe": "אוכמניות",
+    "unit": "100g",
+    "kcal": 57.0,
+    "protein": 0.7,
+    "carbs": 14.0,
+    "fat": 0.3,
+    "category": "fruit"
+  },
+  {
+    "id": "36",
+    "name": "Avocado",
+    "nameHe": "אבוקדו",
+    "unit": "100g",
+    "kcal": 160.0,
+    "protein": 2.0,
+    "carbs": 8.5,
+    "fat": 14.7,
+    "category": "fruit"
+  },
+  {
+    "id": "87",
+    "name": "Strawberries",
+    "nameHe": "תות שדה",
+    "unit": "100g",
+    "kcal": 32.0,
+    "protein": 0.7,
+    "carbs": 7.7,
+    "fat": 0.3,
+    "category": "fruit"
+  },
+  {
+    "id": "88",
+    "name": "Watermelon",
+    "nameHe": "אבטיח",
+    "unit": "100g",
+    "kcal": 30.0,
+    "protein": 0.6,
+    "carbs": 7.6,
+    "fat": 0.2,
+    "category": "fruit"
+  },
+  {
+    "id": "89",
+    "name": "Grapes",
+    "nameHe": "ענבים",
+    "unit": "100g",
+    "kcal": 69.0,
+    "protein": 0.7,
+    "carbs": 18.0,
+    "fat": 0.2,
+    "category": "fruit"
+  },
+  {
+    "id": "78",
+    "name": "Medjool Dates",
+    "nameHe": "תמרים מג׳הול",
+    "brand": "One date, 24g",
+    "unit": "piece",
+    "kcal": 66.0,
+    "protein": 0.4,
+    "carbs": 18.0,
+    "fat": 0.03,
+    "category": "fruit",
+    "israeli": true
+  },
+  {
+    "id": "163",
+    "name": "Pear",
+    "nameHe": "אגס",
+    "brand": "178g",
+    "unit": "piece",
+    "kcal": 101.0,
+    "protein": 0.6,
+    "carbs": 27.0,
+    "fat": 0.2,
+    "category": "fruit"
+  },
+  {
+    "id": "164",
+    "name": "Peach",
+    "nameHe": "אפרסק",
+    "brand": "150g",
+    "unit": "piece",
+    "kcal": 59.0,
+    "protein": 1.4,
+    "carbs": 14.3,
+    "fat": 0.4,
+    "category": "fruit"
+  },
+  {
+    "id": "165",
+    "name": "Mango",
+    "nameHe": "מנגו",
+    "unit": "100g",
+    "kcal": 60.0,
+    "protein": 0.8,
+    "carbs": 15.0,
+    "fat": 0.4,
+    "category": "fruit"
+  },
+  {
+    "id": "166",
+    "name": "Pineapple",
+    "nameHe": "אננס",
+    "unit": "100g",
+    "kcal": 50.0,
+    "protein": 0.5,
+    "carbs": 13.1,
+    "fat": 0.1,
+    "category": "fruit"
+  },
+  {
+    "id": "167",
+    "name": "Kiwi",
+    "nameHe": "קיווי",
+    "brand": "75g",
+    "unit": "piece",
+    "kcal": 42.0,
+    "protein": 0.8,
+    "carbs": 10.1,
+    "fat": 0.4,
+    "category": "fruit"
+  },
+  {
+    "id": "168",
+    "name": "Melon",
+    "nameHe": "מלון",
+    "unit": "100g",
+    "kcal": 34.0,
+    "protein": 0.8,
+    "carbs": 8.2,
+    "fat": 0.2,
+    "category": "fruit"
+  },
+  {
+    "id": "169",
+    "name": "Cherries",
+    "nameHe": "דובדבנים",
+    "unit": "100g",
+    "kcal": 63.0,
+    "protein": 1.1,
+    "carbs": 16.0,
+    "fat": 0.2,
+    "category": "fruit"
+  },
+  {
+    "id": "170",
+    "name": "Pomegranate",
+    "nameHe": "רימון",
+    "unit": "100g",
+    "kcal": 83.0,
+    "protein": 1.7,
+    "carbs": 18.7,
+    "fat": 1.2,
+    "category": "fruit",
+    "israeli": true
+  },
+  {
+    "id": "171",
+    "name": "Clementine",
+    "nameHe": "קלמנטינה",
+    "brand": "74g",
+    "unit": "piece",
+    "kcal": 35.0,
+    "protein": 0.6,
+    "carbs": 8.9,
+    "fat": 0.1,
+    "category": "fruit",
+    "israeli": true
+  },
+  {
+    "id": "172",
+    "name": "Persimmon",
+    "nameHe": "אפרסמון",
+    "brand": "168g",
+    "unit": "piece",
+    "kcal": 118.0,
+    "protein": 1.0,
+    "carbs": 31.0,
+    "fat": 0.3,
+    "category": "fruit",
+    "israeli": true
+  },
+  {
+    "id": "173",
+    "name": "Fig",
+    "nameHe": "תאנה",
+    "brand": "Fresh, 50g",
+    "unit": "piece",
+    "kcal": 37.0,
+    "protein": 0.4,
+    "carbs": 9.6,
+    "fat": 0.2,
+    "category": "fruit",
+    "israeli": true
+  },
+  {
+    "id": "174",
+    "name": "Raisins",
+    "nameHe": "צימוקים",
+    "unit": "100g",
+    "kcal": 299.0,
+    "protein": 3.1,
+    "carbs": 79.0,
+    "fat": 0.5,
+    "category": "fruit"
+  },
+  {
+    "id": "175",
+    "name": "Dried Apricots",
+    "nameHe": "משמש מיובש",
+    "unit": "100g",
+    "kcal": 241.0,
+    "protein": 3.4,
+    "carbs": 62.6,
+    "fat": 0.5,
+    "category": "fruit"
+  },
+  {
+    "id": "37",
+    "name": "Almonds",
+    "nameHe": "שקדים",
+    "unit": "100g",
+    "kcal": 579.0,
+    "protein": 21.0,
+    "carbs": 22.0,
+    "fat": 50.0,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "38",
+    "name": "Walnuts",
+    "nameHe": "אגוזי מלך",
+    "unit": "100g",
+    "kcal": 654.0,
+    "protein": 15.0,
+    "carbs": 14.0,
+    "fat": 65.0,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "46",
+    "name": "Hemp Seeds",
+    "nameHe": "זרעי המפ",
+    "unit": "100g",
+    "kcal": 553.0,
+    "protein": 31.6,
+    "carbs": 8.7,
+    "fat": 48.8,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "47",
+    "name": "Pumpkin Seeds",
+    "nameHe": "גרעיני דלעת",
+    "unit": "100g",
+    "kcal": 574.0,
+    "protein": 29.8,
+    "carbs": 14.7,
+    "fat": 49.0,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "48",
+    "name": "Sunflower Seeds",
+    "nameHe": "גרעיני חמנייה",
+    "unit": "100g",
+    "kcal": 584.0,
+    "protein": 20.8,
+    "carbs": 20.0,
+    "fat": 51.5,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "49",
+    "name": "Chia Seeds",
+    "nameHe": "זרעי צ׳יה",
+    "unit": "100g",
+    "kcal": 486.0,
+    "protein": 16.5,
+    "carbs": 42.1,
+    "fat": 30.7,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "90",
+    "name": "Cashews",
+    "nameHe": "קשיו",
+    "unit": "100g",
+    "kcal": 553.0,
+    "protein": 18.0,
+    "carbs": 30.0,
+    "fat": 44.0,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "91",
+    "name": "Peanuts",
+    "nameHe": "בוטנים",
+    "unit": "100g",
+    "kcal": 567.0,
+    "protein": 26.0,
+    "carbs": 16.0,
+    "fat": 49.0,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "176",
+    "name": "Pistachios",
+    "nameHe": "פיסטוקים",
+    "unit": "100g",
+    "kcal": 560.0,
+    "protein": 20.2,
+    "carbs": 27.2,
+    "fat": 45.3,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "177",
+    "name": "Pecans",
+    "nameHe": "אגוזי פקאן",
+    "unit": "100g",
+    "kcal": 691.0,
+    "protein": 9.2,
+    "carbs": 13.9,
+    "fat": 72.0,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "178",
+    "name": "Hazelnuts",
+    "nameHe": "אגוזי לוז",
+    "unit": "100g",
+    "kcal": 628.0,
+    "protein": 15.0,
+    "carbs": 16.7,
+    "fat": 60.8,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "179",
+    "name": "Pine Nuts",
+    "nameHe": "צנוברים",
+    "unit": "100g",
+    "kcal": 673.0,
+    "protein": 13.7,
+    "carbs": 13.1,
+    "fat": 68.4,
+    "category": "nutsAndSeeds",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "180",
+    "name": "Sesame Seeds",
+    "nameHe": "שומשום",
+    "unit": "100g",
+    "kcal": 573.0,
+    "protein": 17.7,
+    "carbs": 23.4,
+    "fat": 49.7,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "181",
+    "name": "Flax Seeds",
+    "nameHe": "זרעי פשתן",
+    "unit": "100g",
+    "kcal": 534.0,
+    "protein": 18.3,
+    "carbs": 28.9,
+    "fat": 42.2,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "182",
+    "name": "Shredded Coconut",
+    "nameHe": "קוקוס מגורר",
+    "unit": "100g",
+    "kcal": 354.0,
+    "protein": 3.3,
+    "carbs": 15.2,
+    "fat": 33.5,
+    "category": "nutsAndSeeds"
+  },
+  {
+    "id": "40",
+    "name": "Olive Oil",
+    "nameHe": "שמן זית",
+    "brand": "Extra Virgin",
+    "unit": "tbsp",
+    "kcal": 120.0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 14.0,
+    "category": "fatsAndOils"
+  },
+  {
+    "id": "41",
+    "name": "Butter",
+    "nameHe": "חמאה",
+    "unit": "tbsp",
+    "kcal": 102.0,
+    "protein": 0.1,
+    "carbs": 0.0,
+    "fat": 11.5,
+    "category": "fatsAndOils",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "184",
+    "name": "Canola Oil",
+    "nameHe": "שמן קנולה",
+    "unit": "tbsp",
+    "kcal": 124.0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 14.0,
+    "category": "fatsAndOils"
+  },
+  {
+    "id": "185",
+    "name": "Sunflower Oil",
+    "nameHe": "שמן חמניות",
+    "unit": "tbsp",
+    "kcal": 120.0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 13.6,
+    "category": "fatsAndOils"
+  },
+  {
+    "id": "186",
+    "name": "Coconut Oil",
+    "nameHe": "שמן קוקוס",
+    "unit": "tbsp",
+    "kcal": 121.0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 13.5,
+    "category": "fatsAndOils"
+  },
+  {
+    "id": "187",
+    "name": "Margarine",
+    "nameHe": "מרגרינה",
+    "unit": "tbsp",
+    "kcal": 102.0,
+    "protein": 0.1,
+    "carbs": 0.1,
+    "fat": 11.4,
+    "category": "fatsAndOils"
+  },
+  {
+    "id": "188",
+    "name": "Ghee",
+    "nameHe": "גהי",
+    "unit": "tbsp",
+    "kcal": 112.0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 12.7,
+    "category": "fatsAndOils",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "39",
+    "name": "Peanut Butter",
+    "nameHe": "חמאת בוטנים",
+    "unit": "tbsp",
+    "kcal": 95.0,
+    "protein": 4.0,
+    "carbs": 4.0,
+    "fat": 8.0,
+    "category": "condiments",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "42",
+    "name": "Honey",
+    "nameHe": "דבש",
+    "unit": "tbsp",
+    "kcal": 64.0,
+    "protein": 0.1,
+    "carbs": 17.0,
+    "fat": 0.0,
+    "category": "condiments",
+    "tags": [
+      "animalProduct"
+    ]
+  },
+  {
+    "id": "54",
+    "name": "Hummus",
+    "nameHe": "חומוס",
+    "unit": "100g",
+    "kcal": 166.0,
+    "protein": 7.9,
+    "carbs": 14.3,
+    "fat": 9.6,
+    "category": "condiments",
+    "israeli": true
+  },
+  {
+    "id": "55",
+    "name": "Tahini, Raw",
+    "nameHe": "טחינה גולמית",
+    "unit": "100g",
+    "kcal": 595.0,
+    "protein": 17.0,
+    "carbs": 21.0,
+    "fat": 54.0,
+    "category": "condiments",
+    "israeli": true
+  },
+  {
+    "id": "56",
+    "name": "Tahini Sauce",
+    "nameHe": "טחינה מוכנה",
+    "unit": "100g",
+    "kcal": 290.0,
+    "protein": 8.0,
+    "carbs": 9.0,
+    "fat": 25.0,
+    "category": "condiments",
+    "israeli": true
+  },
+  {
+    "id": "79",
+    "name": "Green Olives",
+    "nameHe": "זיתים ירוקים",
+    "unit": "100g",
+    "kcal": 145.0,
+    "protein": 1.0,
+    "carbs": 3.8,
+    "fat": 15.3,
+    "category": "condiments",
+    "israeli": true
+  },
+  {
+    "id": "183",
+    "name": "Almond Butter",
+    "nameHe": "חמאת שקדים",
+    "brand": "16g",
+    "unit": "tbsp",
+    "kcal": 98.0,
+    "protein": 3.4,
+    "carbs": 3.0,
+    "fat": 8.9,
+    "category": "condiments",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "189",
+    "name": "Mayonnaise",
+    "nameHe": "מיונז",
+    "unit": "tbsp",
+    "kcal": 94.0,
+    "protein": 0.1,
+    "carbs": 0.1,
+    "fat": 10.3,
+    "category": "condiments",
+    "tags": [
+      "animalProduct",
+      "eggs"
+    ]
+  },
+  {
+    "id": "190",
+    "name": "Ketchup",
+    "nameHe": "קטשופ",
+    "brand": "17g",
+    "unit": "tbsp",
+    "kcal": 19.0,
+    "protein": 0.2,
+    "carbs": 4.7,
+    "fat": 0.0,
+    "category": "condiments"
+  },
+  {
+    "id": "191",
+    "name": "Mustard",
+    "nameHe": "חרדל",
+    "unit": "tbsp",
+    "kcal": 9.0,
+    "protein": 0.6,
+    "carbs": 0.9,
+    "fat": 0.5,
+    "category": "condiments"
+  },
+  {
+    "id": "192",
+    "name": "Soy Sauce",
+    "nameHe": "רוטב סויה",
+    "unit": "tbsp",
+    "kcal": 8.0,
+    "protein": 1.3,
+    "carbs": 0.8,
+    "fat": 0.0,
+    "category": "condiments",
+    "tags": [
+      "gluten",
+      "soy"
+    ]
+  },
+  {
+    "id": "193",
+    "name": "Sugar",
+    "nameHe": "סוכר",
+    "brand": "12.5g",
+    "unit": "tbsp",
+    "kcal": 48.0,
+    "protein": 0.0,
+    "carbs": 12.6,
+    "fat": 0.0,
+    "category": "condiments"
+  },
+  {
+    "id": "194",
+    "name": "Strawberry Jam",
+    "nameHe": "ריבת תות",
+    "brand": "20g",
+    "unit": "tbsp",
+    "kcal": 56.0,
+    "protein": 0.1,
+    "carbs": 13.8,
+    "fat": 0.0,
+    "category": "condiments"
+  },
+  {
+    "id": "195",
+    "name": "Chocolate Spread",
+    "nameHe": "ממרח שוקולד",
+    "brand": "20g",
+    "unit": "tbsp",
+    "kcal": 108.0,
+    "protein": 1.2,
+    "carbs": 11.4,
+    "fat": 6.2,
+    "category": "condiments",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "nuts"
+    ]
+  },
+  {
+    "id": "196",
+    "name": "Maple Syrup",
+    "nameHe": "סירופ מייפל",
+    "brand": "20g",
+    "unit": "tbsp",
+    "kcal": 52.0,
+    "protein": 0.0,
+    "carbs": 13.4,
+    "fat": 0.0,
+    "category": "condiments"
+  },
+  {
+    "id": "197",
+    "name": "BBQ Sauce",
+    "nameHe": "רוטב ברביקיו",
+    "unit": "tbsp",
+    "kcal": 29.0,
+    "protein": 0.1,
+    "carbs": 7.0,
+    "fat": 0.1,
+    "category": "condiments"
+  },
+  {
+    "id": "198",
+    "name": "Zhug",
+    "nameHe": "סחוג",
+    "unit": "tbsp",
+    "kcal": 30.0,
+    "protein": 0.5,
+    "carbs": 1.5,
+    "fat": 2.8,
+    "category": "condiments",
+    "israeli": true
+  },
+  {
+    "id": "199",
+    "name": "Amba",
+    "nameHe": "עמבה",
+    "unit": "tbsp",
+    "kcal": 25.0,
+    "protein": 0.2,
+    "carbs": 5.0,
+    "fat": 0.5,
+    "category": "condiments",
+    "israeli": true
+  },
+  {
+    "id": "50",
+    "name": "Soy Milk",
+    "nameHe": "חלב סויה",
+    "brand": "Unsweetened",
+    "unit": "ml",
+    "kcal": 0.385,
+    "protein": 0.0355,
+    "carbs": 0.0129,
+    "fat": 0.0212,
+    "category": "beverages",
+    "tags": [
+      "soy"
+    ]
+  },
+  {
+    "id": "51",
+    "name": "Rice Milk",
+    "nameHe": "חלב אורז",
+    "brand": "Unsweetened",
+    "unit": "ml",
+    "kcal": 0.47,
+    "protein": 0.0028,
+    "carbs": 0.0917,
+    "fat": 0.0097,
+    "category": "beverages"
+  },
+  {
+    "id": "131",
+    "name": "Chocolate Milk",
+    "nameHe": "שוקו",
+    "unit": "ml",
+    "kcal": 0.632,
+    "protein": 0.032,
+    "carbs": 0.104,
+    "fat": 0.01,
+    "category": "beverages",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "200",
+    "name": "Water",
+    "nameHe": "מים",
+    "unit": "ml",
+    "kcal": 0.0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "201",
+    "name": "Coffee, Black",
+    "nameHe": "קפה שחור",
+    "unit": "ml",
+    "kcal": 0.01,
+    "protein": 0.001,
+    "carbs": 0.0,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "202",
+    "name": "Tea, Unsweetened",
+    "nameHe": "תה",
+    "unit": "ml",
+    "kcal": 0.01,
+    "protein": 0.0,
+    "carbs": 0.003,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "203",
+    "name": "Orange Juice",
+    "nameHe": "מיץ תפוזים",
+    "unit": "ml",
+    "kcal": 0.45,
+    "protein": 0.007,
+    "carbs": 0.104,
+    "fat": 0.002,
+    "category": "beverages"
+  },
+  {
+    "id": "204",
+    "name": "Apple Juice",
+    "nameHe": "מיץ תפוחים",
+    "unit": "ml",
+    "kcal": 0.46,
+    "protein": 0.001,
+    "carbs": 0.114,
+    "fat": 0.001,
+    "category": "beverages"
+  },
+  {
+    "id": "205",
+    "name": "Cola",
+    "nameHe": "קולה",
+    "unit": "ml",
+    "kcal": 0.42,
+    "protein": 0.0,
+    "carbs": 0.106,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "206",
+    "name": "Diet Cola",
+    "nameHe": "קולה דיאט",
+    "unit": "ml",
+    "kcal": 0.004,
+    "protein": 0.0,
+    "carbs": 0.001,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "207",
+    "name": "Sports Drink",
+    "nameHe": "משקה איזוטוני",
+    "unit": "ml",
+    "kcal": 0.26,
+    "protein": 0.0,
+    "carbs": 0.064,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "208",
+    "name": "Energy Drink",
+    "nameHe": "משקה אנרגיה",
+    "unit": "ml",
+    "kcal": 0.45,
+    "protein": 0.0,
+    "carbs": 0.11,
+    "fat": 0.0,
+    "category": "beverages"
+  },
+  {
+    "id": "209",
+    "name": "Coconut Water",
+    "nameHe": "מי קוקוס",
+    "unit": "ml",
+    "kcal": 0.19,
+    "protein": 0.007,
+    "carbs": 0.037,
+    "fat": 0.002,
+    "category": "beverages"
+  },
+  {
+    "id": "210",
+    "name": "Almond Milk",
+    "nameHe": "חלב שקדים",
+    "brand": "Unsweetened",
+    "unit": "ml",
+    "kcal": 0.15,
+    "protein": 0.006,
+    "carbs": 0.003,
+    "fat": 0.011,
+    "category": "beverages",
+    "tags": [
+      "nuts"
+    ]
+  },
+  {
+    "id": "211",
+    "name": "Oat Milk",
+    "nameHe": "חלב שיבולת שועל",
+    "unit": "ml",
+    "kcal": 0.45,
+    "protein": 0.013,
+    "carbs": 0.067,
+    "fat": 0.015,
+    "category": "beverages",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "212",
+    "name": "Beer",
+    "nameHe": "בירה",
+    "unit": "ml",
+    "kcal": 0.43,
+    "protein": 0.005,
+    "carbs": 0.036,
+    "fat": 0.0,
+    "category": "beverages",
+    "tags": [
+      "gluten"
+    ],
+    "containsAlcohol": true
+  },
+  {
+    "id": "213",
+    "name": "Red Wine",
+    "nameHe": "יין אדום",
+    "unit": "ml",
+    "kcal": 0.85,
+    "protein": 0.001,
+    "carbs": 0.026,
+    "fat": 0.0,
+    "category": "beverages",
+    "containsAlcohol": true
+  },
+  {
+    "id": "214",
+    "name": "Vodka",
+    "nameHe": "וודקה",
+    "unit": "ml",
+    "kcal": 2.31,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 0.0,
+    "category": "beverages",
+    "containsAlcohol": true
+  },
+  {
+    "id": "68",
+    "name": "Bourekas",
+    "nameHe": "בורקס גבינה",
+    "brand": "Cheese",
+    "unit": "piece",
+    "kcal": 350.0,
+    "protein": 6.5,
+    "carbs": 28.0,
+    "fat": 24.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "69",
+    "name": "Malawach",
+    "nameHe": "מלאווח",
+    "unit": "piece",
+    "kcal": 380.0,
+    "protein": 6.0,
+    "carbs": 40.0,
+    "fat": 21.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "70",
+    "name": "Jachnun",
+    "nameHe": "ג׳חנון",
+    "unit": "piece",
+    "kcal": 480.0,
+    "protein": 9.0,
+    "carbs": 60.0,
+    "fat": 23.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "77",
+    "name": "Halva",
+    "nameHe": "חלבה",
+    "unit": "100g",
+    "kcal": 540.0,
+    "protein": 12.0,
+    "carbs": 50.0,
+    "fat": 32.0,
+    "category": "snacksAndSweets",
+    "israeli": true
+  },
+  {
+    "id": "130",
+    "name": "Ice Cream",
+    "nameHe": "גלידה",
+    "brand": "Vanilla",
+    "unit": "100g",
+    "kcal": 207.0,
+    "protein": 3.5,
+    "carbs": 23.6,
+    "fat": 11.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "215",
+    "name": "Dark Chocolate",
+    "nameHe": "שוקולד מריר",
+    "brand": "70%",
+    "unit": "100g",
+    "kcal": 598.0,
+    "protein": 7.8,
+    "carbs": 45.9,
+    "fat": 42.6,
+    "category": "snacksAndSweets",
+    "tags": [
+      "soy"
+    ]
+  },
+  {
+    "id": "216",
+    "name": "Milk Chocolate",
+    "nameHe": "שוקולד חלב",
+    "unit": "100g",
+    "kcal": 535.0,
+    "protein": 7.7,
+    "carbs": 59.4,
+    "fat": 29.7,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "soy"
+    ]
+  },
+  {
+    "id": "217",
+    "name": "Chocolate Chip Cookie",
+    "nameHe": "עוגיית שוקולד צ׳יפס",
+    "brand": "16g",
+    "unit": "piece",
+    "kcal": 78.0,
+    "protein": 0.9,
+    "carbs": 10.3,
+    "fat": 3.8,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "eggs",
+      "gluten"
+    ]
+  },
+  {
+    "id": "218",
+    "name": "Potato Chips",
+    "nameHe": "חטיף תפוצ׳יפס",
+    "unit": "100g",
+    "kcal": 536.0,
+    "protein": 7.0,
+    "carbs": 53.0,
+    "fat": 34.0,
+    "category": "snacksAndSweets"
+  },
+  {
+    "id": "219",
+    "name": "Bamba",
+    "nameHe": "במבה",
+    "unit": "100g",
+    "kcal": 526.0,
+    "protein": 15.0,
+    "carbs": 45.0,
+    "fat": 32.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "nuts"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "220",
+    "name": "Bisli",
+    "nameHe": "ביסלי",
+    "unit": "100g",
+    "kcal": 460.0,
+    "protein": 8.0,
+    "carbs": 62.0,
+    "fat": 20.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "221",
+    "name": "Popcorn",
+    "nameHe": "פופקורן",
+    "unit": "100g",
+    "kcal": 387.0,
+    "protein": 12.9,
+    "carbs": 77.9,
+    "fat": 4.5,
+    "category": "snacksAndSweets"
+  },
+  {
+    "id": "222",
+    "name": "Pretzels",
+    "nameHe": "בייגלה",
+    "unit": "100g",
+    "kcal": 384.0,
+    "protein": 10.0,
+    "carbs": 80.0,
+    "fat": 3.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "gluten"
+    ]
+  },
+  {
+    "id": "223",
+    "name": "Croissant",
+    "nameHe": "קרואסון",
+    "brand": "57g",
+    "unit": "piece",
+    "kcal": 231.0,
+    "protein": 4.7,
+    "carbs": 26.0,
+    "fat": 12.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten"
+    ]
+  },
+  {
+    "id": "224",
+    "name": "Sufganiyah",
+    "nameHe": "סופגנייה",
+    "unit": "piece",
+    "kcal": 340.0,
+    "protein": 5.0,
+    "carbs": 40.0,
+    "fat": 18.0,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "eggs",
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "225",
+    "name": "Rugelach",
+    "nameHe": "רוגלך",
+    "brand": "35g",
+    "unit": "piece",
+    "kcal": 145.0,
+    "protein": 2.0,
+    "carbs": 18.0,
+    "fat": 7.5,
+    "category": "snacksAndSweets",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "57",
+    "name": "Falafel Ball",
+    "nameHe": "כדור פלאפל",
+    "unit": "piece",
+    "kcal": 57.0,
+    "protein": 2.3,
+    "carbs": 5.4,
+    "fat": 3.0,
+    "category": "preparedDishes",
+    "israeli": true
+  },
+  {
+    "id": "61",
+    "name": "Israeli Salad",
+    "nameHe": "סלט ישראלי",
+    "unit": "100g",
+    "kcal": 38.0,
+    "protein": 0.8,
+    "carbs": 3.5,
+    "fat": 2.4,
+    "category": "preparedDishes",
+    "israeli": true
+  },
+  {
+    "id": "62",
+    "name": "Shakshuka",
+    "nameHe": "שקשוקה",
+    "brand": "Two eggs",
+    "unit": "serving",
+    "kcal": 320.0,
+    "protein": 18.0,
+    "carbs": 14.0,
+    "fat": 22.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "eggs"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "63",
+    "name": "Chicken Schnitzel",
+    "nameHe": "שניצל עוף",
+    "brand": "Fried, breaded",
+    "unit": "100g",
+    "kcal": 290.0,
+    "protein": 18.0,
+    "carbs": 17.0,
+    "fat": 16.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "eggs",
+      "gluten",
+      "meat"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "64",
+    "name": "Chicken Shawarma",
+    "nameHe": "שווארמה עוף",
+    "unit": "100g",
+    "kcal": 260.0,
+    "protein": 22.0,
+    "carbs": 3.0,
+    "fat": 18.0,
+    "category": "preparedDishes",
+    "tags": [
+      "meat"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "65",
+    "name": "Sabich in Pita",
+    "nameHe": "סביח בפיתה",
+    "unit": "serving",
+    "kcal": 600.0,
+    "protein": 20.0,
+    "carbs": 65.0,
+    "fat": 28.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "eggs",
+      "gluten"
+    ],
+    "israeli": true
+  },
+  {
+    "id": "226",
+    "name": "Pizza",
+    "nameHe": "פיצה",
+    "brand": "Margherita, 107g",
+    "unit": "slice",
+    "kcal": 285.0,
+    "protein": 12.0,
+    "carbs": 36.0,
+    "fat": 10.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten"
+    ]
+  },
+  {
+    "id": "227",
+    "name": "Hamburger",
+    "nameHe": "המבורגר ביתי",
+    "unit": "serving",
+    "kcal": 540.0,
+    "protein": 30.0,
+    "carbs": 40.0,
+    "fat": 27.0,
+    "category": "preparedDishes",
+    "tags": [
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "228",
+    "name": "Sushi Roll",
+    "nameHe": "סושי",
+    "brand": "Salmon, 30g",
+    "unit": "piece",
+    "kcal": 48.0,
+    "protein": 2.0,
+    "carbs": 8.0,
+    "fat": 0.8,
+    "category": "preparedDishes",
+    "tags": [
+      "fish"
+    ]
+  },
+  {
+    "id": "229",
+    "name": "Caesar Salad",
+    "nameHe": "סלט קיסר",
+    "unit": "serving",
+    "kcal": 470.0,
+    "protein": 15.0,
+    "carbs": 12.0,
+    "fat": 40.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "eggs",
+      "gluten"
+    ]
+  },
+  {
+    "id": "230",
+    "name": "Lentil Soup",
+    "nameHe": "מרק עדשים",
+    "brand": "300ml",
+    "unit": "serving",
+    "kcal": 220.0,
+    "protein": 12.0,
+    "carbs": 35.0,
+    "fat": 3.5,
+    "category": "preparedDishes"
+  },
+  {
+    "id": "231",
+    "name": "Omelette",
+    "nameHe": "חביתה",
+    "brand": "Two eggs",
+    "unit": "serving",
+    "kcal": 220.0,
+    "protein": 13.0,
+    "carbs": 1.5,
+    "fat": 18.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "eggs"
+    ]
+  },
+  {
+    "id": "232",
+    "name": "Tuna Sandwich",
+    "nameHe": "סנדוויץ׳ טונה",
+    "unit": "serving",
+    "kcal": 400.0,
+    "protein": 22.0,
+    "carbs": 40.0,
+    "fat": 16.0,
+    "category": "preparedDishes",
+    "tags": [
+      "animalProduct",
+      "eggs",
+      "fish",
+      "gluten"
+    ]
+  },
+  {
+    "id": "92",
+    "name": "Whey Protein Isolate",
+    "nameHe": "אבקת חלבון איזולט",
+    "brand": "Per 30g scoop",
+    "unit": "scoop",
+    "kcal": 110.0,
+    "protein": 25.0,
+    "carbs": 1.0,
+    "fat": 0.5,
+    "category": "supplements",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "93",
+    "name": "Whey Protein",
+    "nameHe": "אבקת חלבון מי גבינה",
+    "brand": "Concentrate, per 30g scoop",
+    "unit": "scoop",
+    "kcal": 120.0,
+    "protein": 24.0,
+    "carbs": 3.0,
+    "fat": 1.5,
+    "category": "supplements",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "94",
+    "name": "Casein Protein",
+    "nameHe": "אבקת חלבון קזאין",
+    "brand": "Per 33g scoop",
+    "unit": "scoop",
+    "kcal": 120.0,
+    "protein": 24.0,
+    "carbs": 3.0,
+    "fat": 1.0,
+    "category": "supplements",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "95",
+    "name": "Plant Protein",
+    "nameHe": "אבקת חלבון צמחי",
+    "brand": "Pea/rice, per 33g scoop",
+    "unit": "scoop",
+    "kcal": 120.0,
+    "protein": 24.0,
+    "carbs": 4.0,
+    "fat": 2.0,
+    "category": "supplements"
+  },
+  {
+    "id": "96",
+    "name": "Mass Gainer",
+    "nameHe": "אבקת גיינר",
+    "brand": "Per 150g serving",
+    "unit": "serving",
+    "kcal": 600.0,
+    "protein": 30.0,
+    "carbs": 110.0,
+    "fat": 5.0,
+    "category": "supplements",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "97",
+    "name": "Protein Bar",
+    "nameHe": "חטיף חלבון",
+    "unit": "piece",
+    "kcal": 220.0,
+    "protein": 20.0,
+    "carbs": 22.0,
+    "fat": 7.0,
+    "category": "supplements",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "98",
+    "name": "Protein Shake",
+    "nameHe": "שייק חלבון מוכן",
+    "brand": "Ready to drink, 500ml",
+    "unit": "serving",
+    "kcal": 160.0,
+    "protein": 30.0,
+    "carbs": 8.0,
+    "fat": 1.5,
+    "category": "supplements",
+    "tags": [
+      "animalProduct",
+      "dairy"
+    ]
+  },
+  {
+    "id": "99",
+    "name": "Big Mac",
+    "nameHe": "ביג מק",
+    "brand": "McDonald's Israel, 214g",
+    "unit": "serving",
+    "kcal": 434.0,
+    "protein": 25.0,
+    "carbs": 40.0,
+    "fat": 18.8,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "100",
+    "name": "Quarter Pounder with Cheese",
+    "nameHe": "קוורטר פאונדר עם גבינה",
+    "brand": "McDonald's US menu",
+    "unit": "serving",
+    "kcal": 520.0,
+    "protein": 30.0,
+    "carbs": 42.0,
+    "fat": 26.0,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "101",
+    "name": "McChicken",
+    "nameHe": "מקצ׳יקן",
+    "brand": "McDonald's Israel, 151g",
+    "unit": "serving",
+    "kcal": 340.0,
+    "protein": 16.0,
+    "carbs": 38.0,
+    "fat": 13.8,
+    "category": "fastFood",
+    "tags": [
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "102",
+    "name": "Cheeseburger",
+    "nameHe": "צ׳יזבורגר",
+    "brand": "McDonald's Israel, 118g",
+    "unit": "serving",
+    "kcal": 276.0,
+    "protein": 16.0,
+    "carbs": 30.0,
+    "fat": 10.0,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "103",
+    "name": "Hamburger",
+    "nameHe": "המבורגר",
+    "brand": "McDonald's Israel, 104g",
+    "unit": "serving",
+    "kcal": 227.0,
+    "protein": 14.0,
+    "carbs": 29.0,
+    "fat": 5.9,
+    "category": "fastFood",
+    "tags": [
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "104",
+    "name": "Chicken McNuggets",
+    "nameHe": "מקנאגטס",
+    "brand": "McDonald's US menu, 6 pieces",
+    "unit": "serving",
+    "kcal": 250.0,
+    "protein": 14.0,
+    "carbs": 15.0,
+    "fat": 15.0,
+    "category": "fastFood",
+    "tags": [
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "105",
+    "name": "French Fries",
+    "nameHe": "צ׳יפס",
+    "brand": "McDonald's Israel, regular 100g",
+    "unit": "serving",
+    "kcal": 294.0,
+    "protein": 5.0,
+    "carbs": 34.0,
+    "fat": 15.2,
+    "category": "fastFood"
+  },
+  {
+    "id": "106",
+    "name": "Egg McMuffin",
+    "nameHe": "אג מקמאפין",
+    "brand": "McDonald's US menu",
+    "unit": "serving",
+    "kcal": 310.0,
+    "protein": 17.0,
+    "carbs": 30.0,
+    "fat": 13.0,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "eggs",
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "107",
+    "name": "Filet-O-Fish",
+    "nameHe": "פילה או פיש",
+    "brand": "McDonald's US menu",
+    "unit": "serving",
+    "kcal": 390.0,
+    "protein": 16.0,
+    "carbs": 39.0,
+    "fat": 19.0,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "fish",
+      "gluten"
+    ]
+  },
+  {
+    "id": "108",
+    "name": "McFlurry Oreo",
+    "nameHe": "מקפלרי אוראו",
+    "brand": "McDonald's Israel, 233g",
+    "unit": "serving",
+    "kcal": 445.0,
+    "protein": 10.0,
+    "carbs": 65.0,
+    "fat": 15.6,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten"
+    ]
+  },
+  {
+    "id": "109",
+    "name": "Coca-Cola",
+    "nameHe": "קוקה קולה",
+    "brand": "McDonald's Israel, regular 400ml",
+    "unit": "serving",
+    "kcal": 169.0,
+    "protein": 0.0,
+    "carbs": 42.0,
+    "fat": 0.0,
+    "category": "fastFood"
+  },
+  {
+    "id": "233",
+    "name": "Mac Royal",
+    "nameHe": "מק רויאל",
+    "brand": "McDonald's Israel, 324g",
+    "unit": "serving",
+    "kcal": 584.0,
+    "protein": 36.0,
+    "carbs": 62.0,
+    "fat": 20.1,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "234",
+    "name": "Chicken McNuggets",
+    "nameHe": "מק נאגטס",
+    "brand": "McDonald's Israel, 5 pieces",
+    "unit": "serving",
+    "kcal": 219.0,
+    "protein": 17.0,
+    "carbs": 13.0,
+    "fat": 10.6,
+    "category": "fastFood",
+    "tags": [
+      "gluten",
+      "meat"
+    ]
+  },
+  {
+    "id": "235",
+    "name": "Double Mac Fish",
+    "nameHe": "דאבל מק דג",
+    "brand": "McDonald's Israel, 363g",
+    "unit": "serving",
+    "kcal": 740.0,
+    "protein": 33.0,
+    "carbs": 77.0,
+    "fat": 32.3,
+    "category": "fastFood",
+    "tags": [
+      "animalProduct",
+      "dairy",
+      "fish",
+      "gluten"
+    ]
+  }
+]

@@ -63,6 +63,10 @@ let package = Package(
         // --- Tests ---
 
         .testTarget(
+            name: "WellnessCatalogTests",
+            dependencies: ["WellnessCatalog", "WellnessModels"]
+        ),
+        .testTarget(
             name: "WellnessDomainTests",
             dependencies: ["WellnessDomain", "WellnessModels"]
         ),
