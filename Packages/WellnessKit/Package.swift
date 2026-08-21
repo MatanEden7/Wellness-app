@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "WellnessKit",
+    defaultLocalization: "en",
     platforms: [.iOS(.v18), .macOS(.v15)],
     products: [
         .library(name: "WellnessModels", targets: ["WellnessModels"]),
@@ -57,7 +58,8 @@ let package = Package(
         // Design system + shared components. SwiftUI, no domain logic, no persistence.
         .target(
             name: "WellnessUI",
-            dependencies: ["WellnessModels", "WellnessDomain", "WellnessStores"]
+            dependencies: ["WellnessModels", "WellnessDomain", "WellnessStores"],
+            resources: [.process("Resources")]
         ),
 
         // --- Tests ---
@@ -77,6 +79,10 @@ let package = Package(
         .testTarget(
             name: "WellnessServicesTests",
             dependencies: ["WellnessServices", "WellnessModels", "WellnessCatalog", "WellnessDomain", "WellnessPersistence"]
+        ),
+        .testTarget(
+            name: "WellnessUITests",
+            dependencies: ["WellnessUI"]
         ),
         .testTarget(
             name: "ParityTests",
