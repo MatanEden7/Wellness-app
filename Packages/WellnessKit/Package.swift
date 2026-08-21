@@ -57,7 +57,7 @@ let package = Package(
         // Design system + shared components. SwiftUI, no domain logic, no persistence.
         .target(
             name: "WellnessUI",
-            dependencies: ["WellnessModels", "WellnessStores"]
+            dependencies: ["WellnessModels", "WellnessDomain", "WellnessStores"]
         ),
 
         // --- Tests ---

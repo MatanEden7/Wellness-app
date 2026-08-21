@@ -35,12 +35,17 @@ struct DashboardTab: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            PlaceholderScreen(title: "Dashboard", icon: "square.grid.2x2")
+            DashboardScreen()
                 .navigationTitle("Dashboard")
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
                         NavigationLink(value: AppRoute.settings) {
                             Image(systemName: "gearshape")
+                        }
+                    }
+                    ToolbarItem(placement: .automatic) {
+                        NavigationLink(value: AppRoute.analytics) {
+                            Image(systemName: "chart.bar")
                         }
                     }
                 }
@@ -56,8 +61,7 @@ struct MealsTab: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            PlaceholderScreen(title: "Meals", icon: "fork.knife")
-                .navigationTitle("Meals")
+            MealsScreen()
                 .navigationDestination(for: AppRoute.self) { route in
                     routeView(route)
                 }
@@ -70,8 +74,7 @@ struct WorkoutsTab: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            PlaceholderScreen(title: "Workouts", icon: "dumbbell")
-                .navigationTitle("Workouts")
+            WorkoutsScreen()
                 .navigationDestination(for: AppRoute.self) { route in
                     routeView(route)
                 }
@@ -84,8 +87,7 @@ struct SleepTab: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            PlaceholderScreen(title: "Sleep", icon: "moon.zzz")
-                .navigationTitle("Sleep")
+            SleepScreen()
                 .navigationDestination(for: AppRoute.self) { route in
                     routeView(route)
                 }
@@ -98,8 +100,7 @@ struct CalendarTab: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            PlaceholderScreen(title: "Calendar", icon: "calendar")
-                .navigationTitle("Calendar")
+            CalendarScreen()
                 .navigationDestination(for: AppRoute.self) { route in
                     routeView(route)
                 }
@@ -109,13 +110,13 @@ struct CalendarTab: View {
 
 // MARK: - Route resolution
 
-@ViewBuilder
+@MainActor @ViewBuilder
 func routeView(_ route: AppRoute) -> some View {
     switch route {
     case .dashboard:
-        PlaceholderScreen(title: "Dashboard", icon: "square.grid.2x2")
+        DashboardScreen()
     case .meals:
-        PlaceholderScreen(title: "Meals", icon: "fork.knife")
+        MealsScreen()
     case .mealEdit(let id):
         PlaceholderScreen(title: id == nil ? "New Meal" : "Edit Meal", icon: "fork.knife")
     case .mealFoods:
@@ -125,7 +126,7 @@ func routeView(_ route: AppRoute) -> some View {
     case .mealTemplateEdit(let id):
         PlaceholderScreen(title: id == nil ? "New Template" : "Edit Template", icon: "doc.text")
     case .workouts:
-        PlaceholderScreen(title: "Workouts", icon: "dumbbell")
+        WorkoutsScreen()
     case .workoutExercises:
         PlaceholderScreen(title: "Exercises", icon: "figure.strengthtraining.traditional")
     case .workoutSession(let id):
@@ -135,17 +136,17 @@ func routeView(_ route: AppRoute) -> some View {
     case .workoutTemplateEdit(let id):
         PlaceholderScreen(title: id == nil ? "New Template" : "Edit Template", icon: "doc.text")
     case .sleep:
-        PlaceholderScreen(title: "Sleep", icon: "moon.zzz")
+        SleepScreen()
     case .calendar:
-        PlaceholderScreen(title: "Calendar", icon: "calendar")
+        CalendarScreen()
     case .calendarSchedule:
         PlaceholderScreen(title: "Schedule Event", icon: "calendar.badge.plus")
     case .analytics:
-        PlaceholderScreen(title: "Analytics", icon: "chart.bar")
+        AnalyticsScreen()
     case .settings:
-        PlaceholderScreen(title: "Settings", icon: "gearshape")
+        SettingsScreen()
     case .settingsProfile:
-        PlaceholderScreen(title: "Profile", icon: "person")
+        ProfileSettingsScreen()
     case .settingsNotifications:
         PlaceholderScreen(title: "Notifications", icon: "bell")
     case .settingsBackup:
@@ -157,7 +158,7 @@ func routeView(_ route: AppRoute) -> some View {
     case .settingsAbout:
         PlaceholderScreen(title: "About", icon: "info.circle")
     case .onboarding:
-        PlaceholderScreen(title: "Welcome", icon: "hand.wave")
+        OnboardingScreen()
     }
 }
 
