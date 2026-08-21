@@ -18,6 +18,7 @@
 		1DB30FD120C6906D48D73AFE /* WellnessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */; };
 		24913DA4DB18BA487DCCBB5F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AB05088148331502D25BFC3 /* Foundation.framework */; };
 		3339DBB6A4B62DE0F4D22679 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236A2978E1416FBC3550B7A2 /* AppRouter.swift */; };
+		SC10000000000000000000001 /* SetupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = SC20000000000000000000001 /* SetupCoordinator.swift */; };
 		W10000000000000000000001 /* WellnessWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000001 /* WellnessWidgets.swift */; };
 		W10000000000000000000002 /* TodayWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000002 /* TodayWidget.swift */; };
 		W10000000000000000000003 /* NextUpWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000003 /* NextUpWidget.swift */; };
@@ -59,6 +60,7 @@
 		18FBAC9F54A9F06D4D20889B /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WellnessApp.swift; sourceTree = "<group>"; };
 		236A2978E1416FBC3550B7A2 /* AppRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
+		SC20000000000000000000001 /* SetupCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetupCoordinator.swift; sourceTree = "<group>"; };
 		3AB05088148331502D25BFC3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		57912EC7FF9BB49183945DDB /* Wellness.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Wellness.entitlements; sourceTree = "<group>"; };
 		6A8A2E95F81F4C93797AD346 /* WellnessApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WellnessApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -151,6 +153,7 @@
 			children = (
 				236A2978E1416FBC3550B7A2 /* AppRouter.swift */,
 				18FBAC9F54A9F06D4D20889B /* RootView.swift */,
+				SC20000000000000000000001 /* SetupCoordinator.swift */,
 				1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */,
 				629F97A19E2F0D775E3A73B3 /* Resources */,
 				57912EC7FF9BB49183945DDB /* Wellness.entitlements */,
@@ -315,6 +318,7 @@
 			files = (
 				3339DBB6A4B62DE0F4D22679 /* AppRouter.swift in Sources */,
 				193C75736ECB1624DB65B7D1 /* RootView.swift in Sources */,
+				SC10000000000000000000001 /* SetupCoordinator.swift in Sources */,
 				1DB30FD120C6906D48D73AFE /* WellnessApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

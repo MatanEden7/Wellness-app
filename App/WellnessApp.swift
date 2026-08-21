@@ -10,11 +10,23 @@ import WellnessUI
 struct WellnessApp: App {
     private let container: ModelContainer
     private let stores: AppStores
+    private let setupCoordinator: SetupCoordinator
 
     init() {
         let container = try! WellnessContainer.create()
         self.container = container
         self.stores = AppStores(container: container)
+
+        let dataStore = SwiftDataStore(modelContainer: container)
+        self.setupCoordinator = SetupCoordinator(
+            food: dataStore,
+            exercise: dataStore,
+            workoutTemplate: dataStore,
+            mealTemplate: dataStore,
+            event: dataStore,
+            prefs: Preferences(),
+            stores: stores
+        )
     }
 
     var body: some Scene {
@@ -27,6 +39,11 @@ struct WellnessApp: App {
                 .environment(stores.calendar)
                 .environment(stores.analytics)
                 .task { await stores.loadAll() }
+                .onChange(of: stores.profile.hasProfile) { _, hasProfile in
+                    if hasProfile {
+                        Task { await setupCoordinator.seedIfNeeded() }
+                    }
+                }
         }
         .modelContainer(container)
     }

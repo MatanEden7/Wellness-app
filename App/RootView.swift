@@ -9,7 +9,9 @@ struct RootView: View {
         if profileStore.hasProfile {
             AppShell()
         } else {
-            AppShell()
+            NavigationStack {
+                OnboardingScreen()
+            }
         }
     }
 }
