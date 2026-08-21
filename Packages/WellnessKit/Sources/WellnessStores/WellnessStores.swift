@@ -1,9 +1,3 @@
-// WellnessStores — @Observable feature stores.
-// The only module that may hold mutable app state.
-
+@_exported import WellnessModels
+@_exported import WellnessServices
 import Foundation
-import WellnessModels
-
-public enum WellnessStoresMarker {
-    public static let version = "0.1.0"
-}

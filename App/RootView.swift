@@ -1,23 +1,15 @@
 import SwiftUI
+import WellnessUI
+import WellnessStores
 
 struct RootView: View {
+    @Environment(ProfileFeatureStore.self) private var profileStore
+
     var body: some View {
-        TabView {
-            Tab("Dashboard", systemImage: "house") {
-                Text("Dashboard")
-            }
-            Tab("Meals", systemImage: "fork.knife") {
-                Text("Meals")
-            }
-            Tab("Workouts", systemImage: "dumbbell") {
-                Text("Workouts")
-            }
-            Tab("Sleep", systemImage: "bed.double") {
-                Text("Sleep")
-            }
-            Tab("Settings", systemImage: "gearshape") {
-                Text("Settings")
-            }
+        if profileStore.hasProfile {
+            AppShell()
+        } else {
+            AppShell()
         }
     }
 }
