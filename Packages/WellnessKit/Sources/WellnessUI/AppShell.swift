@@ -118,29 +118,29 @@ func routeView(_ route: AppRoute) -> some View {
     case .meals:
         MealsScreen()
     case .mealEdit(let id):
-        PlaceholderScreen(title: id == nil ? "New Meal" : "Edit Meal", icon: "fork.knife")
+        MealEditorScreen(mealId: id)
     case .mealFoods:
-        PlaceholderScreen(title: "Foods", icon: "list.bullet")
+        FoodCatalogScreen()
     case .mealTemplates:
-        PlaceholderScreen(title: "Meal Templates", icon: "doc.text")
+        MealTemplatesScreen()
     case .mealTemplateEdit(let id):
-        PlaceholderScreen(title: id == nil ? "New Template" : "Edit Template", icon: "doc.text")
+        MealTemplateEditorScreen(templateId: id)
     case .workouts:
         WorkoutsScreen()
     case .workoutExercises:
-        PlaceholderScreen(title: "Exercises", icon: "figure.strengthtraining.traditional")
+        ExerciseLibraryScreen()
     case .workoutSession(let id):
-        PlaceholderScreen(title: "Session \(id.prefix(6))", icon: "timer")
+        WorkoutSessionScreen(sessionId: id)
     case .workoutTemplates:
-        PlaceholderScreen(title: "Templates", icon: "doc.text")
+        WorkoutsScreen()
     case .workoutTemplateEdit(let id):
-        PlaceholderScreen(title: id == nil ? "New Template" : "Edit Template", icon: "doc.text")
+        WorkoutTemplateEditorScreen(templateId: id)
     case .sleep:
         SleepScreen()
     case .calendar:
         CalendarScreen()
     case .calendarSchedule:
-        PlaceholderScreen(title: "Schedule Event", icon: "calendar.badge.plus")
+        CalendarScreen()
     case .analytics:
         AnalyticsScreen()
     case .settings:
@@ -148,15 +148,15 @@ func routeView(_ route: AppRoute) -> some View {
     case .settingsProfile:
         ProfileSettingsScreen()
     case .settingsNotifications:
-        PlaceholderScreen(title: "Notifications", icon: "bell")
+        NotificationSettingsScreen()
     case .settingsBackup:
-        PlaceholderScreen(title: "Backup", icon: "arrow.up.doc")
+        BackupSettingsScreen()
     case .settingsLanguage:
-        PlaceholderScreen(title: "Language", icon: "globe")
+        LanguageSettingsScreen()
     case .settingsAppearance:
-        PlaceholderScreen(title: "Appearance", icon: "paintbrush")
+        AppearanceSettingsScreen()
     case .settingsAbout:
-        PlaceholderScreen(title: "About", icon: "info.circle")
+        AboutScreen()
     case .onboarding:
         OnboardingScreen()
     }

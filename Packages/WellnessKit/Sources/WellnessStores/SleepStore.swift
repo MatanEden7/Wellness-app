@@ -40,8 +40,33 @@ public final class SleepFeatureStore {
         await load()
     }
 
+    public func updateSleep(_ entry: SleepEntry) async throws {
+        try await store.updateSleepEntry(entry)
+        await load()
+    }
+
+    public func insertSleep(_ entry: SleepEntry) async throws {
+        try await store.insertSleepEntry(entry)
+        await load()
+    }
+
     public func deleteSleep(id: String) async throws {
         try await store.deleteSleepEntry(id: id)
         await load()
+    }
+
+    public func sleep(byId id: String) async -> SleepEntry? {
+        try? await store.sleepEntry(byId: id)
+    }
+
+    public var lastNightHours: Double? {
+        recentEntries.first { $0.endedAt != nil }?.durationInHours
+    }
+
+    public var weekAvgHours: Double? {
+        let completed = recentEntries.filter { $0.endedAt != nil }.prefix(7)
+        guard !completed.isEmpty else { return nil }
+        let total = completed.compactMap(\.durationInHours).reduce(0, +)
+        return total / Double(completed.count)
     }
 }

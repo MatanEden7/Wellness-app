@@ -6,10 +6,28 @@ import WellnessDomain
 public struct MealsScreen: View {
     @Environment(MealFeatureStore.self) private var mealStore
 
+    @State private var selectedDate: Date = .now
+    @State private var showAddSheet = false
+    @State private var showTemplates = false
+
     public init() {}
 
     public var body: some View {
         List {
+            Section {
+                DatePicker(
+                    "Date",
+                    selection: $selectedDate,
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.compact)
+                .onChange(of: selectedDate) { _, newDate in
+                    Task {
+                        await mealStore.selectDate(MealFeatureStore.dateInt(from: newDate))
+                    }
+                }
+            }
+
             Section {
                 NutritionSummaryRow(
                     kcal: mealStore.totalKcal,
@@ -27,21 +45,30 @@ public struct MealsScreen: View {
                 )
             } else {
                 ForEach(mealStore.todayMeals) { meal in
-                    MealRow(meal: meal)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                Task { try? await mealStore.deleteMeal(id: meal.id) }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
+                    NavigationLink(value: AppRoute.mealEdit(id: meal.id)) {
+                        MealRow(meal: meal)
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            Task { try? await mealStore.deleteMeal(id: meal.id) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
+                    }
                 }
             }
         }
         .navigationTitle("Meals")
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                NavigationLink(value: AppRoute.mealEdit(id: nil)) {
+                Menu {
+                    NavigationLink(value: AppRoute.mealEdit(id: nil)) {
+                        Label("New Meal", systemImage: "plus")
+                    }
+                    NavigationLink(value: AppRoute.mealTemplates) {
+                        Label("From Template", systemImage: "doc.text")
+                    }
+                } label: {
                     Image(systemName: "plus")
                 }
             }

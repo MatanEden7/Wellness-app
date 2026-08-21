@@ -62,7 +62,7 @@ struct AppStores {
         let store = SwiftDataStore(modelContainer: container)
 
         profile = ProfileFeatureStore(store: store)
-        meals = MealFeatureStore(store: store, foodStore: store)
+        meals = MealFeatureStore(store: store, foodStore: store, templateStore: store)
         workouts = WorkoutFeatureStore(
             templateStore: store, sessionStore: store, exerciseStore: store
         )

@@ -5,6 +5,8 @@ import WellnessStores
 public struct WorkoutsScreen: View {
     @Environment(WorkoutFeatureStore.self) private var workoutStore
 
+    @State private var startingSession = false
+
     public init() {}
 
     public var body: some View {
@@ -24,7 +26,20 @@ public struct WorkoutsScreen: View {
                     )
                 } else {
                     ForEach(workoutStore.templates) { template in
-                        TemplateRow(template: template)
+                        WorkoutTemplateRow(template: template)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    Task { try? await workoutStore.deleteTemplate(id: template.id) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .leading) {
+                                NavigationLink(value: AppRoute.workoutTemplateEdit(id: template.id)) {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                            }
                     }
                 }
             }
@@ -35,13 +50,36 @@ public struct WorkoutsScreen: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(workoutStore.recentSessions.prefix(10)) { session in
-                        SessionRow(session: session)
+                        NavigationLink(value: AppRoute.workoutSession(id: session.id)) {
+                            SessionRow(session: session)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                Task { try? await workoutStore.deleteSession(id: session.id) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                 }
             }
         }
         .navigationTitle("Workouts")
         .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Menu {
+                    Button {
+                        startQuickWorkout()
+                    } label: {
+                        Label("Quick Workout", systemImage: "bolt")
+                    }
+                    NavigationLink(value: AppRoute.workoutTemplateEdit(id: nil)) {
+                        Label("New Template", systemImage: "doc.badge.plus")
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
             ToolbarItem(placement: .automatic) {
                 NavigationLink(value: AppRoute.workoutExercises) {
                     Image(systemName: "figure.strengthtraining.traditional")
@@ -50,28 +88,44 @@ public struct WorkoutsScreen: View {
         }
         .refreshable { await workoutStore.load() }
     }
+
+    private func startQuickWorkout() {
+        Task {
+            let session = try await workoutStore.startSession(templateId: nil)
+            startingSession = true
+        }
+    }
 }
 
-struct TemplateRow: View {
+struct WorkoutTemplateRow: View {
     let template: WorkoutTemplate
+    @Environment(WorkoutFeatureStore.self) private var workoutStore
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(template.name)
-                .font(.headline)
-            HStack {
-                Text("\(template.exercises.count) exercises")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if template.origin == .generated {
-                    Text("Generated")
-                        .font(.caption2)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.fill.tertiary)
-                        .clipShape(Capsule())
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(template.name)
+                    .font(.headline)
+                HStack {
+                    Text("\(template.exercises.count) exercises")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if template.origin == .generated {
+                        Text("Generated")
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.fill.tertiary)
+                            .clipShape(Capsule())
+                    }
                 }
             }
+            Spacer()
+            Button("Start") {
+                Task { _ = try? await workoutStore.startSession(templateId: template.id) }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
         .padding(.vertical, 2)
     }

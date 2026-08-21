@@ -5,6 +5,8 @@ import WellnessStores
 public struct CalendarScreen: View {
     @Environment(CalendarFeatureStore.self) private var calendarStore
     @State private var selectedDate = Date()
+    @State private var showNewEvent = false
+    @State private var editingEvent: ScheduledEvent?
 
     public init() {}
 
@@ -29,9 +31,14 @@ public struct CalendarScreen: View {
                     )
                 } else {
                     ForEach(dayEvents) { event in
-                        EventRow(event: event) {
-                            Task { try? await calendarStore.completeEvent(event.id) }
+                        Button {
+                            editingEvent = event
+                        } label: {
+                            EventRow(event: event) {
+                                Task { try? await calendarStore.completeEvent(event.id) }
+                            }
                         }
+                        .tint(.primary)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 Task { try? await calendarStore.deleteEvent(id: event.id) }
@@ -47,9 +54,19 @@ public struct CalendarScreen: View {
         .navigationTitle("Calendar")
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                NavigationLink(value: AppRoute.calendarSchedule) {
+                Button { showNewEvent = true } label: {
                     Image(systemName: "calendar.badge.plus")
                 }
+            }
+        }
+        .sheet(isPresented: $showNewEvent) {
+            NavigationStack {
+                EventSchedulingSheet(date: selectedDate)
+            }
+        }
+        .sheet(item: $editingEvent) { event in
+            NavigationStack {
+                EventSchedulingSheet(event: event)
             }
         }
         .refreshable { await calendarStore.load() }
