@@ -18,7 +18,42 @@
 		1DB30FD120C6906D48D73AFE /* WellnessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F65EEECBB6D2F7D9ED5B76A /* WellnessApp.swift */; };
 		24913DA4DB18BA487DCCBB5F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AB05088148331502D25BFC3 /* Foundation.framework */; };
 		3339DBB6A4B62DE0F4D22679 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236A2978E1416FBC3550B7A2 /* AppRouter.swift */; };
+		W10000000000000000000001 /* WellnessWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000001 /* WellnessWidgets.swift */; };
+		W10000000000000000000002 /* TodayWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000002 /* TodayWidget.swift */; };
+		W10000000000000000000003 /* NextUpWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000003 /* NextUpWidget.swift */; };
+		W10000000000000000000004 /* WeekWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000004 /* WeekWidget.swift */; };
+		W10000000000000000000005 /* StreakWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000005 /* StreakWidget.swift */; };
+		W10000000000000000000006 /* WorkoutLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000006 /* WorkoutLiveActivity.swift */; };
+		W10000000000000000000007 /* SleepLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000007 /* SleepLiveActivity.swift */; };
+		W10000000000000000000008 /* LockScreenWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = W20000000000000000000008 /* LockScreenWidgets.swift */; };
+		W10000000000000000000009 /* WellnessModels in Frameworks */ = {isa = PBXBuildFile; productRef = W50000000000000000000001 /* WellnessModels */; };
+		W1000000000000000000000A /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = W50000000000000000000002 /* WellnessServices */; };
+		W1000000000000000000000B /* WellnessWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = W30000000000000000000001 /* WellnessWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		W40000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EA7E78B643A7D415F3417B06 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = WE0000000000000000000001;
+			remoteInfo = WellnessWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		WC0000000000000000000001 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				W1000000000000000000000B /* WellnessWidgetsExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		18FBAC9F54A9F06D4D20889B /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -29,6 +64,16 @@
 		6A8A2E95F81F4C93797AD346 /* WellnessApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WellnessApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D0C2E55BCA209B0F037885E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB27A132D780ECF257BD3937 /* WellnessKit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = WellnessKit; sourceTree = "<group>"; };
+		W20000000000000000000001 /* WellnessWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellnessWidgets.swift; sourceTree = "<group>"; };
+		W20000000000000000000002 /* TodayWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWidget.swift; sourceTree = "<group>"; };
+		W20000000000000000000003 /* NextUpWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextUpWidget.swift; sourceTree = "<group>"; };
+		W20000000000000000000004 /* WeekWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekWidget.swift; sourceTree = "<group>"; };
+		W20000000000000000000005 /* StreakWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakWidget.swift; sourceTree = "<group>"; };
+		W20000000000000000000006 /* WorkoutLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivity.swift; sourceTree = "<group>"; };
+		W20000000000000000000007 /* SleepLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepLiveActivity.swift; sourceTree = "<group>"; };
+		W20000000000000000000008 /* LockScreenWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenWidgets.swift; sourceTree = "<group>"; };
+		W20000000000000000000009 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		W30000000000000000000001 /* WellnessWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WellnessWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +89,15 @@
 				B4AA0F7ABB66F6F780E2F63E /* WellnessStores in Frameworks */,
 				E48825251D8C702B2B3399EF /* WellnessUI in Frameworks */,
 				24913DA4DB18BA487DCCBB5F /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		WF0000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				W10000000000000000000009 /* WellnessModels in Frameworks */,
+				W1000000000000000000000A /* WellnessServices in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,6 +170,15 @@
 		D14231226D55678B6EB11B53 /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
+				W20000000000000000000001 /* WellnessWidgets.swift */,
+				W20000000000000000000002 /* TodayWidget.swift */,
+				W20000000000000000000003 /* NextUpWidget.swift */,
+				W20000000000000000000004 /* WeekWidget.swift */,
+				W20000000000000000000005 /* StreakWidget.swift */,
+				W20000000000000000000006 /* WorkoutLiveActivity.swift */,
+				W20000000000000000000007 /* SleepLiveActivity.swift */,
+				W20000000000000000000008 /* LockScreenWidgets.swift */,
+				W20000000000000000000009 /* Info.plist */,
 			);
 			name = Widgets;
 			path = Widgets;
@@ -125,6 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				6A8A2E95F81F4C93797AD346 /* WellnessApp.app */,
+				W30000000000000000000001 /* WellnessWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -152,10 +216,12 @@
 				AEF09DE71F063B803BDB8336 /* Sources */,
 				B31222C7F1C5522B70773D23 /* Frameworks */,
 				276A3C1B9C0715735A7AAAFE /* Resources */,
+				WC0000000000000000000001 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				WD0000000000000000000001 /* PBXTargetDependency */,
 			);
 			name = WellnessApp;
 			productName = WellnessApp;
@@ -170,6 +236,27 @@
 				06985C74A568740B780A2B8E /* WellnessUI */,
 			);
 			productType = "com.apple.product-type.application";
+		};
+		WE0000000000000000000001 /* WellnessWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = WL0000000000000000000001 /* Build configuration list for PBXNativeTarget "WellnessWidgetsExtension" */;
+			buildPhases = (
+				WS0000000000000000000001 /* Sources */,
+				WF0000000000000000000001 /* Frameworks */,
+				WR0000000000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WellnessWidgetsExtension;
+			productName = WellnessWidgetsExtension;
+			productReference = W30000000000000000000001 /* WellnessWidgetsExtension.appex */;
+			packageProductDependencies = (
+				W50000000000000000000001 /* WellnessModels */,
+				W50000000000000000000002 /* WellnessServices */,
+			);
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -199,12 +286,20 @@
 			projectRoot = "";
 			targets = (
 				A2E83BBD5D00DE8DD929F2DD /* WellnessApp */,
+				WE0000000000000000000001 /* WellnessWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		276A3C1B9C0715735A7AAAFE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		WR0000000000000000000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -224,7 +319,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		WS0000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				W10000000000000000000001 /* WellnessWidgets.swift in Sources */,
+				W10000000000000000000002 /* TodayWidget.swift in Sources */,
+				W10000000000000000000003 /* NextUpWidget.swift in Sources */,
+				W10000000000000000000004 /* WeekWidget.swift in Sources */,
+				W10000000000000000000005 /* StreakWidget.swift in Sources */,
+				W10000000000000000000006 /* WorkoutLiveActivity.swift in Sources */,
+				W10000000000000000000007 /* SleepLiveActivity.swift in Sources */,
+				W10000000000000000000008 /* LockScreenWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		WD0000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = WE0000000000000000000001 /* WellnessWidgetsExtension */;
+			targetProxy = W40000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		16CCEF224E49AFD201FC0278 /* Debug */ = {
@@ -390,6 +508,48 @@
 			};
 			name = Debug;
 		};
+		WB0000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R6NSBVKVXV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.matan.wellnessx123.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		WB0000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R6NSBVKVXV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.matan.wellnessx123.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -407,6 +567,15 @@
 			buildConfigurations = (
 				784DD18909714D534FEDDD4D /* Release */,
 				E46F897C1117A13751B59498 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		WL0000000000000000000001 /* Build configuration list for PBXNativeTarget "WellnessWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				WB0000000000000000000001 /* Debug */,
+				WB0000000000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -454,6 +623,16 @@ B59BEBC31F09EF2EB51C1FFD /* WellnessServices */ = {
 	isa = XCSwiftPackageProductDependency;
 	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
 	productName = WellnessUI;
+};
+W50000000000000000000001 /* WellnessModels */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessModels;
+};
+W50000000000000000000002 /* WellnessServices */ = {
+	isa = XCSwiftPackageProductDependency;
+	package = 16672AA9E19526C5D267BE94 /* XCLocalSwiftPackageReference "Packages/WellnessKit" */;
+	productName = WellnessServices;
 };
 /* End XCSwiftPackageProductDependency section */
 
