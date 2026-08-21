@@ -183,3 +183,34 @@ public final class InMemoryBodyWeightStore: BodyWeightStore, @unchecked Sendable
     }
     public func deleteBodyWeightEntry(id: String) async throws { entries.removeAll { $0.id == id } }
 }
+
+public final class InMemoryScheduledEventStore: ScheduledEventStore, @unchecked Sendable {
+    private var events: [ScheduledEvent] = []
+    public init() {}
+
+    public func allScheduledEvents() async throws -> [ScheduledEvent] { events }
+    public func scheduledEvent(byId id: String) async throws -> ScheduledEvent? {
+        events.first { $0.id == id }
+    }
+    public func insertScheduledEvent(_ event: ScheduledEvent) async throws { events.append(event) }
+    public func updateScheduledEvent(_ event: ScheduledEvent) async throws {
+        if let i = events.firstIndex(where: { $0.id == event.id }) { events[i] = event }
+    }
+    public func deleteScheduledEvent(id: String) async throws { events.removeAll { $0.id == id } }
+    public func scheduledEventsInRange(start: Date, end: Date) async throws -> [ScheduledEvent] {
+        events.filter { $0.scheduledAt >= start && $0.scheduledAt < end }
+    }
+    public func scheduledEvents(byType type: EventType) async throws -> [ScheduledEvent] {
+        events.filter { $0.type == type }
+    }
+    public func deleteAllScheduledEvents() async throws { events.removeAll() }
+}
+
+public final class InMemoryUserProfileStore: UserProfileStore, @unchecked Sendable {
+    private var stored: UserProfile?
+    public init(_ profile: UserProfile? = nil) { self.stored = profile }
+
+    public func profile() async throws -> UserProfile? { stored }
+    public func saveProfile(_ profile: UserProfile) async throws { stored = profile }
+    public func deleteProfile() async throws { stored = nil }
+}

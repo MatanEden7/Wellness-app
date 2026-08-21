@@ -89,3 +89,20 @@ public protocol BodyWeightStore: Sendable {
     func updateBodyWeightEntry(_ entry: BodyWeightEntry) async throws
     func deleteBodyWeightEntry(id: String) async throws
 }
+
+public protocol ScheduledEventStore: Sendable {
+    func allScheduledEvents() async throws -> [ScheduledEvent]
+    func scheduledEvent(byId id: String) async throws -> ScheduledEvent?
+    func insertScheduledEvent(_ event: ScheduledEvent) async throws
+    func updateScheduledEvent(_ event: ScheduledEvent) async throws
+    func deleteScheduledEvent(id: String) async throws
+    func scheduledEventsInRange(start: Date, end: Date) async throws -> [ScheduledEvent]
+    func scheduledEvents(byType type: EventType) async throws -> [ScheduledEvent]
+    func deleteAllScheduledEvents() async throws
+}
+
+public protocol UserProfileStore: Sendable {
+    func profile() async throws -> UserProfile?
+    func saveProfile(_ profile: UserProfile) async throws
+    func deleteProfile() async throws
+}
