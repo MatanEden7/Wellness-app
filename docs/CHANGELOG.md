@@ -5,6 +5,104 @@ see `CLAUDE.md` for the full doc-tracking rules.
 
 ## Unreleased
 
+### Native Swift app — Flutter removed (2026-08-21)
+
+Branch `swift`. Clean-room rewrite from Flutter/Dart to 100% native Swift.
+
+**What shipped:**
+- Swift 6.2, SwiftUI, SwiftData, WidgetKit, ActivityKit, AppIntents
+- Zero third-party dependencies
+- 7-module SPM package (WellnessKit): Models → Domain → Catalog → Persistence → Services → Stores → UI
+- All screens: Dashboard, Meals, Workouts, Sleep, Calendar, Analytics, Settings, Onboarding
+- 9 widgets: Today, NextUp, Week, Streak, 3 Lock Screen, 2 Live Activities (workout + sleep)
+- 4 Siri Shortcuts with en/he phrases
+- 915 localization keys × 2 languages (String Catalog)
+- 46 Swift tests green, xcodebuild clean on both app and widget targets
+- iOS 26.0 deployment target (Liquid Glass)
+
+**What was removed (this commit):**
+`lib/`, `test/`, `integration_test/`, `pubspec.yaml`, `pubspec.lock`, `pigeons/`,
+`analysis_options.yaml`, `.fvmrc`, `android/`, `ios/` (Flutter target), `macos/`,
+`assets/`, `tool/`, `.github/` (Flutter CI), and all Flutter config files.
+
+All Flutter code remains intact on `rc` and `main` branches and in full git
+history. `parity/` (golden corpus + test inventory) is kept as migration evidence.
+
+---
+
+## Flutter era (history below — code on `rc` branch)
+
+### The shipped template library is back, in one language (2026-08-18)
+
+Dropping the built-ins left a three-day user with three workout templates and
+three meal templates -- one per training day and per meal slot -- where the app
+used to also offer six standing programmes. That reads as content going missing,
+and "generate more" is the wrong answer: a push/pull/legs split is not a thing
+you fit to a profile.
+
+`lib/data/catalog/starter_templates.dart` holds them as authoring data with both
+languages side by side, the same shape as the food and exercise catalogs.
+`seedCatalogFor` resolves the pair once and the row keeps a single name, so the
+freeze still holds. They are `TemplateOrigin.builtin`, which is back for exactly
+this: regeneration must not delete a standing programme when the profile
+changes.
+
+A language switch moves them too, but by a different route than generated
+templates -- these have stable ids and authored strings, so they are re-resolved
+in place, while a generated name is composed from a recipe and a meal slot and
+has to be rebuilt instead.
+
+**Settings → "Delete All Templates"** empties both lists and keeps them empty.
+Distinct from "Reset all data", which wipes everything and reseeds; this strips
+the templates and leaves the catalog and the logs alone, so the app still works
+afterwards. Every deleted id goes into the same high-water mark a single swipe
+uses, which is what stops the merge below putting the shipped ones back on the
+next launch. Calendar events pinned to a deleted template are unpinned rather
+than left dangling.
+
+Existing installs get them through a high-water-mark merge on load
+(`_mergeNewStarterTemplates`), the same contract the food and exercise catalogs
+use: a programme added later reaches people who already onboarded, and one they
+delete stays deleted. `starter_template_test` walks every exercise and food id a
+template references, because a dangling id renders as a blank line rather than
+an error.
+
+### Programs get their accessory work back (2026-08-17)
+
+`WorkoutTemplateGenerator` filled a session with compounds before isolation was
+ever reached. A full-body day draws from eight movement patterns and the budget
+is seven, so anybody training three days a week got compounds only -- 69
+isolation exercises in the library, none reachable -- and the A/B/C variations
+came out byte-identical, because the deeper selection rounds they relied on had
+no slots left. Splits hid it: a push day draws from two patterns, so accessories
+got in by luck.
+
+`_pick` now reserves a third of the session for accessory work, `_SessionPlan`
+carries a `variant` that offsets where each session starts in the candidate
+lists, and `_allPatterns` is interleaved rather than grouped by area -- that last
+one only surfaced once the cap was in place, as a barbell owner losing their
+Bench Press to three leg patterns. `Leg Day` in the five-day split also got a
+variant: it shares its patterns and muscles with `Lower Body`, so the week was
+shipping the same session twice under two names. See ISSUES #109.
+
+**Three device tests were pinning bugs rather than behaviour**, found by running
+the full simulator suite. `profile_test` asserted the equipment row rendered
+`Dumbbells, Barbell_rack` -- the raw-id fallback -- when `_itemLabel` has mapped
+it through the ARB as "Barbell & Rack" for some time, and asserted a Units
+section that was deliberately removed with the onboarding unit picker. Both
+predate this branch. `nutrition_math_ui_test` hard-coded `248 cal` and `P: 46.5g`
+for chips that are now built from the ARB, which only moved the hard-coding into
+the test; it reads the keys now. `notification_action_handler_test` took
+`getAllMealTemplates().first`, which has nothing to return since the built-ins
+were removed -- it builds its own fixture, like the fast-suite tests did.
+
+`primaryMuscle` is an English **id** again, mapped at render by `muscleLabel`.
+Translating it in place had been silently breaking the same isolation selection
+in Hebrew, for the same reason `unit` stays an id: the programming logic reads
+it. That failure was quiet because compounds are chosen by `movementPattern`,
+which kept working. The exercise picker was also rendering equipment as raw enum
+names (`barbellRack`) instead of labels.
+
 ### Content is written in one language, once (2026-08-16)
 
 Branch `rc`.

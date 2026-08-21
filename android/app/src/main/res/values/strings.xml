@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Wellness</string>
-    <string name="default_notification_channel_id">wellness_notifications</string>
-    <string name="default_notification_channel_name">Wellness Notifications</string>
-    <string name="default_notification_channel_description">Reminders for meals, workouts, and sleep</string>
-</resources>

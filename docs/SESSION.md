@@ -4,6 +4,29 @@ Updated after every completed work session. Most recent first.
 
 ---
 
+## 2026-08-21 — Swift migration cutover (Phases 8–9)
+
+**Task:** Complete the remaining phases of the Swift migration plan and remove
+all Flutter code.
+
+**Phase 8 (Localization):** Converted 915 ARB keys × 2 languages (en + he)
+from Flutter's `app_en.arb` / `app_he.arb` to a single Xcode String Catalog
+(`Localizable.xcstrings`) in WellnessUI/Resources. Added `L10n` helper for
+type-safe access via `Bundle.module`. Wrote 4 parity tests: key count, dual
+language coverage, no empties, format specifier symmetry. 46 tests green.
+
+**Phase 9 (Cutover):** Deleted all Flutter files in one commit per §12 of the
+migration plan: `lib/`, `test/`, `integration_test/`, `pubspec.yaml`,
+`pubspec.lock`, `pigeons/`, `analysis_options.yaml`, `.fvmrc`, `android/`,
+`ios/` (Flutter target), `macos/`, `assets/`, `tool/`, `.github/`, and all
+Flutter config files. Audio asset preserved at `App/Resources/Audio/`. Rewrote
+`REPO_GUIDE.md` for the Swift architecture, updated `CHANGELOG.md`,
+`STATUS.md`, `SESSION.md`. `.gitignore` rewritten for Swift/Xcode.
+
+Other branches (`rc`, `main`) untouched — Flutter codebase intact there.
+
+---
+
 ## 2026-08-16 — Content is written in one language, once
 
 **Task:** stop the app language switch from rewriting every template and catalog
@@ -43,8 +66,23 @@ Wired into `LanguagePage`. Content still never re-languages itself; this is the
 only path, and it needs a deliberate tap.
 
 **Verification:** `flutter analyze` clean across `lib/`, `test/` and
-`integration_test/`; `flutter test test/` — 1172 passing. Built and installed
-clean on the simulator.
+`integration_test/`; `flutter test test/` — 1178 passing; the full device suite
+(`integration_test/sanity` 23 + `integration_test/regression`) green on the
+iPhone 17 simulator. Built and installed clean.
+
+**Second follow-up: the plans were wrong, and not for the reason I first said.**
+Told the user their Hebrew workout templates had no isolation work because I had
+translated `primaryMuscle`, which the generator matches against English muscle
+lists. Wrong: a probe showed English plans were identical. The real cause was
+`ISSUES #109` — the compound pass filled the whole budget before isolation was
+reached, in both languages, and the A/B/C "variations" were byte-identical. The
+`primaryMuscle` change was still worth making (it would have broken Hebrew plans
+at 4+ days) but it was not what the user was looking at, and I asserted a cause
+before checking the other language. One probe would have caught it.
+
+Fixing #109 then exposed a third thing: capping the compound pass made a barbell
+owner lose their Bench Press, because `_allPatterns` was grouped legs-first and
+any truncation dropped push and pull. Interleaved.
 
 **Next:** the Hebrew strings added here (session names/notes, recipe blurbs,
 brand qualifiers, the progression rule) are mine, not a translator's — worth a
