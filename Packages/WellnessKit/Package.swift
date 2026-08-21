@@ -45,7 +45,7 @@ let package = Package(
         // Notifications, export, preferences, content language.
         .target(
             name: "WellnessServices",
-            dependencies: ["WellnessModels", "WellnessDomain", "WellnessPersistence"]
+            dependencies: ["WellnessModels", "WellnessDomain", "WellnessCatalog", "WellnessPersistence"]
         ),
 
         // @Observable feature stores — the only module that may hold mutable app state.
@@ -76,7 +76,7 @@ let package = Package(
         ),
         .testTarget(
             name: "WellnessServicesTests",
-            dependencies: ["WellnessServices", "WellnessModels"]
+            dependencies: ["WellnessServices", "WellnessModels", "WellnessCatalog", "WellnessDomain", "WellnessPersistence"]
         ),
         .testTarget(
             name: "ParityTests",
